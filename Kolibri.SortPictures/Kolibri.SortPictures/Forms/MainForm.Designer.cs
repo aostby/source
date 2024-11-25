@@ -38,12 +38,14 @@
             bilderToolStripMenuItem = new ToolStripMenuItem();
             sorterBilderToolStripMenuItem = new ToolStripMenuItem();
             reduserBildestørrelseToolStripMenuItem = new ToolStripMenuItem();
+            hjelpToolStripMenuItem = new ToolStripMenuItem();
+            brukermanualToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { filToolStripMenuItem, verktøyToolStripMenuItem, bilderToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { filToolStripMenuItem, verktøyToolStripMenuItem, bilderToolStripMenuItem, hjelpToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(1107, 24);
@@ -113,6 +115,20 @@
             reduserBildestørrelseToolStripMenuItem.Text = "Reduser bildestørrelse";
             reduserBildestørrelseToolStripMenuItem.Click += MDIChildNew_Click;
             // 
+            // hjelpToolStripMenuItem
+            // 
+            hjelpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { brukermanualToolStripMenuItem });
+            hjelpToolStripMenuItem.Name = "hjelpToolStripMenuItem";
+            hjelpToolStripMenuItem.Size = new Size(47, 20);
+            hjelpToolStripMenuItem.Text = "Hjelp";
+            // 
+            // brukermanualToolStripMenuItem
+            // 
+            brukermanualToolStripMenuItem.Name = "brukermanualToolStripMenuItem";
+            brukermanualToolStripMenuItem.Size = new Size(180, 22);
+            brukermanualToolStripMenuItem.Text = "Brukermanual";
+            brukermanualToolStripMenuItem.Click += brukermanualToolStripMenuItem_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -141,5 +157,7 @@
         private ToolStripMenuItem reduserBildestørrelseToolStripMenuItem;
         private ToolStripMenuItem lagIconFilerToolStripMenuItem;
         private ToolStripMenuItem listExtensionsToolStripMenuItem;
+        private ToolStripMenuItem hjelpToolStripMenuItem;
+        private ToolStripMenuItem brukermanualToolStripMenuItem;
     }
 }

@@ -61,9 +61,9 @@ namespace Kolibri.SortPictures.Forms
                 dlg1.ShowFullPathInEditBox = true;
                 dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
 
-                if (searchPath != null && searchPath.Exists) { dlg1.SelectedPath = searchPath.FullName;}
+                if (searchPath != null && searchPath.Exists) { dlg1.SelectedPath = searchPath.FullName; }
 
-                   
+
                 // Show the FolderBrowserDialog.
                 DialogResult result = dlg1.ShowDialog();
                 if (result == DialogResult.OK)
@@ -84,7 +84,7 @@ namespace Kolibri.SortPictures.Forms
                         mylist.DataSource = liste;
                         mylist.Dock = DockStyle.Fill;
                         mylist.MouseDoubleClick += listBoxOpenFileExtension_MouseDoubleClick;
-                     
+
                         Form form = new Form(); form.Text = (sender as ToolStripMenuItem).Text + ",  right clic to delete";
                         form.Size = new Size(300, 300);
                         form.Controls.Add(mylist);
@@ -98,7 +98,7 @@ namespace Kolibri.SortPictures.Forms
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
-                Cursor = Cursors.Default;   
+                Cursor = Cursors.Default;
                 return;
             }
 
@@ -110,15 +110,16 @@ namespace Kolibri.SortPictures.Forms
             {
                 int index = (sender as ListBox).IndexFromPoint(e.Location);
                 if (index != System.Windows.Forms.ListBox.NoMatches)
-                {Cursor = Cursors.WaitCursor;   
+                {
+                    Cursor = Cursors.WaitCursor;
                     var liste = FileUtilities.GetFiles(searchPath, $"*{(sender as ListBox).Items[index].ToString()}", true);
                     Cursor = Cursors.Default;
                     ListBox mylist = new ListBox();
                     mylist.DataSource = liste;
                     mylist.Dock = DockStyle.Fill;
-                    mylist.MouseDoubleClick += listBoxOpenfile_MouseDoubleClick;                   
-                    Form form = new Form();form.Text = $"*{(sender as ListBox).Items[index].ToString()} - doubleclick to open";
-                    form.Size = new Size(300, this.Width-10);
+                    mylist.MouseDoubleClick += listBoxOpenfile_MouseDoubleClick;
+                    Form form = new Form(); form.Text = $"*{(sender as ListBox).Items[index].ToString()} - doubleclick to open";
+                    form.Size = new Size(300, this.Width - 10);
                     form.Controls.Add(mylist);
                     form.MdiParent = this;
                     form.Show();
@@ -127,7 +128,7 @@ namespace Kolibri.SortPictures.Forms
             catch (Exception)
             {
             }
-        } 
+        }
 
         private void listBoxOpenfile_MouseDoubleClick(object? sender, MouseEventArgs e)
         {
@@ -135,12 +136,15 @@ namespace Kolibri.SortPictures.Forms
             if (index != System.Windows.Forms.ListBox.NoMatches)
             {
                 FileInfo info = new FileInfo($"{(sender as ListBox).Items[index].ToString()}");
-                if (info.Exists) { FileUtilities.OpenFolderHighlightFile(info);
+                if (info.Exists)
+                {
+                    FileUtilities.OpenFolderHighlightFile(info);
                 }
-                else {
+                else
+                {
                     MessageBox.Show($"File {info.FullName} does not exist!", "Missing filereference", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
-            } 
+            }
         }
         private void lagIconFilerToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -177,6 +181,18 @@ namespace Kolibri.SortPictures.Forms
                 return;
             }
 
+        }
+
+        private void brukermanualToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var url = new Uri("https://www.problembar.net/uranus/BeerXML/uploads/APPS/Manuals/Kolibri.SortPictures.html");
+            Form form = new Form();
+            WebBrowser browsercontrol = new WebBrowser();
+            form.Controls.Add(browsercontrol);
+            browsercontrol.Navigate(url);
+            browsercontrol.Dock = DockStyle.Fill;   
+            form.Size = this.Size;
+            form.ShowDialog();
         }
     }
 }

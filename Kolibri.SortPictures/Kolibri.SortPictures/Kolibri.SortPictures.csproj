@@ -7,7 +7,12 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>Resources\redsortpictures.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\redsortpictures.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Kolibri.Common\Kolibri.Common.Utilities\Kolibri.Common.Utilities.csproj" />
