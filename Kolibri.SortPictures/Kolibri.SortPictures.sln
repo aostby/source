@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.SortPictures", "Kolibri.SortPictures\Kolibri.SortPictures.csproj", "{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReferencedProjects", "ReferencedProjects", "{040D505C-95DD-491F-811E-D5314C0589FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.Common.Utilities", "..\Kolibri.Common\Kolibri.Common.Utilities\Kolibri.Common.Utilities.csproj", "{5558C85F-475D-42C3-825A-76275F36E046}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Release|x64.Build.0 = Release|Any CPU
+		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|x64.ActiveCfg = Debug|x64
+		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|x64.Build.0 = Debug|x64
+		{5558C85F-475D-42C3-825A-76275F36E046}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5558C85F-475D-42C3-825A-76275F36E046}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5558C85F-475D-42C3-825A-76275F36E046}.Release|x64.ActiveCfg = Release|x64
+		{5558C85F-475D-42C3-825A-76275F36E046}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5558C85F-475D-42C3-825A-76275F36E046} = {040D505C-95DD-491F-811E-D5314C0589FD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B05D307B-09E6-433D-82A7-ECB759D4C2D9}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,2406 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<sybasecodes>
+
+  <sybasecode>
+    <code>-977</code>
+    <message>UltraLite runtime library is incompatible with the database file</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-976</code>
+    <message>Could not load the encryption dll "%1"</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-975</code>
+    <message>Incorrect volume ID for '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-974</code>
+    <message>File I/O failed for '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-973</code>
+    <message>The string is too long (%1)</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-972</code>
+    <message>Database page size too small</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-971</code>
+    <message>Checksums are not enabled in this database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-970</code>
+    <message>Invalid hint specified for table '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-969</code>
+    <message>Required operators excluded</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-968</code>
+    <message>User '%1' already has EXECUTE permission</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-967</code>
+    <message>Backup file '%1' already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-966</code>
+    <message>Composite ORDER BY not allowed with RANGE or CUME_DIST()</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-965</code>
+    <message>Window function requires ORDER BY</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-964</code>
+    <message>Window function used in predicate</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-963</code>
+    <message>Password contains an illegal character</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-962</code>
+    <message>Argument to GROUPING aggregate must be a grouping column in the GROUP BY clause</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-961</code>
+    <message>Input string is not base64-encoded</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-960</code>
+    <message>Decompression error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-959</code>
+    <message>Compression error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-958</code>
+    <message>Password cannot be longer than %1 characters</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-957</code>
+    <message>Invalid preceding or following size in OLAP function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-956</code>
+    <message>Information for synchronization is incomplete or invalid, check '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-955</code>
+    <message>This connection already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-954</code>
+    <message>The database '%1' was not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-953</code>
+    <message>A schema upgrade is not currently allowed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-952</code>
+    <message>The status of the last synchronization upload is unknown</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-951</code>
+    <message>Cannot access schema file '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-950</code>
+    <message>Frame not allowed for window '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-949</code>
+    <message>ORDER BY not allowed in window '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-948</code>
+    <message>PARTITION BY not allowed in reference to window '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-947</code>
+    <message>Window '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-946</code>
+    <message>Result set not permitted in '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-945</code>
+    <message>Recursive column %1: conversion from '%2' to '%3' loses precision</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-944</code>
+    <message>Too many expressions in GROUP BY list for ROLLUP, CUBE, or GROUPING SETS operation.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-943</code>
+    <message>No workload capture currently exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-942</code>
+    <message>A workload capture (%1) is already in progress</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-941</code>
+    <message>jConnect does not support encryption</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-940</code>
+    <message>Invalid setting for HTTP header '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-939</code>
+    <message>Invalid setting for HTTP option '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-938</code>
+    <message>Recursion is not allowed without the RECURSIVE keyword</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-937</code>
+    <message>Invalid reference to or operation on constraint '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-936</code>
+    <message>too many constraints in database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-935</code>
+    <message>Unable to start specified database: Log file error</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-934</code>
+    <message>Unable to start specified database: Server must be upgraded to start database %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-933</code>
+    <message>A log is required for IQ databases</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-932</code>
+    <message>Service type does not allow 'USING' attribute</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-931</code>
+    <message>Service definition requires a statement when authorization is off</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-930</code>
+    <message>(no message)</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-929</code>
+    <message>Constraint '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-928</code>
+    <message>Constant expressions may not appear in GROUP BY clause</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-927</code>
+    <message>Service statement definition is inconsistent with service type</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-926</code>
+    <message>Host variable reference in service definition must be named</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-925</code>
+    <message>Invalid service name '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-924</code>
+    <message>Service '%1' in use</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-923</code>
+    <message>Too many recursive iterations</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-922</code>
+    <message>No column list for recursive query</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-921</code>
+    <message>Invalid recursive query</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-920</code>
+    <message>Service '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-919</code>
+    <message>Service '%1' already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-918</code>
+    <message>A user name must be specified if AUTHORIZATION is OFF</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-916</code>
+    <message>'%1' is an unrecognized service type</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-915</code>
+    <message>Service type required for CREATE SERVICE</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-914</code>
+    <message>Cycle in common table expression references</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-913</code>
+    <message>A transaction log file is required for auditing</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-912</code>
+    <message>Insufficient memory for OPENXML query</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-911</code>
+    <message>Control character in XML output</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-910</code>
+    <message>System command failed with return code %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-908</code>
+    <message>Invalid operation on a closed '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-907</code>
+    <message>No name for argument</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-906</code>
+    <message>XMLGEN evaluation failure</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-905</code>
+    <message>Invalid XQuery constructor</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-904</code>
+    <message>Illegal ORDER BY in aggregate function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-903</code>
+    <message>CDATA has a name</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-902</code>
+    <message>Too few columns</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-901</code>
+    <message>Undeclared tag id: '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-900</code>
+    <message>Parent not open: '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-899</code>
+    <message>Illegal column name: '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-898</code>
+    <message>Unknown FOR XML EXPLICIT directive: '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-897</code>
+    <message>Illegal FOR XML EXPLICIT tag value: '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-896</code>
+    <message>Cannot delete PUBLIC option '%1' since user settings exist</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-895</code>
+    <message>Encryption error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-894</code>
+    <message>Plan can not be generated for this type of statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-893</code>
+    <message>Illegal flags value passed to OPENXML</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-892</code>
+    <message>XPath parser error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-891</code>
+    <message>Cannot convert between requested character sets '%1' and '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-890</code>
+    <message>Statement size or complexity exceeds server limits</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-889</code>
+    <message>Statement contains an illegal usage of the non-deterministic function '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-888</code>
+    <message>XML parser error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-887</code>
+    <message>Virtual index creation with more than %1 columns.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-883</code>
+    <message>Character conversion reporting is not available when the single byte converter is used</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-882</code>
+    <message>An output character could not be converted to the application character set</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-881</code>
+    <message>An input character could not be converted to database character set</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-880</code>
+    <message>An invalid multi-byte output character was encountered</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-879</code>
+    <message>An invalid multi-byte input character was encountered</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-878</code>
+    <message>Index '%1' can not be clustered</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-877</code>
+    <message>SETUSER not allowed in procedures, triggers, events or batches</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-876</code>
+    <message>Client out of memory</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-875</code>
+    <message>There is no way to join to '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-874</code>
+    <message>Column must be named: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-873</code>
+    <message>%1 returned multiple result sets</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-871</code>
+    <message>The database needs to be restarted for this Java related command</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-870</code>
+    <message>Cannot convert between requested character set '%1' and database character set '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-869</code>
+    <message>Database server cannot convert data from/to character set '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-868</code>
+    <message>'%1' is an unknown character set label</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-867</code>
+    <message>Cannot change synchronization user_name when status of the last upload is unknown.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-866</code>
+    <message>%1 returned a result set with a different schema than expected</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-865</code>
+    <message>Key constraint between temporary tables requires a primary key (not unique constraint)</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-864</code>
+    <message>Statement contains an illegal usage of the NUMBER(*) function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-863</code>
+    <message>Grouped query contains more than one distinct aggregate function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-862</code>
+    <message>The aggregate expression '%1' must appear in either the select list or a HAVING clause subquery</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-861</code>
+    <message>Aggregated expression '%1' contains multiple columns of which one or more are outer references</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-860</code>
+    <message>At least one of the specified dbspaces was not calibrated.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-859</code>
+    <message>1 %</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-858</code>
+    <message>CREATE/DROP STATISTICS statement cannot refer to virtual tables</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-857</code>
+    <message>Synchronization failed due to an error on the server: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-856</code>
+    <message>Invalid sqllen field in SQLDA</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-855</code>
+    <message>Trigger name '%1' is ambiguous</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-854</code>
+    <message>Function or column reference to '%1' in the ORDER BY clause is invalid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-853</code>
+    <message>Cursor not in a valid state</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-852</code>
+    <message>Table name '%1' is ambiguous</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-851</code>
+    <message>Decryption error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-850</code>
+    <message>Tables related by key constraint must both be permanent or both be temporary created with ON COMMIT PRESERVE ROWS</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-849</code>
+    <message>Referential integrity actions other than RESTRICT not allowed for temporary tables</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-848</code>
+    <message>Exception occurred while loading Java SecurityManager</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-847</code>
+    <message>Java SecurityManager class not found: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-846</code>
+    <message>Set clause for column '%1' used incorrectly</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-845</code>
+    <message>Owner '%1' used in a qualified column reference does not match correlation name '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-844</code>
+    <message>Cannot find synchronization definition with the name '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-843</code>
+    <message>Cannot find synchronization user with the name '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-842</code>
+    <message>JDK '%1' is not a supported JDK</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-841</code>
+    <message>The JDK version in '%1' does not match '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-840</code>
+    <message>Incorrect or missing encryption key</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-839</code>
+    <message>Download failed because of conflicts with existing rows.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-838</code>
+    <message>Certicom initialization on server failed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-837</code>
+    <message>Trigger or foreign key for table '%1' is no longer valid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-836</code>
+    <message>Procedure '%1' is no longer valid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-835</code>
+    <message>Event '%1' in use</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-834</code>
+    <message>Column '%1' not found in table '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-833</code>
+    <message>Row in table '%1' was modified or deleted in BEFORE trigger</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-832</code>
+    <message>Connection error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-831</code>
+    <message>Definition for alias '%1' must appear before its first reference</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-830</code>
+    <message>Alias '%1' is not unique</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-829</code>
+    <message>Certicom handshake failure</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-828</code>
+    <message>A conflict with the DBMLSync download phase was detected</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-827</code>
+    <message>Database upgrade not possible; user tables have table ids in system table range</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-826</code>
+    <message>Database upgrade not possible; RowGenerator table not owned by user dbo</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-825</code>
+    <message>Previous error lost prior to RESIGNAL</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-824</code>
+    <message>Illegal reference to correlation name '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-823</code>
+    <message>OMNI cannot handle expressions involving remote tables inside stored procedures</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-822</code>
+    <message>Table '%1' is already included</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-821</code>
+    <message>Dbspace for table '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-820</code>
+    <message>Invalid scroll position '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-819</code>
+    <message>Table '%1' is part of a synchronization definition</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-818</code>
+    <message>The external function call is incompatible</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-817</code>
+    <message>too many temporary tables in connection</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-816</code>
+    <message>Specified database file already in use</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-815</code>
+    <message>Cannot update column '%1' since it does not appear in the SELECT clause.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-814</code>
+    <message>Cannot update column '%1' since it appears in the ORDER BY clause.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-813</code>
+    <message>FOR UPDATE has been incorrectly specified for a READ ONLY cursor.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-812</code>
+    <message>The Select list for the derived table '%1' has no expression to match '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-811</code>
+    <message>Jar '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-810</code>
+    <message>Java class '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-809</code>
+    <message>Synchronization option is too long</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-808</code>
+    <message>An internal error was generated by the test harness</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-807</code>
+    <message>Host variables may not be used within a batch</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-806</code>
+    <message>System event type '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-805</code>
+    <message>Synchronization option '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-804</code>
+    <message>Unable to reenlist transaction; DTC may be down</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-803</code>
+    <message>Unable to enlist transaction; DTC may be down</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-802</code>
+    <message>Cannot enlist in a transaction with uncommitted data pending</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-801</code>
+    <message>Cannot enlist in a transaction while already enlisted in a transaction</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-800</code>
+    <message>Cannot commit or rollback while enlisted in a transaction</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-799</code>
+    <message>DTC transactions are not supported on this platform</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-797</code>
+    <message>Synchronization option '%1' contains semi-colon, equal sign or curly brace</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-796</code>
+    <message>Synchronization site '%1' is already defined</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-795</code>
+    <message>Undefined synchronization template '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-794</code>
+    <message>Synchronization server failed to commit the upload</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-793</code>
+    <message>Invalid start date/time for event '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-792</code>
+    <message>Invalid time '%1' for event '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-791</code>
+    <message>Invalid day of week or month '%1' for event '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-790</code>
+    <message>Cannot register connection to '%1' since automatic label exhausted</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-789</code>
+    <message>Cannot register '%1' since registration cookie exhausted</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-788</code>
+    <message>Another connection has already registered as '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-787</code>
+    <message>Current connection is already registered to '%1' as '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-786</code>
+    <message>Cannot deregister '%1' since active registered connection exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-785</code>
+    <message>Cannot deregister application because of invalid cookie</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-784</code>
+    <message>Cannot register connection because of invalid application cookie</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-783</code>
+    <message>Cannot register another '%1' as an exclusive application</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-782</code>
+    <message>Cannot register '%1' since another exclusive instance is running</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-780</code>
+    <message>Cannot update primary key for table '%1' involved in a publication</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-779</code>
+    <message>Cannot create synchronization entry for table '%1' with BLOB primary key</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-778</code>
+    <message>Must include primary key for table '%1' in the synchronization</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-777</code>
+    <message>Cannot synchronize table '%1' since it does not have a primary key</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-774</code>
+    <message>Schedule '%1' for event '%2' already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-773</code>
+    <message>Schedule '%1' for event '%2' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-772</code>
+    <message>Event '%1' already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-771</code>
+    <message>Event '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-770</code>
+    <message>Cannot modify publication entry using ALTER SYNCHRONIZATION</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-769</code>
+    <message>Cannot modify synchronization entry using ALTER PUBLICATION</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-768</code>
+    <message>Cannot subscribe to '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-767</code>
+    <message>Cannot find synchronization subscription with the name '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-766</code>
+    <message>View references '%1', which is a temporary object. Views can only refer to permanent objects.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-765</code>
+    <message>Synchronization message type '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-764</code>
+    <message>Server not found and unable to autostart</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-763</code>
+    <message>'%1' is not a public Java reference, and cannot be referenced from SQL</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-762</code>
+    <message>'%1' is not a public Java class, and cannot be referenced from SQL</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-761</code>
+    <message>Server capability name '%1' could not be found in the SYS.SYSCAPABILITYNAME table.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-760</code>
+    <message>Invalid SQL identifier</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-759</code>
+    <message>SQLDA data type invalid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-758</code>
+    <message>The database does not support the Java virtual machine</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-757</code>
+    <message>Modifications not permitted for read-only database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-756</code>
+    <message>Cannot uniquely identify column '%2' of table '%1' in the current JDBC resultset</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-755</code>
+    <message>You cannot synchronize or upgrade with uncommitted transactions</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-754</code>
+    <message>Parse error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-753</code>
+    <message>The JDBC resultset must be positioned on an insert row in order to use the '%1' function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-752</code>
+    <message>Cannot call the '%1' function on a JDBC resultset when it is positioned on an insert row</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-751</code>
+    <message>User owns tables in use</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-750</code>
+    <message>User owns procedures in use</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-749</code>
+    <message>Feature not available with UltraLite</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-748</code>
+    <message>Invalid JDBC resultset concurrency</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-747</code>
+    <message>Invalid JDBC resultset type</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-746</code>
+    <message>Cannot allocate System V resources</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-745</code>
+    <message>Cannot initialize IQ memory manager: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-744</code>
+    <message>Invalid IQ database command line option or parameter value: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-743</code>
+    <message>Seek absolute 0 was attempted on a JDBC SAResultSet</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-742</code>
+    <message>JDBC SAStatement batch execute abandoned</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-741</code>
+    <message>'%1' is not a write file for '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-740</code>
+    <message>The communications environment could not be created</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-739</code>
+    <message>db_init has not been called or the call to db_init failed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-738</code>
+    <message>Password must be at least %1 characters</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-737</code>
+    <message>Signature '%1' does not match procedure parameters</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-736</code>
+    <message>The data type of column '%1' is not supported</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-735</code>
+    <message>Invalid parameter</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-734</code>
+    <message>Cannot update or delete an all-NULL row from table '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-733</code>
+    <message>Number of columns allowing NULLs exceeds limit</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-732</code>
+    <message>Creating remote tables with computed columns is not supported</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-731</code>
+    <message>Cannot drop a user that owns objects involved in replication</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-730</code>
+    <message>Invalid jar file</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-729</code>
+    <message>The specified foreign key (%1) can not be enforced</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-728</code>
+    <message>Update operation attempted on non-updatable remote query</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-727</code>
+    <message>The optimizer was unable to construct a valid access plan</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-726</code>
+    <message>The table specification '%1' identifies more than one remote table</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-725</code>
+    <message>Identity attribute mismatch for column '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-724</code>
+    <message>Null attribute mismatch for column '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-723</code>
+    <message>The length specified for column '%1' is different than the actual length</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-722</code>
+    <message>The column '%1' does not exist in the remote table</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-721</code>
+    <message>The data type specified for column '%1' is not compatible with the actual data type</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-720</code>
+    <message>VALIDATE TABLE statement must refer to a base table</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-719</code>
+    <message>RESTORE unable to start database '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-718</code>
+    <message>RESTORE unable to write to file '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-717</code>
+    <message>RESTORE unable to open file '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-716</code>
+    <message>Backup file format is invalid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-715</code>
+    <message>Contents of backup files are inconsistent</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-714</code>
+    <message>Invalid operation on a closed '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-713</code>
+    <message>An internal error occurred in a '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-712</code>
+    <message>External login for server '%1' could not be found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-711</code>
+    <message>Incorrect store DLL (%1) version.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-710</code>
+    <message>Invalid comparison</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-709</code>
+    <message>Computed columns are not supported in this database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-708</code>
+    <message>READTEXT or WRITETEXT statement cannot refer to a view</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-707</code>
+    <message>Statement is not allowed in passthrough mode</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-706</code>
+    <message>Remote server does not have the ability to support this statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-705</code>
+    <message>Return type of void from procedure '%1' cannot be used in any expression</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-704</code>
+    <message>Cannot create an index on Java class '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-703</code>
+    <message>Cannot insert or update computed column '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-702</code>
+    <message>TRUNCATE TABLE statement cannot refer to a view</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-701</code>
+    <message>Cannot access instance member through a class</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-700</code>
+    <message>SQLDA fields inconsistent for a multi-row SQLDA</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-699</code>
+    <message>Cannot update member fields qualified with "final" modifier</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-698</code>
+    <message>The remote server does not support an auto-incrementing data type</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-697</code>
+    <message>Error during backup: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-696</code>
+    <message>Invalid operation on a closed '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-695</code>
+    <message>An internal error occurred in a '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-694</code>
+    <message>Could not change an opened prepared statement or callable statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-693</code>
+    <message>JDBC feature '%1' not supported</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-692</code>
+    <message>Could not execute backup/restore DLL (%1) entry point.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-691</code>
+    <message>Could not load the backup/restore DLL "%1"</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-690</code>
+    <message>Return value cannot be set</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-689</code>
+    <message>Input parameter index out of range</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-688</code>
+    <message>Strongly-encrypted database files are not supported in the runtime server</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-687</code>
+    <message>Syntax error, cannot specify IQ specific options without specifying IQ PATH</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-686</code>
+    <message>Insufficient cache to start Java virtual machine</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-685</code>
+    <message>Resource governor for '%1' exceeded</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-684</code>
+    <message>Rollback occurred due to deadlock during prefetch</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-683</code>
+    <message>The cursor name '%1' already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-682</code>
+    <message>1 %</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-681</code>
+    <message>Invalid join type used with Transact-SQL outer join</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-680</code>
+    <message>Invalid expression in WHERE clause of Transact-SQL outer join</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-679</code>
+    <message>Not enough memory is allocated to the Java virtual machine for remote access</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-678</code>
+    <message>Index name '%1' is ambiguous</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-677</code>
+    <message>Table '%1' has a foreign key with a referential action</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-676</code>
+    <message>The specified transaction isolation is invalid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-675</code>
+    <message>Java virtual machine could not be started</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-674</code>
+    <message>statement's size limit is invalid.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-673</code>
+    <message>Database upgrade not possible</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-672</code>
+    <message>Database upgrade failed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-671</code>
+    <message>Parameter not registered as output parameter</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-670</code>
+    <message>Invalid class byte code</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-669</code>
+    <message>Method '%1' cannot be called at this time</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-668</code>
+    <message>Cursor is restricted to FETCH NEXT operations</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-667</code>
+    <message>Could not access column information for the table '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-666</code>
+    <message>The remote table '%1' could not be found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-665</code>
+    <message>Database "%1" needs recovery</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-664</code>
+    <message>Database is active</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-663</code>
+    <message>Cannot deserialize Java object</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-662</code>
+    <message>Cannot serialize Java object with class '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-661</code>
+    <message>Backwards scrolling cursors are not supported for remote objects</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-660</code>
+    <message>Server '%1': %2</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-659</code>
+    <message>Remote server '%1' could not be found; Add the server using CREATE SERVER</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-658</code>
+    <message>Remote server '%1' is currently configured as read only</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-657</code>
+    <message>Unable to connect to server '%1': server definition is circular</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-656</code>
+    <message>Unable to connect to server '%1': %2</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-655</code>
+    <message>Error parsing connection parameter string</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-654</code>
+    <message>The connection parameters file could not be found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-653</code>
+    <message>Cannot remove class '%1': member of Jar</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-652</code>
+    <message>Could not decompress class '%1' from Jar.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-651</code>
+    <message>An attempt to delete database '%1' failed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-650</code>
+    <message>Index type specification of '%1' is invalid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-649</code>
+    <message>Field '%1' of class '%2' cannot be null</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-648</code>
+    <message>Cannot create item (%1) in the specified dbspace.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-647</code>
+    <message>Could not execute store DLL (%1) entry point.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-646</code>
+    <message>Could not load the store DLL "%1"</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-645</code>
+    <message>Database creation failed: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-644</code>
+    <message>Invalid database page size</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-643</code>
+    <message>UNLOAD TABLE cannot be used to unload a view</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-642</code>
+    <message>Invalid SQL descriptor name</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-641</code>
+    <message>Error in assignment</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-640</code>
+    <message>Invalid descriptor index</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-639</code>
+    <message>Parameter name missing in call to procedure '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-638</code>
+    <message>Right truncation of string data</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-637</code>
+    <message>Duplicate insert column</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-636</code>
+    <message>Duplicate referencing column</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-635</code>
+    <message>GRANT of column permission on view not allowed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-634</code>
+    <message>Unterminated C string</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-633</code>
+    <message>Update operation attempted on a read-only cursor</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-632</code>
+    <message>WITH CHECK OPTION violated for insert/update on base table '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-631</code>
+    <message>RAISERROR executed: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-630</code>
+    <message>Invalid escape sequence '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-629</code>
+    <message>Invalid escape character '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-628</code>
+    <message>Division by zero</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-627</code>
+    <message>Disallowed language extension detected in syntax near '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-626</code>
+    <message>A thread used internally could not be started</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-625</code>
+    <message>Too many parameters to this external procedure call</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-624</code>
+    <message>Expression has unsupported data type</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-623</code>
+    <message>Data definition statements not allowed in procedures or triggers</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-622</code>
+    <message>Could not allocate resources to call external function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-621</code>
+    <message>Could not find '%1' in dynamic library '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-620</code>
+    <message>Could not load dynamic library '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-619</code>
+    <message>Need a dynamic library name</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-618</code>
+    <message>Mismatch between external function platform specifier and current operating system</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-617</code>
+    <message>Calling functions outside the database server is not supported</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-616</code>
+    <message>Too many columns in table</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-615</code>
+    <message>Parameter '%1' not found in procedure '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-614</code>
+    <message>Cannot drop a user that owns messages or data types</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-613</code>
+    <message>User-defined type '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-612</code>
+    <message>User message %1 not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-611</code>
+    <message>Transact-SQL feature not supported</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-610</code>
+    <message>User message %1 already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-609</code>
+    <message>Invalid data type for column in WRITETEXT or READTEXT</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-608</code>
+    <message>Invalid TEXTPTR value used with WRITETEXT or READTEXT</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-607</code>
+    <message>Cannot stop the database server</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-606</code>
+    <message>The pattern is too long</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-605</code>
+    <message>The server attempted to access a page beyond the end of the maximum allowable dbspace file size</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-604</code>
+    <message>A dbspace has reached its maximum file size</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-602</code>
+    <message>Cannot access file '%1' -- %2</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-601</code>
+    <message>'%1' is not a known file format for loading or unloading tables</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-504</code>
+    <message>(no message)</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-503</code>
+    <message>(no message)</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-313</code>
+    <message>The login ID '%1' has not been mapped to any database user ID</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-312</code>
+    <message>User '%1' already has membership in group '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-311</code>
+    <message>Internal rollback log corrupted</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-310</code>
+    <message>Attempt to read beyond end-of-file in a compressed database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-309</code>
+    <message>Memory error -- transaction rolled back</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-308</code>
+    <message>Connection was terminated</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-307</code>
+    <message>All threads are blocked</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-306</code>
+    <message>Deadlock detected</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-305</code>
+    <message>I/O error %1 -- transaction rolled back</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-304</code>
+    <message>Disk full '%1' -- transaction rolled back</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-303</code>
+    <message>Disk write failure '%1' -- transaction rolled back</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-302</code>
+    <message>Terminated by user -- transaction rolled back</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-301</code>
+    <message>Internal database error %1 -- transaction rolled back</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-300</code>
+    <message>Run time SQL error -- %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-299</code>
+    <message>Statement interrupted by user</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-298</code>
+    <message>Attempted two active database requests</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-297</code>
+    <message>User-defined exception signaled</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-296</code>
+    <message>Error number %1 for RAISERROR may not be less than 17000</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-295</code>
+    <message>Cannot uniquely identify rows in cursor</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-294</code>
+    <message>Format string argument number %1 is invalid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-289</code>
+    <message>Multiple consolidated users cannot be defined</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-288</code>
+    <message>Remote statement failed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-287</code>
+    <message>Passthrough statement inconsistent with current passthrough</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-286</code>
+    <message>Remote message type '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-285</code>
+    <message>User '%1' is not a remote user for this database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-284</code>
+    <message>User '%1' is already the publisher for this database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-283</code>
+    <message>Subscription to '%1' for '%2' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-282</code>
+    <message>Subscription to '%1' for '%2' already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-281</code>
+    <message>Table '%1' has publications</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-280</code>
+    <message>Publication '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-275</code>
+    <message>Triggers and procedures not supported in runtime server</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-274</code>
+    <message>Procedure or trigger calls have nested too deeply</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-273</code>
+    <message>COMMIT/ROLLBACK not allowed within trigger actions</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-272</code>
+    <message>Invalid REFERENCES clause in trigger definition</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-271</code>
+    <message>Trigger definition conflicts with existing triggers</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-270</code>
+    <message>Cannot drop a user that owns procedures in runtime server</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-269</code>
+    <message>Cannot delete a column referenced in a trigger definition</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-268</code>
+    <message>Trigger '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-267</code>
+    <message>COMMIT/ROLLBACK not allowed within atomic operation</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-266</code>
+    <message>1 %</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-265</code>
+    <message>Procedure '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-264</code>
+    <message>Wrong number of variables in FETCH</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-263</code>
+    <message>Invalid absolute or relative offset in FETCH</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-262</code>
+    <message>Label '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-261</code>
+    <message>There is already a variable named '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-260</code>
+    <message>Variable '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-251</code>
+    <message>Foreign key '%1' for table '%2' duplicates an existing foreign key</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-250</code>
+    <message>Identifier '%1' too long</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-249</code>
+    <message>The login ID '%1' is already mapped to user ID '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-248</code>
+    <message>Cannot map a login ID to the sys or public user ID</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-247</code>
+    <message>The integrated login ID guest can only be mapped to the guest database user ID</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-246</code>
+    <message>Integrated logins are not supported for this database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-245</code>
+    <message>Integrated login failed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-244</code>
+    <message>Transaction log was truncated</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-243</code>
+    <message>Unable to delete database file</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-242</code>
+    <message>Incomplete transactions prevent transaction log renaming</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-241</code>
+    <message>Database backup not started</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-240</code>
+    <message>Unknown backup operation</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-231</code>
+    <message>Client/database server version mismatch</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-230</code>
+    <message>Sqlpp/dblib version mismatch</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-222</code>
+    <message>Result set not allowed from within an atomic compound statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-221</code>
+    <message>ROLLBACK TO SAVEPOINT not allowed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-220</code>
+    <message>Savepoint '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-218</code>
+    <message>Authentication failed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-217</code>
+    <message>The option '%1' cannot be set from within a procedure</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-216</code>
+    <message>The option '%1' can only be set as a temporary option</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-215</code>
+    <message>Procedure in use by '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-214</code>
+    <message>Table in use</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-213</code>
+    <message>Savepoints require a rollback log</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-212</code>
+    <message>CHECKPOINT statement requires a rollback log</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-211</code>
+    <message>Not allowed while '%1' is using the database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-210</code>
+    <message>User '%1' has the row in '%2' locked</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-209</code>
+    <message>Constraint '%1' violated: Invalid value for column '%2' in table '%3'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-208</code>
+    <message>Row has changed since last read -- operation canceled</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-207</code>
+    <message>Wrong number of values for INSERT</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-206</code>
+    <message>Integrated logins are required, standard logins are not permitted</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-205</code>
+    <message>Integrated logins are not permitted</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-204</code>
+    <message>Only the DBA can set the option '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-203</code>
+    <message>Cannot set a temporary option for user '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-202</code>
+    <message>Only PUBLIC settings are allowed for option '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-201</code>
+    <message>Invalid setting for option '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-200</code>
+    <message>Invalid option '%1' -- no PUBLIC setting exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-199</code>
+    <message>INSERT/DELETE on cursor can modify only one table</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-198</code>
+    <message>Primary key for row in table '%1' is referenced by foreign key '%2' in table '%3'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-197</code>
+    <message>No current row of cursor</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-196</code>
+    <message>Index '%1' for table '%2' would not be unique</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-195</code>
+    <message>Column '%1' in table '%2' cannot be NULL</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-194</code>
+    <message>No primary key value for foreign key '%1' in table '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-193</code>
+    <message>Primary key for table '%1' is not unique</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-192</code>
+    <message>Update operation attempted on non-updatable query</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-191</code>
+    <message>Cannot modify column '%1' in table '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-190</code>
+    <message>Cannot update an expression</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-189</code>
+    <message>Unable to find in index '%1' for table '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-188</code>
+    <message>Not enough values for host variables</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-187</code>
+    <message>Illegal cursor operation attempt</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-186</code>
+    <message>Subquery cannot return more than one row</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-185</code>
+    <message>SELECT returns more than one row</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-184</code>
+    <message>Column '%1' in table '%2' cannot be NULL. The invalid data was supplied to load table in a data file on line %3.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-183</code>
+    <message>Cannot find index named '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-182</code>
+    <message>Not enough fields allocated in SQLDA</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-181</code>
+    <message>No indicator variable provided for NULL result</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-180</code>
+    <message>Cursor not open</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-172</code>
+    <message>Cursor already open</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-171</code>
+    <message>Error opening cursor</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-170</code>
+    <message>Cursor has not been declared</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-165</code>
+    <message>Java VM heap exhausted at internal function: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-164</code>
+    <message>Namespace heap exhausted at internal function: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-163</code>
+    <message>Derived table '%1' has no name for column %2</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-162</code>
+    <message>Cannot convert %1 to a %2. The bad value was supplied for column '%3' on row %4 of the data file.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-161</code>
+    <message>Invalid type on DESCRIBE statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-160</code>
+    <message>Can only describe a SELECT statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-159</code>
+    <message>Invalid column number</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-158</code>
+    <message>Value %1 out of range for destination</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-157</code>
+    <message>Cannot convert %1 to a %2</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-156</code>
+    <message>Invalid expression near '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-155</code>
+    <message>Invalid host variable</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-154</code>
+    <message>Wrong number of parameters to function '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-153</code>
+    <message>SELECT lists in UNION, INTERSECT or EXCEPT do not match in length</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-152</code>
+    <message>Invalid ORDER BY specification</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-151</code>
+    <message>Subquery allowed only one select list item</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-150</code>
+    <message>Invalid use of an aggregate function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-149</code>
+    <message>Function or column reference to '%1' must also appear in a GROUP BY</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-148</code>
+    <message>Unknown function '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-147</code>
+    <message>There is more than one way to join '%1' to '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-146</code>
+    <message>There is no way to join '%1' to '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-145</code>
+    <message>Foreign key name '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-144</code>
+    <message>Column '%1' found in more than one table -- need a correlation name</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-143</code>
+    <message>Column '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-142</code>
+    <message>Correlation name '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-141</code>
+    <message>Table '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-140</code>
+    <message>User ID '%1' does not exist</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-139</code>
+    <message>More than one table is identified as '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-138</code>
+    <message>Dbspace '%1' not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-137</code>
+    <message>Table '%1' requires a unique correlation name</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-136</code>
+    <message>Table '%1' is in an outer join cycle</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-135</code>
+    <message>Language extension</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-134</code>
+    <message>Feature '%1' not implemented</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-133</code>
+    <message>Invalid prepared statement type</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-132</code>
+    <message>SQL statement error</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-131</code>
+    <message>Syntax error near '%1' %2</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-130</code>
+    <message>Invalid statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-128</code>
+    <message>Cannot drop a user that owns tables in runtime system</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-127</code>
+    <message>Cannot alter a column in an index</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-126</code>
+    <message>Table cannot have two primary keys</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-125</code>
+    <message>ALTER clause conflict</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-124</code>
+    <message>More columns are being dropped from table '%1' than are defined</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-123</code>
+    <message>User '%1' is not a user group</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-122</code>
+    <message>Operation would cause a group cycle</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-121</code>
+    <message>1 %</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-120</code>
+    <message>User '%1' already has GRANT permission</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-119</code>
+    <message>Primary key column '%1' already defined</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-118</code>
+    <message>Table '%1' has no primary key</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-116</code>
+    <message>Table must be empty</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-114</code>
+    <message>Number of columns defined for the view does not match SELECT statement</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-113</code>
+    <message>Column '%1' in foreign key has a different definition than primary key</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-112</code>
+    <message>Table already has a primary key</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-111</code>
+    <message>Index name '%1' not unique</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-110</code>
+    <message>Item '%1' already exists</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-109</code>
+    <message>There are still active database connections</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-108</code>
+    <message>Connection not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-107</code>
+    <message>Error writing to transaction log file</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-106</code>
+    <message>Cannot open transaction log file -- %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-105</code>
+    <message>Database cannot be started -- %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-104</code>
+    <message>Invalid user ID or password on preprocessed module</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-103</code>
+    <message>Invalid user ID or password</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-103</code>
+    <message>Invalid user ID or password</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-102</code>
+    <message>Database server connection limit exceeded</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-101</code>
+    <message>Not connected to a database</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-100</code>
+    <message>Database server not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-99</code>
+    <message>Connections to database have been disabled</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-98</code>
+    <message>Authentication violation</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-97</code>
+    <message>Database page size too big</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-96</code>
+    <message>Database server already running</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-95</code>
+    <message>Parse error: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-94</code>
+    <message>Invalid type for field reference</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-93</code>
+    <message>Class '%1' has no public field '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-92</code>
+    <message>'%1' is not a valid class file</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-91</code>
+    <message>Procedure '%1' terminated with unhandled exception '%2'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-90</code>
+    <message>Argument %1 of procedure '%2' cannot be null</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-89</code>
+    <message>Database server not running in multi-user mode</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-88</code>
+    <message>Client/server communications protocol version mismatch</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-87</code>
+    <message>Database name required to start server</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-86</code>
+    <message>Not enough memory to start</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-85</code>
+    <message>Communication error</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-84</code>
+    <message>Specified database is invalid</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-83</code>
+    <message>Specified database not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-82</code>
+    <message>Unable to start specified database: %1</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-81</code>
+    <message>Invalid database server command line</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-80</code>
+    <message>Unable to start database server</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-79</code>
+    <message>Invalid local database switch</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-78</code>
+    <message>Dynamic memory exhausted</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-77</code>
+    <message>Database name not unique</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-76</code>
+    <message>Request denied -- no active databases</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-75</code>
+    <message>Request to start/stop database denied</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-74</code>
+    <message>The selected database is currently inactive</message>
+  </sybasecode>
+  <sybasecode>
+    <code>-72</code>
+    <message>No database file specified</message>
+  </sybasecode>
+  <sybasecode>
+    <code>0</code>
+    <message>(no message)</message>
+  </sybasecode>
+  <sybasecode>
+    <code>100</code>
+    <message>Row not found</message>
+  </sybasecode>
+  <sybasecode>
+    <code>101</code>
+    <message>Value truncated</message>
+  </sybasecode>
+  <sybasecode>
+    <code>102</code>
+    <message>Using temporary table</message>
+  </sybasecode>
+  <sybasecode>
+    <code>103</code>
+    <message>Invalid data conversion</message>
+  </sybasecode>
+  <sybasecode>
+    <code>104</code>
+    <message>Row has been updated since last time read</message>
+  </sybasecode>
+  <sybasecode>
+    <code>105</code>
+    <message>Procedure has completed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>106</code>
+    <message>Value for column '%1' in table '%2' has changed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>107</code>
+    <message>Language extension detected in syntax</message>
+  </sybasecode>
+  <sybasecode>
+    <code>109</code>
+    <message>Null value eliminated in aggregate function</message>
+  </sybasecode>
+  <sybasecode>
+    <code>110</code>
+    <message>Transaction log backup page only partially full</message>
+  </sybasecode>
+  <sybasecode>
+    <code>111</code>
+    <message>Statement cannot be executed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>112</code>
+    <message>More information required</message>
+  </sybasecode>
+  <sybasecode>
+    <code>113</code>
+    <message>Database option '%1' for user '%2' has an invalid setting</message>
+  </sybasecode>
+  <sybasecode>
+    <code>114</code>
+    <message>Character set translation to '%1' cannot be performed; '%2' is used instead</message>
+  </sybasecode>
+  <sybasecode>
+    <code>115</code>
+    <message>Database server cannot convert data from/to character set '%1', conversion may not be correct</message>
+  </sybasecode>
+  <sybasecode>
+    <code>116</code>
+    <message>Language '%1' is not supported, '%2' will be used</message>
+  </sybasecode>
+  <sybasecode>
+    <code>117</code>
+    <message>Unsupported character set '%1' and unsupported language '%2'; language used is '%3' instead</message>
+  </sybasecode>
+  <sybasecode>
+    <code>118</code>
+    <message>Illegal user selectivity estimate specified</message>
+  </sybasecode>
+  <sybasecode>
+    <code>119</code>
+    <message>Unable to open backup log '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>120</code>
+    <message>'%1' is an unknown option</message>
+  </sybasecode>
+  <sybasecode>
+    <code>121</code>
+    <message>Cursor option values changed</message>
+  </sybasecode>
+  <sybasecode>
+    <code>122</code>
+    <message>The result returned is non-deterministic.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>123</code>
+    <message>Database created without any schema</message>
+  </sybasecode>
+  <sybasecode>
+    <code>124</code>
+    <message>Invalid data conversion: NULL was inserted for column '%1' on row %2.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>125</code>
+    <message>An invalid multi-byte input character was encountered</message>
+  </sybasecode>
+  <sybasecode>
+    <code>126</code>
+    <message>An invalid multi-byte output character was encountered</message>
+  </sybasecode>
+  <sybasecode>
+    <code>127</code>
+    <message>An input character could not be converted to database character set and simple substitution took place</message>
+  </sybasecode>
+  <sybasecode>
+    <code>128</code>
+    <message>An output character could not be converted to the application character set and simple substitution took place</message>
+  </sybasecode>
+  <sybasecode>
+    <code>129</code>
+    <message>Plan may contain virtual indexes.</message>
+  </sybasecode>
+  <sybasecode>
+    <code>130</code>
+    <message>A row could not be converted to the new schema format</message>
+  </sybasecode>
+  <sybasecode>
+    <code>132</code>
+    <message>Cannot output the histogram for string column '%1'</message>
+  </sybasecode>
+  <sybasecode>
+    <code>133</code>
+    <message>UltraLite connection was restored</message>
+  </sybasecode>
+  <sybasecode>
+    <code>134</code>
+    <message>UltraLite cursor (or result set or table) was restored</message>
+  </sybasecode>
+  <sybasecode>
+    <code>135</code>
+    <message>Compressed database is not encrypted</message>
+  </sybasecode>
+  <sybasecode>
+    <code>200</code>
+    <message>Warning</message>
+  </sybasecode>
+</sybasecodes>
+

@@ -1,0 +1,814 @@
+{
+    "results":
+    [{
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/zA4sQNuZc4WcZtnbwE5xe5sy9jC.jpg",
+            "belongs_to_collection": null,
+            "budget": 15000000,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 18,
+                    "name": "Drama"
+                }, {
+                    "id": 36,
+                    "name": "History"
+                }, {
+                    "id": 10752,
+                    "name": "War"
+                }
+            ],
+            "homepage": "https://a24films.com/films/the-zone-of-interest",
+            "id": 467244,
+            "images": null,
+            "imdb_id": "tt7160372",
+            "keywords": null,
+            "lists": null,
+            "original_language": "en",
+            "original_title": "The Zone of Interest",
+            "overview": "The commandant of Auschwitz, Rudolf Höss, and his wife Hedwig, strive to build a dream life for their family in a house and garden next to the camp.",
+            "popularity": 221.136,
+            "poster_path": "/AbFtI353N2Pggl5TxfsI2VtpUt8.jpg",
+            "production_companies": [{
+                    "id": 41077,
+                    "name": "A24",
+                    "logo_path": "/1ZXsGaFPgrgS6ZZGS37AqD5uU12.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 6705,
+                    "name": "Film4 Productions",
+                    "logo_path": "/e8EXNSfwr5E9d3TR8dHKbQnQK4W.png",
+                    "origin_country": "GB"
+                }, {
+                    "id": 103376,
+                    "name": "Access Entertainment",
+                    "logo_path": "/zIFWe4fwWURazXSjz9tF60ihgbH.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 11240,
+                    "name": "PISF",
+                    "logo_path": "/i59ItaKFdxJ7Yi6w2s7CML0LBvI.png",
+                    "origin_country": "PL"
+                }, {
+                    "id": 27543,
+                    "name": "JW Films",
+                    "logo_path": null,
+                    "origin_country": "US"
+                }, {
+                    "id": 113962,
+                    "name": "Extreme Emotions",
+                    "logo_path": null,
+                    "origin_country": "PL"
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "PL",
+                    "Name": "Poland"
+                }, {
+                    "Iso_3166_1": "GB",
+                    "Name": "United Kingdom"
+                }, {
+                    "Iso_3166_1": "US",
+                    "Name": "United States of America"
+                }
+            ],
+            "release_date": "2023-12-15T00:00:00+01:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 13430324,
+            "reviews": null,
+            "runtime": 105,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "pl",
+                    "Name": "Polski"
+                }, {
+                    "Iso_639_1": "de",
+                    "Name": "Deutsch"
+                }
+            ],
+            "status": "Released",
+            "tagline": null,
+            "title": "The Zone of Interest",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 7.4,
+            "vote_count": 232
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/s5znBQmprDJJ553IMQfwEVlfroH.jpg",
+            "belongs_to_collection": null,
+            "budget": 60000000,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 28,
+                    "name": "Action"
+                }, {
+                    "id": 10752,
+                    "name": "War"
+                }, {
+                    "id": 18,
+                    "name": "Drama"
+                }
+            ],
+            "homepage": "https://www.theministryofungentlemanlywarfare.movie/",
+            "id": 799583,
+            "images": null,
+            "imdb_id": "tt5177120",
+            "keywords": null,
+            "lists": null,
+            "original_language": "en",
+            "original_title": "The Ministry of Ungentlemanly Warfare",
+            "overview": "During World War II, the British Army assigns a group of competent soldiers to carry out a mission against the Nazi forces behind enemy lines... A true story about a secret British WWII organization – the Special Operations Executive. Founded by Winston Churchill, their irregular warfare against the Germans helped to change the course of the war, and gave birth to modern black operations.",
+            "popularity": 140.981,
+            "poster_path": "/8aF0iAKH9MJMYAZdi0Slg77RYa2.jpg",
+            "production_companies": [{
+                    "id": 130,
+                    "name": "Jerry Bruckheimer Films",
+                    "logo_path": "/c9dVHPOL3cqCr2593Ahk0nEKTEM.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 22146,
+                    "name": "Black Bear Pictures",
+                    "logo_path": "/jPBtpMh0AUFqf9yfOJXer9d5Rei.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 2900,
+                    "name": "Toff Guy Films",
+                    "logo_path": null,
+                    "origin_country": "GB"
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "GB",
+                    "Name": "United Kingdom"
+                }, {
+                    "Iso_3166_1": "US",
+                    "Name": "United States of America"
+                }
+            ],
+            "release_date": "2024-04-18T00:00:00+02:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 25885290,
+            "reviews": null,
+            "runtime": 120,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "de",
+                    "Name": "Deutsch"
+                }, {
+                    "Iso_639_1": "en",
+                    "Name": "English"
+                }, {
+                    "Iso_639_1": "sv",
+                    "Name": "svenska"
+                }
+            ],
+            "status": "Released",
+            "tagline": "Discover the first special forces mission in history.",
+            "title": "The Ministry of Ungentlemanly Warfare",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 7.2,
+            "vote_count": 323
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/dcGf6amsVeJ2oT75GhpeqavCWO8.jpg",
+            "belongs_to_collection": null,
+            "budget": 0,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 36,
+                    "name": "History"
+                }, {
+                    "id": 18,
+                    "name": "Drama"
+                }, {
+                    "id": 10752,
+                    "name": "War"
+                }
+            ],
+            "homepage": "https://www.thegreatescaper.film/",
+            "id": 944194,
+            "images": null,
+            "imdb_id": "tt14124080",
+            "keywords": null,
+            "lists": null,
+            "original_language": "en",
+            "original_title": "The Great Escaper",
+            "overview": "In the summer of 2014, a World War II veteran sneaks out of his care home to attend the 70th anniversary commemoration of the D-Day landings in Normandy.",
+            "popularity": 25.132,
+            "poster_path": "/50rOFWgFUsCw3zfwSKXcdglh3Ji.jpg",
+            "production_companies": [{
+                    "id": 1267,
+                    "name": "Ecosse Films",
+                    "logo_path": "/j3kXC0bEn4vxrIyUApeKBtSUu9w.png",
+                    "origin_country": "GB"
+                }, {
+                    "id": 18230,
+                    "name": "Filmgate Films",
+                    "logo_path": "/la7GdaztdxKjJ22IUKn6zHjKKa0.png",
+                    "origin_country": "SE"
+                }, {
+                    "id": 290,
+                    "name": "Ingenious Media",
+                    "logo_path": "/jrgCuaQsY9ouP5ILZf4Dq4ZOkIX.png",
+                    "origin_country": "GB"
+                }, {
+                    "id": 2801,
+                    "name": "Film i Väst",
+                    "logo_path": "/bswb1PLLsKDUXMLgy42bZtCtIde.png",
+                    "origin_country": "SE"
+                }, {
+                    "id": 7981,
+                    "name": "Pathé",
+                    "logo_path": "/6Yv1gIAuGkHS5Vis4UjnqHhCPWV.png",
+                    "origin_country": "FR"
+                }, {
+                    "id": 288,
+                    "name": "BBC Film",
+                    "logo_path": "/aW0IpM9d4Zjj978EqgDVSxXXhTj.png",
+                    "origin_country": "GB"
+                }, {
+                    "id": 209128,
+                    "name": "BBC Films",
+                    "logo_path": null,
+                    "origin_country": null
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "FR",
+                    "Name": "France"
+                }, {
+                    "Iso_3166_1": "SE",
+                    "Name": "Sweden"
+                }, {
+                    "Iso_3166_1": "GB",
+                    "Name": "United Kingdom"
+                }
+            ],
+            "release_date": "2023-10-06T00:00:00+02:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 0,
+            "reviews": null,
+            "runtime": 96,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "de",
+                    "Name": "Deutsch"
+                }, {
+                    "Iso_639_1": "fr",
+                    "Name": "Français"
+                }, {
+                    "Iso_639_1": "en",
+                    "Name": "English"
+                }
+            ],
+            "status": "Released",
+            "tagline": "Inspired by a true love story.",
+            "title": "The Great Escaper",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 6.6,
+            "vote_count": 49
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/45mbpJFLxSFLdBT5PEM9HISrLEv.jpg",
+            "belongs_to_collection": null,
+            "budget": 0,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 99,
+                    "name": "Documentary"
+                }
+            ],
+            "homepage": "https://www.amazon.com/dp/B0CV2B3L9P",
+            "id": 1120821,
+            "images": null,
+            "imdb_id": "tt18573650",
+            "keywords": null,
+            "lists": null,
+            "original_language": "en",
+            "original_title": "The Blue Angels",
+            "overview": "Follow the veterans and newest class of Navy and Marine Corps flight squadron as they go through intense training and into a season of heart-stopping aerial artistry.",
+            "popularity": 25.88,
+            "poster_path": "/tdcVDWLfesmPG9NsPEzxpFMXgcB.jpg",
+            "production_companies": [{
+                    "id": 11461,
+                    "name": "Bad Robot",
+                    "logo_path": "/p9FoEt5shEKRWRKVIlvFaEmRnun.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 55571,
+                    "name": "Zipper Bros Films",
+                    "logo_path": "/uGUxE09pqg0SRDv41hRAKw2jDLI.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 53592,
+                    "name": "Dolphin Entertainment",
+                    "logo_path": null,
+                    "origin_country": "US"
+                }, {
+                    "id": 175171,
+                    "name": "BarnStorm Productions",
+                    "logo_path": null,
+                    "origin_country": "US"
+                }, {
+                    "id": 4183,
+                    "name": "Diamond Docs",
+                    "logo_path": "/bPOaJehJ43bEq1sip5jE1G53IEE.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 117385,
+                    "name": "Sutter Road Picture Company",
+                    "logo_path": "/hxJaR0tSRNH5Q6lc7opcufK5ksM.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 224057,
+                    "name": "IMAX",
+                    "logo_path": "/yBdvUlunhXyUowuy0XaEPuBtYTo.png",
+                    "origin_country": "US"
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "US",
+                    "Name": "United States of America"
+                }
+            ],
+            "release_date": "2024-05-16T00:00:00+02:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 2550663,
+            "reviews": null,
+            "runtime": 93,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "en",
+                    "Name": "English"
+                }
+            ],
+            "status": "Released",
+            "tagline": null,
+            "title": "The Blue Angels",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 6.8,
+            "vote_count": 12
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/o0IWa75BXyXryNDVqw0xoXZzy1J.jpg",
+            "belongs_to_collection": null,
+            "budget": 19000000,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 14,
+                    "name": "Fantasy"
+                }, {
+                    "id": 18,
+                    "name": "Drama"
+                }, {
+                    "id": 10752,
+                    "name": "War"
+                }
+            ],
+            "homepage": null,
+            "id": 1417,
+            "images": null,
+            "imdb_id": "tt0457430",
+            "keywords": null,
+            "lists": null,
+            "original_language": "es",
+            "original_title": "El laberinto del fauno",
+            "overview": "Living with her tyrannical stepfather in a new home with her pregnant mother, 10-year-old Ofelia feels alone until she explores a decaying labyrinth guarded by a mysterious faun who claims to know her destiny. If she wishes to return to her real father, Ofelia must complete three terrifying tasks.",
+            "popularity": 30.069,
+            "poster_path": "/v9qYpp7PX6KhpoolZmZcS00zavH.jpg",
+            "production_companies": [{
+                    "id": 2029,
+                    "name": "Estudios Picasso",
+                    "logo_path": null,
+                    "origin_country": "ES"
+                }, {
+                    "id": 7470,
+                    "name": "Esperanto Filmoj",
+                    "logo_path": null,
+                    "origin_country": "US"
+                }, {
+                    "id": 11628,
+                    "name": "Tequila Gang",
+                    "logo_path": null,
+                    "origin_country": "MX"
+                }, {
+                    "id": 1182,
+                    "name": "Telecinco Cinema",
+                    "logo_path": "/bkgwJWvqqLuzsXV2Qv3Mg3wfcNZ.png",
+                    "origin_country": "ES"
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "MX",
+                    "Name": "Mexico"
+                }, {
+                    "Iso_3166_1": "ES",
+                    "Name": "Spain"
+                }, {
+                    "Iso_3166_1": "US",
+                    "Name": "United States of America"
+                }
+            ],
+            "release_date": "2006-08-25T00:00:00+02:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 83258226,
+            "reviews": null,
+            "runtime": 118,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "es",
+                    "Name": "Español"
+                }
+            ],
+            "status": "Released",
+            "tagline": "What happens when make-believe believes it's real?",
+            "title": "Pan's Labyrinth",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 7.7,
+            "vote_count": 8542
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/jENWM6XBBmUYOO3o5OP37ReqTxm.jpg",
+            "belongs_to_collection": null,
+            "budget": 0,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 10752,
+                    "name": "War"
+                }, {
+                    "id": 18,
+                    "name": "Drama"
+                }
+            ],
+            "homepage": null,
+            "id": 1139029,
+            "images": null,
+            "imdb_id": "tt22465306",
+            "keywords": null,
+            "lists": null,
+            "original_language": "en",
+            "original_title": "Devil's Men",
+            "overview": "The horrors of war through the eyes of a real WWII soldier in the First Special Service Force. Sam Byrne was a Wyoming ranch boy who was drafted and went off to war to do his duty, in spite of the fact that he didn't want to \"haf'ta kill unless I really haf'ta.\"",
+            "popularity": 1.973,
+            "poster_path": "/4dd32S9d6Jr2BHLOnlLlr2wyL9D.jpg",
+            "production_companies": [{
+                    "id": 78028,
+                    "name": "Thunderbird Entertainment",
+                    "logo_path": "/sTFcDFfJaSVT3sv3DoaZDE4SlGB.png",
+                    "origin_country": "CA"
+                }, {
+                    "id": 201979,
+                    "name": "Faranabrack",
+                    "logo_path": "/abLQ80igcziAABDnvxemRqAMgtF.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 201980,
+                    "name": "COMv",
+                    "logo_path": "/dsJSptLc2K3K8k6CgTqGBrm2AJX.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 10890,
+                    "name": "Koan",
+                    "logo_path": "/nArKcIpEuzprmCV6AU0nCGZCrTT.png",
+                    "origin_country": "US"
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "US",
+                    "Name": "United States of America"
+                }
+            ],
+            "release_date": "2023-09-11T00:00:00+02:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 0,
+            "reviews": null,
+            "runtime": 91,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "de",
+                    "Name": "Deutsch"
+                }, {
+                    "Iso_639_1": "en",
+                    "Name": "English"
+                }
+            ],
+            "status": "Released",
+            "tagline": "They did what no other unit could do",
+            "title": "Devil's Men",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 5.0,
+            "vote_count": 10
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/vQ1PfTShrped5tEwvjnKtK80BiC.jpg",
+            "belongs_to_collection": null,
+            "budget": 15000000,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 18,
+                    "name": "Drama"
+                }, {
+                    "id": 36,
+                    "name": "History"
+                }, {
+                    "id": 10752,
+                    "name": "War"
+                }
+            ],
+            "homepage": null,
+            "id": 1047016,
+            "images": null,
+            "imdb_id": "tt23573936",
+            "keywords": null,
+            "lists": null,
+            "original_language": "it",
+            "original_title": "Comandante",
+            "overview": "One dark night during the early phases of WWII, the Italian Royal Navy submarine Cappellini sinks an armed merchant ship sailing with lights out. At that moment, its commander Salvatore Todaro makes a decision that was destined to go down in history: to save the 26 shipwrecked Belgians who otherwise would have drowned in the middle of the Atlantic Ocean and disembark them at the nearest safe harbor. To make room for them on board his submarine, he is forced to navigate on the surface of the water for three days, visible to the enemy forces and endangering his life and that of his men.",
+            "popularity": 8.15,
+            "poster_path": "/yyTsyp5EwmLQTIU38nFKo4fEx46.jpg",
+            "production_companies": [{
+                    "id": 1533,
+                    "name": "Indigo Film",
+                    "logo_path": "/bMD3Zv15TujMXJwvqoTFY6Scexx.png",
+                    "origin_country": "IT"
+                }, {
+                    "id": 155990,
+                    "name": "RAI Cinema",
+                    "logo_path": "/py9VaywwK6KVi94YwrxSKVg1gkh.png",
+                    "origin_country": "IT"
+                }, {
+                    "id": 30816,
+                    "name": "O' Groove",
+                    "logo_path": null,
+                    "origin_country": "IT"
+                }, {
+                    "id": 30817,
+                    "name": "Tramp LTD",
+                    "logo_path": null,
+                    "origin_country": "IT"
+                }, {
+                    "id": 185927,
+                    "name": "VGroove",
+                    "logo_path": null,
+                    "origin_country": null
+                }, {
+                    "id": 139404,
+                    "name": "Wise srl",
+                    "logo_path": null,
+                    "origin_country": null
+                }, {
+                    "id": 167556,
+                    "name": "Bedside Productions",
+                    "logo_path": null,
+                    "origin_country": null
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "IT",
+                    "Name": "Italy"
+                }
+            ],
+            "release_date": "2023-10-31T00:00:00+01:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 0,
+            "reviews": null,
+            "runtime": 120,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "en",
+                    "Name": "English"
+                }, {
+                    "Iso_639_1": "it",
+                    "Name": "Italiano"
+                }, {
+                    "Iso_639_1": "fr",
+                    "Name": "Français"
+                }
+            ],
+            "status": "Released",
+            "tagline": null,
+            "title": "The Commander",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 7.059,
+            "vote_count": 127
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/z121dSTR7PY9KxKuvwiIFSYW8cf.jpg",
+            "belongs_to_collection": null,
+            "budget": 50000000,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 10752,
+                    "name": "War"
+                }, {
+                    "id": 28,
+                    "name": "Action"
+                }, {
+                    "id": 18,
+                    "name": "Drama"
+                }
+            ],
+            "homepage": "https://a24films.com/films/civil-war",
+            "id": 929590,
+            "images": null,
+            "imdb_id": "tt17279496",
+            "keywords": null,
+            "lists": null,
+            "original_language": "en",
+            "original_title": "Civil War",
+            "overview": "In the near future, a group of war journalists attempt to survive while reporting the truth as the United States stands on the brink of civil war.",
+            "popularity": 1485.875,
+            "poster_path": "/sh7Rg8Er3tFcN9BpKIPOMvALgZd.jpg",
+            "production_companies": [{
+                    "id": 284,
+                    "name": "DNA Films",
+                    "logo_path": "/6a26if3IKy7mlrQuGHHVp6ufQtF.png",
+                    "origin_country": "GB"
+                }, {
+                    "id": 142269,
+                    "name": "IPR.VC",
+                    "logo_path": "/ggrWFqk5mPMks0vE3aCy3l9e0dv.png",
+                    "origin_country": "FI"
+                }, {
+                    "id": 41077,
+                    "name": "A24",
+                    "logo_path": "/1ZXsGaFPgrgS6ZZGS37AqD5uU12.png",
+                    "origin_country": "US"
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "FI",
+                    "Name": "Finland"
+                }, {
+                    "Iso_3166_1": "GB",
+                    "Name": "United Kingdom"
+                }, {
+                    "Iso_3166_1": "US",
+                    "Name": "United States of America"
+                }
+            ],
+            "release_date": "2024-04-10T00:00:00+02:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 114097977,
+            "reviews": null,
+            "runtime": 109,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "en",
+                    "Name": "English"
+                }
+            ],
+            "status": "Released",
+            "tagline": "Welcome to the frontline.",
+            "title": "Civil War",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 7.014,
+            "vote_count": 1619
+        }, {
+            "account_states": null,
+            "adult": false,
+            "alternative_titles": null,
+            "backdrop_path": "/986n9SAXsuxpPJzFAWK3azPknX0.jpg",
+            "belongs_to_collection": null,
+            "budget": 0,
+            "changes": null,
+            "credits": null,
+            "genres": [{
+                    "id": 99,
+                    "name": "Documentary"
+                }, {
+                    "id": 10752,
+                    "name": "War"
+                }
+            ],
+            "homepage": "https://20daysinmariupol.com/",
+            "id": 1058616,
+            "images": null,
+            "imdb_id": "tt24082438",
+            "keywords": null,
+            "lists": null,
+            "original_language": "en",
+            "original_title": "20 Days in Mariupol",
+            "overview": "As the Russian invasion begins, a team of Ukrainian journalists trapped in the besieged city of Mariupol struggle to continue their work documenting the war's atrocities.",
+            "popularity": 17.425,
+            "poster_path": "/zIRp1IeuPh4GgqFCH3y0DQuY9xP.jpg",
+            "production_companies": [{
+                    "id": 198216,
+                    "name": "The Associated Press",
+                    "logo_path": "/wPgwsboWJIa1YbY7s2P8uQKH7zj.png",
+                    "origin_country": "US"
+                }, {
+                    "id": 143561,
+                    "name": "FRONTLINE",
+                    "logo_path": "/fDz3pETHIkgrr6usIiUr8c7BXU1.png",
+                    "origin_country": "US"
+                }
+            ],
+            "production_countries": [{
+                    "Iso_3166_1": "US",
+                    "Name": "United States of America"
+                }
+            ],
+            "release_date": "2023-07-14T00:00:00+02:00",
+            "release_dates": null,
+            "external_ids": null,
+            "releases": null,
+            "revenue": 21000,
+            "reviews": null,
+            "runtime": 94,
+            "similar": null,
+            "recommendations": null,
+            "spoken_languages": [{
+                    "Iso_639_1": "en",
+                    "Name": "English"
+                }, {
+                    "Iso_639_1": "uk",
+                    "Name": "Український"
+                }, {
+                    "Iso_639_1": "ru",
+                    "Name": "Pусский"
+                }
+            ],
+            "status": "Released",
+            "tagline": null,
+            "title": "20 Days in Mariupol",
+            "translations": null,
+            "video": false,
+            "videos": null,
+            "watch/providers": null,
+            "vote_average": 8.1,
+            "vote_count": 148
+        }
+    ]
+}

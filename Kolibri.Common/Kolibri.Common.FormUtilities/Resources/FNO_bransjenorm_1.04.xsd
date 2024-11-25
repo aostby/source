@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="FNO-pensjon-bransjenorm">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Informasjon">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Lonnssystem" type="non_empty_string"/>
+							<xs:element name="Forsendelsesdato" type="xs:date"/>
+							<xs:element name="Versjon" type="versjon_string"/>
+							<xs:element name="Manedskode" type="manedskode_string"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Bedrift" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Bedriftsnavn" type="xs:string"/>
+							<xs:element name="Organisasjonsnummer" type="orgnr_string"/>
+							<xs:element name="Kontaktperson" type="xs:string"/>
+							<xs:element name="Kontakt-e-post" type="xs:string"/>
+							<xs:element name="Timer-arsverk-bedrift" type="lonn_decimal-or-empty" minOccurs="0"/>
+							<xs:element name="Person" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Ansattnummer" type="xs:string"/>
+										<xs:element name="Etternavn" type="xs:string"/>
+										<xs:element name="Fornavn" type="xs:string"/>
+										<xs:element name="Fodselsnummer" type="xs:string"/>
+										<xs:element name="Enhet" type="xs:string" minOccurs="0"/>
+										<xs:element name="Adresselinje1" type="xs:string"/>
+										<xs:element name="Adresselinje2" type="xs:string" minOccurs="0"/>
+										<xs:element name="Adresselinje3" type="xs:string" minOccurs="0"/>
+										<xs:element name="Postnummer" type="xs:string"/>
+										<xs:element name="Poststed" type="xs:string" minOccurs="0"/>
+										<xs:element name="E-postadresse" type="xs:string" minOccurs="0"/>
+										<xs:element name="Mobiltelefonnummer" type="xs:string" minOccurs="0"/>
+										<xs:element name="Ansattdato" type="xs:date"/>
+										<xs:element name="Sluttdato" type="date-or-empty" minOccurs="0"/>
+										<xs:element name="Avlonningsform" type="avlonningsform_string"/>
+										<xs:element name="Aarslonn" type="lonn_decimal-or-empty" minOccurs="0"/>
+										<xs:element name="Stillingsprosent" type="lonn_decimal-or-empty" minOccurs="0"/>
+										<xs:element name="Periodelonn-belop" type="lonn_decimal-or-empty" minOccurs="0"/>
+										<xs:element name="Periodelonn-antall" type="lonn_decimal-or-empty" minOccurs="0"/>
+										<xs:element name="Tilleggslonn" type="lonn_decimal-or-empty" minOccurs="0"/>
+										<xs:element name="Timer-arsverk-ansatt" type="lonn_decimal-or-empty" minOccurs="0"/>
+										<xs:element name="Endringsdato" type="date-or-empty" minOccurs="0"/>
+										<xs:element name="Mottar-AFP" type="xs:string" minOccurs="0"/>
+										<xs:element name="Arbeidsdyktig" type="ja_nei_string"/>
+										<xs:element name="Status" type="status_string"/>
+										<xs:element name="Status-grad" type="lonn_decimal-or-empty" minOccurs="0"/>
+										<xs:element name="Landkode" type="xs:string" minOccurs="0"/>
+										<xs:element name="STYRK-stillingskode" type="xs:string" minOccurs="0"/>
+										<xs:element name="Pensjonsalder-ansatt" type="xs:string" minOccurs="0"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="non_empty_string">
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="versjon_string">
+		<xs:annotation>
+			<xs:documentation>Versjon har format n.nn (n er tall mellom 0 og
+				9)
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:pattern value="[0-9].[0-9]([0-9]){0,1}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="manedskode_string">
+		<xs:annotation>
+			<xs:documentation>Måned representert som ÅÅÅÅMM</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:pattern value="[2][0-9][0-9][0-9][0-1][0-9]"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="orgnr_string">
+		<xs:annotation>
+			<xs:documentation>Et organisasjonsnummer består av 9 siffer fra 0-9
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:pattern value="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="avlonningsform_string">
+		<xs:annotation>
+			<xs:documentation>T betyr udefinert stillingsprosent, F er fast
+				månedslønn, P er variabel månedslønn (provisjonslønnet)
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:enumeration value="T"/>
+			<xs:enumeration value="F"/>
+			<xs:enumeration value="P"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ja_nei_string">
+		<xs:annotation>
+			<xs:documentation>Tillatte verdier er Ja eller Nei
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:pattern value="[Ja][Aa]"/>
+			<xs:pattern value="[Nn][Ee][Ii]"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="lonn_decimal">
+		<xs:annotation>
+			<xs:documentation>Tillater bare 2 desimaler på lønn
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:decimal">
+			<xs:fractionDigits value="2"/>
+			<xs:whiteSpace value="collapse"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="lonn_decimal-or-empty">
+		<xs:annotation>
+			<xs:documentation>For dato felt der vi skal tillate tomt/blanke data
+			</xs:documentation>
+		</xs:annotation>
+		<xs:union memberTypes="lonn_decimal empty-string"/>
+	</xs:simpleType>
+	<xs:simpleType name="status_string">
+		<xs:annotation>
+			<xs:documentation>Tillatte verdier er A - Aktiv, S - Syk, P -
+				Permittert, LP - Lovfestet permisjon, AP - Avtalt permisjon, blank
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:pattern value="[Aa]"/>
+			<xs:pattern value="[Ss]"/>
+			<xs:pattern value="[Pp]"/>
+			<xs:pattern value="[Ll][Pp]"/>
+			<xs:pattern value="[Aa][Pp]"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="date-or-empty">
+		<xs:annotation>
+			<xs:documentation>For dato felt der vi skal tillate tomt/blanke data
+			</xs:documentation>
+		</xs:annotation>
+		<xs:union memberTypes="xs:date empty-string"/>
+	</xs:simpleType>
+	<xs:simpleType name="empty-string">
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse"/>
+			<xs:enumeration value=""/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

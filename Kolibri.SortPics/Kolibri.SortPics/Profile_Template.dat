@@ -1,0 +1,1513 @@
+{
+	"temperature": 18.5,
+	"gravity": 1009.4,
+	"firmwareVersion": "20230420_054501_98ef1a1",
+	"isLatestFirmware": true,
+	"battery": 85.0428,
+	"activeProfileSession": {
+		"name": "Svarte Katta T-58",
+		"hydrometerId": "c6b1e089-32b0-4d35-864c-be1f7e12a408",
+		"startDate": "2023-09-09T01:57:35.492+00:00",
+		"modifiedOn": "2023-09-09T01:57:59.4220414+00:00",
+		"modifiedBy": "e573f650-a259-4d35-a40d-08da11f0c93e",
+		"id": "4c055479-bc84-448c-93e0-2de7014841c4",
+		"deleted": false,
+		"createdOn": "2023-09-09T01:57:59.4220368+00:00",
+		"createdBy": "e573f650-a259-4d35-a40d-08da11f0c93e"
+	},
+	"lastActivityTime": "2023-09-20T20:21:54.0771672+00:00",
+	"rssi": -75,
+	"name": "ThaPillin",
+	"macAddress": "78-e3-6d-3c-a9-1c",
+	"deviceType": "Hydrometer",
+	"active": false,
+	"disabled": false,
+	"modifiedOn": "2023-09-12T11:28:19.5749546+00:00",
+	"modifiedBy": "e573f650-a259-4d35-a40d-08da11f0c93e",
+	"id": "c6b1e089-32b0-4d35-864c-be1f7e12a408",
+	"deleted": false,
+	"createdOn": "2023-05-03T17:00:32.9564481+00:00",
+	"createdBy": "e573f650-a259-4d35-a40d-08da11f0c93e",
+	"telemetry": [
+		{
+			"temperature": 18.0625,
+			"gravity": 1035.06,
+			"gravityVelocity": 0,
+			"battery": 90.7323,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-09T06:17:21.3951317+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -48
+		},
+		{
+			"temperature": 17.6875,
+			"gravity": 1034.98,
+			"gravityVelocity": 0,
+			"battery": 89.8042,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-09T07:47:03.1007955+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -48
+		},
+		{
+			"temperature": 16.9375,
+			"gravity": 1034.58,
+			"gravityVelocity": 0,
+			"battery": 89.596,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-09T13:45:31.351944+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -47
+		},
+		{
+			"temperature": 16.75,
+			"gravity": 1034.62,
+			"gravityVelocity": 0,
+			"battery": 89.4341,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-09T15:15:13.7890108+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -47
+		},
+		{
+			"temperature": 16.5,
+			"gravity": 1034.15,
+			"gravityVelocity": 0,
+			"battery": 91.156,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-09T19:44:17.8547081+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -50
+		},
+		{
+			"temperature": 16.4375,
+			"gravity": 1033.84,
+			"gravityVelocity": 0,
+			"battery": 89.2028,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-09T21:13:59.0313067+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -89
+		},
+		{
+			"temperature": 16.4375,
+			"gravity": 1033.15,
+			"gravityVelocity": 0,
+			"battery": 90.488,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-09T22:43:38.6554894+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 16.375,
+			"gravity": 1032.77,
+			"gravityVelocity": 0,
+			"battery": 90.5206,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T00:13:18.2792573+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -65
+		},
+		{
+			"temperature": 16.25,
+			"gravity": 1031.6,
+			"gravityVelocity": 0,
+			"battery": 89.3646,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T04:42:26.0018234+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -62
+		},
+		{
+			"temperature": 16.125,
+			"gravity": 1031.82,
+			"gravityVelocity": 0,
+			"battery": 89.2952,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T06:12:08.1531079+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -62
+		},
+		{
+			"temperature": 15.875,
+			"gravity": 1031.79,
+			"gravityVelocity": 0,
+			"battery": 89.3184,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T09:11:21.2971317+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -66
+		},
+		{
+			"temperature": 15.8125,
+			"gravity": 1031.53,
+			"gravityVelocity": 0,
+			"battery": 90.1946,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T10:41:09.7370687+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 15.75,
+			"gravity": 1030.31,
+			"gravityVelocity": 0,
+			"battery": 88.6475,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T12:10:51.1530254+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -88
+		},
+		{
+			"temperature": 15.6875,
+			"gravity": 1030.7,
+			"gravityVelocity": 0,
+			"battery": 90.5368,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T13:40:30.2588143+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -68
+		},
+		{
+			"temperature": 15.5625,
+			"gravity": 1029.35,
+			"gravityVelocity": 0,
+			"battery": 90.325,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T15:10:09.0353031+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -88
+		},
+		{
+			"temperature": 15.5625,
+			"gravity": 1029.22,
+			"gravityVelocity": 0,
+			"battery": 89.8042,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T16:39:52.1850517+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -90
+		},
+		{
+			"temperature": 15.5,
+			"gravity": 1028.87,
+			"gravityVelocity": 0,
+			"battery": 89.8503,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T18:09:34.2980357+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -46
+		},
+		{
+			"temperature": 15.4375,
+			"gravity": 1028.51,
+			"gravityVelocity": 0,
+			"battery": 89.6653,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T19:39:14.0020865+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -45
+		},
+		{
+			"temperature": 15.3125,
+			"gravity": 1028.27,
+			"gravityVelocity": 0,
+			"battery": 88.1848,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T21:08:57.8330746+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -86
+		},
+		{
+			"temperature": 15.25,
+			"gravity": 1027.75,
+			"gravityVelocity": 0,
+			"battery": 89.0639,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-10T22:38:39.765487+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -43
+		},
+		{
+			"temperature": 15.1875,
+			"gravity": 1027.24,
+			"gravityVelocity": 0,
+			"battery": 89.1102,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T00:08:23.7755694+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -43
+		},
+		{
+			"temperature": 15.125,
+			"gravity": 1026.74,
+			"gravityVelocity": 0,
+			"battery": 88.8095,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T01:38:10.6422743+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -44
+		},
+		{
+			"temperature": 15.0625,
+			"gravity": 1026.31,
+			"gravityVelocity": 0,
+			"battery": 88.555,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T03:07:49.511169+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -44
+		},
+		{
+			"temperature": 14.9375,
+			"gravity": 1026,
+			"gravityVelocity": 0,
+			"battery": 89.7116,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T06:07:03.204099+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -83
+		},
+		{
+			"temperature": 14.875,
+			"gravity": 1025.28,
+			"gravityVelocity": 0,
+			"battery": 90.6345,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T07:36:45.2635021+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -44
+		},
+		{
+			"temperature": 14.8125,
+			"gravity": 1025.48,
+			"gravityVelocity": 0,
+			"battery": 89.3184,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T09:06:30.2326968+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -83
+		},
+		{
+			"temperature": 14.8125,
+			"gravity": 1024.96,
+			"gravityVelocity": 0,
+			"battery": 90.5042,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T10:36:10.6966775+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -45
+		},
+		{
+			"temperature": 14.75,
+			"gravity": 1024.06,
+			"gravityVelocity": 0,
+			"battery": 89.4804,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T12:05:48.9903865+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -47
+		},
+		{
+			"temperature": 14.6875,
+			"gravity": 1024.13,
+			"gravityVelocity": 0,
+			"battery": 89.3878,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T16:34:58.9177953+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -87
+		},
+		{
+			"temperature": 14.75,
+			"gravity": 1023.85,
+			"gravityVelocity": 0,
+			"battery": 87.7917,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T18:04:41.6361047+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 14.75,
+			"gravity": 1023.55,
+			"gravityVelocity": 0,
+			"battery": 87.7917,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T19:34:25.7337239+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -52
+		},
+		{
+			"temperature": 14.6875,
+			"gravity": 1023.38,
+			"gravityVelocity": 0,
+			"battery": 87.6297,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T21:04:05.6349349+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -51
+		},
+		{
+			"temperature": 14.6875,
+			"gravity": 1022.6,
+			"gravityVelocity": 0,
+			"battery": 87.861,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-11T22:33:45.7383542+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -50
+		},
+		{
+			"temperature": 14.625,
+			"gravity": 1022.68,
+			"gravityVelocity": 0,
+			"battery": 89.619,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T00:03:34.8489054+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -49
+		},
+		{
+			"temperature": 14.5625,
+			"gravity": 1022.18,
+			"gravityVelocity": 0,
+			"battery": 89.5265,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T01:33:10.9023403+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -51
+		},
+		{
+			"temperature": 14.5,
+			"gravity": 1021.83,
+			"gravityVelocity": 0,
+			"battery": 89.619,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T03:02:53.0271178+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -49
+		},
+		{
+			"temperature": 14.4375,
+			"gravity": 1022.06,
+			"gravityVelocity": 0,
+			"battery": 89.8735,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T04:32:33.6594971+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -50
+		},
+		{
+			"temperature": 14.3125,
+			"gravity": 1021.22,
+			"gravityVelocity": 0,
+			"battery": 88.4626,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T06:02:13.5490908+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -50
+		},
+		{
+			"temperature": 14.25,
+			"gravity": 1021.25,
+			"gravityVelocity": 0,
+			"battery": 88.5317,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T07:32:00.1425642+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -52
+		},
+		{
+			"temperature": 14.1875,
+			"gravity": 1020.97,
+			"gravityVelocity": 0,
+			"battery": 88.4393,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T09:01:48.3425225+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -50
+		},
+		{
+			"temperature": 14.1875,
+			"gravity": 1020.91,
+			"gravityVelocity": 0,
+			"battery": 88.6012,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T10:31:31.2430959+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -51
+		},
+		{
+			"temperature": 14.0625,
+			"gravity": 1019.44,
+			"gravityVelocity": 0,
+			"battery": 87.0284,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T17:59:42.4470381+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 14,
+			"gravity": 1019.27,
+			"gravityVelocity": 0,
+			"battery": 89.087,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T19:29:24.1668762+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -62
+		},
+		{
+			"temperature": 13.75,
+			"gravity": 1018.81,
+			"gravityVelocity": 0,
+			"battery": 89.2489,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-12T23:58:38.0664495+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -55
+		},
+		{
+			"temperature": 13.5,
+			"gravity": 1018.52,
+			"gravityVelocity": 0,
+			"battery": 87.9999,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T02:57:49.9421859+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -60
+		},
+		{
+			"temperature": 13.3125,
+			"gravity": 1018.43,
+			"gravityVelocity": 0,
+			"battery": 87.3753,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T04:27:24.9659887+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 13.1875,
+			"gravity": 1018.11,
+			"gravityVelocity": 0,
+			"battery": 87.2827,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T05:57:19.986181+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 13.0625,
+			"gravity": 1017.79,
+			"gravityVelocity": 0,
+			"battery": 88.1618,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T07:26:57.4982146+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 12.875,
+			"gravity": 1017.42,
+			"gravityVelocity": 0,
+			"battery": 87.5372,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T08:56:40.8553227+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -92
+		},
+		{
+			"temperature": 12.8125,
+			"gravity": 1017.58,
+			"gravityVelocity": 0,
+			"battery": 88.6243,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T10:26:21.6486765+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -88
+		},
+		{
+			"temperature": 12.75,
+			"gravity": 1017.21,
+			"gravityVelocity": 0,
+			"battery": 87.4215,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T11:56:06.5909332+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -59
+		},
+		{
+			"temperature": 12.6875,
+			"gravity": 1016.58,
+			"gravityVelocity": 0,
+			"battery": 88.1848,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T14:55:31.107481+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -65
+		},
+		{
+			"temperature": 12.6875,
+			"gravity": 1016.7,
+			"gravityVelocity": 0,
+			"battery": 87.2366,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T16:25:13.2497977+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -68
+		},
+		{
+			"temperature": 12.6875,
+			"gravity": 1016.56,
+			"gravityVelocity": 0,
+			"battery": 86.4404,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T17:54:53.7220544+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -65
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1016.27,
+			"gravityVelocity": 0,
+			"battery": 86.1559,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T19:24:41.5830433+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -64
+		},
+		{
+			"temperature": 12.4375,
+			"gravity": 1016.23,
+			"gravityVelocity": 0,
+			"battery": 86.4527,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T22:24:00.5713211+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -60
+		},
+		{
+			"temperature": 12.25,
+			"gravity": 1016.01,
+			"gravityVelocity": 0,
+			"battery": 86.0446,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-13T23:53:41.7494952+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -60
+		},
+		{
+			"temperature": 12.125,
+			"gravity": 1015.41,
+			"gravityVelocity": 0,
+			"battery": 86.3415,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T01:23:22.670172+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -61
+		},
+		{
+			"temperature": 11.625,
+			"gravity": 1015.4,
+			"gravityVelocity": 0,
+			"battery": 86.4899,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T05:52:21.1422446+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -88
+		},
+		{
+			"temperature": 11.4375,
+			"gravity": 1015.11,
+			"gravityVelocity": 0,
+			"battery": 86.1683,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T07:22:04.117835+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 11.3125,
+			"gravity": 1014.72,
+			"gravityVelocity": 0,
+			"battery": 85.587,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T10:21:17.3835996+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -89
+		},
+		{
+			"temperature": 11.3125,
+			"gravity": 1014.53,
+			"gravityVelocity": 0,
+			"battery": 86.0941,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T11:51:20.9613558+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 11.375,
+			"gravity": 1014.68,
+			"gravityVelocity": 0,
+			"battery": 86.193,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T13:21:02.7641781+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -70
+		},
+		{
+			"temperature": 11.5,
+			"gravity": 1014.53,
+			"gravityVelocity": 0,
+			"battery": 85.5623,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T16:20:31.2105883+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -84
+		},
+		{
+			"temperature": 11.5625,
+			"gravity": 1014.44,
+			"gravityVelocity": 0,
+			"battery": 86.2302,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T17:50:17.475616+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -78
+		},
+		{
+			"temperature": 11.625,
+			"gravity": 1014.52,
+			"gravityVelocity": 0,
+			"battery": 86.1807,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-14T19:20:05.5463147+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -71
+		},
+		{
+			"temperature": 11.75,
+			"gravity": 1014.11,
+			"gravityVelocity": 0,
+			"battery": 87.1901,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T01:18:28.4831453+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -71
+		},
+		{
+			"temperature": 11.75,
+			"gravity": 1013.95,
+			"gravityVelocity": 0,
+			"battery": 87.9536,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T02:48:17.1259314+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -70
+		},
+		{
+			"temperature": 11.8125,
+			"gravity": 1013.67,
+			"gravityVelocity": 0,
+			"battery": 87.6759,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T04:17:58.4630131+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -71
+		},
+		{
+			"temperature": 11.8125,
+			"gravity": 1013.42,
+			"gravityVelocity": 0,
+			"battery": 86.8895,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T05:47:41.3522071+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 11.8125,
+			"gravity": 1013.67,
+			"gravityVelocity": 0,
+			"battery": 87.6759,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T07:17:25.8548937+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 11.8125,
+			"gravity": 1013.43,
+			"gravityVelocity": 0,
+			"battery": 86.9588,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T08:47:11.4992463+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 11.875,
+			"gravity": 1013.02,
+			"gravityVelocity": 0,
+			"battery": 87.0514,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T10:17:00.6031224+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 11.9375,
+			"gravity": 1013.24,
+			"gravityVelocity": 0,
+			"battery": 87.4215,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T11:46:37.4239995+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -65
+		},
+		{
+			"temperature": 12.25,
+			"gravity": 1012.96,
+			"gravityVelocity": 0,
+			"battery": 86.4776,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T16:15:35.2642197+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -60
+		},
+		{
+			"temperature": 12.375,
+			"gravity": 1012.72,
+			"gravityVelocity": 0,
+			"battery": 86.4404,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T17:45:20.9206262+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -61
+		},
+		{
+			"temperature": 12.4375,
+			"gravity": 1012.59,
+			"gravityVelocity": 0,
+			"battery": 86.3786,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T19:15:05.4542138+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -61
+		},
+		{
+			"temperature": 12.5,
+			"gravity": 1012.7,
+			"gravityVelocity": 0,
+			"battery": 86.564,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T20:44:50.4996481+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -59
+		},
+		{
+			"temperature": 12.5625,
+			"gravity": 1012,
+			"gravityVelocity": 0,
+			"battery": 86.3786,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-15T22:14:32.9552261+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 12.5625,
+			"gravity": 1012.25,
+			"gravityVelocity": 0,
+			"battery": 85.7602,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T01:13:45.3551561+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -54
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1011.88,
+			"gravityVelocity": 0,
+			"battery": 85.8962,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T04:12:51.1802896+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -52
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1011.75,
+			"gravityVelocity": 0,
+			"battery": 85.587,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T05:42:32.3751467+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -52
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1011.6,
+			"gravityVelocity": 0,
+			"battery": 85.8221,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T07:12:13.4423086+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -51
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1011.29,
+			"gravityVelocity": 0,
+			"battery": 86.8664,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T08:41:55.3937794+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1011.53,
+			"gravityVelocity": 0,
+			"battery": 86.4776,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T10:11:32.1633898+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -63
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1011.35,
+			"gravityVelocity": 0,
+			"battery": 86.5394,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T11:41:10.0423453+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -60
+		},
+		{
+			"temperature": 12.5625,
+			"gravity": 1010.95,
+			"gravityVelocity": 0,
+			"battery": 85.2036,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T13:10:53.0668054+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -94
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1011.09,
+			"gravityVelocity": 0,
+			"battery": 86.9588,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T14:40:34.978755+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -57
+		},
+		{
+			"temperature": 12.625,
+			"gravity": 1010.84,
+			"gravityVelocity": 0,
+			"battery": 86.612,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T16:10:22.6244464+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 12.5625,
+			"gravity": 1010.65,
+			"gravityVelocity": 0,
+			"battery": 86.7739,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T17:40:04.785864+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 12.5625,
+			"gravity": 1010.4,
+			"gravityVelocity": 0,
+			"battery": 85.8221,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T19:09:47.8124827+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -91
+		},
+		{
+			"temperature": 12.4375,
+			"gravity": 1010.37,
+			"gravityVelocity": 0,
+			"battery": 85.8221,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T20:39:22.527866+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 12.25,
+			"gravity": 1009.72,
+			"gravityVelocity": 0,
+			"battery": 86.0323,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-16T23:38:40.4045818+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -60
+		},
+		{
+			"temperature": 12.125,
+			"gravity": 1010.04,
+			"gravityVelocity": 0,
+			"battery": 85.7107,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T01:08:22.271656+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -59
+		},
+		{
+			"temperature": 11.9375,
+			"gravity": 1009.81,
+			"gravityVelocity": 0,
+			"battery": 85.5623,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T02:38:05.296103+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -86
+		},
+		{
+			"temperature": 11.5625,
+			"gravity": 1009.52,
+			"gravityVelocity": 0,
+			"battery": 85.4263,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T05:37:25.3503488+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -63
+		},
+		{
+			"temperature": 11.4375,
+			"gravity": 1009.42,
+			"gravityVelocity": 0,
+			"battery": 85.2407,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T07:07:10.268457+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -85
+		},
+		{
+			"temperature": 11.375,
+			"gravity": 1009.33,
+			"gravityVelocity": 0,
+			"battery": 85.4881,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T08:36:52.5510613+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -78
+		},
+		{
+			"temperature": 11.3125,
+			"gravity": 1009.3,
+			"gravityVelocity": 0,
+			"battery": 85.7107,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T10:06:36.1422883+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 11.3125,
+			"gravity": 1009.01,
+			"gravityVelocity": 0,
+			"battery": 85.2407,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T11:36:20.7540096+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -62
+		},
+		{
+			"temperature": 11.375,
+			"gravity": 1008.88,
+			"gravityVelocity": 0,
+			"battery": 85.4386,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T16:05:23.5423435+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -57
+		},
+		{
+			"temperature": 11.375,
+			"gravity": 1008.88,
+			"gravityVelocity": 0,
+			"battery": 85.0428,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T17:35:07.8082366+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -85
+		},
+		{
+			"temperature": 11.4375,
+			"gravity": 1008.69,
+			"gravityVelocity": 0,
+			"battery": 84.7954,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T19:04:49.0990615+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -57
+		},
+		{
+			"temperature": 11.4375,
+			"gravity": 1008.44,
+			"gravityVelocity": 0,
+			"battery": 84.6223,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T20:34:27.5443565+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 11.375,
+			"gravity": 1008.48,
+			"gravityVelocity": 0,
+			"battery": 85.2036,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T22:04:20.8762482+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 11.375,
+			"gravity": 1008.53,
+			"gravityVelocity": 0,
+			"battery": 84.8573,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-17T23:34:03.1015146+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 11.3125,
+			"gravity": 1008.11,
+			"gravityVelocity": 0,
+			"battery": 84.8944,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T01:03:44.2558813+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 11.25,
+			"gravity": 1007.92,
+			"gravityVelocity": 0,
+			"battery": 84.6223,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T04:03:11.3266502+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 11.25,
+			"gravity": 1007.74,
+			"gravityVelocity": 0,
+			"battery": 84.2265,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T07:02:41.6866888+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -54
+		},
+		{
+			"temperature": 11.25,
+			"gravity": 1007.89,
+			"gravityVelocity": 0,
+			"battery": 84.6223,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T08:32:24.9916451+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -53
+		},
+		{
+			"temperature": 11.25,
+			"gravity": 1007.35,
+			"gravityVelocity": 0,
+			"battery": 84.8449,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T10:02:13.0538934+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 11.25,
+			"gravity": 1007.6,
+			"gravityVelocity": 0,
+			"battery": 84.3997,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T11:31:52.9755133+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -59
+		},
+		{
+			"temperature": 11.3125,
+			"gravity": 1007.37,
+			"gravityVelocity": 0,
+			"battery": 84.6347,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T13:01:38.5212796+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -92
+		},
+		{
+			"temperature": 11.375,
+			"gravity": 1007.07,
+			"gravityVelocity": 0,
+			"battery": 84.6223,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T14:31:23.4269274+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -59
+		},
+		{
+			"temperature": 11.625,
+			"gravity": 1007.46,
+			"gravityVelocity": 0,
+			"battery": 84.5111,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-18T19:00:39.303773+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -60
+		},
+		{
+			"temperature": 11.9375,
+			"gravity": 1006.38,
+			"gravityVelocity": 0,
+			"battery": 85.9828,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T02:29:08.3449744+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -62
+		},
+		{
+			"temperature": 12,
+			"gravity": 1006.35,
+			"gravityVelocity": 0,
+			"battery": 85.7478,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T03:58:50.3655507+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -62
+		},
+		{
+			"temperature": 12,
+			"gravity": 1006.43,
+			"gravityVelocity": 0,
+			"battery": 84.6841,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T05:28:46.7153523+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -88
+		},
+		{
+			"temperature": 12.0625,
+			"gravity": 1006.13,
+			"gravityVelocity": 0,
+			"battery": 84.7831,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T06:58:27.059557+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -90
+		},
+		{
+			"temperature": 12.125,
+			"gravity": 1006.43,
+			"gravityVelocity": 0,
+			"battery": 85.8839,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T08:28:17.3965629+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 12.125,
+			"gravity": 1005.89,
+			"gravityVelocity": 0,
+			"battery": 84.7584,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T09:57:58.9945511+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -92
+		},
+		{
+			"temperature": 12.125,
+			"gravity": 1005.74,
+			"gravityVelocity": 0,
+			"battery": 85.3026,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T11:27:35.9803443+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -57
+		},
+		{
+			"temperature": 12.125,
+			"gravity": 1005.6,
+			"gravityVelocity": 0,
+			"battery": 85.2778,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T12:57:10.560494+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -58
+		},
+		{
+			"temperature": 12.1875,
+			"gravity": 1005.65,
+			"gravityVelocity": 0,
+			"battery": 85.1417,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T14:26:51.7716363+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -56
+		},
+		{
+			"temperature": 12.25,
+			"gravity": 1009.53,
+			"gravityVelocity": 0,
+			"battery": 84.1894,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T17:26:21.6883986+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -46
+		},
+		{
+			"temperature": 13.8125,
+			"gravity": 1010.14,
+			"gravityVelocity": 0,
+			"battery": 83.6035,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T20:25:51.3097214+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -70
+		},
+		{
+			"temperature": 14.6875,
+			"gravity": 1010.23,
+			"gravityVelocity": 0,
+			"battery": 84.7708,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T21:55:47.0276269+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -64
+		},
+		{
+			"temperature": 15.375,
+			"gravity": 1010.02,
+			"gravityVelocity": 0,
+			"battery": 83.7221,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-19T23:25:31.605434+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -70
+		},
+		{
+			"temperature": 15.8125,
+			"gravity": 1010.29,
+			"gravityVelocity": 0,
+			"battery": 84.3997,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T00:55:17.4937141+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -82
+		},
+		{
+			"temperature": 16.125,
+			"gravity": 1010.33,
+			"gravityVelocity": 0,
+			"battery": 84.0286,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T03:54:29.6665515+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -77
+		},
+		{
+			"temperature": 16.4375,
+			"gravity": 1010.27,
+			"gravityVelocity": 0,
+			"battery": 83.8679,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T05:24:19.5038728+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -68
+		},
+		{
+			"temperature": 17,
+			"gravity": 1010.42,
+			"gravityVelocity": 0,
+			"battery": 84.0905,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T08:23:34.9284149+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -81
+		},
+		{
+			"temperature": 17.25,
+			"gravity": 1009.81,
+			"gravityVelocity": 0,
+			"battery": 83.8802,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T09:53:22.351619+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -81
+		},
+		{
+			"temperature": 17.6875,
+			"gravity": 1009.78,
+			"gravityVelocity": 0,
+			"battery": 83.9916,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T12:52:57.3467579+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -67
+		},
+		{
+			"temperature": 17.875,
+			"gravity": 1009.87,
+			"gravityVelocity": 0,
+			"battery": 85.0305,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T14:22:41.1602373+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -75
+		},
+		{
+			"temperature": 18.0625,
+			"gravity": 1009.7,
+			"gravityVelocity": 0,
+			"battery": 83.6628,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T15:52:39.1933661+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -65
+		},
+		{
+			"temperature": 18.25,
+			"gravity": 1009.99,
+			"gravityVelocity": 0,
+			"battery": 84.4121,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T17:22:23.871665+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -64
+		},
+		{
+			"temperature": 18.375,
+			"gravity": 1009.62,
+			"gravityVelocity": 0,
+			"battery": 84.8202,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T18:52:12.9884274+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -85
+		},
+		{
+			"temperature": 18.5,
+			"gravity": 1009.4,
+			"gravityVelocity": 0,
+			"battery": 85.0428,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T20:21:54.0771672+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -75
+		},
+		{
+			"temperature": 18.5625,
+			"gravity": 1009.65,
+			"gravityVelocity": 0,
+			"battery": 85.0057,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T21:51:39.8021441+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -75
+		},
+		{
+			"temperature": 18.75,
+			"gravity": 1009.56,
+			"gravityVelocity": 0,
+			"battery": 84.375,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-20T23:21:26.4755473+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -84
+		},
+		{
+			"temperature": 18.8125,
+			"gravity": 1009.62,
+			"gravityVelocity": 0,
+			"battery": 84.4739,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-21T00:51:12.4880894+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -66
+		},
+		{
+			"temperature": 18.875,
+			"gravity": 1009.64,
+			"gravityVelocity": 0,
+			"battery": 84.6718,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-21T02:21:01.864898+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -75
+		},
+		{
+			"temperature": 18.9375,
+			"gravity": 1009.63,
+			"gravityVelocity": 0,
+			"battery": 83.9668,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-21T03:50:42.8216635+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -66
+		},
+		{
+			"temperature": 19.125,
+			"gravity": 1009.04,
+			"gravityVelocity": 0,
+			"battery": 83.9545,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-21T08:19:55.6677821+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -76
+		},
+		{
+			"temperature": 19.1875,
+			"gravity": 1009.24,
+			"gravityVelocity": 0,
+			"battery": 83.7443,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-21T09:49:39.4203158+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -76
+		},
+		{
+			"temperature": 19.1875,
+			"gravity": 1009.06,
+			"gravityVelocity": 0,
+			"battery": 83.7592,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-21T11:19:25.0695377+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -64
+		},
+		{
+			"temperature": 19.3125,
+			"gravity": 1008.79,
+			"gravityVelocity": 0,
+			"battery": 84.647,
+			"version": "20230420_054501_98ef1a1",
+			"createdOn": "2023-09-21T14:18:39.2028616+00:00",
+			"macAddress": "78-e3-6d-3c-a9-1c",
+			"rssi": -61
+		}
+	]
+}
