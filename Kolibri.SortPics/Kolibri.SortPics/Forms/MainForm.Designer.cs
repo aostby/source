@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.filToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OMDBKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,6 +47,7 @@
             this.navngiMapperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.navngiFilerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xMLValidatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertMovieToMP4ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filmOgSerierToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.watchlistToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -74,7 +76,6 @@
             this.createIMGLinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.createMOVIELinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.grusToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.convertMovieToMP4ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -224,6 +225,13 @@
             this.xMLValidatorToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
             this.xMLValidatorToolStripMenuItem.Text = "XML Validator";
             this.xMLValidatorToolStripMenuItem.Click += new System.EventHandler(this.MDIChildNew_Click);
+            // 
+            // convertMovieToMP4ToolStripMenuItem
+            // 
+            this.convertMovieToMP4ToolStripMenuItem.Name = "convertMovieToMP4ToolStripMenuItem";
+            this.convertMovieToMP4ToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.convertMovieToMP4ToolStripMenuItem.Text = "ConvertMovieToMP4";
+            this.convertMovieToMP4ToolStripMenuItem.Click += new System.EventHandler(this.convertMovieToMP4ToolStripMenuItem_Click);
             // 
             // filmOgSerierToolStripMenuItem
             // 
@@ -439,19 +447,13 @@
             this.grusToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.grusToolStripMenuItem.Text = "grus";
             // 
-            // convertMovieToMP4ToolStripMenuItem
-            // 
-            this.convertMovieToMP4ToolStripMenuItem.Name = "convertMovieToMP4ToolStripMenuItem";
-            this.convertMovieToMP4ToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-            this.convertMovieToMP4ToolStripMenuItem.Text = "ConvertMovieToMP4";
-            this.convertMovieToMP4ToolStripMenuItem.Click += new System.EventHandler(this.convertMovieToMP4ToolStripMenuItem_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
