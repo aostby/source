@@ -68,6 +68,7 @@
             this.plotContentLabel = new System.Windows.Forms.Label();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.mainLayout.SuspendLayout();
             this.headerLayout.SuspendLayout();
             this.leftLayout.SuspendLayout();
@@ -175,7 +176,8 @@
             this.movieList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2,
-            this.columnHeader3});
+            this.columnHeader3,
+            this.columnHeader4});
             this.movieList.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.movieList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.movieList.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -401,6 +403,7 @@
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox.TabIndex = 0;
             this.pictureBox.TabStop = false;
+            this.pictureBox.Click += new System.EventHandler(this.pictureBox_Click);
             // 
             // titleLabel
             // 
@@ -609,6 +612,10 @@
             this.statusLabel.Spring = true;
             this.statusLabel.Text = "Clear searchfield to show all items in list";
             // 
+            // columnHeader4
+            // 
+            this.columnHeader4.Text = "ImdbRating";
+            // 
             // ShowLocalSeries
             // 
             this.AcceptButton = this.searchBtn;
@@ -677,6 +684,7 @@
         private System.Windows.Forms.Label typeContentLabel;
         private System.Windows.Forms.Label runtimeContentLabel;
         private System.Windows.Forms.Label plotContentLabel;
+        private System.Windows.Forms.ColumnHeader columnHeader4;
     }
 }
 

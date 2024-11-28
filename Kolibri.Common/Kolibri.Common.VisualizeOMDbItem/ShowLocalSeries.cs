@@ -1,4 +1,5 @@
-﻿using OMDbApiNet.Model;
+﻿using Kolibri.Common.Utilities;
+using OMDbApiNet.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -140,6 +141,9 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     movieList.Items.Add(movie.Title, movie.ImdbId);
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.Year);
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(TYPE_TRANSLATION[movie.Type]);
+                    movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.ImdbRating);
+
+                    //Legg til elementer over, den siste i listen må være poster pga display - movieList_ItemSelectionChanged
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.Poster);
                 }
                 movieList.Focus();
@@ -162,7 +166,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         {
             try
             {
- movieList.View = View.Details;
+            movieList.View = View.Details;
             detailsViewBtn.Enabled = false;
             tileViewBtn.Enabled = true;
             }
@@ -198,22 +202,41 @@ namespace Kolibri.Common.VisualizeOMDbItem
         {
             if (!e.IsSelected)
                 return;
-            pictureBox.Image = getImage(e.Item.SubItems[3].Text);
+            //pictureBox.Image = getImage(e.Item.SubItems[3].Text);
+            pictureBox.Image = getImage(e.Item.SubItems[e.Item.SubItems.Count - 1].Text);
             Item result = await getMovieDetails(e.Item.ImageKey);
-            if (result==null)
+            if (result == null)
             {
                 SetNotFoundProperties();
                 return;
+            }
+            else
+            {
+                pictureBox.Tag = result.ImdbId;
             }
             titleContentLabel.Text = result.Title;
             productionContentLabel.Text = result.Production;
             directorContentLabel.Text = result.Director;
             countryContentLabel.Text = result.Country;
             yearContentLabel.Text = result.Year;
-            totalContentLabel.Text = result.TotalSeasons;  
+            totalContentLabel.Text = result.TotalSeasons;
             typeContentLabel.Text = result.Type;
             runtimeContentLabel.Text = result.Runtime;
             plotContentLabel.Text = result.Plot;
+        }
+
+        private void pictureBox_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var imdbid = ((sender as PictureBox)).Tag.ToString();
+                Uri uri = new Uri($"https://www.imdb.com/title/{imdbid}/");
+                HTMLUtilities.OpenURLInBrowser(uri);
+
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
