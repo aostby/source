@@ -17,6 +17,7 @@ namespace Kolibri.SilverScreen
 
             try
             {
+
                 _LITEDB = new LiteDBController(false, true);
 
                 throw new NotImplementedException(System.Reflection.MethodBase.GetCurrentMethod().Name);
