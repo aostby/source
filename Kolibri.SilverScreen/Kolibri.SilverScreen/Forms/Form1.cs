@@ -1,9 +1,12 @@
- 
+
+
+using Kolibri.net.Common.Dal;
 
 namespace Kolibri.SilverScreen
 {
     public partial class Form1 : Form
     {
+        LiteDBController _LITEDB;
         public Form1()
         {
             InitializeComponent();
@@ -14,6 +17,8 @@ namespace Kolibri.SilverScreen
 
             try
             {
+                _LITEDB = new LiteDBController(false, true);
+
                 throw new NotImplementedException(System.Reflection.MethodBase.GetCurrentMethod().Name);
             }
             catch (Exception ex)

@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReferencedProjects", "Refer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Utilities", "..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj", "{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Dal", "..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj", "{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,12 +25,17 @@ Global
 		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
+		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {218DD4C4-42AE-4145-8970-E8FDAA82FBC0}
