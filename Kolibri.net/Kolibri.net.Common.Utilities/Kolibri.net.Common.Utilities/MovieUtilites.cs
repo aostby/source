@@ -1,13 +1,12 @@
 ﻿using MovieFileLibrary;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace Kolibri.Common.Utilities
+namespace Kolibri.net.Common.Utilities
+
+
+
+
 {
     public class MovieUtilites
     {
@@ -21,17 +20,17 @@ namespace Kolibri.Common.Utilities
                 ret.Rows.Add($"https://www.moviefone.com/movies/{DateTime.Now.Year}/war/", "Moveifone war", "");
                 ret.Rows.Add("https://yts.mx/", "YTS", "");
                 ret.Rows.Add("https://www.boxofficemojo.com/genre/sg2564681985/?ref_=bo_gs_table_139", "BoxOfficeMojo War", "");
-                 ret.Rows.Add("https://www.filmsite.org/greatwarfilms.html", "Filmsite", "");
+                ret.Rows.Add("https://www.filmsite.org/greatwarfilms.html", "Filmsite", "");
 
                 ret.Rows.Add("https://top10.netflix.com/", "Top 10 NetFlix");
-                 return ret;
+                return ret;
             }
         }
         public static Dictionary<string, string> MovieLinksDic
         {
             get
             {
-                return DataSetUtilities.DataTableToDictionary(MovieLinks,  "name","url");
+                return DataSetUtilities.DataTableToDictionary(MovieLinks, "name", "url");
             }
         }
         public static List<string> YearList
@@ -43,29 +42,29 @@ namespace Kolibri.Common.Utilities
                 int first = years.FirstOrDefault();
                 foreach (var year in years)
                 {
-                    if (year % 10 == 0) 
+                    if (year % 10 == 0)
                     {
                         string range = $"{first}-{year}";
                         decades.Add(range);
                         first = year;
-                    } 
+                    }
                 }
                 //manually add an interval of interest closer to today
-                decades.Add( $"{DateTime.Now.AddYears(-5).Year}-{DateTime.Now.Year}");
+                decades.Add($"{DateTime.Now.AddYears(-5).Year}-{DateTime.Now.Year}");
 
                 //manually add an interval of interest
                 decades.Add("1900-1940");
-                
+
                 //add last five years
-             //   first = DateTime.Now.Year - 5;
+                //   first = DateTime.Now.Year - 5;
                 years = Enumerable.Range(first, DateTime.Now.Year - first + 1).ToList();
-                decades.AddRange( years.Select(i => i.ToString()).OrderByDescending(i => i).ToList());
-             
-              
+                decades.AddRange(years.Select(i => i.ToString()).OrderByDescending(i => i).ToList());
+
+
 
                 //Sort the list
-                var ret = decades.OrderByDescending(i => i).ToList();   
-             ret.Insert(0,$"{(DateTime.Now.Year / 10) * 10}-{ DateTime.Now.Year}");
+                var ret = decades.OrderByDescending(i => i).ToList();
+                ret.Insert(0, $"{(DateTime.Now.Year / 10) * 10}-{DateTime.Now.Year}");
 
 
                 //       List<string> ret = new List<string>() { "", "2022", "2021", "2020", "2019", "2020-2029", "2015-2019", "2010-2014", "2000-2009", "1990-1999", "1980-1989", "1970-1979", "1900-1969" };
@@ -81,7 +80,7 @@ namespace Kolibri.Common.Utilities
                 return new List<string>() { "", "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "History", "Horror", "Music", "Musical", "Mystery", "Romance", "Sci-Fi", "Sport", "Thriller", "War", "Western", };
             }
         }
-          
+
 
         /// <summary>
         /// Metode som henter år fra oppgitt filstreng. 
@@ -113,16 +112,16 @@ namespace Kolibri.Common.Utilities
                         .Cast<Match>()
                         .ToArray();
 
-                    var biggest = matches.Select(i => Int32.Parse(i.ToString())).ToList().Max();  
+                    var biggest = matches.Select(i => Int32.Parse(i.ToString())).ToList().Max();
                     var smallest = matches.Select(i => Int32.Parse(i.ToString())).ToList().Min();
                     if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(biggest))
                         year = biggest;
 
 
-                      
-             else       if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(smallest))
+
+                    else if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(smallest))
                         year = smallest;
-              else      if (biggest > year && biggest < 2040)
+                    else if (biggest > year && biggest < 2040)
                     { year = biggest; }
                 }
             }

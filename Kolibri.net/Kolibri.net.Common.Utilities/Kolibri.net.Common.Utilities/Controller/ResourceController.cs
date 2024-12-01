@@ -5,9 +5,10 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Text;
-using Utilities.Properties;
 
-namespace Kolibri.Common.Utilities.Controller
+
+
+namespace Kolibri.net.Common.Utilities.Controller
 {
     public class ResourceController
     {
@@ -16,18 +17,7 @@ namespace Kolibri.Common.Utilities.Controller
      /// </summary>
      /// <param name="resourceName">Bilder: BringToFrontHS CopyHS CutHS delete DocumentHS health_tests_512 OpenFile openHS PasteHS PrintHS PrintPreviewHS PrintSetupHS saveHS SendToBackHS</param>
      /// <returns></returns>
-        public static object GetResouceObject(string resourceName)
-        {
-            ResourceManager mng =  Resources.ResourceManager;
-            return mng.GetObject(resourceName);
-        }
-
-        public static ResourceSet GetAvailableResources()
-        {
-            ResourceManager mng = Resources.ResourceManager;
-            return mng.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
-        } 
-
+   
         public static Stream GetResourceStream(Assembly assembly, string resourceName)
         {
             string[] resources = assembly.GetManifestResourceNames();
