@@ -9,7 +9,6 @@ using System.Xml.XPath;
 namespace Kolibri.net.Common.Utilities
 {
     public class XMLUtilities
-
     { 
         private static string m_errors = string.Empty;
         public static String PrettyPrintXML(String sourceXML, Encoding encoding)
@@ -199,7 +198,6 @@ namespace Kolibri.net.Common.Utilities
 
         public static class SerializationHelper<T> where T : class
         {
-
             public static XDocument Serialize(T value)
             {
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
@@ -251,42 +249,7 @@ namespace Kolibri.net.Common.Utilities
                 XmlSerializer Serialzier = new XmlSerializer(typeof(T));
                 return (T)Serialzier.Deserialize(input);
             }
-        }
-
-        /// <summary>
-        /// benytt DeserializeObject istedet
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="xml"></param>
-        /// <returns></returns>
-        // [Obsolete] 
-        /*public static bool DeSerializeObject( object obj, string xml)
-        {
-            bool ret = true;
-            try
-            {
-
-                MemoryStream stream = new MemoryStream();
-                XmlTextWriter xmlTextWriter = new XmlTextWriter(stream, Encoding.Default); // encoding ="ISO-8859-1"
-                XmlSerializer xs = new XmlSerializer(obj.GetType());
-                xs.Serialize(xmlTextWriter, obj);
-               
-            //Stream stream = File.Open(filename, FileMode.Open);
-            BinaryFormatter bFormatter = new BinaryFormatter();
-            obj =  bFormatter.Deserialize(stream);
-            stream.Close();
-
-
-
-            }
-            catch (Exception ex)
-            {
-
-                ret = false;
-            }
-            return ret;
-        } */
-
+        } 
 
         /// <summary>
         /// Konverter fra bytes til XmlDocument
@@ -344,7 +307,6 @@ namespace Kolibri.net.Common.Utilities
             return;
         }
 
-
         public static string GetXmlDocumentDetails(XmlDocument doc)
         {
             XmlDocument xmlDoc = doc;
@@ -391,7 +353,5 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret.ToString();
         }
-
-
     }
 }

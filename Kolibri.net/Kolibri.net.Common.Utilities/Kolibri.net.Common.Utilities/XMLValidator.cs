@@ -1,26 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-   using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System;
-    using System.Collections;
-    using System.Data;
-    using System.IO;
-    using System.Xml;
-    using System.Xml.Schema;
-    using System.Text;
-    using System.Windows.Forms;
-
+﻿using System.Xml;
+using System.Xml.Schema;
 
 namespace Kolibri.net.Common.Utilities
 {
-
     public class XMLValidator
     {
         // Validation Error Count
@@ -93,62 +75,6 @@ namespace Kolibri.net.Common.Utilities
 
                 throw error;
             }
-        }
-
-
-        [Obsolete("En må oppgi sti til skjema for validering", true)]
-        public void Validate(string strXMLDoc)
-        {
-            ErrorsCount = 0;
-            ErrorMessage = string.Empty;
-            try
-            {
-                // Declare local objects
-                XmlTextReader tr = null;
-                XmlSchemaCollection xsc = null;
-                XmlValidatingReader vr = null;
-
-                // Text reader object
-                tr = new XmlTextReader(Path.Combine(Application.StartupPath, "Schemas", "Rbd_ArticleMd_Response.xsd"));
-                xsc = new XmlSchemaCollection();
-                xsc.Add(null, tr);
-
-                // XML validator object
-
-                vr = new XmlValidatingReader(strXMLDoc,
-                             XmlNodeType.Document, null);
-
-                vr.Schemas.Add(xsc);
-
-                // Add validation event handler
-
-                vr.ValidationType = ValidationType.Schema;
-                vr.ValidationEventHandler +=
-                         new ValidationEventHandler(ValidationHandler);
-
-                // Validate XML data
-
-                while (vr.Read()) ;
-
-                vr.Close();
-
-                // Raise exception, if XML validation fails
-                if (ErrorsCount > 0)
-                {
-                    throw new Exception(ErrorMessage);
-                }
-
-                // XML Validation succeeded
-                Console.WriteLine("XML validation succeeded.\r\n");
-            }
-            catch (Exception error)
-            {
-                // XML Validation failed
-                Console.WriteLine("XML validation failed." + "\r\n" +
-                "Error Message: " + error.Message);
-
-                throw error;
-            }
-        }
+        } 
     }
 }

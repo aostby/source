@@ -329,7 +329,6 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
-         
 
         public static string[] AllToUpper(string[] param)
         {
@@ -484,7 +483,6 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
-
         public static double FirstNumberInString(string tekst)
         {
             double ret = 00;
