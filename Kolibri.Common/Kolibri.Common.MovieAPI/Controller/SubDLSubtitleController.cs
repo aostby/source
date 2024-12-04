@@ -23,7 +23,7 @@ namespace Kolibri.Common.MovieAPI.Controller
 
 
         public static SubDL SearchByIMDBid(string imdbid)
-        {
+        { 
             SubDL ret = null;
             if (string.IsNullOrEmpty(imdbid)) { return ret; }
 
@@ -125,9 +125,7 @@ namespace Kolibri.Common.MovieAPI.Controller
             SubDL ret = null;
 
             if (mmi.Equals(null)) { return ret; }
-
-            
-
+             
             var queryParams = new NameValueCollection()
         {
             { "api_key", apikey }, {"languages", languages }, 

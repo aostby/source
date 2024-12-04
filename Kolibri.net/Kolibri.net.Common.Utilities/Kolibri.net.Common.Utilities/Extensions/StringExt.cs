@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace Kolibri.net.Common.Utilities.Extensions
 {
     public static class StringExt
-    {
+    {   
+
         public static Int32 ToInt32(this string number)
         {
             if (string.IsNullOrEmpty(number)) return 0;

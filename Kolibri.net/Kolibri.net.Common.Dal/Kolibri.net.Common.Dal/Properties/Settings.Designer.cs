@@ -34,5 +34,17 @@ namespace Kolibri.net.Common.Dal.Properties {
                 this["LastLiteDBFilePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string OMDBkey {
+            get {
+                return ((string)(this["OMDBkey"]));
+            }
+            set {
+                this["OMDBkey"] = value;
+            }
+        }
     }
 }

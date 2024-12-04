@@ -1,17 +1,9 @@
-﻿using System.Collections.Specialized;
-using System.Collections;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using System.Text;
-     using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Collections;
-using System.Linq;
-using System.IO;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+
 namespace Kolibri.net.Common.Utilities
 {
     public class StringUtilities
@@ -312,23 +304,7 @@ namespace Kolibri.net.Common.Utilities
 "YEAR",
 "ZONE" };
         #endregion
-        public static string FinnFormID(string tekst)
-        {
-            string ret = string.Empty;
-            if (!string.IsNullOrEmpty(tekst) && tekst.Contains("{") && tekst.Contains("}"))
-            {
-                try
-                {
-                    int start = tekst.IndexOf("{") + 1;
-                    int slutt = tekst.IndexOf("}");
-                    ret = tekst.Substring(start, slutt - start);
-                }
-                catch (Exception ex) { }
-            }
-            return ret;
-        }
-
-
+   
         public static List<int> GetNumbersInString(string sentence)
         {
             List<int> ret = new List<int>();
@@ -353,9 +329,6 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
-
-
-
 
         public static string[] AllToUpper(string[] param)
         {
@@ -489,6 +462,7 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
+
         /// <summary>
         /// Deler en string med CamelCasing og returnerer en string med ord
         /// </summary>
@@ -509,7 +483,6 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
-
         public static double FirstNumberInString(string tekst)
         {
             double ret = 00;
@@ -607,66 +580,7 @@ namespace Kolibri.net.Common.Utilities
 
         }
 
-        #region Kryptering
-
-        /// <summary>
-        /// Benytt Crypto istedet.
-        /// "Krypterer" tekst streng etter Maritech-metoden :D
-        /// </summary>
-        /// <param name="input">Strengen som skal krypteres</param>
-        /// <returns>Den krypterte strengen</returns>
-        [Obsolete]
-        public static string Encrypt(string input)
-        {
-            if (input == null || input == string.Empty)
-                return input;
-            Byte[] bytes = GetBytes(input);
-            for (int pos = 0; pos < bytes.Length; pos++)
-            {
-                bytes[pos] = (Byte)(bytes[pos] - bytes.Length + pos + 14);
-            }
-            return GetString(bytes);
-        }
-
-        /// <summary>
-        /// Benytt Crypto istedet
-        /// "Dekrypterer" en tekst streng som allerede er kryptert etter Maritech-metoden.
-        /// </summary>
-        /// <param name="input">Teksten som skal de-krypteres</param>
-        /// <returns>Den de-krypterte teksten</returns>
-        [Obsolete]
-        public static string Decrypt(string input)
-        {
-            if (input == null || input == string.Empty)
-                return input;
-            Byte[] bytes = GetBytes(input);
-            for (int pos = 0; pos < bytes.Length; pos++)
-            {
-                bytes[pos] = (Byte)(bytes[pos] + bytes.Length - pos - 14);
-            }
-            return GetString(bytes);
-        }
-
-        [Obsolete]
-        public static string Decode(string s)
-        {
-            if (s == null || s == string.Empty)
-                return s;
-
-            string result = string.Empty;
-            for (int t = 0; t < s.Length; t++)
-            {
-                result += (char)(s[t] ^ 6);
-            }
-            return result;
-        }
-
-        [Obsolete]
-        public static string Encode(string s)
-        {
-            return Decode(s);
-        }
-        #endregion
+     
 
         #region String Functions
         public static System.Text.Encoding Encoding
