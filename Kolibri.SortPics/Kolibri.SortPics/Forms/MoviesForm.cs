@@ -385,7 +385,6 @@ namespace SortPics.Forms
                 splitContainer2.Panel2.Controls.Clear();
                 try
                 {
-
                     DataGridView dgv = new DataGridView();
                     dgv.DataSource = table;
                     dgv.Dock = DockStyle.Fill;
@@ -400,6 +399,7 @@ namespace SortPics.Forms
                     dgv.CellContentDoubleClick += new DataGridViewCellEventHandler(DataGridView_CellContentDoubleClick);
                     dgv.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(DataGridView_RowPrePaint);
                     dgv.KeyDown += Dgv_KeyDown;
+                    dgv.CellValueChanged += Dgv_CellValueChanged;
                     dgv.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(dgv_CellMouseDown);
 
                     try
@@ -421,6 +421,30 @@ namespace SortPics.Forms
             }
             catch (Exception)
             { }
+        }
+
+        private void Dgv_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                DataGridView dgv = sender as DataGridView;
+                var columnName = dgv.Columns[e.ColumnIndex].Name;
+                if (columnName == "ImdbRating")
+                {
+                    var newValue = dgv.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                    var old = (dgv.Rows[dgv.CurrentCell.RowIndex].DataBoundItem as DataRowView)[e.ColumnIndex];//dgv.CurrentCell.Value;  
+                    if (newValue != old)
+                    {
+
+                        var id = dgv.Rows[e.RowIndex].Cells["ImdbId"].Value;
+                        var movie = _LITEDB.FindItem(id.ToString());
+                        movie.ImdbRating = newValue.ToString().Replace(",", ".");
+                        _LITEDB.Upsert(movie);
+
+                    }
+                }
+            }
+            catch (Exception) { }
         }
 
         private void dgv_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
@@ -452,6 +476,10 @@ namespace SortPics.Forms
 
                                 Movie tmdbMovie = _TMDB.GetMovie(tLibList[0].Id);
                                 nm = _OMDB.GetMovieByIMDBid(tmdbMovie.ImdbId);
+                                if (nm.ImdbRating == "N/A")
+                                {
+                                    nm.ImdbRating = $"{tmdbMovie.VoteAverage}".Replace(",", ".");
+                                }
                             }
                             else if (nm == null && liste != null)
                             {
@@ -531,16 +559,10 @@ namespace SortPics.Forms
 
                             if (MessageBox.Show("Nothing found. Go to imdb.com to search for the movie online", title, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation) == DialogResult.Yes)
                             {
-
-
-
-
                                 ProcessStartInfo startInfo = new ProcessStartInfo();
                                 startInfo.FileName = "chrome.exe"; // @"""C:\Program Files (x86)\Google\Chrome\Application\chrome.exe""";
                                 startInfo.Arguments = $@"https://www.imdb.com/find?q={title.Replace(" ", "+")}&ref_=nv_sr_sm";
                                 Process.Start(startInfo);
-
-
                             }
                         }
                         else if (nm != null)
@@ -648,6 +670,7 @@ namespace SortPics.Forms
                 }
 
             }
+       
         }
 
         private void DataGridView_KeyPress(object sender, KeyPressEventArgs e)
@@ -700,7 +723,7 @@ namespace SortPics.Forms
 
                 if (movie == null)
                 {
-                    movie = new OMDbApiNet.Model.Item() { Title = title, Year = $"{year}" };
+                    movie = new OMDbApiNet.Model.Item() { Title = title, Year = $"{year}", ImdbRating = "unknown" };
                 }
 
                 if (movie != null)
@@ -717,11 +740,12 @@ namespace SortPics.Forms
         }
 
         private void DataGridView_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
-        {
-
+        {if (!this.Visible) return;
+            if (e.State != DataGridViewElementStates.Visible) return;
             try
             {
                 DataGridView dgv = sender as DataGridView;
+                
                 string imdbid = $"{dgv.Rows[e.RowIndex].Cells["ImdbId"].Value}";
 
                 if (string.IsNullOrEmpty(imdbid))
@@ -778,9 +802,8 @@ namespace SortPics.Forms
                 try
                 {
                     if ($"{dgv.Rows[e.RowIndex - 1].Cells["ImdbId"].Value}".Equals($"{dgv.Rows[e.RowIndex].Cells["ImdbId"].Value}"))
-                    {
-                        
-                            dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.Salmon;
+                    { 
+                        dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.Salmon;
                     }
                 }
                 catch (Exception ex)
