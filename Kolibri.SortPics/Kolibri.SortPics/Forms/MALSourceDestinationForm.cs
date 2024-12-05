@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using Ookii.Dialogs.WinForms;
 namespace SortPics.Forms
 {
     public partial class MALSourceDestinationForm : Form
@@ -92,64 +93,61 @@ namespace SortPics.Forms
         {
             string text = null;
             if (sender.Equals(buttonSource))
-                                text = textBoxSource.Text;
+                text = textBoxSource.Text;
             else
-                text = textBoxDestination.Text;     
+                text = textBoxDestination.Text;
 
             DirectoryInfo folder = null;
-            //if (checkBoxMTP.Checked)
-            //{
 
-            //    try
-            //    {
-            //        //CommonOpenFileDialog cofd = new CommonOpenFileDialog();
-            //        //cofd.IsFolderPicker = true;
-            //        //cofd.ShowDialog();
-            //        //folder = new DirectoryInfo(cofd.FileName);
-
-            //        var dlg1 = new FolderUtilities.FolderBrowserDialogEx();
-            //        dlg1.Description = "Select a folder to extract to:";
-            //        dlg1.ShowNewFolderButton = true;
-            //        dlg1.ShowEditBox = true;
-            //        //dlg1.NewStyle = false;
-            //        dlg1.SelectedPath = textBoxSource.Text;
-            //        dlg1.ShowFullPathInEditBox = true;
-            //        dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
-
-            //        // Show the FolderBrowserDialog.
-            //        DialogResult result = dlg1.ShowDialog();
-            //        if (result == DialogResult.OK)
-            //        {
-            //            textBoxSource.Text = dlg1.SelectedPath;
-            //        }
-            //    }
-            //    catch (Exception)
-            //    {
-            //        return;
-            //    }
-
-            //}
-            //else
             {
-                folder = FileUtilities.LetOppMappe(text);////.Replace(@"\\", @"\"));
-            }
-            if (folder != null && folder.Exists)
-            {
-                if (sender.Equals(buttonSource))
+                bool old = false;
+                if (old)
                 {
-                    textBoxSource.Text = folder.FullName.ToString();
-                    if (string.IsNullOrWhiteSpace(textBoxDestination.Text))
+
+                    folder = FileUtilities.LetOppMappe(text);////.Replace(@"\\", @"\"));
+                }
+                else if (!old)
+                {
+                    var ookiiDialog = new VistaFolderBrowserDialog();
+                    if (ookiiDialog.ShowDialog() == DialogResult.OK)
                     {
-                        textBoxDestination.Text = new DirectoryInfo(textBoxSource.Text).Parent.FullName;
+                        // do something with the folder path
+                        MessageBox.Show(ookiiDialog.SelectedPath);
                     }
                 }
                 else
                 {
-                    textBoxDestination.Text = folder.FullName.ToString();
+                    {
+                        FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() { SelectedPath = text };
+                        var res = folderBrowserDialog.ShowDialog();
+                        if (res == DialogResult.OK)
+                        {
+                            folder = new DirectoryInfo(folderBrowserDialog.SelectedPath);
+                        }
+                    }
+
+
+
+                }
+                if (folder != null && folder.Exists)
+                {
+                    if (sender.Equals(buttonSource))
+                    {
+                        textBoxSource.Text = folder.FullName.ToString();
+                        if (string.IsNullOrWhiteSpace(textBoxDestination.Text))
+                        {
+                            textBoxDestination.Text = new DirectoryInfo(textBoxSource.Text).Parent.FullName;
+                        }
+                    }
+                    else
+                    {
+                        textBoxDestination.Text = folder.FullName.ToString();
+                    }
                 }
             }
-
         }
+
+        
 
         private void textBox_TextChanged(object sender, EventArgs e)
         {

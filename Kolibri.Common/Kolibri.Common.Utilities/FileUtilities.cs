@@ -30,6 +30,8 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using Microsoft.Office.Interop.Outlook;
+using Ookii.Dialogs.WinForms;
 
 namespace Kolibri.Common.Utilities
 {
@@ -306,7 +308,7 @@ namespace Kolibri.Common.Utilities
                     return encoding;
                 }
             }
-            catch (Exception)
+            catch (System.Exception)
             { }
 
             return Encoding.ASCII;
@@ -323,7 +325,7 @@ namespace Kolibri.Common.Utilities
                 tr.Close();
             }
 
-            catch (Exception)
+            catch (System.Exception)
             { }
             return ret;
         }
@@ -386,7 +388,7 @@ namespace Kolibri.Common.Utilities
                     regTabell.Rows.Add(row);
                 }
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 ret = null;
             }
@@ -417,7 +419,7 @@ namespace Kolibri.Common.Utilities
                         {
                             fileInfo.Delete(); // sletter uten VB og dermed uten recyclebin
                         }
-                        catch (Exception)
+                        catch (System.Exception)
                         { }
                         break;
 
@@ -433,13 +435,13 @@ namespace Kolibri.Common.Utilities
                                     , Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
 
                             }
-                            catch (Exception)
+                            catch (System.Exception)
                             {
                                 fileInfo.Delete(); // sletter  uten recyclebin }
                                 break;
                             }
                         }
-                        catch (Exception)
+                        catch (System.Exception)
                         {
                         }
                     }
@@ -464,7 +466,7 @@ namespace Kolibri.Common.Utilities
                 bw.Close();
                 response = true;
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -487,7 +489,7 @@ namespace Kolibri.Common.Utilities
                     safe = safe.Replace(lDisallowed.ToString(), "");
                 }
             }
-            catch (Exception)
+            catch (System.Exception)
             {
             }
             return safe;
@@ -530,7 +532,7 @@ namespace Kolibri.Common.Utilities
                     writer.Close();
                 }
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 ret = false;
             }
@@ -547,7 +549,7 @@ namespace Kolibri.Common.Utilities
                     outfile.Write(output.ToString());
                 }
             }
-            catch (Exception)
+            catch (System.Exception)
             {
 
                 ret = false;
@@ -684,7 +686,7 @@ namespace Kolibri.Common.Utilities
                 
                 client.DownloadFile(url, path);
             }
-            catch (Exception e)
+            catch (System.Exception e)
             { }
             return File.Exists(path);
         }
@@ -701,7 +703,7 @@ namespace Kolibri.Common.Utilities
 
                 ret = strData;
             }
-            catch (Exception e)
+            catch (System.Exception e)
             { }
             return ret;
 
@@ -726,7 +728,7 @@ namespace Kolibri.Common.Utilities
 
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             { }
             return File.Exists(path);
         }
@@ -780,7 +782,7 @@ namespace Kolibri.Common.Utilities
             }
             try
             { fileInfoListe.Sort(); }
-            catch (Exception) { }
+            catch (System.Exception) { }
             return (FileInfo[])fileInfoListe.ToArray(typeof(FileInfo));
         }
 
@@ -916,7 +918,7 @@ namespace Kolibri.Common.Utilities
         public static string ExportToFormats(object data, FileInfo initialFileInfo)
         {
             if (data.Equals(typeof(byte[])))
-            { throw new Exception("Binary files not supported yet"); }
+            { throw new System.Exception("Binary files not supported yet"); }
 
             System.Windows.Forms.SaveFileDialog sfd = new System.Windows.Forms.SaveFileDialog();
             // sfd.Filter = Kolibri.Utilities.FileUtilities.GetFileDialogFilter(new string[] { "txt", "xml", "cs", "xlsx" });
@@ -961,7 +963,7 @@ All files (*.*)|*.*";
                     XDocument xdoc = XDocument.Parse(data.ToString());
                     sfd.FileName = xdoc.Root.Name.LocalName;
                 }
-                catch (Exception)
+                catch (System.Exception)
                 { }
             }
 
@@ -1044,7 +1046,7 @@ All files (*.*)|*.*";
                     if ((sfd.FilterIndex != 7) && string.IsNullOrEmpty(result))
                     {
                         //    toolStripStatusLabel1.Text = "Could not write file - no value found.";
-                        throw new Exception("Fallthrough - no string value to write");
+                        throw new System.Exception("Fallthrough - no string value to write");
                     }
                 }
                 if (!string.IsNullOrEmpty(sfd.FileName))
@@ -1073,7 +1075,7 @@ All files (*.*)|*.*";
 
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 MessageBox.Show(ex.Message);// throw;
                                             // toolStripStatusLabel1.Text = ex.Message;
@@ -1218,7 +1220,7 @@ All files (*.*)|*.*";
                     }
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 Logger.Logg(Logger.LoggType.Feil, ex.Message);
                 ret = false;
@@ -1226,8 +1228,23 @@ All files (*.*)|*.*";
             return ret;
 
         }
+        public static DirectoryInfo LetOppMappe(string initialpath = null, string overskrift="Let opp mappe") {
 
-        public static DirectoryInfo LetOppMappe(string initialpath = null)
+            DirectoryInfo ret = null;
+            var dialog = new VistaFolderBrowserDialog();
+            dialog.Description = overskrift;
+           
+            if (!string.IsNullOrWhiteSpace(initialpath) && new DirectoryInfo(initialpath).Exists)
+            {
+                dialog.SelectedPath = initialpath;
+            }
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                ret = new DirectoryInfo(dialog.SelectedPath);
+            }
+            return ret; 
+        }
+        public static DirectoryInfo LetOppMappe_old(string initialpath = null)
         {
             DirectoryInfo ret = null;
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -1401,7 +1418,7 @@ All files (*.*)|*.*";
                 oZipStream.Close();
 
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 ret = false;
             }
@@ -1475,7 +1492,7 @@ All files (*.*)|*.*";
             {
                 UnZipFiles(zipPathAndFile, outputFolder, password, false);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 ret = false;
             }

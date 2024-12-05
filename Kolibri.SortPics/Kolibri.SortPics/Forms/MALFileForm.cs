@@ -1,4 +1,5 @@
 ﻿using Kolibri.Common.Utilities;
+using Ookii.Dialogs.WinForms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -109,11 +110,15 @@ namespace SortPics.Forms
                     text = textBoxDestination.Text;
 
                 DirectoryInfo folder = null;                
-                {
-                    folder = Kolibri.Common.Utilities.FolderUtilities.LetOppMappe(text);
+            
                
-                }
-                if (folder != null && folder.Exists)
+
+        
+
+                folder = FileUtilities.LetOppMappe(text);////.Replace(@"\\", @"\"));
+             
+
+            if (folder != null && folder.Exists)
                 {
                     if (sender.Equals(buttonSource))
                     {

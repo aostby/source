@@ -31,9 +31,16 @@ namespace SortPics.Forms
             tbTitle.Text = item.Title;
             tbYear.Text = item.Year;
             tbRated.Text = item.ImdbRating;
-            tbRated.BackColor = Color.OrangeRed;
-            if (item.ImdbRating.IsNumeric() && item.ImdbRating.Substring(0, 1).ToInt32() >= 5) { tbRated.BackColor = Color.Salmon; }
-            if (item.ImdbRating.IsNumeric() && item.ImdbRating.Substring(0, 1).ToInt32() >= 7) { tbRated.BackColor = Color.LightGreen; }
+            tbRated.BackColor = Color.Red;
+            int rating = 0;
+            if (item.ImdbRating.IsNumeric() && item.ImdbRating.Substring(0, 1).ToInt32() > 0)
+                rating = item.ImdbRating.Substring(0, 1).ToInt32();
+            if (rating >= 3 && rating <= 4) { tbRated.BackColor = Color.Red; }
+            else if (rating >= 4 && rating <= 5) { tbRated.BackColor = Color.LightSalmon; }
+            else if (rating >= 5 && rating <= 6) { tbRated.BackColor = Color.LightGreen; }
+            else if (rating >= 7 && rating <=8) { tbRated.BackColor = Color.LimeGreen; }
+            else if (rating >= 9) { tbRated.BackColor = Color.Green; }
+
             tbRuntime.Text = item.Runtime;
             tbGenre.Text = item.Genre;
             tbActors.Text = item.Actors;
