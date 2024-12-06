@@ -1,4 +1,6 @@
-﻿using Kolibri.net.Common.Dal.Entities;
+﻿using com.sun.org.apache.bcel.@internal.generic;
+using com.sun.tools.corba.se.idl;
+using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
 using OMDbApiNet.Model;
@@ -8,32 +10,14 @@ using Season = OMDbApiNet.Model.Season;
 namespace Kolibri.net.Common.Dal
 {
     //Må være versjon 5.0.1.5 for å fungere
-    public class LiteDBController
+    public class LiteDBController : IDisposable
     {   
         private bool ExclusiveConnection { get; set; }
 
-        private LiteDatabase _liteOMDB;
+        private LiteDatabase _liteDB;
         public ConnectionString ConnectionString;
-
-        public string LastLiteDBFilePath
-        {
-            get
-            {
-                return Properties.Settings.Default.LastLiteDBFilePath;
-            }
-        }
-
-        private string DefaultFilePath
-        {
-            get
-            {
-                FileInfo filepath = new FileInfo(@"C:\TEMP\SilverScreen\SilverScreen.db");
-                if (!filepath.Directory.Exists) filepath.Directory.Create();
-                return filepath.FullName;
-            }
-        }
-    
-        public LiteDBController(  bool exclusiveAccess = false, bool readOnly = true,  FileInfo dbPath=null)
+  
+        public LiteDBController(FileInfo dbPath,bool exclusiveAccess = false, bool readOnly = true  )
         {
             
             ExclusiveConnection = exclusiveAccess;
@@ -44,31 +28,9 @@ namespace Kolibri.net.Common.Dal
                 ReadOnly = readOnly,
                 Upgrade = false,
                 Password = null,
-                Filename = (dbPath==null)? DefaultFilePath:dbPath.FullName
-            };
-            try
-            {
-                if (dbPath == null && !string.IsNullOrEmpty(LastLiteDBFilePath))
-                {
-                    if (File.Exists(LastLiteDBFilePath))
-                    {
-                        ConnectionString.Filename = LastLiteDBFilePath;
-                    }
-                    else { File.Create(LastLiteDBFilePath); }
-                }
-                else if (dbPath == null)
-                {
-                    ConnectionString.Filename = DefaultFilePath;
-                }
-            }
-            catch (Exception) { }
-
-            try
-            {     Properties.Settings.Default.LastLiteDBFilePath = ConnectionString.Filename;
-                Properties.Settings.Default.Save();            }
-            catch (Exception) { }
-
-            _liteOMDB = new LiteDatabase(ConnectionString);
+                Filename = dbPath.FullName
+            }; 
+            _liteDB = new LiteDatabase(ConnectionString);
         }
         //public void LiteDBController_old(bool exclusiveAccess = false)
         //{
@@ -87,7 +49,7 @@ namespace Kolibri.net.Common.Dal
 
             try
             {
-                _liteOMDB.Dispose();
+                _liteDB.Dispose();
             }
             catch (Exception)
             {
@@ -98,42 +60,42 @@ namespace Kolibri.net.Common.Dal
         public IEnumerable<Item> FindAllItems(string type=null)
         {
             if (!string.IsNullOrEmpty(type)) {
-           var list =     _liteOMDB.GetCollection<Item>("Item").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
+           var list =     _liteDB.GetCollection<Item>("Item").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
                 return list;  }
             else
-            return _liteOMDB.GetCollection<Item>("Item")
+            return _liteDB.GetCollection<Item>("Item")
                 .FindAll();
         }
         
         public Item FindItemByTitle(string title, int year)
         {
-            return _liteOMDB.GetCollection<Item>("Item")
+            return _liteDB.GetCollection<Item>("Item")
                 .Find(x => x.Title == title.Trim() && x.Year == year.ToString()).FirstOrDefault();
         }
         public IEnumerable<Item> FindItemByTitle(string searchTerm)
         {
             StringComparison comp = StringComparison.Ordinal;
 
-            var ret = _liteOMDB.GetCollection<Item>("Item")
+            var ret = _liteDB.GetCollection<Item>("Item")
                .Find(x => x.Title.ToUpper().Equals(searchTerm.ToUpper()));
             if (ret != null)
                 return ret;                  
             //if not found, return the most likely one
-             ret =  _liteOMDB.GetCollection<Item>("Item")
+             ret =  _liteDB.GetCollection<Item>("Item")
                 .Find(x => x.Title.ToUpper().Contains(searchTerm.ToUpper()));
             return ret;
         }
         public IEnumerable<Item> FindItemByGenre(string genre)
         {
-            return _liteOMDB.GetCollection<Item>("Item")
+            return _liteDB.GetCollection<Item>("Item")
                 .Find(x => x.Genre.Contains(genre));
         }
         public IEnumerable<Item> FindItemByGenreNew(string genre)
         {
             // This way is more efficient
-            if (_liteOMDB.GetCollection<Item>().Count(Query.Contains("Genre", genre)) > 0)
+            if (_liteDB.GetCollection<Item>().Count(Query.Contains("Genre", genre)) > 0)
             {
-                return _liteOMDB.GetCollection<Item>().Find(Query.Contains("Genre", genre));
+                return _liteDB.GetCollection<Item>().Find(Query.Contains("Genre", genre));
             }
             return null;
 
@@ -143,7 +105,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                var ret = _liteOMDB.GetCollection<Item>("Item")
+                var ret = _liteDB.GetCollection<Item>("Item")
                                          .Find(x => x.ImdbId == imdbId).FirstOrDefault();
                 return ret;
             }
@@ -163,7 +125,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                _liteOMDB.GetCollection<Item>("Item")
+                _liteDB.GetCollection<Item>("Item")
                     .Insert(item.ImdbId, item);
                 return true;
             }
@@ -174,7 +136,7 @@ namespace Kolibri.net.Common.Dal
         }
         public IEnumerable<Item> GetAllItemsTypes()
         {
-            var list = _liteOMDB.GetCollection<Item>("Item").FindAll().ToList();
+            var list = _liteDB.GetCollection<Item>("Item").FindAll().ToList();
             var typeList = list.Select(o => o.Type).Distinct();
             return list;
         }
@@ -182,7 +144,7 @@ namespace Kolibri.net.Common.Dal
         {
             StringComparison comp = StringComparison.Ordinal;
 
-            var temp = _liteOMDB.GetCollection<Item>("Item");
+            var temp = _liteDB.GetCollection<Item>("Item");
             var list = temp.Find(x => x.Type.ToUpper().Contains(searchTerm.ToUpper()));
             return list;
         }
@@ -204,7 +166,7 @@ namespace Kolibri.net.Common.Dal
 
         public bool Update(Item movie)
         {
-            return _liteOMDB.GetCollection<Item>("Item")
+            return _liteDB.GetCollection<Item>("Item")
                 .Update(movie.ImdbId, movie);
         }
 
@@ -212,11 +174,11 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                var col = _liteOMDB.GetCollection<Item>();
+                var col = _liteDB.GetCollection<Item>();
                 //col.DeleteMany("1=1");
                 col.Delete(id);
 
-                var nokko = _liteOMDB.GetCollection<FileItem>();
+                var nokko = _liteDB.GetCollection<FileItem>();
                 nokko.Delete(id);
                 return 1;
             }
@@ -249,7 +211,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                return _liteOMDB.GetCollection<Season>("Season")
+                return _liteDB.GetCollection<Season>("Season")
              .Find(x => x.Title.ToLower().Contains(seriesName.ToLower()) && x.SeasonNumber.Equals(seasonnumber)).FirstOrDefault();
 
             }
@@ -261,12 +223,12 @@ namespace Kolibri.net.Common.Dal
 
         public bool Update(Season season)
         {
-            return _liteOMDB.GetCollection<Season>("Season")
+            return _liteDB.GetCollection<Season>("Season")
                 .Update(season.Title + season.SeasonNumber, season);
         }
         public bool Insert(Season season)
         {
-            _liteOMDB.GetCollection<Season>("Season")
+            _liteDB.GetCollection<Season>("Season")
                 .Insert(season.Title + season.SeasonNumber, season);
             return true;
         }
@@ -297,7 +259,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                _liteOMDB.GetCollection<SeasonEpisode>("SeasonEpisode")
+                _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
                     .Insert(ep.ImdbId, ep);
                 return true;
             }
@@ -310,7 +272,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                _liteOMDB.GetCollection<SeasonEpisode>("SeasonEpisode")
+                _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
                     .Update(ep.ImdbId, ep);
                 return true;
             }
@@ -337,7 +299,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                return _liteOMDB.GetCollection<SeasonEpisode>("SeasonEpisode")
+                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
                             .Find(x => x.ImdbId == imdbId).FirstOrDefault();
             }
             catch (Exception ex)
@@ -352,9 +314,9 @@ namespace Kolibri.net.Common.Dal
             try
             {//en må prøve å finne sesong og lete seg frem.
 
-                if (_liteOMDB.GetCollection<Season>().Count(Query.Contains("Title", seriesName)) > 0)
+                if (_liteDB.GetCollection<Season>().Count(Query.Contains("Title", seriesName)) > 0)
                 {
-                    var ses = _liteOMDB.GetCollection<Season>().Find(x => x.Title.ToLower() == seriesName.ToLower()
+                    var ses = _liteDB.GetCollection<Season>().Find(x => x.Title.ToLower() == seriesName.ToLower()
                     && x.SeasonNumber == season).FirstOrDefault();
 
                     return ses.Episodes.Find(x => x.Episode == episode);
@@ -373,7 +335,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                _liteOMDB.GetCollection<Episode>("Episode")
+                _liteDB.GetCollection<Episode>("Episode")
                     .Insert(ep.ImdbId, ep);
                 return true;
             }
@@ -386,7 +348,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                _liteOMDB.GetCollection<Episode>("Episode")
+                _liteDB.GetCollection<Episode>("Episode")
                     .Update(ep.ImdbId, ep);
                 return true;
             }
@@ -407,7 +369,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                var ret = _liteOMDB.GetCollection<Episode>("SeasonEpisode")
+                var ret = _liteDB.GetCollection<Episode>("SeasonEpisode")
                                   .Find(x => x.ImdbId == imdbId).FirstOrDefault();
                 return ret;
             }
@@ -439,9 +401,7 @@ namespace Kolibri.net.Common.Dal
                 return hash;
             }
         }
-        #endregion
-
-
+        #endregion  
 
         #endregion
 
@@ -461,14 +421,14 @@ namespace Kolibri.net.Common.Dal
 
         public IEnumerable<FileItem> FindAllFileItems()
         {
-            var col = _liteOMDB.GetCollection<FileItem>("FileItem");
+            var col = _liteDB.GetCollection<FileItem>("FileItem");
             List<FileItem> ret = new List<FileItem>();
             ret = col.Find(Query.GT("FullName", "-1")).ToList();
             return ret;
         }
         public IEnumerable<FileItem> FindAllFileItems(DirectoryInfo dirInfo)
         {
-            var col = _liteOMDB.GetCollection<FileItem>("FileItem");
+            var col = _liteDB.GetCollection<FileItem>("FileItem");
             List<FileItem> ret = new List<FileItem>();
 
             ret = col.Find(Query.StartsWith("FullName", dirInfo.FullName)).ToList();
@@ -478,7 +438,7 @@ namespace Kolibri.net.Common.Dal
         {
             FileItem ret;
 
-            ret = _liteOMDB.GetCollection<FileItem>("FileItem")
+            ret = _liteDB.GetCollection<FileItem>("FileItem")
                 .Find(x => x.ImdbId == imdbId).FirstOrDefault();
 
             if (ret == null)
@@ -495,7 +455,7 @@ namespace Kolibri.net.Common.Dal
         }
         public FileItem FindByFileName(FileInfo file)
         {
-            return _liteOMDB.GetCollection<FileItem>("FileItem")
+            return _liteDB.GetCollection<FileItem>("FileItem")
                 .Find(x => x.FullName == file.FullName).FirstOrDefault();
         }
 
@@ -508,7 +468,7 @@ namespace Kolibri.net.Common.Dal
         {
             try
             {
-                _liteOMDB.GetCollection<FileItem>("FileItem")
+                _liteDB.GetCollection<FileItem>("FileItem")
                     .Insert(file.ImdbId, file);
                 return true;
             }
@@ -530,30 +490,13 @@ namespace Kolibri.net.Common.Dal
         {
             if (file.ImdbId == null) { return false; }
 
-            return _liteOMDB.GetCollection<FileItem>("FileItem")
+            return _liteDB.GetCollection<FileItem>("FileItem")
                 .Update(file.ImdbId, file);
         }
 
         #endregion
 
-
-
-        #region wishlist
-        public bool AddToWishList(Item movie)
-        {
-            try
-            {
-                _liteOMDB.GetCollection<Item>("WishList")
-                    .Insert(movie);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-        #endregion
-
+  
         #region examples
         //public LiteDbItemService(ILiteDbContext liteDbContext)
         //{
@@ -594,18 +537,16 @@ switch (searchCriteria)
        break;*/
         #endregion
 
-     
-
         #region TMDB movie 
 
         public IEnumerable<TMDbLib.Objects.Movies.Movie> FindAllMovies()
         {
-            return _liteOMDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
+            return _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                 .FindAll();
         }
         public TMDbLib.Objects.Movies.Movie FindMovieByTitle(string title, int year)
         {
-            return _liteOMDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
+            return _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                 .Find(x => x.Title == title.Trim() && x.ReleaseDate.GetValueOrDefault().Year == year).FirstOrDefault();
         }
 
@@ -615,14 +556,14 @@ switch (searchCriteria)
             if (isImdbId)
             {
 
-                return _liteOMDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
+                return _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                     .Find(x => x.ImdbId == id).FirstOrDefault();
 
             }
             else
             {
 
-                return _liteOMDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
+                return _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                     .Find(x => x.Id == id.ToInt32()).FirstOrDefault();
             }
         }
@@ -652,7 +593,7 @@ switch (searchCriteria)
         {
             try
             {
-                _liteOMDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
+                _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                     .Insert(movie.Id, movie);
                 return true;
             }
@@ -664,7 +605,7 @@ switch (searchCriteria)
 
         public bool Update(TMDbLib.Objects.Movies.Movie movie)
         {
-            return _liteOMDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
+            return _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                 .Update(movie.Id, movie);
         }
 
@@ -675,7 +616,7 @@ switch (searchCriteria)
         {
             try
             {
-                var col = _liteOMDB.GetCollection<TMDbLib.Objects.Movies.Movie>();
+                var col = _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>();
                 //col.DeleteMany("1=1");
                 return Convert.ToInt32(col.Delete(id.ToInt32()));
 
@@ -721,7 +662,7 @@ switch (searchCriteria)
 
 
 
-                _liteOMDB.GetCollection<WatchList>("WatchList")
+                _liteDB.GetCollection<WatchList>("WatchList")
                     .Insert(movie.ImdbId, movie);
                 return true;
             }
@@ -756,7 +697,7 @@ switch (searchCriteria)
             { }
 
 
-            return _liteOMDB.GetCollection<WatchList>("WatchList")
+            return _liteDB.GetCollection<WatchList>("WatchList")
                        .Update(movie.ImdbId, movie);
         }
 
@@ -764,7 +705,7 @@ switch (searchCriteria)
         {
             try
             {
-                var nokko = _liteOMDB.GetCollection<WatchList>();
+                var nokko = _liteDB.GetCollection<WatchList>();
                 nokko.Delete(id);
                 return 1;
             }
@@ -780,21 +721,88 @@ switch (searchCriteria)
         {
             if (!string.IsNullOrEmpty(type))
             {
-                var list = _liteOMDB.GetCollection<WatchList>("WatchList").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
+                var list = _liteDB.GetCollection<WatchList>("WatchList").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
                 return list;
             }
             else
-                return _liteOMDB.GetCollection<WatchList>("WatchList")
+                return _liteDB.GetCollection<WatchList>("WatchList")
                     .FindAll();
         }
         public WatchList WishListGetItemByID(string id)
         {
             WatchList ret = null;
 
-            return _liteOMDB.GetCollection<WatchList>("WatchList")
+            return _liteDB.GetCollection<WatchList>("WatchList")
                       .Find(x => x.ImdbId == id).FirstOrDefault();
         }
+       
+        public bool AddToWishList(Item movie)
+        {
+            try
+            {
+                _liteDB.GetCollection<Item>("WishList")
+                    .Insert(movie);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
         #endregion
+        #region UserSettings
+        public UserSettings GetUserSettings()
+        {
+            UserSettings ret = null;
+            try
+            {
+                ret = _liteDB.GetCollection<UserSettings>("UserSettings")
+                        .Find(x => x.UserName == Environment.UserName).First();
+                if (ret == null)
+                { throw new Exception("UserSettings not found!"); }
+                return ret;
+            }
+            catch (Exception ex)
+            {
+                ret = new UserSettings();
+            }
+            return ret;
+        }
+        
 
+        public bool Upsert(UserSettings userSettings)
+        {
+            bool ret = Insert(userSettings);
+            if (!ret) ret = Update(userSettings);
+            return ret;
+        }
+        public bool Update(UserSettings userSettings)
+        {
+            try
+            {
+                _liteDB.GetCollection<UserSettings>("UserSettings")
+                    .Update(userSettings.UserName, userSettings);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public bool Insert(UserSettings userSettings)
+        {
+            try
+            {
+                _liteDB.GetCollection<UserSettings>("UserSettings")
+                    .Insert(userSettings.UserName, userSettings);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        #endregion
     }
 }

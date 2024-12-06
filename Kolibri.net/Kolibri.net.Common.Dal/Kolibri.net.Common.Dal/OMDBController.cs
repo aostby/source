@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using java.util;
+using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
@@ -47,17 +49,19 @@ namespace Kolibri.net.Common.Dal
             return ret;
         }
 
-        public static string GetOmdbKey(bool obtain = false, bool replace = false)
+        public   string GetOmdbKey(bool obtain = false, bool replace = false)
         {
             string ret=string.Empty;
+          
+                UserSettings settings = _LITEDB.GetUserSettings(); 
             if (!obtain)
             {
-                ret = Properties.Settings.Default.OMDBkey;
+                ret = settings.OMDBkey;
                 if (!string.IsNullOrEmpty(ret)&&replace)
                 {
                     if (MessageBox.Show($"{ret} - value found. Do you wish to type in a different one?)", System.Reflection.MethodBase.GetCurrentMethod().Name, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        Properties.Settings.Default.OMDBkey = string.Empty;
+                        settings.OMDBkey = string.Empty;
                         ret = string.Empty;
                         GetOmdbKey();
                     }
@@ -71,7 +75,7 @@ namespace Kolibri.net.Common.Dal
                 {
                     if (!string.IsNullOrEmpty(ret))
                     {
-                        Properties.Settings.Default.OMDBkey = ret;
+                        settings.OMDBkey = ret;
                         return ret;
                     }
                     {
@@ -89,7 +93,8 @@ namespace Kolibri.net.Common.Dal
                     } 
                 } 
             }
-            Properties.Settings.Default.OMDBkey = ret;
+            settings.OMDBkey = ret;
+            _LITEDB.Upsert(settings);
             return ret;
         }
         /// <summary>

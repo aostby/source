@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
- using OMDbApiNet.Model;
+﻿using OMDbApiNet.Model;
 namespace Kolibri.net.Common.Dal.Entities
-{  
-        public class WatchList : Item
+{
+    public class WatchList : Item
         {
 
             /*public class ImdbEntity

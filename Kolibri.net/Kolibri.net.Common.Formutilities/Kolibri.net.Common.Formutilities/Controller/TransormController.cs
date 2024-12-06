@@ -1,41 +1,12 @@
 ﻿using Kolibri.net.Common.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Xsl;
-using Kolibri.net.Common.Utilities;
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
-
 using Kolibri.net.Common.Utilities.Controller;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Kolibri.net.Common.FormUtilities.Controller
 {
- 
-        public class TransFormController
+
+    public class TransFormController
         {
             public static DirectoryInfo GetUnpackPath()
             {

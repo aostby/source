@@ -1,15 +1,9 @@
-﻿using System;
-using System.Text;
-using System.Drawing;
-using System.IO;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Globalization; 
+using System.Globalization;
 using System.Net;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Web;
 using IronBarCode;
 
 namespace Kolibri.net.Common.Utilities.Images

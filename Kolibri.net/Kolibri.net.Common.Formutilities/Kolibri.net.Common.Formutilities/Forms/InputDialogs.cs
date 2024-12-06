@@ -1,18 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Data;
-using System.Collections;
-using System.IO;
-using System.Net;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
-using System.Runtime.CompilerServices;
-using Kolibri.net.Common.Utilities;
-using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Images;
+using System.Data;
 
 namespace Kolibri.net.Common.FormUtilities.Forms
 

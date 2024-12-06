@@ -1,27 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using FastColoredTextBoxNS;
+using global::Kolibri.net.Common.Formutilities.Forms;
+using Kolibri.net.Common.Utilities;
+using System.Data;
 using System.Text;
-using System.Threading.Tasks;
-    using FastColoredTextBoxNS;
-    using global::Kolibri.net.Common.Formutilities.Forms;
-    using global::Kolibri.net.Common.Utilities;
-    using Kolibri.net.Common.Utilities;
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Drawing;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Windows.Forms;
-    using System.Xml;
+using System.Xml;
 
 namespace Kolibri.net.Common.FormUtilities.Controller
 {
-     
-        public class OutputFormController
+
+    public class OutputFormController
         {
             public static System.Windows.Forms.Form RichTextBoxForm(string title, string text, System.Drawing.Size size)
             {

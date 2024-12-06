@@ -33,15 +33,17 @@
             filToolStripMenuItem = new ToolStripMenuItem();
             lukkToolStripMenuItem = new ToolStripMenuItem();
             verktøyToolStripMenuItem = new ToolStripMenuItem();
-            grusToolStripMenuItem = new ToolStripMenuItem();
             finnDuplikaterToolStripMenuItem = new ToolStripMenuItem();
+            grusToolStripMenuItem = new ToolStripMenuItem();
+            multiMediaToolStripMenuItem = new ToolStripMenuItem();
+            movieslocalToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip1
             // 
             menuStrip1.ImageScalingSize = new Size(20, 20);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { filToolStripMenuItem, verktøyToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { filToolStripMenuItem, verktøyToolStripMenuItem, multiMediaToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(5, 2, 0, 2);
@@ -70,18 +72,32 @@
             verktøyToolStripMenuItem.Size = new Size(58, 20);
             verktøyToolStripMenuItem.Text = "Verktøy";
             // 
+            // finnDuplikaterToolStripMenuItem
+            // 
+            finnDuplikaterToolStripMenuItem.Name = "finnDuplikaterToolStripMenuItem";
+            finnDuplikaterToolStripMenuItem.Size = new Size(153, 22);
+            finnDuplikaterToolStripMenuItem.Text = "Finn duplikater";
+            finnDuplikaterToolStripMenuItem.Click += finnDuplikaterToolStripMenuItem_Click;
+            // 
             // grusToolStripMenuItem
             // 
             grusToolStripMenuItem.Name = "grusToolStripMenuItem";
             grusToolStripMenuItem.Size = new Size(180, 22);
             grusToolStripMenuItem.Text = "grus";
             // 
-            // ffinnDuplikaterToolStripMenuItem
+            // multiMediaToolStripMenuItem
             // 
-          finnDuplikaterToolStripMenuItem.Name = "finnDuplikaterToolStripMenuItem";
-          finnDuplikaterToolStripMenuItem.Size = new Size(180, 22);
-          finnDuplikaterToolStripMenuItem.Text = "Finn duplikater";
-            finnDuplikaterToolStripMenuItem.Click += finnDuplikaterToolStripMenuItem_Click;
+            multiMediaToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { movieslocalToolStripMenuItem });
+            multiMediaToolStripMenuItem.Name = "multiMediaToolStripMenuItem";
+            multiMediaToolStripMenuItem.Size = new Size(80, 20);
+            multiMediaToolStripMenuItem.Text = "MultiMedia";
+            // 
+            // movieslocalToolStripMenuItem
+            // 
+            movieslocalToolStripMenuItem.Name = "movieslocalToolStripMenuItem";
+            movieslocalToolStripMenuItem.Size = new Size(180, 22);
+            movieslocalToolStripMenuItem.Text = "Movies (local)";
+            movieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -110,5 +126,7 @@
         private System.Windows.Forms.ToolStripMenuItem grusToolStripMenuItem;
         private ToolStripMenuItem verktøyToolStripMenuItem;
         private ToolStripMenuItem finnDuplikaterToolStripMenuItem;
+        private ToolStripMenuItem multiMediaToolStripMenuItem;
+        private ToolStripMenuItem movieslocalToolStripMenuItem;
     }
 }
