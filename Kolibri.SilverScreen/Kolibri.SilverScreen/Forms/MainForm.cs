@@ -1,18 +1,14 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities;
-using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
-using Kolibri.SilverScreen.Forms;
 using Microsoft.Extensions.Configuration;
-using Ookii.Dialogs.WinForms;
-using System.Configuration;
-using System.Diagnostics;
-using System.Drawing.Imaging;
-using System.Text;
+using Kolibri.net.Common.FormUtilities;
+using Kolibri.net.Common.Utilities;
+using static Kolibri.net.SilverScreen.Controls.Constants;
+using Kolibri.net.SilverScreen.Forms;
 
-
-namespace SortPics.Forms
+namespace Kolibri.SilverScreen.Forms
 {
     /// <summary>
     /// https://docs.microsoft.com/en-us/dotnet/framework/winforms/advanced/how-to-determine-the-active-mdi-child
@@ -23,12 +19,24 @@ namespace SortPics.Forms
         public MainForm()
         {
             InitializeComponent();
-            Init();
+            InitUserSettings();
         }
 
-        private void Init()
+        public static void  SetStatusLabel(string statusText)
         {
-            string dbPath = new FileInfo(@"C:\TEMP\SilverScreen\SilverScreen.db").ToString();
+            try
+            {
+                toolStripStatusLabelStatus.Text = statusText;
+            }
+            catch (Exception)
+            {
+ 
+            }
+        }
+
+        private void InitUserSettings()
+        {
+            string dbPath = @"C:\TEMP\SilverScreen\SilverScreen.db";
 
             try
             {
@@ -36,28 +44,62 @@ namespace SortPics.Forms
                         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .Build();
                 dbPath = configuration["LiteDBPath"].ToString();
+
+                FileInfo info = new FileInfo(dbPath);
+                if (!Directory.Exists(info.DirectoryName))
+                {
+                    info.Create();
+                    if (!info.Exists) { info.Create(); }
+                }
             }
             catch (Exception) { }
 
-            FileInfo info = new FileInfo(dbPath);
-            if (!Directory.Exists(info.DirectoryName))
+            var userSettings = new UserSettings( dbPath);
+
+            try
             {
-                info.Create();
-                if (!info.Exists) { info.Create(); }
+                using (LiteDBController tmp = new(new FileInfo( userSettings.LiteDBFilePath), false, false))
+                {
+                    var dbSettings = tmp.GetUserSettings();
+                    if (dbSettings != null)
+                    {
+
+                        _userSettings = dbSettings;
+
+                    }
+                    else
+                    {
+                        _userSettings = userSettings;
+                    }
+                    if (_userSettings.LiteDBFilePath == null || !File.Exists( _userSettings.LiteDBFilePath))
+                    { _userSettings.LiteDBFilePath = new FileInfo(dbPath).FullName; }
+
+                    tmp.Upsert(_userSettings);
+                }
             }
-            using (Kolibri.net.Common.Dal.LiteDBController tmp = new Kolibri.net.Common.Dal.LiteDBController(info, false, false))
-            {
-                _userSettings = tmp.GetUserSettings();
-                _userSettings.LiteDBFilePath = dbPath;
-                tmp.Upsert(_userSettings);
-            }
+            catch (Exception ex) { }
+            this.Text += $" - Current DB: ({userSettings.LiteDBFilePath})";
         }
+
         private void lukkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-
+        private void multiMedialocalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form newMDIChild = null;
+            if (sender.Equals(movieslocalToolStripMenuItem))
+            {
+                newMDIChild = new MultiMediaForm(MultimediaType.Movies, _userSettings);
+            }
+            else if (sender.Equals(serieslocalToolStripMenuItem))
+            {
+                newMDIChild = new MultiMediaForm(MultimediaType.Series, _userSettings);
+            }
+            newMDIChild.MdiParent = this;
+            newMDIChild.Show();
+        }
         private void finnDuplikaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -66,20 +108,15 @@ namespace SortPics.Forms
 
                 if (ex != null)
                 {
-
                     SameFileController contr = new SameFileController(ex);
                     var list = contr.GetDupes();
                     var ds = DataSetUtilities.AutoGenererDataSet(list);
                     Visualizers.VisualizeDataSet("Dupes", ds, this.Size);
-
                     var byFolder = contr.GetDupesByFolder();
-
-
                     if (list.Count() != byFolder.Count() && byFolder.Count >= 1)
                     {
                         if (MessageBox.Show("Do you want to see dupes by folders also?", "More choices awailable", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-
                             ds = DataSetUtilities.AutoGenererDataSet(list);
                             Visualizers.VisualizeDataSet("Dupes by folder", ds, this.Size);
                         }
@@ -92,16 +129,25 @@ namespace SortPics.Forms
             }
         }
 
-        private void multiMedialocalToolStripMenuItem_Click(object sender, EventArgs e)
+        private void liteDBFilepathToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form newMDIChild = null;
-            if (sender.Equals(movieslocalToolStripMenuItem)) {
-                newMDIChild = new MultiMediaForm(MultiMediaForm.MultimediaType.Movies, _userSettings);
-            } 
-            newMDIChild.MdiParent = this;
-            newMDIChild.Show();
+            try
+            {
+                var tmp = FileUtilities.LetOppFil(new DirectoryInfo(_userSettings.LiteDBFilePath), "Velg fil du vil bruke tli å lese og skrive data til:");
 
+                if (tmp != null)
+                {
+                    _userSettings.LiteDBFilePath = tmp.FullName;
+                    using (LiteDBController ldbc = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
+                    {
+                        ldbc.Upsert(_userSettings);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().FullName);
+            }
         }
     }
 }
- 

@@ -7,19 +7,19 @@ using OMDbApiNet.Model;
 using Season = OMDbApiNet.Model.Season;
 
 
-namespace Kolibri.net.Common.Dal
+namespace Kolibri.net.Common.Dal.Controller
 {
     //Må være versjon 5.0.1.5 for å fungere
     public class LiteDBController : IDisposable
-    {   
+    {
         private bool ExclusiveConnection { get; set; }
 
         private LiteDatabase _liteDB;
         public ConnectionString ConnectionString;
-  
-        public LiteDBController(FileInfo dbPath,bool exclusiveAccess = false, bool readOnly = true  )
+
+        public LiteDBController(FileInfo dbPath, bool exclusiveAccess = false, bool readOnly = true)
         {
-            
+
             ExclusiveConnection = exclusiveAccess;
             readOnly = false;
             ConnectionString = new ConnectionString()
@@ -29,7 +29,7 @@ namespace Kolibri.net.Common.Dal
                 Upgrade = false,
                 Password = null,
                 Filename = dbPath.FullName
-            }; 
+            };
             _liteDB = new LiteDatabase(ConnectionString);
         }
         //public void LiteDBController_old(bool exclusiveAccess = false)
@@ -57,16 +57,22 @@ namespace Kolibri.net.Common.Dal
         }
 
         #region Item table funcitons
-        public IEnumerable<Item> FindAllItems(string type=null)
+        public async Task< IEnumerable<Item>> FindAllItems(string type = null)
         {
-            if (!string.IsNullOrEmpty(type)) {
-           var list =     _liteDB.GetCollection<Item>("Item").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
-                return list;  }
-            else
-            return _liteDB.GetCollection<Item>("Item")
-                .FindAll();
-        }
-        
+            IEnumerable<Item> items = null;
+
+            if (!string.IsNullOrEmpty(type))
+            {
+                if (type.Equals("movies", StringComparison.OrdinalIgnoreCase)) { type = "movie"; }
+                items =   _liteDB.GetCollection<Item>("Item").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
+
+            }
+            else {
+                items=  _liteDB.GetCollection<Item>("Item").FindAll();
+            } 
+            return items;   
+            }
+
         public Item FindItemByTitle(string title, int year)
         {
             return _liteDB.GetCollection<Item>("Item")
@@ -79,10 +85,10 @@ namespace Kolibri.net.Common.Dal
             var ret = _liteDB.GetCollection<Item>("Item")
                .Find(x => x.Title.ToUpper().Equals(searchTerm.ToUpper()));
             if (ret != null)
-                return ret;                  
+                return ret;
             //if not found, return the most likely one
-             ret =  _liteDB.GetCollection<Item>("Item")
-                .Find(x => x.Title.ToUpper().Contains(searchTerm.ToUpper()));
+            ret = _liteDB.GetCollection<Item>("Item")
+               .Find(x => x.Title.ToUpper().Contains(searchTerm.ToUpper()));
             return ret;
         }
         public IEnumerable<Item> FindItemByGenre(string genre)
@@ -381,9 +387,9 @@ namespace Kolibri.net.Common.Dal
 
         static string HashString(string text, string salt = "")
         {
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             // Uses SHA256 to create the hash
@@ -396,7 +402,7 @@ namespace Kolibri.net.Common.Dal
                 // Convert back to a string, removing the '-' that BitConverter adds
                 string hash = BitConverter
                     .ToString(hashBytes)
-                    .Replace("-", String.Empty);
+                    .Replace("-", string.Empty);
 
                 return hash;
             }
@@ -496,7 +502,7 @@ namespace Kolibri.net.Common.Dal
 
         #endregion
 
-  
+
         #region examples
         //public LiteDbItemService(ILiteDbContext liteDbContext)
         //{
@@ -633,7 +639,7 @@ switch (searchCriteria)
         #endregion
 
         #region wishlist
-        public bool WishListAdd( WatchList movie)
+        public bool WishListAdd(WatchList movie)
         {
             try
             {
@@ -735,7 +741,7 @@ switch (searchCriteria)
             return _liteDB.GetCollection<WatchList>("WatchList")
                       .Find(x => x.ImdbId == id).FirstOrDefault();
         }
-       
+
         public bool AddToWishList(Item movie)
         {
             try
@@ -768,7 +774,7 @@ switch (searchCriteria)
             }
             return ret;
         }
-        
+
 
         public bool Upsert(UserSettings userSettings)
         {
@@ -803,6 +809,7 @@ switch (searchCriteria)
                 return false;
             }
         }
+
         #endregion
     }
 }

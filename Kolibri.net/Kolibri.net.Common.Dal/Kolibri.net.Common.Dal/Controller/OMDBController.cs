@@ -10,7 +10,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
 using OMDbApiNet.Model;
 
-namespace Kolibri.net.Common.Dal
+namespace Kolibri.net.Common.Dal.Controller
 {
     public class OMDBController
     {
@@ -26,7 +26,7 @@ namespace Kolibri.net.Common.Dal
         {
             if (string.IsNullOrEmpty(apikey))
                 throw new Exception("API key for OMDB is null. This is not allowed. Please obtain an API key from OMDb API at omdbapi.com");
-            this._apikey = apikey;
+            _apikey = apikey;
             type = OMDbApiNet.OmdbType.Movie;
 
             _client = new OMDbApiNet.OmdbClient(apikey);
@@ -49,15 +49,15 @@ namespace Kolibri.net.Common.Dal
             return ret;
         }
 
-        public   string GetOmdbKey(bool obtain = false, bool replace = false)
+        public string GetOmdbKey(bool obtain = false, bool replace = false)
         {
-            string ret=string.Empty;
-          
-                UserSettings settings = _LITEDB.GetUserSettings(); 
+            string ret = string.Empty;
+
+            UserSettings settings = _LITEDB.GetUserSettings();
             if (!obtain)
             {
                 ret = settings.OMDBkey;
-                if (!string.IsNullOrEmpty(ret)&&replace)
+                if (!string.IsNullOrEmpty(ret) && replace)
                 {
                     if (MessageBox.Show($"{ret} - value found. Do you wish to type in a different one?)", System.Reflection.MethodBase.GetCurrentMethod().Name, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
@@ -67,10 +67,10 @@ namespace Kolibri.net.Common.Dal
                     }
                 }
             }
-            if (!String.IsNullOrWhiteSpace(ret)) return ret;
+            if (!string.IsNullOrWhiteSpace(ret)) return ret;
             else
             {
-                bool ok = InputDialogs.InputBox("Omdb key required, please submit one, or cancel to obtain it.", "Please submit your omdb key", ref ret) == System.Windows.Forms.DialogResult.OK;
+                bool ok = InputDialogs.InputBox("Omdb key required, please submit one, or cancel to obtain it.", "Please submit your omdb key", ref ret) == DialogResult.OK;
                 if (ok)
                 {
                     if (!string.IsNullOrEmpty(ret))
@@ -90,8 +90,8 @@ namespace Kolibri.net.Common.Dal
                     {
                         ret = string.Empty;
                         throw new Exception("Weeeeelll without key, and one wont obtain key even though one is needed....");
-                    } 
-                } 
+                    }
+                }
             }
             settings.OMDBkey = ret;
             _LITEDB.Upsert(settings);
@@ -106,7 +106,7 @@ namespace Kolibri.net.Common.Dal
         public Item GetMovieByIMDBid(string imdbId, bool insert = false)
         {
 
-            OMDbApiNet.Model.Item ret = null;
+            Item ret = null;
             try
             {
                 if (!string.IsNullOrEmpty(imdbId))
@@ -138,21 +138,23 @@ namespace Kolibri.net.Common.Dal
             return ret;
         }
 
-        public Item GetItemById(int id, bool fullplot=false) {
+        public Item GetItemById(int id, bool fullplot = false)
+        {
 
             return _client.GetItemById(id.ToString(), fullplot);
         }
 
-        
+
         /// <summary>
         /// Plukk Item vha ImdbId, alle typer media
         /// </summary>
         /// <param name="imdbId"></param>
         /// <returns></returns>
-        public Item GetItemByImdbId(string imdbId) {
+        public Item GetItemByImdbId(string imdbId)
+        {
             try
             {
-                return _client.GetItemById(imdbId, true);               
+                return _client.GetItemById(imdbId, true);
             }
             catch (Exception)
             {
@@ -190,7 +192,7 @@ namespace Kolibri.net.Common.Dal
         public Season SeriesByImdbId(string imdbId, string seasonNumber)
         {
             try
-            { 
+            {
                 return _client.GetSeasonBySeriesId(imdbId, seasonNumber.ToInt().GetValueOrDefault());
             }
             catch (Exception ex)
@@ -213,7 +215,7 @@ namespace Kolibri.net.Common.Dal
             catch (Exception ex)
 
             {
-                return null; 
+                return null;
             }
         }
 

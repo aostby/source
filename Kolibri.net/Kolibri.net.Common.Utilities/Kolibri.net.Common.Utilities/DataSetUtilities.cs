@@ -386,6 +386,31 @@ namespace Kolibri.net.Common.Utilities
         #endregion
 
         #region file related operations on datasets
+        public static string LegalTableName(string name) {
+            return LegalSheetName(name);
+        }
+
+        /// <summary>
+        /// For Excel, formater navn på lovlig form
+        /// </summary>
+        /// <param name="name">navnet på arket i Excel, eller Tabellnavn</param>
+        /// <returns></returns>
+        public static string LegalSheetName(string name)
+        {
+
+
+            string ret = name;
+            if (string.IsNullOrEmpty(name))
+            {
+                ret = "Table1";
+                return ret;
+            }
+            ret = StringUtilities.FirstToUpper(ret);
+            ret = StringUtilities.FirstToUpperCamelCasing(ret).Replace(" ", "");
+            if (ret.Length > 31) { ret = ret.Substring(0, 30); }
+            return ret;
+        }
+
         /// <summary>
         /// Metode som leser en xmlfil, og en tilhørende xsd fil for å returnere typet dataset. tvinger inn verdier i felter som er tomme hvis nødvendig (desimal og dato felter)
         /// </summary>

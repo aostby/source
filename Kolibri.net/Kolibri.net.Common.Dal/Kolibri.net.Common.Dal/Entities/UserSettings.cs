@@ -3,16 +3,29 @@
     public  class UserSettings
     {
         public UserSettings()        { }
-            public UserSettings(FileInfo liteDBFilePath)
+        public UserSettings(string liteDBFilePath)
         {
             UserName = Environment.UserName;
+            LiteDBFilePath = liteDBFilePath;
         }
-        public string LiteDBFilePath { get; set; } = @"C:\TEMP\SilverScreen\SilverScreen.db";
+        public string LiteDBFilePath { get; set; }  
         public string UserName { get; set; } = Environment.UserName;
         public string OMDBkey { get; set; } = null;
         public string TMDBkey { get; set; } = null;
         public string SUBDLkey { get; set; } = null;
         public FilePaths UserFilePaths { get; set; }=new FilePaths();
+
+        public void Save()
+        {
+            try
+            {
+
+            }
+            catch (Exception)
+            {
+                  
+            }
+        }
     }
     public class FilePaths
     {
@@ -28,4 +41,6 @@
         public string BeerXMLPath { get; set; } = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         public string BeerWordPressExportPath { get; set; } = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
     }
+
+
 }

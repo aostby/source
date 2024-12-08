@@ -1031,9 +1031,11 @@ namespace Kolibri.net.Common.Utilities
         /// </summary>
         /// <param name="title">give this search a title</param>
         /// <returns></returns>
-        public static FileInfo LetOppFil(string title = null)
+        public static FileInfo LetOppFil(DirectoryInfo initialPath=null, string title = null)
         {
             var dialog = new VistaOpenFileDialog() { Title = string.IsNullOrEmpty(title) ? "Let opp fil" : title };
+            if (initialPath != null) { dialog.InitialDirectory = initialPath.FullName;dialog.FileName = dialog.InitialDirectory; } 
+           
             var res= dialog.ShowDialog();
             if (res == DialogResult.OK) { 
             return new FileInfo(dialog.FileName);   

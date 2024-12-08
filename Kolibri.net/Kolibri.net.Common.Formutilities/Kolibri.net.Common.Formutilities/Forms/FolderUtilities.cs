@@ -1,6 +1,7 @@
 ﻿using Ookii.Dialogs.WinForms;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Permissions;
