@@ -1,16 +1,10 @@
-﻿using System;
-using System.Text;
-using System.Drawing;
-using System.IO;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Globalization; 
+using System.Globalization;
 using System.Net;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Web;
-using IronBarCode;
+
 
 namespace Kolibri.net.Common.Utilities.Images
 {
@@ -214,83 +208,10 @@ namespace Kolibri.net.Common.Utilities.Images
         }
 
 
-        public static Image GetBarcodeQR(Uri url)
-        {
-            return  BarcodeWriter.CreateBarcode(url.AbsoluteUri, BarcodeWriterEncoding.QRCode).Image.ToBitmap<Image>();
-        }
+      
 
-        public static Image GetBarcodeQR(Uri url, string bcText)
-        {
-
-            /*** STYING GENERATED BARCODES  ***/
-
-            // BarcodeWriter.CreateBarcode creates a GeneratedBarcode object which allows the barcode to be styled and annotated.
-            GeneratedBarcode MyBarCode = BarcodeWriter.CreateBarcode(url.AbsoluteUri, BarcodeWriterEncoding.QRCode);
-
-            // Any text (or commonly, the value of the barcode) can be added to the image in a default or specified font.
-            // Text positions are automatically centered, above or below.  Fonts that are t oo large for a given image are automatically scaled down.
-            MyBarCode.AddBarcodeValueTextBelowBarcode();
-            MyBarCode.AddAnnotationTextAboveBarcode(bcText,
-                new IronSoftware.Drawing.Font("Arial", (IronSoftware.Drawing.FontStyle)FontStyle.Regular, (float)GraphicsUnit.Pixel), Color.DarkSlateBlue);
-
-            // Resize, add Margins and Check final Image Dimensions
-            MyBarCode.ResizeTo(300, 300); // pixels
-            MyBarCode.SetMargins(0, 20, 0, 20);
-
-            int FinalWidth = MyBarCode.Width;
-            int FinalHeight = MyBarCode.Height;
-
-            //Recolor the barcode and its background
-            MyBarCode.ChangeBackgroundColor(Color.LightGray);
-            MyBarCode.ChangeBarCodeColor(Color.DarkSlateBlue);
-            if (!MyBarCode.Verify())
-            {
-                Console.WriteLine("Color contrast should be at least 50% or a barcode may become unreadable.  Test using GeneratedBarcode.Verify()");
-            }
-
-            // Finally save the result
-            return MyBarCode.Image.ToBitmap<Image>();
-        }
-
-        public static Image GetBarcodePDF417(Uri uri, Color foreColor, Color backColor)
-        {
-            //using IronBarCode;
-            //using System.Drawing;
-            // Fluent API for Barcode Image generation.
-            /*IronBarCode.License.LicenseKey = "IRONBARCODE-MYLICENSE-KEY-1EF01";
-            IronBarCode.License.LicenseKey = "IRONBARCODE-MYLICENSE-KEY-1EF01-RENEW.SUPPORT.01.JAN.2050";*/
-            string MyValue = uri.AbsoluteUri;
-            var BarcodeBmp = IronBarCode.BarcodeWriter.CreateBarcode(MyValue, BarcodeEncoding.PDF417).ChangeBarCodeColor(foreColor).ChangeBackgroundColor(backColor).ResizeTo(500, 300).SetMargins(10).ToBitmap();
-            //return ImageUtilities. BarcodeBmp.ToBitmap<Bitmap>();
-            //return (Bitmap) BarcodeBmp.ToBitmap<Image>();
-            System.Drawing.Bitmap btm;
-            using (MemoryStream stream = BarcodeBmp.GetStream())
-            {
-                btm = (Bitmap) Image.FromStream(stream) ; 
-            }
-            return btm; 
-
-        }
-
-        public static Image GetBarcodeQR(Uri url, FileInfo bcLogo)
-        {
-            /*** STYING BARCODES IN A SINGLE LINQ STYLE EXPRESSION ***/
-
-            // Fluent API
-            BarcodeWriter.CreateBarcode("https://ironsoftware.com", BarcodeWriterEncoding.Aztec).ResizeTo(250, 250).SetMargins(10).AddBarcodeValueTextAboveBarcode().SaveAsImage("StyledBarcode.png");
-
-
-            /*** STYING QR CODES WITH LOGO IMAGES OR BRANDING ***/
-
-            // Use the QRCodeWriter.CreateQrCodeWithLogo Method instead of BarcodeWriter.CreateBarcode
-            // Logo will automatically be sized appropriately and snapped to the QR grid.
-
-            GeneratedBarcode QRWithLogo = QRCodeWriter.CreateQrCodeWithLogo(url.AbsoluteUri, bcLogo.FullName);
-            QRWithLogo.ResizeTo(500, 500).SetMargins(10).ChangeBarCodeColor(Color.DarkGreen);
-            //   QRWithLogo.SaveAsPng("QRWithLogo.Png").SaveAsPdf("MyVerifiedQR.html"); // save as 2 formats 
-            return QRWithLogo.Image.ToBitmap<Image>();
-        }
-
+    
+      
         public static Size AspectSize(Image imageResource)
         {
             Size ret = new Size(500, 150);

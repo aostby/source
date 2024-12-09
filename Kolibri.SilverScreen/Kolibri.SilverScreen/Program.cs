@@ -1,4 +1,4 @@
-using SortPics.Forms;
+using Kolibri.SilverScreen.Forms;
 
 namespace Kolibri.SilverScreen
 {

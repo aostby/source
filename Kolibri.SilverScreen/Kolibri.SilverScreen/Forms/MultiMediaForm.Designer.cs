@@ -1,0 +1,126 @@
+﻿namespace Kolibri.net.SilverScreen.Forms
+{
+    partial class MultiMediaForm
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            splitContainer1 = new SplitContainer();
+            labelNumItemsDB = new Label();
+            textBoxSource = new TextBox();
+            buttonSearch = new Button();
+            splitContainer2 = new SplitContainer();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+            splitContainer2.SuspendLayout();
+            SuspendLayout();
+            // 
+            // splitContainer1
+            // 
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Location = new Point(0, 0);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Orientation = Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(labelNumItemsDB);
+            splitContainer1.Panel1.Controls.Add(textBoxSource);
+            splitContainer1.Panel1.Controls.Add(buttonSearch);
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(splitContainer2);
+            splitContainer1.Size = new Size(800, 450);
+            splitContainer1.SplitterDistance = 48;
+            splitContainer1.TabIndex = 0;
+            // 
+            // labelNumItemsDB
+            // 
+            labelNumItemsDB.AutoSize = true;
+            labelNumItemsDB.Location = new Point(12, 34);
+            labelNumItemsDB.Name = "labelNumItemsDB";
+            labelNumItemsDB.Size = new Size(64, 15);
+            labelNumItemsDB.TabIndex = 2;
+            labelNumItemsDB.Text = "Antall (DB)";
+            // 
+            // textBoxSource
+            // 
+            textBoxSource.Location = new Point(12, 10);
+            textBoxSource.Name = "textBoxSource";
+            textBoxSource.Size = new Size(704, 23);
+            textBoxSource.TabIndex = 1;
+            // 
+            // buttonSearch
+            // 
+            buttonSearch.ImageAlign = ContentAlignment.MiddleLeft;
+            buttonSearch.Location = new Point(722, 9);
+            buttonSearch.Name = "buttonSearch";
+            buttonSearch.Size = new Size(75, 23);
+            buttonSearch.TabIndex = 0;
+            buttonSearch.Text = "Search";
+            buttonSearch.UseVisualStyleBackColor = true;
+            buttonSearch.Click += buttonSearch_Click;
+            // 
+            // splitContainer2
+            // 
+            splitContainer2.Dock = DockStyle.Fill;
+            splitContainer2.Location = new Point(0, 0);
+            splitContainer2.Name = "splitContainer2";
+            splitContainer2.Size = new Size(800, 398);
+            splitContainer2.SplitterDistance = 467;
+            splitContainer2.TabIndex = 0;
+            // 
+            // MultiMediaForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 450);
+            Controls.Add(splitContainer1);
+            Name = "MultiMediaForm";
+            Text = "MultiMediaForm";
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel1.PerformLayout();
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
+            splitContainer2.ResumeLayout(false);
+            ResumeLayout(false);
+        }
+
+        #endregion
+
+        private SplitContainer splitContainer1;
+        private TextBox textBoxSource;
+        private Button buttonSearch;
+        private Label labelNumItemsDB;
+        private SplitContainer splitContainer2;
+    }
+}

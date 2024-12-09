@@ -1,5 +1,7 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
+using java.awt;
 using Newtonsoft.Json;
+using Ookii.Dialogs.WinForms;
 using System.Collections;
 using System.Data;
 using System.Diagnostics;
@@ -40,10 +42,6 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
-
-
-
-
 
         /// <summary>
         /// Metode som henter ett array av FileInfo fra en oppgitt sti
@@ -99,24 +97,17 @@ namespace Kolibri.net.Common.Utilities
             if (searchAllDirs)
                 opt = SearchOption.AllDirectories;
             DirectoryInfo directoryInfoApplikasjon = new System.IO.DirectoryInfo(path.FullName);
-            //            Awesome.File.????????_??????.txt
-
 
             List<FileInfo> fileInfoListe = new List<FileInfo>();
             for (int i = 0; i < filefilter.Length; i++)
             {
-
-
                 foreach (var item in directoryInfoApplikasjon.GetFiles(filefilter[i], opt))
                 {
                     fileInfoListe.Add(item);
                 }
             }
-
             return fileInfoListe.ToArray();
         }
-
-
 
         #region FileInfo datatable with FileVersionInfo
         /// <summary>
@@ -661,7 +652,7 @@ namespace Kolibri.net.Common.Utilities
                 if (!info.Directory.Exists) { info.Directory.Create(); }
 
                 System.Net.WebClient client = new WebClient();
-                
+
                 client.DownloadFile(url, path);
             }
             catch (Exception e)
@@ -889,8 +880,8 @@ namespace Kolibri.net.Common.Utilities
             return executable.ToString();
         }
 
-        
-       
+
+
 
 
         public static void OpenFolderMarkFile(FileInfo info)
@@ -962,7 +953,7 @@ namespace Kolibri.net.Common.Utilities
         }
         public static List<string> MoviesFileExt()
         {
-            return new List<string>() { "3g2", "3gp", "amv", "asf", "avi", "drc", "flv", "flv", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "gifv", "m4v", "mkv", "mng", "mov", "qt", "mp4", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe", "mpv", "mpg", "mpeg", "m2v", "MTS", "M2TS", "TS", "mxf", "nsv", "ogv", "ogg", "rm", "rmvb", "roq", "svi", "vob", "webm", "wmv", "yuv","ts" };
+            return new List<string>() { "3g2", "3gp", "amv", "asf", "avi", "drc", "flv", "flv", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "gifv", "m4v", "mkv", "mng", "mov", "qt", "mp4", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe", "mpv", "mpg", "mpeg", "m2v", "MTS", "M2TS", "TS", "mxf", "nsv", "ogv", "ogg", "rm", "rmvb", "roq", "svi", "vob", "webm", "wmv", "yuv", "ts" };
         }
         public static List<string> PictureFileExt()
         {
@@ -1035,24 +1026,44 @@ namespace Kolibri.net.Common.Utilities
             return ret;
 
         }
-
-        public static DirectoryInfo LetOppMappe(string initialpath = null)
+        /// <summary>
+        /// Returns null if no file found
+        /// </summary>
+        /// <param name="title">give this search a title</param>
+        /// <returns></returns>
+        public static FileInfo LetOppFil(DirectoryInfo initialPath=null, string title = null)
+        {
+            var dialog = new VistaOpenFileDialog() { Title = string.IsNullOrEmpty(title) ? "Let opp fil" : title };
+            if (initialPath != null) { dialog.InitialDirectory = initialPath.FullName;dialog.FileName = dialog.InitialDirectory; } 
+           
+            var res= dialog.ShowDialog();
+            if (res == DialogResult.OK) { 
+            return new FileInfo(dialog.FileName);   
+            }
+            return null;
+        }
+        /// <summary>
+        /// Returns null if no folder is found
+        /// </summary>
+        /// <param name="initialpath">Set initial path</param>
+        /// <param name="title">Give this search a title</param>
+        /// <returns></returns>
+        public static DirectoryInfo LetOppMappe(string initialpath = null, string title = null)
         {
             DirectoryInfo ret = null;
-            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            var dialog = new VistaFolderBrowserDialog() { Description = "Let opp mappe" };
+            if (!string.IsNullOrEmpty(title)) { dialog.Description = title; dialog.UseDescriptionForTitle = true;   }
+
             if (!string.IsNullOrWhiteSpace(initialpath) && new DirectoryInfo(initialpath).Exists)
             {
                 dialog.SelectedPath = initialpath;
 
-                SendKeys.Send("{TAB}{TAB}{RIGHT}");
+              //  SendKeys.Send("{TAB}{TAB}{RIGHT}");
             }
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                SendKeys.Send("{TAB}{TAB}{RIGHT}");
-
-
-                ret = new DirectoryInfo(dialog.SelectedPath);
-
+                // SendKeys.Send("{TAB}{TAB}{RIGHT}"); 
+                ret = new DirectoryInfo(dialog.SelectedPath); 
             }
             return ret;
         }

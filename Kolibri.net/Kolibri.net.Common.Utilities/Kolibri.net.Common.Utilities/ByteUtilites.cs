@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
-   using System;
-using System.Collections.Generic;
-
-using System.Text;
-using System.IO;
-using System.IO.Compression;
 
 namespace Kolibri.net.Common.Utilities
 {
-  
- 
-        public class ByteUtilities
+
+
+    public class ByteUtilities
         {
             public static byte[] ReadFile(string sPath)
             {
