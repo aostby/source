@@ -29,4 +29,7 @@
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy unrestricted -file C:\Users\asoes\source\repos\zipargs.ps1 -rootpath $(SolutionDir) -zippath &quot;E:\DEV\2024\Backup\$(TargetName)_$([System.DateTime]::Now.ToString(yyyy-MM-dd_HHmmss)).zip&quot;" />
+  </Target>
 </Project>
