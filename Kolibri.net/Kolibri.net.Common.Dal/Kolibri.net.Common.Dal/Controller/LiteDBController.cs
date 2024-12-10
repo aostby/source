@@ -21,7 +21,7 @@ namespace Kolibri.net.Common.Dal.Controller
         {
 
             ExclusiveConnection = exclusiveAccess;
-            readOnly = false;
+          //  readOnly = false;
             ConnectionString = new ConnectionString()
             {
                 Connection = ExclusiveConnection ? ConnectionType.Direct : ConnectionType.Shared,
