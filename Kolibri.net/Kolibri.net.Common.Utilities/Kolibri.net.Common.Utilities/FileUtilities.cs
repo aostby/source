@@ -946,9 +946,13 @@ namespace Kolibri.net.Common.Utilities
             ret = ds;
             return ret;
         }
-        public static List<string> MoviesCommonFileExt()
+        public static List<string> MoviesCommonFileExt(bool withPunctuation=false)
         {
             var ret = new List<string>() { "avi", "mkv", "mp4", "mpg", "mpeg" };
+
+            if (withPunctuation)
+                ret = ret.Select(r => string.Concat('.', r)).ToList();
+
             return ret.Distinct().ToList();
         }
         public static List<string> MoviesFileExt()

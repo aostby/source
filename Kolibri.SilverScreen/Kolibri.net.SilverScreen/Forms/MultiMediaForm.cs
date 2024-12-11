@@ -1,37 +1,28 @@
-﻿using com.sun.org.apache.bcel.@internal.generic;
-using com.sun.tools.corba.se.idl;
-using java.nio.file;
+﻿using java.time;
+using Kolibri.Common.MovieAPI.Controller;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Images;
+using Kolibri.net.SilverScreen.Controller;
 using Kolibri.net.SilverScreen.Controls;
-using Kolibri.SilverScreen.Forms;
-using MovieFileLibrary;
 using OMDbApiNet.Model;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using TMDbLib.Objects.Movies;
+using TMDbLib.Objects.Search;
 using static Kolibri.net.SilverScreen.Controls.Constants;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class MultiMediaForm : Form
-    { 
+    {
         LiteDBController _liteDB;
+        TMDBController _TMDB;
         MultimediaType _type;
         private readonly UserSettings _settings;
         private IEnumerable<FileItem> _files;
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
-        private List<Item> _items;  
+        private List<Item> _items;
 
         public MultiMediaForm(MultimediaType type, UserSettings settings)
         {
@@ -46,15 +37,16 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private void Init()
         {
-            buttonSearch.Image = Icons.GetFolderIcon().ToBitmap();
+            buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
 
             _files = new List<FileItem>();
             this.Text = $"{_type.ToString()} - {_settings.LiteDBFilePath}";
             var path = GetCurentPath();
             textBoxSource.Text = path;
-            SetLabelText($"Current filepaht: {path}");
+            SetLabelText($"Current filepaht: {path} - Searching for {_type}");
             _files = _liteDB.FindAllFileItems(new DirectoryInfo(path)).ToList();
             labelNumItemsDB.Text = $"{_files.Count()} files found";
+            SetLabelText(labelNumItemsDB.Text);
 
             if (_dgvController == null) _dgvController = new DataGrivViewControls(_liteDB);
             _items = GetItems();
@@ -74,7 +66,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             try
             {
-               var movie = _liteDB.FindItem(_files.FirstOrDefault().ImdbId); 
+                var movie = _liteDB.FindItem(_files.FirstOrDefault().ImdbId);
 
                 if (_files != null && _files.Count() > 0)
                 {
@@ -116,7 +108,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     break;
                 default:
                     throw new NotImplementedException(_type.ToString());
-                
+
                     break;
             }
             return ret.Trim();
@@ -127,14 +119,13 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 case MultimediaType.Movies:
                     _settings.UserFilePaths.MoviesSourcePath = dInfo.FullName;
-                    
                     break;
                 case MultimediaType.Series:
                     _settings.UserFilePaths.SeriesSourcePath = dInfo.FullName;
-                    
+
                     break;
                 case MultimediaType.Audio:
-                    throw new NotImplementedException(_type.ToString());    
+                    throw new NotImplementedException(_type.ToString());
                     break;
                 case MultimediaType.Pictures:
                     throw new NotImplementedException(_type.ToString());
@@ -145,13 +136,16 @@ namespace Kolibri.net.SilverScreen.Forms
                     break;
             }
 
-
-
             if (init)
             {
                 _liteDB.Upsert(_settings);
                 textBoxSource.Text = dInfo.FullName;
                 SetLabelText($"{_type} - set to {dInfo.FullName}");
+                MultiMediaSearchController searchController = new MultiMediaSearchController(_settings);
+                if (checkBoxUpdateFiles.Checked)
+                {
+                    Task.Run(() => searchController.SearchForMovies(dInfo));
+                }
                 Init();
             }
         }
@@ -161,10 +155,10 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 SetLabelText($"{tableItem.Rows.Count} rader.");
 
-                var movie = _liteDB.FindItem(tableItem.Rows[0]["ImdbId"].ToString());                
+                var movie = _liteDB.FindItem(tableItem.Rows[0]["ImdbId"].ToString());
                 SetForm(movie);
                 Form view = _dgvController.GetMovieItemDataGridViewAsForm(tableItem);
-               ( view.Controls[ 0] as DataGridView).SelectionChanged += DataGridView_LocalSelectionChanged;
+                (view.Controls[0] as DataGridView).SelectionChanged += DataGridView_LocalSelectionChanged;
                 SetForm(view, splitContainer2.Panel1);
             }
             catch (Exception ex)
@@ -186,7 +180,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
 
 
-        private void buttonSearch_Click(object sender, EventArgs e)
+        private void buttonOpenFolder_Click(object sender, EventArgs e)
         {
             var dInfo = FileUtilities.LetOppMappe(GetCurentPath(), $"Let opp mappe ({_type})");
             if (dInfo != null && dInfo.Exists)
@@ -194,8 +188,9 @@ namespace Kolibri.net.SilverScreen.Forms
                 SetCurrentPath(dInfo);
             }
         }
-        private void SetForm(Item item) {
-            SplitterPanel panel = splitContainer2.Panel2;         
+        private void SetForm(Item item)
+        {
+            SplitterPanel panel = splitContainer2.Panel2;
             Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(item, _liteDB);
             SetForm(form, panel);
         }
@@ -222,7 +217,7 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         private void SetLabelText(string text)
         {
-            MainForm.SetStatusLabel(text);
+            toolStripStatusLabelStatus.Text = text;
         }
     }
 }

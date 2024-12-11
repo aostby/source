@@ -36,10 +36,11 @@
             finnDuplikaterToolStripMenuItem = new ToolStripMenuItem();
             multiMediaToolStripMenuItem = new ToolStripMenuItem();
             movieslocalToolStripMenuItem = new ToolStripMenuItem();
+            serieslocalToolStripMenuItem = new ToolStripMenuItem();
             grusToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
-            serieslocalToolStripMenuItem = new ToolStripMenuItem();
+            innstillingerToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
@@ -57,7 +58,7 @@
             // 
             // filToolStripMenuItem
             // 
-            filToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { lukkToolStripMenuItem, liteDBFilepathToolStripMenuItem });
+            filToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { lukkToolStripMenuItem, liteDBFilepathToolStripMenuItem, innstillingerToolStripMenuItem });
             filToolStripMenuItem.Name = "filToolStripMenuItem";
             filToolStripMenuItem.Size = new Size(31, 20);
             filToolStripMenuItem.Text = "Fil";
@@ -65,14 +66,14 @@
             // lukkToolStripMenuItem
             // 
             lukkToolStripMenuItem.Name = "lukkToolStripMenuItem";
-            lukkToolStripMenuItem.Size = new Size(151, 22);
+            lukkToolStripMenuItem.Size = new Size(180, 22);
             lukkToolStripMenuItem.Text = "Lukk";
             lukkToolStripMenuItem.Click += lukkToolStripMenuItem_Click;
             // 
             // liteDBFilepathToolStripMenuItem
             // 
             liteDBFilepathToolStripMenuItem.Name = "liteDBFilepathToolStripMenuItem";
-            liteDBFilepathToolStripMenuItem.Size = new Size(151, 22);
+            liteDBFilepathToolStripMenuItem.Size = new Size(180, 22);
             liteDBFilepathToolStripMenuItem.Text = "LiteDB filepath";
             liteDBFilepathToolStripMenuItem.Click += liteDBFilepathToolStripMenuItem_Click;
             // 
@@ -100,9 +101,16 @@
             // movieslocalToolStripMenuItem
             // 
             movieslocalToolStripMenuItem.Name = "movieslocalToolStripMenuItem";
-            movieslocalToolStripMenuItem.Size = new Size(180, 22);
+            movieslocalToolStripMenuItem.Size = new Size(148, 22);
             movieslocalToolStripMenuItem.Text = "Movies (local)";
             movieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            // 
+            // serieslocalToolStripMenuItem
+            // 
+            serieslocalToolStripMenuItem.Name = "serieslocalToolStripMenuItem";
+            serieslocalToolStripMenuItem.Size = new Size(148, 22);
+            serieslocalToolStripMenuItem.Text = "Series (local)";
+            serieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // grusToolStripMenuItem
             // 
@@ -125,12 +133,12 @@
             toolStripStatusLabelStatus.Size = new Size(39, 17);
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // serieslocalToolStripMenuItem
+            // innstillingerToolStripMenuItem
             // 
-            serieslocalToolStripMenuItem.Name = "serieslocalToolStripMenuItem";
-            serieslocalToolStripMenuItem.Size = new Size(180, 22);
-            serieslocalToolStripMenuItem.Text = "Series (local)";
-            serieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            innstillingerToolStripMenuItem.Name = "innstillingerToolStripMenuItem";
+            innstillingerToolStripMenuItem.Size = new Size(180, 22);
+            innstillingerToolStripMenuItem.Text = "Innstillinger";
+            innstillingerToolStripMenuItem.Click += innstillingerToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -166,7 +174,7 @@
         private ToolStripMenuItem liteDBFilepathToolStripMenuItem;
         private StatusStrip statusStrip1;
         private ToolStripMenuItem serieslocalToolStripMenuItem;
-        //private static ToolStripStatusLabel toolStripStatusLabelStatus;
-        private static ToolStripStatusLabel toolStripStatusLabelStatus;
+        private ToolStripStatusLabel toolStripStatusLabelStatus;
+        private ToolStripMenuItem innstillingerToolStripMenuItem;
     }
 }

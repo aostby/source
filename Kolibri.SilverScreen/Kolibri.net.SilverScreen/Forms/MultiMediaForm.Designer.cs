@@ -31,14 +31,19 @@
             splitContainer1 = new SplitContainer();
             labelNumItemsDB = new Label();
             textBoxSource = new TextBox();
-            buttonSearch = new Button();
+            buttonOpenFolder = new Button();
             splitContainer2 = new SplitContainer();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabelStatus = new ToolStripStatusLabel();
+            checkBoxUpdateFiles = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+            splitContainer2.Panel1.SuspendLayout();
             splitContainer2.SuspendLayout();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // splitContainer1
@@ -50,15 +55,16 @@
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(checkBoxUpdateFiles);
             splitContainer1.Panel1.Controls.Add(labelNumItemsDB);
             splitContainer1.Panel1.Controls.Add(textBoxSource);
-            splitContainer1.Panel1.Controls.Add(buttonSearch);
+            splitContainer1.Panel1.Controls.Add(buttonOpenFolder);
             // 
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(splitContainer2);
             splitContainer1.Size = new Size(800, 450);
-            splitContainer1.SplitterDistance = 48;
+            splitContainer1.SplitterDistance = 45;
             splitContainer1.TabIndex = 0;
             // 
             // labelNumItemsDB
@@ -77,25 +83,56 @@
             textBoxSource.Size = new Size(704, 23);
             textBoxSource.TabIndex = 1;
             // 
-            // buttonSearch
+            // buttonOpenFolder
             // 
-            buttonSearch.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSearch.Location = new Point(722, 9);
-            buttonSearch.Name = "buttonSearch";
-            buttonSearch.Size = new Size(75, 23);
-            buttonSearch.TabIndex = 0;
-            buttonSearch.Text = "Search";
-            buttonSearch.UseVisualStyleBackColor = true;
-            buttonSearch.Click += buttonSearch_Click;
+            buttonOpenFolder.ImageAlign = ContentAlignment.MiddleLeft;
+            buttonOpenFolder.Location = new Point(722, 9);
+            buttonOpenFolder.Name = "buttonOpenFolder";
+            buttonOpenFolder.Size = new Size(75, 23);
+            buttonOpenFolder.TabIndex = 0;
+            buttonOpenFolder.Text = "Let opp mappe";
+            buttonOpenFolder.TextAlign = ContentAlignment.MiddleRight;
+            buttonOpenFolder.UseVisualStyleBackColor = true;
+            buttonOpenFolder.Click += buttonOpenFolder_Click;
             // 
             // splitContainer2
             // 
             splitContainer2.Dock = DockStyle.Fill;
             splitContainer2.Location = new Point(0, 0);
             splitContainer2.Name = "splitContainer2";
-            splitContainer2.Size = new Size(800, 398);
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(statusStrip1);
+            splitContainer2.Size = new Size(800, 401);
             splitContainer2.SplitterDistance = 467;
             splitContainer2.TabIndex = 0;
+            // 
+            // statusStrip1
+            // 
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus });
+            statusStrip1.Location = new Point(0, 379);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(467, 22);
+            statusStrip1.TabIndex = 0;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabelStatus
+            // 
+            toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
+            toolStripStatusLabelStatus.Size = new Size(452, 17);
+            toolStripStatusLabelStatus.Spring = true;
+            toolStripStatusLabelStatus.Text = "Status";
+            // 
+            // checkBoxUpdateFiles
+            // 
+            checkBoxUpdateFiles.AutoSize = true;
+            checkBoxUpdateFiles.Location = new Point(722, 33);
+            checkBoxUpdateFiles.Name = "checkBoxUpdateFiles";
+            checkBoxUpdateFiles.Size = new Size(99, 19);
+            checkBoxUpdateFiles.TabIndex = 3;
+            checkBoxUpdateFiles.Text = "Oppdater filer";
+            checkBoxUpdateFiles.UseVisualStyleBackColor = true;
             // 
             // MultiMediaForm
             // 
@@ -110,8 +147,12 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            splitContainer2.Panel1.ResumeLayout(false);
+            splitContainer2.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -119,8 +160,11 @@
 
         private SplitContainer splitContainer1;
         private TextBox textBoxSource;
-        private Button buttonSearch;
+        private Button buttonOpenFolder;
         private Label labelNumItemsDB;
         private SplitContainer splitContainer2;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabelStatus;
+        private CheckBox checkBoxUpdateFiles;
     }
 }

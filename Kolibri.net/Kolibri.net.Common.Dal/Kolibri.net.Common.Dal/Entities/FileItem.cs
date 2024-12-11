@@ -1,7 +1,6 @@
 ﻿namespace Kolibri.net.Common.Dal.Entities
-{
-    public class FileItem
-    {
+{   public class FileItem
+    { 
         public FileItem(string imdbid, string fullFileName)
         {
             ImdbId = imdbid;

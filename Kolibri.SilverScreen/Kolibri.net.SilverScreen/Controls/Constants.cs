@@ -8,6 +8,6 @@ namespace Kolibri.net.SilverScreen.Controls
 {
   public   class Constants
     {
-        public enum MultimediaType { Movies, Series, Audio, Pictures }
+        public enum MultimediaType { movie, Movies, Series, Audio, Pictures }
     }
 }

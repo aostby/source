@@ -1,27 +1,22 @@
-﻿using Kolibri.Common.MovieAPI.Properties;
+﻿using Kolibri.net.Common.Dal.Controller;
+using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.FormUtilities.Forms;
 using Newtonsoft.Json;
 using OMDbApiNet.Model;
-
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
 using TMDbLib.Objects.TvShows;
-using static System.Net.WebRequestMethods;
 
 namespace Kolibri.Common.MovieAPI.Controller
 {
     public class TMDBController
     {
-        private static TMDbLib.Client.TMDbClient _client;
-        private static LiteDBController _contr;
-        string _apiKey = "YOUR_API_KEY";
+        private   TMDbLib.Client.TMDbClient _client;
+        private   LiteDBController _contr;
+        private string _apiKey = string.Empty;// "YOUR_API_KEY";
+        public string ApiKey { get { return _apiKey; } }
         //Account https://www.themoviedb.org/faq/account --- https://www.themoviedb.org/u/aostby behind the barricades
         //API -- https://developers.themoviedb.org/3/getting-started/introduction
         //key https://www.themoviedb.org/talk/60a834cb501cf2005930515e?page=1#60a834cb501cf20059305161
@@ -37,32 +32,27 @@ namespace Kolibri.Common.MovieAPI.Controller
             _client = new TMDbLib.Client.TMDbClient(_apiKey);
             _contr = contr;
         }
+
+        private TMDbConfig GetDefaultSettings() {
+            string json = @"{""images"":{""base_url"":""http://image.tmdb.org/t/p/"",""secure_base_url"":""https://image.tmdb.org/t/p/"",""backdrop_sizes"":[""w300"",""w780"",""w1280"",""original""],""logo_sizes"":[""w45"",""w92"",""w154"",""w185"",""w300"",""w500"",""original""],""poster_sizes"":[""w92"",""w154"",""w185"",""w342"",""w500"",""w780"",""original""],""profile_sizes"":[""w45"",""w185"",""h632"",""original""],""still_sizes"":[""w92"",""w185"",""w300"",""original""]},""change_keys"":[""adult"",""air_date"",""also_known_as"",""alternative_titles"",""biography"",""birthday"",""budget"",""cast"",""certifications"",""character_names"",""created_by"",""crew"",""deathday"",""episode"",""episode_number"",""episode_run_time"",""freebase_id"",""freebase_mid"",""general"",""genres"",""guest_stars"",""homepage"",""images"",""imdb_id"",""languages"",""name"",""network"",""origin_country"",""original_name"",""original_title"",""overview"",""parts"",""place_of_birth"",""plot_keywords"",""production_code"",""production_companies"",""production_countries"",""releases"",""revenue"",""runtime"",""season"",""season_number"",""season_regular"",""spoken_languages"",""status"",""tagline"",""title"",""translations"",""tvdb_id"",""tvrage_id"",""type"",""video"",""videos""]}";
+
+            
+            if (string.IsNullOrEmpty(json)) throw new Exception();
+
+            var tmdbconfig = (TMDbConfig)JsonConvert.DeserializeObject(json, typeof(TMDbConfig));
+            return tmdbconfig;
+        }
         public string GetImageUrl(string path, int size = 500)
         {
             string ret = string.Empty;
-
+            try { 
             if (string.IsNullOrEmpty(path))
-                return path;
-            try
-            {
-                if (!_client.HasConfig)
-                {
-                    try
-                    {
-                        var json = Settings.Default.TMCBConfig;
-                        if (string.IsNullOrEmpty(json)) throw new Exception();
+                return path; 
+                var tmdbconfig =GetDefaultSettings();
+                _client.SetConfig(tmdbconfig);
 
-                        var tmdbconfig = (TMDbConfig)JsonConvert.DeserializeObject(json, typeof(TMDbConfig));
-                        _client.SetConfig(tmdbconfig);
-                    }
-                    catch (Exception)
-                    {
-                        var conf = _client.GetConfigAsync().Result;
-                        Settings.Default.TMCBConfig = JsonConvert.SerializeObject(conf);
-                        Settings.Default.Save();
-                    }
-                }
-                ret = _client.GetImageUrl($"w{size}", path).AbsoluteUri;
+
+            ret = _client.GetImageUrl($"w{size}", path).AbsoluteUri;
                 // https://developers.themoviedb.org/3/configuration/get-api-configuration
                 //return _client.GetImageUrl("40", path).AbsolutePath;
 
@@ -176,18 +166,19 @@ namespace Kolibri.Common.MovieAPI.Controller
 
         }
 
-        public static string GetTMDBKey(bool obtain = false, bool replace = false)
+        public  string GetTMDBKey(bool obtain = false, bool replace = false)
         {
+            UserSettings settings = _contr.GetUserSettings();
             string ret = string.Empty;
             if (!obtain)
-            {
-                ret = Properties.Settings.Default.TMDBkey;
+            { 
+                ret = settings.TMDBkey;
 
                 if (!string.IsNullOrEmpty(ret) && replace)
                 {
                     if (MessageBox.Show($"{ret} - value found. Do you wish to type in a different one?)", System.Reflection.MethodBase.GetCurrentMethod().Name, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        Properties.Settings.Default.TMDBkey = string.Empty;
+                       settings.TMDBkey = string.Empty;
                         ret = string.Empty;
                         GetTMDBKey();
                     }
@@ -197,12 +188,12 @@ namespace Kolibri.Common.MovieAPI.Controller
             if (!String.IsNullOrEmpty(ret)) return ret;
             else
             {
-                bool ok = Kolibri.Common.FormUtilities.InputDialogs.InputBox("TMDB key required, please submit one, or cancel to obtain it.", "Please submit your tmdb key", ref ret) == System.Windows.Forms.DialogResult.OK;
+                bool ok =  InputDialogs.InputBox("TMDB key required, please submit one, or cancel to obtain it.", "Please submit your tmdb key", ref ret) == System.Windows.Forms.DialogResult.OK;
                 if (ok)
                 {
                     if (!string.IsNullOrEmpty(ret))
                     {
-                        Properties.Settings.Default.TMDBkey = ret;
+                       settings.TMDBkey = ret;
                         return ret;
                     }
                     {
@@ -211,7 +202,7 @@ namespace Kolibri.Common.MovieAPI.Controller
                 }
                 else
                 {
-                    if (MessageBox.Show("No OMDB key found. Do you want to obtain one?\n\rUsually it's free :)", "OMDB key missing", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    if (MessageBox.Show("No TMDB key found. Do you want to obtain one?\n\rUsually it's free :)", "OMDB key missing", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     { Process.Start("https://www.themoviedb.org/login"); }
                     else
                     {
@@ -220,7 +211,8 @@ namespace Kolibri.Common.MovieAPI.Controller
                     }
                 }
             }
-            Properties.Settings.Default.TMDBkey = ret;
+            settings.TMDBkey = ret;
+            _contr.Upsert(settings);
             return ret;
         }
 
