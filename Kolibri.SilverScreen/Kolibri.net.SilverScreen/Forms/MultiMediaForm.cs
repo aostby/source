@@ -141,10 +141,14 @@ namespace Kolibri.net.SilverScreen.Forms
                 _liteDB.Upsert(_settings);
                 textBoxSource.Text = dInfo.FullName;
                 SetLabelText($"{_type} - set to {dInfo.FullName}");
-                MultiMediaSearchController searchController = new MultiMediaSearchController(_settings);
-                if (checkBoxUpdateFiles.Checked)
+                if (!radioButtonNone.Checked)
                 {
-                    Task.Run(() => searchController.SearchForMovies(dInfo));
+                    MultiMediaSearchController searchController = new MultiMediaSearchController(_settings, updateNewOnly: radioButtonNew.Checked);
+
+                    Task.Run(async () =>
+                        searchController.SearchForMovies(dInfo)
+                    );
+
                 }
                 Init();
             }

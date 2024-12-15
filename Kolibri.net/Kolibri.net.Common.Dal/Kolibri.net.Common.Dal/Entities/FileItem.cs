@@ -1,4 +1,6 @@
-﻿namespace Kolibri.net.Common.Dal.Entities
+﻿using LiteDB;
+
+namespace Kolibri.net.Common.Dal.Entities
 {   public class FileItem
     { 
         public FileItem(string imdbid, string fullFileName)
@@ -15,6 +17,9 @@
         /// References the path the file is found at
         /// </summary>
         public string FullName { get; set; }
+        [BsonIgnoreAttribute]
+        public FileInfo ItemFileInfo { get { return new FileInfo(FullName); } }
+
     }
     
 }

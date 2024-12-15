@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -111,8 +112,22 @@ namespace Kolibri.net.Common.Utilities.Extensions
         #region string extensions
         public static bool IsNumeric(this string s)
         {
-            float output;
-            return float.TryParse(s, out output);
+            var ret = false;
+            try
+            { float output;
+                if (!float.TryParse(s, out output))
+                {
+                    var jaja = float.Parse(s.Replace(".", string.Empty).Replace(".", string.Empty));
+                    ret = true;
+                }
+                else { ret = true; }
+            }
+            catch (Exception)
+            {
+               
+            }
+            return ret;
+           
         }
 
         public static bool IsInt(this string text)

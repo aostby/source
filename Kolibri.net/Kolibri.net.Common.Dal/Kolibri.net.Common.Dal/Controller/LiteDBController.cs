@@ -472,6 +472,9 @@ namespace Kolibri.net.Common.Dal.Controller
         /// <returns></returns>
         public bool Upsert(FileItem file)
         {
+            if (!file.ItemFileInfo.Exists)
+            { return false; }
+
             try
             {
                 _liteDB.GetCollection<FileItem>("FileItem")
@@ -485,7 +488,7 @@ namespace Kolibri.net.Common.Dal.Controller
                     Update(file);
                     return true;
                 }
-                catch (Exception)
+                catch (Exception exf)
                 { return false; }
 
                 return false;
@@ -498,6 +501,21 @@ namespace Kolibri.net.Common.Dal.Controller
 
             return _liteDB.GetCollection<FileItem>("FileItem")
                 .Update(file.ImdbId, file);
+        }
+
+        public int Delete(FileItem file)
+        {
+            try
+            {
+                var nokko = _liteDB.GetCollection<FileItem>();
+                nokko.Delete(file.ImdbId);
+                return 1;
+            }
+            catch (Exception)
+            {
+
+                return -1;
+            }
         }
 
         #endregion
