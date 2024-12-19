@@ -16,7 +16,7 @@ using System.Reflection;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Controller;
 using Kolibri.net.Common.FormUtilities.Forms;
-using Kolibri.net.Common.Formutilities.Forms;
+using Kolibri.net.Common.FormUtilities.Forms;
 
 namespace Kolibri.net.Common.FormUtilities
 {
@@ -103,18 +103,18 @@ namespace Kolibri.net.Common.FormUtilities
                     DataRow row = currentDataRowView.Row;
 
 
-                    if (row[temp.Tag.ToString()].GetType() == typeof(Bitmap))
+                    if (temp.Tag!=null&& row[temp.Tag.ToString()].GetType() == typeof(Bitmap))
                     {
                         SplitterPanel split = temp.Parent as SplitterPanel;
                         (((split.Parent as SplitContainer).Panel2.Controls[0]) as PictureBox).Image = row[temp.Tag.ToString()] as Bitmap;
                     }
-                    if (row[temp.Tag.ToString()].GetType() == typeof(XmlDocument))
+                    if (temp.Tag != null && row[temp.Tag.ToString()].GetType() == typeof(XmlDocument))
                     {
                         SplitterPanel split = temp.Parent as SplitterPanel;
                         (((split.Parent as SplitContainer).Panel2.Controls[0]) as FastColoredTextBox).Text =
               Utilities.XMLUtilities.        PrettyPrintXML((row[temp.Tag.ToString()] as XmlDocument).OuterXml, Encoding.UTF8);
                     }
-                    else
+                    else if(temp.Tag!=null)
                     {
 
                         string query = string.Format("{0}", row[temp.Tag.ToString()]);
@@ -300,6 +300,19 @@ namespace Kolibri.net.Common.FormUtilities
             form.DialogResult = DialogResult.OK;
             return form.DialogResult;
         }
+
+        public static DialogResult VisualizeDataSet(string title, DataTable dt, Size size)
+        {
+            DataSet ds = dt.DataSet;
+            if (dt != null && dt.DataSet == null)
+            {
+                ds = new DataSet();
+                ds.Tables.Add(dt);
+            }
+           
+            return VisualizeDataSet(title, ds, size);
+        }
+
         public static DialogResult VisualizeDataSet(string title, DataSet ds, Size size)
         {
             Form form = new Form();

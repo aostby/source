@@ -54,6 +54,8 @@ namespace Kolibri.net.SilverScreen.Forms
             labelQuality = new Label();
             buttonSearch = new Button();
             toolTipDetail = new ToolTip(components);
+            buttonRediger = new Button();
+            buttonSubtitleSearch = new Button();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
             SuspendLayout();
             // 
@@ -156,7 +158,7 @@ namespace Kolibri.net.SilverScreen.Forms
             tbActors.ReadOnly = true;
             tbActors.Size = new Size(485, 23);
             tbActors.TabIndex = 25;
-            tbActors.TextChanged += tbActors_TextChanged;
+            tbActors.Click += tbActors_Clicked;
             // 
             // tbGenre
             // 
@@ -246,7 +248,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonDeleteItem
             // 
-            buttonDeleteItem.Location = new Point(329, 396);
+            buttonDeleteItem.Location = new Point(337, 398);
             buttonDeleteItem.Margin = new Padding(4, 3, 4, 3);
             buttonDeleteItem.Name = "buttonDeleteItem";
             buttonDeleteItem.Size = new Size(75, 23);
@@ -281,7 +283,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonSearch
             // 
-            buttonSearch.Location = new Point(415, 396);
+            buttonSearch.Location = new Point(415, 398);
             buttonSearch.Name = "buttonSearch";
             buttonSearch.Size = new Size(75, 23);
             buttonSearch.TabIndex = 46;
@@ -289,11 +291,33 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonSearch.UseVisualStyleBackColor = true;
             buttonSearch.Click += buttonSearch_Click;
             // 
+            // buttonRediger
+            // 
+            buttonRediger.Location = new Point(259, 398);
+            buttonRediger.Name = "buttonRediger";
+            buttonRediger.Size = new Size(75, 23);
+            buttonRediger.TabIndex = 47;
+            buttonRediger.Text = "Rediger";
+            buttonRediger.UseVisualStyleBackColor = true;
+            buttonRediger.Click += buttonRediger_Click;
+            // 
+            // buttonSubtitleSearch
+            // 
+            buttonSubtitleSearch.Location = new Point(415, 422);
+            buttonSubtitleSearch.Name = "buttonSubtitleSearch";
+            buttonSubtitleSearch.Size = new Size(75, 23);
+            buttonSubtitleSearch.TabIndex = 48;
+            buttonSubtitleSearch.Text = "Subtitle search";
+            buttonSubtitleSearch.UseVisualStyleBackColor = true;
+            buttonSubtitleSearch.Click += buttonSubtitleSearch_Click;
+            // 
             // DetailsFormItem
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(504, 754);
+            Controls.Add(buttonSubtitleSearch);
+            Controls.Add(buttonRediger);
             Controls.Add(buttonSearch);
             Controls.Add(labelQuality);
             Controls.Add(labelFileExists);
@@ -353,5 +377,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private System.Windows.Forms.Label labelQuality;
         private Button buttonSearch;
         private ToolTip toolTipDetail;
+        private Button buttonRediger;
+        private Button buttonSubtitleSearch;
     }
 }

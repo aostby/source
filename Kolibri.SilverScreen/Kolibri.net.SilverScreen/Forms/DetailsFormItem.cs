@@ -1,15 +1,12 @@
-﻿using Kolibri.Common.MovieAPI.Controller;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
-using Kolibri.net.Common.FormUtilities.Forms;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
-using System.Collections;
 using System.Data;
-using System.Diagnostics;
 using TMDbLib.Objects.Movies;
-using TMDbLib.Objects.Search;
+
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -17,18 +14,27 @@ namespace Kolibri.net.SilverScreen.Forms
     {
         private BindingSource _bsMovies;
         internal Item _item;
-        internal FileInfo _itemPath;
+        internal FileItem _itemPath;
         internal LiteDBController _liteDB;
         internal OMDBController _OMDB;
         internal TMDBController _TMDB;
+        internal SubDLSubtitleController _subDL;    
 
         [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
         public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr)
         {
-            this.FormBorderStyle = FormBorderStyle.None;
+
+
+            InitializeComponent();
             _liteDB = contr;
             _item = item;
-            InitializeComponent();
+            this.FormBorderStyle = FormBorderStyle.None;
+            Init(_item);
+        }
+
+        private void Init(Item item)
+        {
+
             tbTitle.Text = item.Title;
             tbYear.Text = item.Year;
             tbRated.Text = item.ImdbRating;
@@ -53,7 +59,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 string path = _liteDB.FindFile(_item.ImdbId).FullName;
                 toolTipDetail.SetToolTip(linkLabelOpenFilepath, path);
                 FileInfo info = new FileInfo(path);
-                _itemPath = info;
+                _itemPath = new FileItem(_item.ImdbId, info.FullName);
                 if (!info.Exists) { labelFileExists.ForeColor = Color.Salmon; toolTipDetail.SetToolTip(labelFileExists, info.Exists.ToString()); }
                 if (info.Directory.Exists) { labelFileExists.ForeColor = Color.Green; }
                 try
@@ -78,24 +84,10 @@ namespace Kolibri.net.SilverScreen.Forms
             catch (Exception ex) { labelFileExists.ForeColor = Color.Salmon; }
             pbPoster.ImageLocation = item.Poster;
 
-            try
-            {
-                _OMDB = new OMDBController(_liteDB.GetUserSettings().OMDBkey, _liteDB);
-            }
-            catch (Exception ex)
-            {
-
-                MessageBox.Show(ex.Message, ex.GetType().Name);
-            }
-            try
-            {
-                UserSettings settings = _liteDB.GetUserSettings();
-                _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}");
-            }
-            catch (Exception ex)
-            { }
+            try { _OMDB = new OMDBController(_liteDB.GetUserSettings().OMDBkey, _liteDB); } catch (Exception ex) { MessageBox.Show(ex.Message, ex.GetType().Name); }
+            try { UserSettings settings = _liteDB.GetUserSettings(); _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { }
+            try { _subDL = new SubDLSubtitleController(_liteDB.GetUserSettings()); } catch (Exception) { }
         }
-
 
         private void MovieDetailsForm_KeyDown(object sender, KeyEventArgs e)
         {
@@ -233,14 +225,162 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 var t = Task.Run(() => _TMDB.GetMovieSimilar(_item.Title, _item.Year.ToInt32()));
                 var liste = t.Result.ToList();
+
+                List<Item> imdbItems = new List<Item>();
+                foreach (var item in liste)
+                {
+                    try
+                    {
+                        var movie = _TMDB.GetMovie(item.Id);
+                        var local = _liteDB.FindItem(movie.ImdbId);
+                        if (local != null)
+                        { imdbItems.Insert(0, local); }
+                        else
+                        { }
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+                var ds = DataSetUtilities.AutoGenererDataSet(imdbItems);
+                if (ds.Tables.Count <= 0)
+                {
+                    ds = DataSetUtilities.AutoGenererDataSet(liste);
+                }
+                var cols = Kolibri.net.SilverScreen.Controls.Constants.VisibleTMDBColumns.ToList();
+
+
+                if (ds.Tables[0].Columns.Contains("ReleaseDate"))
+                {
+                    cols = new List<string> { "OriginalTitle", "ReleaseDate", "Title", "OriginalLanguage", "Overview", "VoteAverage", "VoteCount", "Id", "MediaType", "Popularity" };
+
+
+                }
+
+                DataTable dt = new DataView(ds.Tables[0]).ToTable(false, cols.ToArray());
+                dt.TableName = FileUtilities.SafeFileName(_item.Title);
+                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet($"{_item.Title} - {_item.Year} - Søk etter lignende filmer - fant {dt.Rows.Count} stk, {imdbItems.Count} lokalt.", dt, this.Size);
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+
+        private async void tbActors_Clicked(object sender, EventArgs e)
+        {
+            try
+            {
+                var t = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
+                var theList = t.Cast.ToList();
+
+                var ds = DataSetUtilities.AutoGenererDataSet(theList.ToList<Cast>());
+
+                DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(false);
+                dt.TableName = DataSetUtilities.LegalTableName("Actors");
+
+                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_item.Title, dt, this.Size);
+
+
+            }
+            catch (Exception ex)
+            {
+            }
 
         }
 
-      
-        private void tbActors_TextChanged(object sender, EventArgs e)
+        private void buttonRediger_Click(object sender, EventArgs e)
         {
+            Form form = new Form();
+            form.Size = new Size(500, 500);
+
+
+            Button button = new Button();
+            button.DialogResult = DialogResult.OK;
+            button.Text = "Lagre";
+            button.Click += Button_Click;
+            button.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            button.Dock = DockStyle.Bottom;
+            button.BringToFront();
+            form.Controls.Add(button);
+
+
+            PropertyGrid propertyGrid1 = new PropertyGrid();
+            propertyGrid1.CommandsVisibleIfAvailable = true;
+            //propertyGrid1.Location = new Point(10, 20);
+            propertyGrid1.Size = new System.Drawing.Size(400, 300);
+            propertyGrid1.TabIndex = 1;
+            propertyGrid1.Text = "Innstillinger";
+            propertyGrid1.SelectedObject = _item;
+            propertyGrid1.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Bottom;
+            propertyGrid1.Size = new Size(495, 480);
+            // propertyGrid1.Dock = DockStyle.Top;
+            form.Controls.Add(propertyGrid1);
+
+            var res = form.ShowDialog();
+
+
+            if (res == DialogResult.OK)
+            {
+                _liteDB.Update(_item);
+                _liteDB.Update(_itemPath);
+                Init(_item);
+            }
+        }
+        private void Button_Click(object? sender, EventArgs e)
+        {
+            (sender as Button).DialogResult = System.Windows.Forms.DialogResult.OK;
+            ((sender as Button).Parent as Form).DialogResult = DialogResult.OK;
+            ((sender as Button).Parent as Form).Close();
+        }
+
+        private void buttonSubtitleSearch_Click(object sender, EventArgs e)
+        {
+
+
+
+
+            try
+            {
+                FileInfo info = _itemPath.ItemFileInfo;
+
+
+                FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
+                bool dirExists = Directory.Exists(Path.Combine(info.Directory.FullName, "Subs"));
+                var mmi = _OMDB.GetItemByImdbId(_item.ImdbId);
+                dirExists = dirExists && mmi.Type == "movie";
+                if (info.Exists && !dirExists)
+                {
+                    var jall = _subDL.SearchByIMDBid(_item.ImdbId);
+                    if (jall.status == true && jall.subtitles != null && jall.subtitles.Count >= 1)
+                    {
+                        foreach (var sub in jall.subtitles)
+                        {
+                            try
+                            {
+                                string url = $"https://dl.subdl.com{sub.url}";
+
+                                FileInfo subInfo = new FileInfo(Path.Combine(info.Directory.FullName, "Subs", FileUtilities.SafeFileName($"{sub.language}_{sub.release_name}.zip")));
+
+                                var exist = Kolibri.net.Common.Utilities.FileUtilities.DownloadFile(url, subInfo.FullName);
+
+                                if (!exist) throw new FileNotFoundException(subInfo.FullName);
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Logg(Logger.LoggType.Feil, ex.Message);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("List contained no elements for this path. Try searching for elements and try again", _itemPath.FullName);
+            }
         }
     }
 }

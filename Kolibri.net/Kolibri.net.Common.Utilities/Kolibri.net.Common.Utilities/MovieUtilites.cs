@@ -3,10 +3,6 @@ using System.Data;
 using System.Text.RegularExpressions;
 
 namespace Kolibri.net.Common.Utilities
-
-
-
-
 {
     public class MovieUtilites
     {
@@ -72,7 +68,6 @@ namespace Kolibri.net.Common.Utilities
                 return ret;
             }
         }
-
         public static List<string> GenreList
         {
             get

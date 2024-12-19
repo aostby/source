@@ -1,4 +1,5 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
+using LiteDB;
 using System.ComponentModel;
 
 namespace Kolibri.net.Common.Dal.Entities
@@ -16,7 +17,13 @@ namespace Kolibri.net.Common.Dal.Entities
         [DisplayName(nameof(LiteDBFilePath))]
         public string LiteDBFilePath { get; set; }
 
-        [BrowsableAttribute(true)]
+        [BrowsableAttribute(false)]
+        [BsonIgnoreAttribute]
+        public FileInfo LiteDBFileInfo
+        {
+            get { return new FileInfo(LiteDBFilePath); }
+        }
+            [BrowsableAttribute(true)]
         [ReadOnly(true)]
         [Description(nameof(UserName))]
         [DisplayName(nameof(UserName))]

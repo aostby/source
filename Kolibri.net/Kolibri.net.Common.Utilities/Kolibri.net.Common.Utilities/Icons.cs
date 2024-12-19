@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security;
 
-namespace Kolibri.net.Common.Utilities.Images
+namespace Kolibri.net.Common.Images
+
 {
     public static partial class Icons
     {

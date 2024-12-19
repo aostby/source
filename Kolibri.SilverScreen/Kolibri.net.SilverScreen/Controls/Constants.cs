@@ -9,5 +9,23 @@ namespace Kolibri.net.SilverScreen.Controls
   public   class Constants
     {
         public enum MultimediaType { movie, Movies, Series, Audio, Pictures }
+
+        public static List<string> VisibleTMDBColumns
+        {
+            get
+            {
+                List<string> visibleColumns = new List<string>(){
+                    "Title"
+                    ,"Year"
+                    ,"ImdbRating"
+                    ,"Rated"
+                    ,"Runtime"
+                    ,"Genre"
+                    ,"Plot"
+                    ,"ImdbId"
+                };
+                return visibleColumns;
+            }
+        }
     }
 }

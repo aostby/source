@@ -17,6 +17,10 @@ namespace Kolibri.net.Common.Dal.Entities
         /// References the path the file is found at
         /// </summary>
         public string FullName { get; set; }
+
+        /// <summary>
+        /// Helper attribute, same as FullName, but as a FileInfo object. Ignored by database
+        /// </summary>
         [BsonIgnoreAttribute]
         public FileInfo ItemFileInfo { get { return new FileInfo(FullName); } }
 

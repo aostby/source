@@ -39,6 +39,7 @@
             splitContainer2 = new SplitContainer();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
+            checkBoxSimple = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -59,6 +60,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(checkBoxSimple);
             splitContainer1.Panel1.Controls.Add(groupBoxFileSearch);
             splitContainer1.Panel1.Controls.Add(labelNumItemsDB);
             splitContainer1.Panel1.Controls.Add(textBoxSource);
@@ -67,7 +69,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(splitContainer2);
-            splitContainer1.Size = new Size(1137, 637);
+            splitContainer1.Size = new Size(1633, 637);
             splitContainer1.SplitterDistance = 63;
             splitContainer1.TabIndex = 0;
             // 
@@ -152,8 +154,8 @@
             // splitContainer2.Panel1
             // 
             splitContainer2.Panel1.Controls.Add(statusStrip1);
-            splitContainer2.Size = new Size(1137, 570);
-            splitContainer2.SplitterDistance = 663;
+            splitContainer2.Size = new Size(1633, 570);
+            splitContainer2.SplitterDistance = 645;
             splitContainer2.TabIndex = 0;
             // 
             // statusStrip1
@@ -161,22 +163,34 @@
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus });
             statusStrip1.Location = new Point(0, 548);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(663, 22);
+            statusStrip1.Size = new Size(645, 22);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabelStatus
             // 
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
-            toolStripStatusLabelStatus.Size = new Size(648, 17);
+            toolStripStatusLabelStatus.Size = new Size(630, 17);
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
+            // 
+            // checkBoxSimple
+            // 
+            checkBoxSimple.AutoSize = true;
+            checkBoxSimple.Checked = true;
+            checkBoxSimple.CheckState = CheckState.Checked;
+            checkBoxSimple.Location = new Point(722, 34);
+            checkBoxSimple.Name = "checkBoxSimple";
+            checkBoxSimple.Size = new Size(75, 19);
+            checkBoxSimple.TabIndex = 5;
+            checkBoxSimple.Text = "Forenklet";
+            checkBoxSimple.UseVisualStyleBackColor = true;
             // 
             // MultiMediaForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1137, 637);
+            ClientSize = new Size(1633, 637);
             Controls.Add(splitContainer1);
             Name = "MultiMediaForm";
             Text = "MultiMediaForm";
@@ -209,5 +223,6 @@
         private RadioButton radioButtonNew;
         private RadioButton radioButtonNone;
         private RadioButton radioButtonAll;
+        private CheckBox checkBoxSimple;
     }
 }
