@@ -13,11 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Dal", ".
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Formutilities", "..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj", "{C3F0725D-7F46-41A2-8081-D052A2AC1471}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Utilities.Images", "..\Kolibri.net\Kolibri.net.Common.Utilities.Images\Kolibri.net.Common.Utilities.Images\Kolibri.net.Common.Utilities.Images.csproj", "{60E7D0C6-C4A4-4C6C-B615-2FD7A20FD903}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.DialogHelpers", "..\Kolibri.net\Kolibri.net.Common.DialogHelpers\Kolibri.net.Common.DialogHelpers.csproj", "{E333BFF5-A403-4555-B60E-797AA1BDD58C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.SilverScreen", "Kolibri.net.SilverScreen\Kolibri.net.SilverScreen.csproj", "{34B81EBC-4861-4A07-8246-63FE7EDEBD32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.SilverScreen", "Kolibri.net.SilverScreen\Kolibri.net.SilverScreen.csproj", "{34B81EBC-4861-4A07-8246-63FE7EDEBD32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,10 +39,6 @@ Global
 		{C3F0725D-7F46-41A2-8081-D052A2AC1471}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3F0725D-7F46-41A2-8081-D052A2AC1471}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3F0725D-7F46-41A2-8081-D052A2AC1471}.Release|Any CPU.Build.0 = Release|Any CPU
-		{60E7D0C6-C4A4-4C6C-B615-2FD7A20FD903}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60E7D0C6-C4A4-4C6C-B615-2FD7A20FD903}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{60E7D0C6-C4A4-4C6C-B615-2FD7A20FD903}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{60E7D0C6-C4A4-4C6C-B615-2FD7A20FD903}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E333BFF5-A403-4555-B60E-797AA1BDD58C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E333BFF5-A403-4555-B60E-797AA1BDD58C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E333BFF5-A403-4555-B60E-797AA1BDD58C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -61,7 +55,6 @@ Global
 		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
 		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
 		{C3F0725D-7F46-41A2-8081-D052A2AC1471} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
-		{60E7D0C6-C4A4-4C6C-B615-2FD7A20FD903} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
 		{E333BFF5-A403-4555-B60E-797AA1BDD58C} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

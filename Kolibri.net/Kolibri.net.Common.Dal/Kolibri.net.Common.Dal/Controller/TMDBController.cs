@@ -4,12 +4,13 @@ using Kolibri.net.Common.FormUtilities.Forms;
 using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Diagnostics;
+using TMDbLib.Objects.Credit;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
 using TMDbLib.Objects.TvShows;
 
-namespace Kolibri.Common.MovieAPI.Controller
+namespace Kolibri.net.Common.Dal.Controller
 {
     public class TMDBController
     {
@@ -24,10 +25,14 @@ namespace Kolibri.Common.MovieAPI.Controller
 
         public TMDBController(LiteDBController contr, string apikey = null)
         {
-            if (apikey == null)
-                this._apiKey = GetTMDBKey();
+            if (contr != null)
+                _apiKey = contr.GetUserSettings().TMDBkey;
+
+
+            else if (string.IsNullOrWhiteSpace(apikey))
+            { this._apiKey = GetTMDBKey(); }
             else
-                this._apiKey = apikey;
+            { this._apiKey = apikey; }
 
             _client = new TMDbLib.Client.TMDbClient(_apiKey);
             _contr = contr;
@@ -216,6 +221,7 @@ namespace Kolibri.Common.MovieAPI.Controller
             return ret;
         }
 
+      
 
         //private   async Task Main( )
         //{
@@ -386,6 +392,30 @@ namespace Kolibri.Common.MovieAPI.Controller
             }
             
             return ret;
+        }
+
+
+        public async Task<TMDbLib.Objects.Movies.Credits> GetMovieCredits(string title, int year)
+        {
+            
+            var t = Task.Run(() => FetchMovie(title, year));
+            List<SearchMovie> tLibList = t.Result;
+            if (tLibList != null && tLibList.Count >= 1)
+            {
+                var mof = _client.GetMovieAsync(tLibList.FirstOrDefault().Id);
+                var ja = mof.Result;
+
+                var res = await _client.GetAggregateCredits(ja.Id);
+              var tull = await  _client.GetCreditsAsync(ja.Id.ToString());
+
+         var        ret = await _client.GetMovieCreditsAsync(ja.Id);
+                return ret;
+
+ 
+                
+            }
+
+            return null;
         }
 
         public async Task<List<Item>> GetMovies(List<SearchMovie> titles)

@@ -37,15 +37,7 @@ namespace Kolibri.net.SilverScreen.Controls
             DataGridView ret = null;
             try
             {
-                List<string> visibleColumns = new List<string>(){ "Title"
-                    ,"ImdbRating"
-                    ,"Year"
-            ,"Rated"
-            ,"Runtime"
-            ,"Genre"
-            ,"Plot" };
-
-
+                List<string> visibleColumns = Constants.VisibleTMDBColumns;  
 
                 DataGridView dgv = new DataGridView();
                 dgv.DataSource = tableItem;

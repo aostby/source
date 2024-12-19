@@ -1,4 +1,4 @@
-using Kolibri.net.Common.Utilities.Images;
+using Kolibri.net.Common.Utilities;
 using System.Data;
 
 namespace Kolibri.net.Common.FormUtilities.Forms

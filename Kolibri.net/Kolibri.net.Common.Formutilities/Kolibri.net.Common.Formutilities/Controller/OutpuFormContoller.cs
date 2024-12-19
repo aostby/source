@@ -1,5 +1,5 @@
 ﻿using FastColoredTextBoxNS;
-using global::Kolibri.net.Common.Formutilities.Forms;
+using global::Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using System.Data;
 using System.Text;

@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Kolibri.net.Common.Utilities.Images\Kolibri.net.Common.Utilities.Images\Kolibri.net.Common.Utilities.Images.csproj" />
     <ProjectReference Include="..\..\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
   </ItemGroup>
 

@@ -6,7 +6,7 @@ using System.Net;
 using System.Drawing.Drawing2D;
 
 
-namespace Kolibri.net.Common.Utilities.Images
+namespace Kolibri.net.Common.Utilities
 {
     public class ImageUtilities
     {

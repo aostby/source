@@ -6,7 +6,7 @@ using Microsoft.Win32;
 using System.Runtime.CompilerServices; // [Extension()]
 using System.Runtime.InteropServices;
 
-namespace Kolibri.net.Common.Utilities.Images
+namespace Kolibri.net.Common.Images
 {
     public static partial class Icons
     {

@@ -1,15 +1,14 @@
-﻿using java.time;
-using Kolibri.Common.MovieAPI.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
-using Kolibri.net.Common.Utilities.Images;
+
 using Kolibri.net.SilverScreen.Controller;
 using Kolibri.net.SilverScreen.Controls;
+using Kolibri.net.SilverScreen.IMDBForms;
 using OMDbApiNet.Model;
 using System.Data;
-using TMDbLib.Objects.Movies;
-using TMDbLib.Objects.Search;
 using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Forms
@@ -31,6 +30,7 @@ namespace Kolibri.net.SilverScreen.Forms
             this._settings = settings;
             this.Text = $"{_type.ToString()}";
             _liteDB = new LiteDBController(new FileInfo(settings.LiteDBFilePath), false, false);
+            checkBoxSimple.Checked = _settings != null && string.IsNullOrEmpty( _settings.TMDBkey);
             Init();
 
         }
@@ -50,6 +50,9 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (_dgvController == null) _dgvController = new DataGrivViewControls(_liteDB);
             _items = GetItems();
+
+        
+
 
             ShowGridForDBItems();
         }
@@ -141,10 +144,14 @@ namespace Kolibri.net.SilverScreen.Forms
                 _liteDB.Upsert(_settings);
                 textBoxSource.Text = dInfo.FullName;
                 SetLabelText($"{_type} - set to {dInfo.FullName}");
-                MultiMediaSearchController searchController = new MultiMediaSearchController(_settings);
-                if (checkBoxUpdateFiles.Checked)
+                if (!radioButtonNone.Checked)
                 {
-                    Task.Run(() => searchController.SearchForMovies(dInfo));
+                    MultiMediaSearchController searchController = new MultiMediaSearchController(_settings, updateNewOnly: radioButtonNew.Checked);
+
+                    Task.Run(async () =>
+                        searchController.SearchForMovies(dInfo)
+                    );
+
                 }
                 Init();
             }
@@ -190,8 +197,10 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         private void SetForm(Item item)
         {
+            Form form;
             SplitterPanel panel = splitContainer2.Panel2;
-            Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(item, _liteDB);
+            if (checkBoxSimple.Checked) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(item, _liteDB); }
+            else            {                form = new MovieForm(_settings, item);            }
             SetForm(form, panel);
         }
 
