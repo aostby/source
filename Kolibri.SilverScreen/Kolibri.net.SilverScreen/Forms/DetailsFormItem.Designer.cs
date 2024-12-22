@@ -122,6 +122,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // label1
             // 
             label1.AutoSize = true;
+            label1.ImageAlign = ContentAlignment.MiddleLeft;
             label1.Location = new Point(12, 428);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
@@ -283,11 +284,13 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonSearch
             // 
+            buttonSearch.ImageAlign = ContentAlignment.MiddleLeft;
             buttonSearch.Location = new Point(415, 398);
             buttonSearch.Name = "buttonSearch";
             buttonSearch.Size = new Size(75, 23);
             buttonSearch.TabIndex = 46;
             buttonSearch.Text = "Search";
+            buttonSearch.TextAlign = ContentAlignment.MiddleRight;
             buttonSearch.UseVisualStyleBackColor = true;
             buttonSearch.Click += buttonSearch_Click;
             // 
@@ -303,11 +306,13 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonSubtitleSearch
             // 
+            buttonSubtitleSearch.ImageAlign = ContentAlignment.MiddleLeft;
             buttonSubtitleSearch.Location = new Point(415, 422);
             buttonSubtitleSearch.Name = "buttonSubtitleSearch";
             buttonSubtitleSearch.Size = new Size(75, 23);
             buttonSubtitleSearch.TabIndex = 48;
             buttonSubtitleSearch.Text = "Subtitle search";
+            buttonSubtitleSearch.TextAlign = ContentAlignment.MiddleRight;
             buttonSubtitleSearch.UseVisualStyleBackColor = true;
             buttonSubtitleSearch.Click += buttonSubtitleSearch_Click;
             // 

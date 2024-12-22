@@ -761,15 +761,18 @@ namespace Kolibri.net.Common.Utilities
         /// This can be used directly to the FileDialog class Filter Property.
         /// </summary>
         /// <returns>A Filter formated string to be used as filter for File dialogs (open/save) </returns>
-        public static string GetFileDialogFilter(string[] extensions)
+        public static string GetFileDialogFilter(string[] extensions, bool allFiles=false)
         {
             Dictionary<string, string> dic = new Dictionary<string, string>();
             foreach (string item in extensions)
             {
                 dic.Add(item.ToUpper(), item.ToLower());
             }
-            return GetFileDialogFilter(dic);
-
+            var ret = GetFileDialogFilter(dic);
+            if (!allFiles) {
+                ret = ret.Substring(0,ret.IndexOf("All Files") - 1);
+            }
+            return ret;
         }
 
         public static string GetFileDialogFilter(Dictionary<string, string> extensions)

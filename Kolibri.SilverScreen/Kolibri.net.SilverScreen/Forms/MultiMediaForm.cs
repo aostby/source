@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using com.sun.istack.@internal.localization;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images;
@@ -16,12 +17,16 @@ namespace Kolibri.net.SilverScreen.Forms
     public partial class MultiMediaForm : Form
     {
         LiteDBController _liteDB;
+        
         TMDBController _TMDB;
+        OMDBController _OMDB;
+        ImageCache _imageCache;
+
         MultimediaType _type;
         private readonly UserSettings _settings;
         private IEnumerable<FileItem> _files;
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
-        private List<Item> _items;
+    //    private List<Item> _items;
 
         public MultiMediaForm(MultimediaType type, UserSettings settings)
         {
@@ -30,13 +35,32 @@ namespace Kolibri.net.SilverScreen.Forms
             this._settings = settings;
             this.Text = $"{_type.ToString()}";
             _liteDB = new LiteDBController(new FileInfo(settings.LiteDBFilePath), false, false);
-            checkBoxSimple.Checked = _settings != null && string.IsNullOrEmpty( _settings.TMDBkey);
+      
             Init();
 
         }
 
         private void Init()
         {
+            checkBoxSimple.Checked = _settings != null && string.IsNullOrEmpty(_settings.TMDBkey);
+            if (_type.Equals(MultimediaType.Series))
+            {
+                checkBoxSimple.Checked = true;
+            }
+
+            _imageCache = new ImageCache(_settings);
+            try
+            {
+                if (_type.Equals(MultimediaType.movie))
+                {
+                    if (!string.IsNullOrEmpty(_settings.OMDBkey))
+                        _TMDB = new TMDBController(_liteDB, _settings.OMDBkey);
+                }
+            }
+            catch (Exception)
+            {
+                _TMDB = null;
+            }
             buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
 
             _files = new List<FileItem>();
@@ -44,41 +68,65 @@ namespace Kolibri.net.SilverScreen.Forms
             var path = GetCurentPath();
             textBoxSource.Text = path;
             SetLabelText($"Current filepaht: {path} - Searching for {_type}");
+
             _files = _liteDB.FindAllFileItems(new DirectoryInfo(path)).ToList();
-            labelNumItemsDB.Text = $"{_files.Count()} files found";
-            SetLabelText(labelNumItemsDB.Text);
+            //filter
+            if (radioButtonNoneExistant.Checked)
+            {
+                var filtered = _files.Where(x => !x.ItemFileInfo.Exists);
+                if (filtered != null && filtered.Count() >= 1) _files = filtered;
+            }            
 
             if (_dgvController == null) _dgvController = new DataGrivViewControls(_liteDB);
-            _items = GetItems();
+            var list = GetItems(_files);
 
-        
-
-
-            ShowGridForDBItems();
+            labelNumItemsDB.Text = $"{_files.Count()} files found";
+            SetLabelText(labelNumItemsDB.Text);
+         
+                ShowGridForDBItems(list);
         }
 
-        private List<Item> GetItems()
+        private List<Item> GetItems(IEnumerable<FileItem> files=null)
         {
             var task = Task.Run<Task<IEnumerable<Item>>>(async () => await _liteDB.FindAllItems(_type.ToString()));
-            return task.Result.Result.ToList();
+            var ret= task.Result.Result.ToList();
+            if (files != null && files.Count() >= 1)
+            {
+                var sublist = new List<Item>();
+
+                foreach (var item in files)
+                {
+                    var has = ret.Find(cus => cus.ImdbId.Equals(item.ImdbId));
+                    if (has != null) sublist.Add(has);
+                }
+                ret = sublist;
+                //ret = ret.Where(x=> x.ImdbId.Equals( files.ToList().Find(y=>y.ImdbId.Equals(x.ImdbId)
+                //                 || x.ImdbId.Equals(files.ToList().Find(t=>t.ImdbId.Equals(x.Title, StringComparison.OrdinalIgnoreCase)))
+            }
+            
+            return ret; 
         }
 
-        private void ShowGridForDBItems()
-        {
-            string path = GetCurentPath();
-
+        private void ShowGridForDBItems(List<Item> list=null)
+        {   string path = GetCurentPath();
+            DataTable resultTable = null;
             try
             {
-                var movie = _liteDB.FindItem(_files.FirstOrDefault().ImdbId);
-
                 if (_files != null && _files.Count() > 0)
                 {
                     SetLabelText($"Searching for {_type}.....");
                     var lookup = _files.Distinct().ToDictionary(x => x.ImdbId);
-                    var searchList = _items.Where(t => lookup.ContainsKey(t.ImdbId));
 
-                    var resultTable = DataSetUtilities.AutoGenererTypedDataSet(new System.Collections.ArrayList(searchList.ToArray())).Tables[0];
-
+                    if (list != null)
+                    {
+                        var searchList = list;
+                        resultTable = DataSetUtilities.AutoGenererTypedDataSet(new System.Collections.ArrayList(searchList.ToArray())).Tables[0];
+                    }
+                    else
+                    {
+                        var searchList = lookup.Where(t => ((t.Key != null)) && lookup.ContainsKey(t.Key));
+                        resultTable = DataSetUtilities.AutoGenererTypedDataSet(new System.Collections.ArrayList(searchList.ToArray())).Tables[0];
+                    }
                     var temp = new DataView(resultTable, "", "ImdbRating desc, Title ASC", DataViewRowState.CurrentRows).ToTable();
                     resultTable = temp;
                     resultTable.TableName = DataSetUtilities.LegalTableName(System.IO.Path.GetFileNameWithoutExtension(path));
@@ -86,8 +134,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     {
                         DataSet ds = new DataSet();
                         ds.Tables.Add(resultTable);
-                    }
-
+                    } 
 
                     ShowGridView(resultTable);
                 }
@@ -199,7 +246,7 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             Form form;
             SplitterPanel panel = splitContainer2.Panel2;
-            if (checkBoxSimple.Checked) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(item, _liteDB); }
+            if (checkBoxSimple.Checked) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(item, _liteDB, tmdb:_TMDB); }
             else            {                form = new MovieForm(_settings, item);            }
             SetForm(form, panel);
         }

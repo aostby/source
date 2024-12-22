@@ -7,9 +7,7 @@ using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
 using System.Net;
-using System.Text;
-
-
+using System.Text; 
 
 namespace Kolibri.net.SilverScreen.IMDBForms
 {
@@ -32,7 +30,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             InitializeComponent();
               Init(); 
             tbSearch.Text = item.Title;
-            tbYearParameter.Text = item.Year;
+            tbYearParameter.Text = item.Year.EndsWith('–') ? item.Year.TrimEnd('–') : item.Year;
+            if (item.Type.Equals("series") & item.Year.Contains('–')) {
+                tbYearParameter.Text = item.Year.Substring(0,item.Year.IndexOf('–'));
+            }
             btnSearch_Click(btnSearch, null);
       
         }

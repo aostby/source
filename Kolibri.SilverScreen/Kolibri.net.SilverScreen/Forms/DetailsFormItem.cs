@@ -1,12 +1,12 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
-using Kolibri.net.Common.Dal.Controller;
+using Kolibri.net.Common.Images;
+using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
 using System.Data;
 using TMDbLib.Objects.Movies;
-
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -18,23 +18,38 @@ namespace Kolibri.net.SilverScreen.Forms
         internal LiteDBController _liteDB;
         internal OMDBController _OMDB;
         internal TMDBController _TMDB;
-        internal SubDLSubtitleController _subDL;    
+        internal SubDLSubtitleController _subDL;
+        internal ImageCache _imageCache;
 
         [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
-        public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr)
+        //public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr)
+        //{ 
+        //    InitializeComponent();
+        //    _liteDB = contr;
+        //    _item = item;
+        //    this.FormBorderStyle = FormBorderStyle.None;
+        //    Init(_item);
+        //}
+        public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr
+            , OMDBController omdb=null
+            , TMDBController tmdb = null
+            , SubDLSubtitleController subDL=null  
+            , ImageCache imagecache=null
+            )
         {
-
-
             InitializeComponent();
             _liteDB = contr;
             _item = item;
             this.FormBorderStyle = FormBorderStyle.None;
+            _OMDB = omdb;
+            _TMDB=tmdb;
+            _subDL = subDL; 
+            _imageCache = imagecache;  
             Init(_item);
         }
 
         private void Init(Item item)
         {
-
             tbTitle.Text = item.Title;
             tbYear.Text = item.Year;
             tbRated.Text = item.ImdbRating;
@@ -53,7 +68,28 @@ namespace Kolibri.net.SilverScreen.Forms
             tbActors.Text = item.Actors;
             tbPlot.Text = item.Plot;
             tbMetascore.Text = item.Metascore;
+  
+            pbPoster.ImageLocation = item.Poster;
+            try
+            {
+                UserSettings settings = _liteDB.GetUserSettings();
 
+                try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); }
+                try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { }
+                try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { }
+                try { _imageCache = new ImageCache(settings); } catch (Exception ex) { }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+
+            //Dersom alt er initialisert, sett farger
+            InitButtons();
+        }
+
+        private void InitButtons(bool verbose = false)
+        {
             try
             {
                 string path = _liteDB.FindFile(_item.ImdbId).FullName;
@@ -82,11 +118,55 @@ namespace Kolibri.net.SilverScreen.Forms
 
             }
             catch (Exception ex) { labelFileExists.ForeColor = Color.Salmon; }
-            pbPoster.ImageLocation = item.Poster;
+            buttonSearch.Image = Icons.GetFolderIcon().ToBitmap();
+            buttonSubtitleSearch.Image = Icons.GetFolderIcon().ToBitmap();
+            if (_imageCache != null)
+            {
+                try
+                {
+                    if (_imageCache.FindImage(nameof(buttonSearch)) == null) { _imageCache.InsertImage(nameof(buttonSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://github.com/JuzerShakir/Investigate_TMDb_Movies/raw/master/logo.jpg")); }
+                    if (_imageCache.FindImage(nameof(buttonSubtitleSearch)) == null) { _imageCache.InsertImage(nameof(buttonSubtitleSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://subdl.com/logo/fav.png")); }
 
-            try { _OMDB = new OMDBController(_liteDB.GetUserSettings().OMDBkey, _liteDB); } catch (Exception ex) { MessageBox.Show(ex.Message, ex.GetType().Name); }
-            try { UserSettings settings = _liteDB.GetUserSettings(); _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { }
-            try { _subDL = new SubDLSubtitleController(_liteDB.GetUserSettings()); } catch (Exception) { }
+                    ImagePoster image = _imageCache.FindImage(nameof(buttonSearch));
+                    buttonSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
+                    image = _imageCache.FindImage(nameof(buttonSubtitleSearch));
+                    buttonSubtitleSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
+                }
+                catch (Exception) { }
+            }
+            try
+            {
+                if (string.IsNullOrEmpty(_subDL.apikey))
+                {
+                    if (verbose)
+                    {
+                        throw new NoNullAllowedException($"SubDL krever en API Key, og din er tom. Vennligst legg inn en nøkkel for å kunne søke etter undertekster");
+                    }
+                }
+
+                FileInfo info = _itemPath.ItemFileInfo;
+
+                FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
+                if (!srtInfo.Exists)
+                {
+                    bool dirExists = Directory.Exists(Path.Combine(info.Directory.FullName, "Subs"));
+                    if (!dirExists)
+                    {
+                        if (info.Extension.Equals(".mkv", StringComparison.OrdinalIgnoreCase))
+                        {
+                            buttonSubtitleSearch.BackColor = Color.PapayaWhip;
+                        }
+                        else { buttonSubtitleSearch.BackColor = Color.LightSalmon; }
+                        toolTipDetail.SetToolTip(buttonSubtitleSearch, $" Filtype: {info.Extension}. Filmen mangler srt fil eller en mappe med undertekster.");
+
+                    }
+                    else buttonSubtitleSearch.BackColor = Control.DefaultBackColor;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message}", ex.GetType().Name);
+            }
         }
 
         private void MovieDetailsForm_KeyDown(object sender, KeyEventArgs e)
@@ -281,7 +361,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(false);
                 dt.TableName = DataSetUtilities.LegalTableName("Actors");
 
-                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_item.Title, dt, this.Size);
+                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_item.Title, dt.DataSet, this.Size);
 
 
             }
@@ -337,13 +417,14 @@ namespace Kolibri.net.SilverScreen.Forms
         }
 
         private void buttonSubtitleSearch_Click(object sender, EventArgs e)
-        {
-
-
-
+        { 
 
             try
             {
+                if (string.IsNullOrEmpty(_subDL.apikey))
+                    throw new NoNullAllowedException($"SubDL krever en API Key, og din er tom. Vennligst legg inn en nøkkel for å kunne søke etter undertekster");
+
+
                 FileInfo info = _itemPath.ItemFileInfo;
 
 
@@ -379,7 +460,7 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("List contained no elements for this path. Try searching for elements and try again", _itemPath.FullName);
+                MessageBox.Show($"List contained no elements for this path.{Environment.NewLine}{ex.Message}. Try searching for elements and try again", _itemPath.FullName);
             }
         }
     }

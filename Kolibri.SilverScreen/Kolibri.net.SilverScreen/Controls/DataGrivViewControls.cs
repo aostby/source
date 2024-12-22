@@ -1,4 +1,5 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
+using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using OMDbApiNet.Model;
@@ -11,12 +12,14 @@ namespace Kolibri.net.SilverScreen.Controls
     public class DataGrivViewControls
     {
         private LiteDBController _LITEDB;
+        
 
         public Item CurrentItem { get; internal set; }
 
         public DataGrivViewControls(LiteDBController contr)
         {
             _LITEDB = contr;
+            
         }
 
         public Form GetMovieItemDataGridViewAsForm(DataTable table)
@@ -37,7 +40,7 @@ namespace Kolibri.net.SilverScreen.Controls
             DataGridView ret = null;
             try
             {
-                List<string> visibleColumns = Constants.VisibleTMDBColumns;  
+                List<string> visibleColumns = Constants.VisibleTMDBColumns;
 
                 DataGridView dgv = new DataGridView();
                 dgv.DataSource = tableItem;
@@ -68,7 +71,8 @@ namespace Kolibri.net.SilverScreen.Controls
 
                 }
                 catch (Exception) { }
-                ret = dgv;           }
+                ret = dgv;
+            }
             catch (Exception)
             { }
 

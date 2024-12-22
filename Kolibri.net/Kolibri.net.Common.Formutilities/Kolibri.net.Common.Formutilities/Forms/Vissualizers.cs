@@ -5,18 +5,17 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data;
  
-using System.Drawing;
+
 using System.Xml;
 using FastColoredTextBoxNS;
-using System.Diagnostics;
-using System.IO;
+
 using System.Data.SqlClient;
  
-using System.Reflection;
+
 using Kolibri.net.Common.Utilities;
-using Kolibri.net.Common.Utilities.Controller;
+
 using Kolibri.net.Common.FormUtilities.Forms;
-using Kolibri.net.Common.FormUtilities.Forms;
+ 
 
 namespace Kolibri.net.Common.FormUtilities
 {
@@ -300,6 +299,7 @@ namespace Kolibri.net.Common.FormUtilities
             form.DialogResult = DialogResult.OK;
             return form.DialogResult;
         }
+        
 
         public static DialogResult VisualizeDataSet(string title, DataTable dt, Size size)
         {

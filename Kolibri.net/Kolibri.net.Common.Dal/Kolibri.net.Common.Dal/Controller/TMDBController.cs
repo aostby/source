@@ -22,6 +22,7 @@ namespace Kolibri.net.Common.Dal.Controller
         //API -- https://developers.themoviedb.org/3/getting-started/introduction
         //key https://www.themoviedb.org/talk/60a834cb501cf2005930515e?page=1#60a834cb501cf20059305161
 
+        //rottentomatoes-csharp på github
 
         public TMDBController(LiteDBController contr, string apikey = null)
         {
