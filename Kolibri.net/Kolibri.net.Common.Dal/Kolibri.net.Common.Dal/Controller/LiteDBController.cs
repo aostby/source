@@ -1,5 +1,6 @@
 ﻿using com.sun.org.apache.bcel.@internal.generic;
 using com.sun.tools.corba.se.idl;
+using java.awt;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
@@ -307,6 +308,18 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
                             .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public  List<SeasonEpisode> FindAllSeasonEpisodes()
+        {
+            try
+            {
+                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode").FindAll().ToList(); 
+                            
             }
             catch (Exception ex)
             {
@@ -741,16 +754,29 @@ switch (searchCriteria)
         }
 
 
-        public IEnumerable<WatchList> WishListFindAll(string type = null)
+        public List<WatchList> WishListFindAll(string type = null, string watchListName = null)
         {
+            //if (!string.IsNullOrEmpty(type))
+            //{
+            //    var list = _liteDB.GetCollection<WatchList>("WatchList").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
+            //    return list;
+            //}
+            //else
+
+            var temp = _liteDB.GetCollection<WatchList>("WatchList").FindAll().ToList();
+            var list = temp.ToList();
             if (!string.IsNullOrEmpty(type))
             {
-                var list = _liteDB.GetCollection<WatchList>("WatchList").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
-                return list;
+                list = list.Where(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
             }
-            else
-                return _liteDB.GetCollection<WatchList>("WatchList")
-                    .FindAll();
+              
+            if (!string.IsNullOrEmpty(watchListName))
+            {
+                list = list.Where(x => x.WatchListName.Equals(watchListName, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+       
+            return list.ToList();
+
         }
         public WatchList WishListGetItemByID(string id)
         {

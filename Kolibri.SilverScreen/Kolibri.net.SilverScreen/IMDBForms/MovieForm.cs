@@ -1,4 +1,6 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using com.sun.java.swing.plaf.motif.resources;
+using javax.xml.crypto;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
@@ -7,6 +9,7 @@ using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
 using System.Net;
+using System.Reflection;
 using System.Text; 
 
 namespace Kolibri.net.SilverScreen.IMDBForms
@@ -28,23 +31,42 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             _userSettings = userSettings;
             InitializeComponent();
-              Init(); 
+            Init();
             tbSearch.Text = item.Title;
             tbYearParameter.Text = item.Year.EndsWith('–') ? item.Year.TrimEnd('–') : item.Year;
-            if (item.Type.Equals("series") & item.Year.Contains('–')) {
-                tbYearParameter.Text = item.Year.Substring(0,item.Year.IndexOf('–'));
+            if (item.Type.Equals("series") & item.Year.Contains('–'))
+            {
+                tbYearParameter.Text = item.Year.Substring(0, item.Year.IndexOf('–'));
             }
+            try
+            {
+                _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
+                this.Text = $"{Assembly.GetExecutingAssembly().GetName().Name} - {_userSettings.FavoriteWatchList}";
+                var list = _liteDB.WishListFindAll().ToList();
+                var names = list.Select(c => c.WatchListName.ToString()).Distinct();
+                
+                comboBox1.DataSource = names.ToList();
+                if (names.Contains(_userSettings.FavoriteWatchList))
+                    comboBox1.SelectedIndex = comboBox1.Items.IndexOf(_userSettings.FavoriteWatchList);
+            }
+            catch (Exception)
+            { }
+
+
             btnSearch_Click(btnSearch, null);
-      
+
         }
 
         private void Init()
         {
-            _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
+            if (_liteDB == null)
+            {
+                _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
+            }
             //https://www.c-sharpcorner.com/article/autocomplete-textbox-in-C-Sharp/
-            _IMDBDAL = new IMDBDAL(_liteDB); 
+            _IMDBDAL = new IMDBDAL(_liteDB);
 
-            tbSearch.AutoCompleteMode= AutoCompleteMode.SuggestAppend;
+            tbSearch.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             tbSearch.AutoCompleteSource = AutoCompleteSource.CustomSource;
             try
             {
@@ -53,7 +75,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             catch (Exception ex)
             { }
-            
+
         }
 
         private void btnSearch_Click(object sender, EventArgs e)
@@ -100,7 +122,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
             {
                 var json = wc.DownloadString(url);
-                        var result = JsonConvert.DeserializeObject<WatchList>(json);
+                var result = JsonConvert.DeserializeObject<WatchList>(json);
 
                 if (result.Response == "True")
                 {
@@ -116,12 +138,12 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     labelImdbId.Text = result.ImdbId;
                     labelImdbRating.Text = result.ImdbRating;
 
-                  linkLabelOpenFilePath.BackColor = Control.DefaultBackColor;
+                    linkLabelOpenFilePath.BackColor = Control.DefaultBackColor;
                 }
                 else
                 {
                     MessageBox.Show("Movie not found!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                } 
+                }
             }
         }
 
@@ -152,10 +174,11 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 Picture = arr,
                 Trailer = TrailerUrl(labelImdbId.Text),
                 ImdbId = labelImdbId.Text,
-                ImdbRating = labelImdbRating.Text ,
-            Watched = "N"
-                
+                ImdbRating = labelImdbRating.Text,
+                Watched = "N"
+
             };
+            obj.WatchListName = comboBox1.SelectedValue.ToString();
 
             _IMDBDAL.AddMovie(obj);
 
@@ -163,7 +186,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private void btnWatchList_Click(object sender, EventArgs e)
         {
-            WatchlistForm frm = new WatchlistForm(_liteDB);
+            WatchlistForm frm = new WatchlistForm(_liteDB, comboBox1.SelectedValue.ToString());
             frm.ShowDialog();
         }
 
@@ -195,8 +218,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
-            private void RecomendMovie(object sender, EventArgs e)
-        {     string type = "movie"; int number = 1000;    string genre = tbGenre.Text;
+        private void RecomendMovie(object sender, EventArgs e)
+        {
+            string type = "movie"; int number = 1000; string genre = tbGenre.Text;
             string[] words = genre.Split(',');
             if (_liteDB == null)
             {
@@ -232,20 +256,21 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 }
                 return;
             }
-            else 
+            else
             {
-                Top100IMDbForm frm = new Top100IMDbForm(_liteDB, tbTitle.Text,tbYear.Text.Substring(0,4).ToInt32());
+                Top100IMDbForm frm = new Top100IMDbForm(_liteDB, tbTitle.Text, tbYear.Text.Substring(0, 4).ToInt32());
                 frm.ShowDialog();
-            } 
+            }
 
         }
 
-        private string TrailerUrl(string imdbId=null)
+        private string TrailerUrl(string imdbId = null)
         {
-            if (!string.IsNullOrEmpty(imdbId)) {
+            if (!string.IsNullOrEmpty(imdbId))
+            {
                 return $"https://www.imdb.com/title/{imdbId}";
             }
-             
+
             return @"https://www.imdb.com/";
 
         }
@@ -264,10 +289,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             catch (Exception ex)
             {
-                (sender as LinkLabel).BackColor= Color.Red;
-                 
+                (sender as LinkLabel).BackColor = Color.Red;
+
             }
-          
+
 
         }
 
@@ -310,6 +335,42 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             catch (Exception ex)
             { }
+        }
+
+        private void buttonNewList_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string newName = $"{DateTime.Now.ToShortDateString()}_list";
+
+                var res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.InputBox("Set name for new list", "Please set a name for new item", ref newName);
+                if (res == DialogResult.OK)
+                {
+                    var list = comboBox1.Items.Cast<string>().ToList();
+                    list.Insert(0, newName);
+                    comboBox1.DataSource = null;
+                    comboBox1.DataSource = list;
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {if (!this.Visible) return;
+            try
+            {
+                _userSettings.FavoriteWatchList = (sender as ComboBox).SelectedValue.ToString();
+                _userSettings.Save();
+            }
+            catch (Exception ex)
+            {
+            }
+
         }
     }
 }

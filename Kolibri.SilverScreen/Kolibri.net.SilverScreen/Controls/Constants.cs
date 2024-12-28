@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,5 +28,23 @@ namespace Kolibri.net.SilverScreen.Controls
                 return visibleColumns;
             }
         }
+
+        public static List<string> VisibleSeasonEpisodeColumns
+        {
+            get
+            {
+                List<string> visibleColumns = new List<string>(){
+                    "Title",
+                    "Released",
+                    "Episode",
+                    "ImdbRating",
+                    "ImdbId",
+                };
+
+                return visibleColumns;
+            }
+        }
+
+
     }
 }

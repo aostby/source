@@ -36,6 +36,8 @@ namespace Kolibri.net.SilverScreen.Controller
             try
             {
                 if (tmdb != null) { _TMDB = tmdb; } else { _TMDB = new TMDBController(_liteDB, _settings.TMDBkey); }
+                _seriesCache = new SeriesCache(new FileInfo(_liteDB.ConnectionString.Filename).Directory);
+
             }
             catch (Exception) { }
             try
@@ -229,7 +231,7 @@ namespace Kolibri.net.SilverScreen.Controller
 
                                 if (year > 1)
                                 {
-                                    var result = tLibList.FirstOrDefault(s => s.ReleaseDate.Value.Year.Equals(year) && s.Title.StartsWith(title));
+                                    var result = tLibList.FirstOrDefault(s => s.ReleaseDate.Value.Year.Equals(year));// && s.Title.StartsWith(title));
                                     if (result != null)
                                     {
                                         var tmdbMovie = _TMDB.GetMovie(result.Id);
@@ -269,10 +271,8 @@ namespace Kolibri.net.SilverScreen.Controller
                     }
                     else
                     {
-                        movie = new OMDbApiNet.Model.Item() { Title = title, Year = year.ToString(), ImdbRating = "Unknown", Response = "false", TomatoUrl = file.FullName, 
-                        
-                        ImdbId = title
-                        };
+                        //Mangler tmdbID
+                        movie = new OMDbApiNet.Model.Item() { Title = title, Year = year.ToString(), ImdbRating = "Unknown", Response = "false", TomatoUrl = file.FullName};
                     }
                 }
 
@@ -297,7 +297,7 @@ namespace Kolibri.net.SilverScreen.Controller
         }
         #endregion
 
-        private void SearchForSeries(DirectoryInfo dir)
+        public async void SearchForSeries(DirectoryInfo dir)
         {  Dictionary<string, Season> _seasonDic = null;
 
         List<Season> listOfFileSeasons = null;
@@ -524,7 +524,8 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 DataSet ds;
                 List<string> columns = new List<string>() { "Name", "Title", "ImdbRating", "Year", "Rated", "Runtime", "Genre", "Plot" };
-
+                if (!resultTable.Columns.Contains("Year"))
+                    columns = DataSetUtilities.ColumnNames(resultTable ).ToList();//series
 
                 temp = new DataView(resultTable, "", "name asc, ImdbRating desc, Title ASC", DataViewRowState.CurrentRows).ToTable(false, columns.ToArray());
                 if (temp.DataSet == null)

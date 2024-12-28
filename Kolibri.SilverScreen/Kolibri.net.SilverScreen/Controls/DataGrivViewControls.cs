@@ -6,26 +6,43 @@ using OMDbApiNet.Model;
 using System.ComponentModel;
 using System.Data;
 using System.Windows.Forms;
+using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Controls
 {
     public class DataGrivViewControls
     {
         private LiteDBController _LITEDB;
-        
+        private MultimediaType _type;
 
-        public Item CurrentItem { get; internal set; }
+        private Item CurrentItem { get;   set; }
 
-        public DataGrivViewControls(LiteDBController contr)
+        private SeasonEpisode CurrentSeasonEpisode { get;   set; }
+
+        public object Current
         {
+            get
+            {
+                if (_type.Equals(MultimediaType.Series)) { return CurrentSeasonEpisode; }
+                else return CurrentItem;
+            }
+        }
+        public DataGrivViewControls(MultimediaType type, LiteDBController contr)
+        {
+            _type = type;
             _LITEDB = contr;
             
         }
 
-        public Form GetMovieItemDataGridViewAsForm(DataTable table)
+        public Form GetMulitMediaDBDataGridViewAsForm( DataTable table)
         {
-            var view = GetMovieItemDataGridView(table);
+            DataGridView view = null;
+            if (!_type.Equals(MultimediaType.Series))
+                view = GetMovieItemDataGridView(table);
+            else
+                view = GetSeasonEpisodeDataGridView(table);
             Form form = new Form();
+            form.Text = view.Name;
             form.TopLevel = false;
             form.AutoScroll = true;
             form.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -35,6 +52,51 @@ namespace Kolibri.net.SilverScreen.Controls
             view.Dock = DockStyle.Fill;
             return form;
         }
+        public DataGridView GetSeasonEpisodeDataGridView(DataTable tableItem)
+        {
+            var tablename = tableItem.TableName;
+            DataGridView ret = null;
+            try
+            {
+                List<string> visibleColumns = Constants.VisibleSeasonEpisodeColumns;
+
+                DataGridView dgv = new DataGridView();
+                dgv.DataSource = tableItem;
+                refresh(dgv, tableItem);
+                dgv.Dock = DockStyle.Fill;
+
+                dgv.Columns.OfType<DataGridViewColumn>().ToList().ForEach(col => col.Visible = false);
+                // dataGridView1.Rows.OfType<DataGridViewRow>().ToList().ForEach(row => { if (!row.IsNewRow) row.Visible = false; });
+                dgv.Columns.OfType<DataGridViewColumn>().ToList().ForEach(col => { if (visibleColumns.Contains(col.Name)) col.Visible = true; });
+                dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dgv.AllowUserToResizeColumns = true;
+                dgv.SelectionChanged += new EventHandler(DataGridView_SelectionChanged);
+                dgv.CellContentDoubleClick += new DataGridViewCellEventHandler(DataGridView_CellContentDoubleClick);
+                dgv.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(DataGridView_RowPrePaint);
+                dgv.KeyDown += Dgv_KeyDown;
+                dgv.CellValueChanged += Dgv_CellValueChanged;
+                dgv.RowPrePaint += Dgv_RowPrePaint;
+                dgv.Name = tablename;
+                try
+                {
+                    dgv.Columns["Title"].DisplayIndex = 0; // or 1, 2, 3 etc dersom dgv ikke er added to panel 2 funker ikke dette 
+                    dgv.Columns["Title"].Width = 150;
+                    dgv.Columns["ImdbRating"].DisplayIndex = 1; // or 1, 2, 3 etc
+
+                    dgv.Sort(dgv.Columns["ImdbRating"], ListSortDirection.Descending);
+                    DataGridViewColumn lastVisibleColumn = dgv.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None);
+                    lastVisibleColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+                }
+                catch (Exception) { }
+                ret = dgv;
+            }
+            catch (Exception)
+            { }
+
+            return ret;
+        }
+
         public DataGridView GetMovieItemDataGridView(DataTable tableItem)
         {
             DataGridView ret = null;
@@ -216,6 +278,7 @@ namespace Kolibri.net.SilverScreen.Controls
                     }
                     catch (Exception) { index = 0; DataGridView1.ClearSelection(); }
                 CurrentItem = _LITEDB.FindItem(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
+                CurrentSeasonEpisode = _LITEDB.FindSeasonEpisode(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
                 if (CurrentItem != null) return;
                 if (DataGridView1.Rows[index].Cells["Title"].Value
                           != null)

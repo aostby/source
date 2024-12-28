@@ -31,430 +31,465 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MovieForm));
-            this.tbSearch = new System.Windows.Forms.TextBox();
-            this.btnSearch = new System.Windows.Forms.Button();
-            this.tbTitle = new System.Windows.Forms.TextBox();
-            this.tbYear = new System.Windows.Forms.TextBox();
-            this.tbRated = new System.Windows.Forms.TextBox();
-            this.tbRuntime = new System.Windows.Forms.TextBox();
-            this.tbGenre = new System.Windows.Forms.TextBox();
-            this.tbActors = new System.Windows.Forms.TextBox();
-            this.tbPlot = new System.Windows.Forms.TextBox();
-            this.tbMetascore = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.btnAddToWatchlist = new System.Windows.Forms.Button();
-            this.btnWatchList = new System.Windows.Forms.Button();
-            this.brnRefresh = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.tbYearParameter = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.btnTop100 = new System.Windows.Forms.Button();
-            this.btnRecommend = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.pbPoster = new System.Windows.Forms.PictureBox();
-            this.linkTrailer = new System.Windows.Forms.LinkLabel();
-            this.labelImdbId = new System.Windows.Forms.Label();
-            this.labelImdbRating = new System.Windows.Forms.Label();
-            this.linkLabelOpenFilePath = new System.Windows.Forms.LinkLabel();
-            this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPoster)).BeginInit();
-            this.SuspendLayout();
+            tbSearch = new TextBox();
+            btnSearch = new Button();
+            tbTitle = new TextBox();
+            tbYear = new TextBox();
+            tbRated = new TextBox();
+            tbRuntime = new TextBox();
+            tbGenre = new TextBox();
+            tbActors = new TextBox();
+            tbPlot = new TextBox();
+            tbMetascore = new TextBox();
+            label1 = new Label();
+            label2 = new Label();
+            label3 = new Label();
+            label4 = new Label();
+            label5 = new Label();
+            label6 = new Label();
+            label7 = new Label();
+            label8 = new Label();
+            label9 = new Label();
+            btnAddToWatchlist = new Button();
+            btnWatchList = new Button();
+            brnRefresh = new Button();
+            groupBox1 = new GroupBox();
+            buttonNewList = new Button();
+            labelWatchListName = new Label();
+            comboBox1 = new ComboBox();
+            tbYearParameter = new TextBox();
+            label10 = new Label();
+            btnTop100 = new Button();
+            btnRecommend = new Button();
+            pictureBox1 = new PictureBox();
+            pbPoster = new PictureBox();
+            linkTrailer = new LinkLabel();
+            labelImdbId = new Label();
+            labelImdbRating = new Label();
+            linkLabelOpenFilePath = new LinkLabel();
+            toolTip1 = new ToolTip(components);
+            groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
+            SuspendLayout();
             // 
             // tbSearch
             // 
-            this.tbSearch.Location = new System.Drawing.Point(176, 16);
-            this.tbSearch.Margin = new System.Windows.Forms.Padding(4);
-            this.tbSearch.Name = "tbSearch";
-            this.tbSearch.Size = new System.Drawing.Size(448, 22);
-            this.tbSearch.TabIndex = 1;
+            tbSearch.Location = new Point(154, 15);
+            tbSearch.Margin = new Padding(4);
+            tbSearch.Name = "tbSearch";
+            tbSearch.Size = new Size(392, 23);
+            tbSearch.TabIndex = 1;
             // 
             // btnSearch
             // 
-            this.btnSearch.Location = new System.Drawing.Point(317, 80);
-            this.btnSearch.Margin = new System.Windows.Forms.Padding(4);
-            this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(140, 28);
-            this.btnSearch.TabIndex = 3;
-            this.btnSearch.Text = "Search";
-            this.btnSearch.UseVisualStyleBackColor = true;
-            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            btnSearch.Location = new Point(362, 46);
+            btnSearch.Margin = new Padding(4);
+            btnSearch.Name = "btnSearch";
+            btnSearch.Size = new Size(184, 26);
+            btnSearch.TabIndex = 3;
+            btnSearch.Text = "Search";
+            btnSearch.UseVisualStyleBackColor = true;
+            btnSearch.Click += btnSearch_Click;
             // 
             // tbTitle
             // 
-            this.tbTitle.Location = new System.Drawing.Point(105, 142);
-            this.tbTitle.Margin = new System.Windows.Forms.Padding(4);
-            this.tbTitle.Name = "tbTitle";
-            this.tbTitle.ReadOnly = true;
-            this.tbTitle.Size = new System.Drawing.Size(600, 22);
-            this.tbTitle.TabIndex = 3;
+            tbTitle.Location = new Point(92, 133);
+            tbTitle.Margin = new Padding(4);
+            tbTitle.Name = "tbTitle";
+            tbTitle.ReadOnly = true;
+            tbTitle.Size = new Size(526, 23);
+            tbTitle.TabIndex = 3;
             // 
             // tbYear
             // 
-            this.tbYear.Location = new System.Drawing.Point(105, 186);
-            this.tbYear.Margin = new System.Windows.Forms.Padding(4);
-            this.tbYear.Name = "tbYear";
-            this.tbYear.ReadOnly = true;
-            this.tbYear.Size = new System.Drawing.Size(600, 22);
-            this.tbYear.TabIndex = 4;
+            tbYear.Location = new Point(92, 174);
+            tbYear.Margin = new Padding(4);
+            tbYear.Name = "tbYear";
+            tbYear.ReadOnly = true;
+            tbYear.Size = new Size(526, 23);
+            tbYear.TabIndex = 4;
             // 
             // tbRated
             // 
-            this.tbRated.Location = new System.Drawing.Point(105, 282);
-            this.tbRated.Margin = new System.Windows.Forms.Padding(4);
-            this.tbRated.Name = "tbRated";
-            this.tbRated.ReadOnly = true;
-            this.tbRated.Size = new System.Drawing.Size(600, 22);
-            this.tbRated.TabIndex = 5;
+            tbRated.Location = new Point(92, 264);
+            tbRated.Margin = new Padding(4);
+            tbRated.Name = "tbRated";
+            tbRated.ReadOnly = true;
+            tbRated.Size = new Size(526, 23);
+            tbRated.TabIndex = 5;
             // 
             // tbRuntime
             // 
-            this.tbRuntime.Location = new System.Drawing.Point(105, 236);
-            this.tbRuntime.Margin = new System.Windows.Forms.Padding(4);
-            this.tbRuntime.Name = "tbRuntime";
-            this.tbRuntime.ReadOnly = true;
-            this.tbRuntime.Size = new System.Drawing.Size(600, 22);
-            this.tbRuntime.TabIndex = 6;
+            tbRuntime.Location = new Point(92, 221);
+            tbRuntime.Margin = new Padding(4);
+            tbRuntime.Name = "tbRuntime";
+            tbRuntime.ReadOnly = true;
+            tbRuntime.Size = new Size(526, 23);
+            tbRuntime.TabIndex = 6;
             // 
             // tbGenre
             // 
-            this.tbGenre.Location = new System.Drawing.Point(105, 411);
-            this.tbGenre.Margin = new System.Windows.Forms.Padding(4);
-            this.tbGenre.Name = "tbGenre";
-            this.tbGenre.ReadOnly = true;
-            this.tbGenre.Size = new System.Drawing.Size(600, 22);
-            this.tbGenre.TabIndex = 7;
+            tbGenre.Location = new Point(92, 385);
+            tbGenre.Margin = new Padding(4);
+            tbGenre.Name = "tbGenre";
+            tbGenre.ReadOnly = true;
+            tbGenre.Size = new Size(526, 23);
+            tbGenre.TabIndex = 7;
             // 
             // tbActors
             // 
-            this.tbActors.Location = new System.Drawing.Point(105, 369);
-            this.tbActors.Margin = new System.Windows.Forms.Padding(4);
-            this.tbActors.Name = "tbActors";
-            this.tbActors.ReadOnly = true;
-            this.tbActors.Size = new System.Drawing.Size(600, 22);
-            this.tbActors.TabIndex = 8;
+            tbActors.Location = new Point(92, 346);
+            tbActors.Margin = new Padding(4);
+            tbActors.Name = "tbActors";
+            tbActors.ReadOnly = true;
+            tbActors.Size = new Size(526, 23);
+            tbActors.TabIndex = 8;
             // 
             // tbPlot
             // 
-            this.tbPlot.Location = new System.Drawing.Point(105, 453);
-            this.tbPlot.Margin = new System.Windows.Forms.Padding(4);
-            this.tbPlot.Multiline = true;
-            this.tbPlot.Name = "tbPlot";
-            this.tbPlot.ReadOnly = true;
-            this.tbPlot.Size = new System.Drawing.Size(600, 91);
-            this.tbPlot.TabIndex = 10;
+            tbPlot.Location = new Point(92, 425);
+            tbPlot.Margin = new Padding(4);
+            tbPlot.Multiline = true;
+            tbPlot.Name = "tbPlot";
+            tbPlot.ReadOnly = true;
+            tbPlot.Size = new Size(526, 86);
+            tbPlot.TabIndex = 10;
             // 
             // tbMetascore
             // 
-            this.tbMetascore.Location = new System.Drawing.Point(105, 324);
-            this.tbMetascore.Margin = new System.Windows.Forms.Padding(4);
-            this.tbMetascore.Name = "tbMetascore";
-            this.tbMetascore.ReadOnly = true;
-            this.tbMetascore.Size = new System.Drawing.Size(600, 22);
-            this.tbMetascore.TabIndex = 11;
+            tbMetascore.Location = new Point(92, 304);
+            tbMetascore.Margin = new Padding(4);
+            tbMetascore.Name = "tbMetascore";
+            tbMetascore.ReadOnly = true;
+            tbMetascore.Size = new Size(526, 23);
+            tbMetascore.TabIndex = 11;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 142);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(33, 16);
-            this.label1.TabIndex = 12;
-            this.label1.Text = "Title";
+            label1.AutoSize = true;
+            label1.Location = new Point(11, 133);
+            label1.Margin = new Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(29, 15);
+            label1.TabIndex = 12;
+            label1.Text = "Title";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 186);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(36, 16);
-            this.label2.TabIndex = 13;
-            this.label2.Text = "Year";
+            label2.AutoSize = true;
+            label2.Location = new Point(11, 174);
+            label2.Margin = new Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new Size(29, 15);
+            label2.TabIndex = 13;
+            label2.Text = "Year";
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 282);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(44, 16);
-            this.label3.TabIndex = 14;
-            this.label3.Text = "Rated";
+            label3.AutoSize = true;
+            label3.Location = new Point(11, 264);
+            label3.Margin = new Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new Size(37, 15);
+            label3.TabIndex = 14;
+            label3.Text = "Rated";
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(13, 236);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(56, 16);
-            this.label4.TabIndex = 15;
-            this.label4.Text = "Runtime";
+            label4.AutoSize = true;
+            label4.Location = new Point(11, 221);
+            label4.Margin = new Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new Size(52, 15);
+            label4.TabIndex = 15;
+            label4.Text = "Runtime";
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 411);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(44, 16);
-            this.label5.TabIndex = 16;
-            this.label5.Text = "Genre";
+            label5.AutoSize = true;
+            label5.Location = new Point(10, 385);
+            label5.Margin = new Padding(4, 0, 4, 0);
+            label5.Name = "label5";
+            label5.Size = new Size(38, 15);
+            label5.TabIndex = 16;
+            label5.Text = "Genre";
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 369);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(45, 16);
-            this.label6.TabIndex = 17;
-            this.label6.Text = "Actors";
+            label6.AutoSize = true;
+            label6.Location = new Point(10, 346);
+            label6.Margin = new Padding(4, 0, 4, 0);
+            label6.Name = "label6";
+            label6.Size = new Size(41, 15);
+            label6.TabIndex = 17;
+            label6.Text = "Actors";
             // 
             // label7
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 324);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(71, 16);
-            this.label7.TabIndex = 18;
-            this.label7.Text = "Metascore";
+            label7.AutoSize = true;
+            label7.Location = new Point(10, 304);
+            label7.Margin = new Padding(4, 0, 4, 0);
+            label7.Name = "label7";
+            label7.Size = new Size(62, 15);
+            label7.TabIndex = 18;
+            label7.Text = "Metascore";
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 453);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(30, 16);
-            this.label8.TabIndex = 19;
-            this.label8.Text = "Plot";
+            label8.AutoSize = true;
+            label8.Location = new Point(10, 425);
+            label8.Margin = new Padding(4, 0, 4, 0);
+            label8.Name = "label8";
+            label8.Size = new Size(28, 15);
+            label8.TabIndex = 19;
+            label8.Text = "Plot";
             // 
             // label9
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(8, 20);
-            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(147, 16);
-            this.label9.TabIndex = 20;
-            this.label9.Text = "*Enter the movie name :";
+            label9.AutoSize = true;
+            label9.Location = new Point(7, 19);
+            label9.Margin = new Padding(4, 0, 4, 0);
+            label9.Name = "label9";
+            label9.Size = new Size(134, 15);
+            label9.TabIndex = 20;
+            label9.Text = "*Enter the movie name :";
             // 
             // btnAddToWatchlist
             // 
-            this.btnAddToWatchlist.Location = new System.Drawing.Point(333, 572);
-            this.btnAddToWatchlist.Margin = new System.Windows.Forms.Padding(4);
-            this.btnAddToWatchlist.Name = "btnAddToWatchlist";
-            this.btnAddToWatchlist.Size = new System.Drawing.Size(140, 28);
-            this.btnAddToWatchlist.TabIndex = 21;
-            this.btnAddToWatchlist.Text = "Add to Watchlist";
-            this.btnAddToWatchlist.UseVisualStyleBackColor = true;
-            this.btnAddToWatchlist.Click += new System.EventHandler(this.btnAddToWatchlist_Click);
+            btnAddToWatchlist.Location = new Point(362, 82);
+            btnAddToWatchlist.Margin = new Padding(4);
+            btnAddToWatchlist.Name = "btnAddToWatchlist";
+            btnAddToWatchlist.Size = new Size(48, 26);
+            btnAddToWatchlist.TabIndex = 21;
+            btnAddToWatchlist.Text = "Add to Watchlist";
+            toolTip1.SetToolTip(btnAddToWatchlist, "Add item to WatchList");
+            btnAddToWatchlist.UseVisualStyleBackColor = true;
+            btnAddToWatchlist.Click += btnAddToWatchlist_Click;
             // 
             // btnWatchList
             // 
-            this.btnWatchList.Location = new System.Drawing.Point(567, 572);
-            this.btnWatchList.Margin = new System.Windows.Forms.Padding(4);
-            this.btnWatchList.Name = "btnWatchList";
-            this.btnWatchList.Size = new System.Drawing.Size(140, 28);
-            this.btnWatchList.TabIndex = 22;
-            this.btnWatchList.Text = "Watchlist";
-            this.btnWatchList.UseVisualStyleBackColor = true;
-            this.btnWatchList.Click += new System.EventHandler(this.btnWatchList_Click);
+            btnWatchList.Location = new Point(422, 82);
+            btnWatchList.Margin = new Padding(4);
+            btnWatchList.Name = "btnWatchList";
+            btnWatchList.Size = new Size(66, 26);
+            btnWatchList.TabIndex = 22;
+            btnWatchList.Text = "Watchlist";
+            toolTip1.SetToolTip(btnWatchList, "View elements in WatchList");
+            btnWatchList.UseVisualStyleBackColor = true;
+            btnWatchList.Click += btnWatchList_Click;
             // 
             // brnRefresh
             // 
-            this.brnRefresh.Location = new System.Drawing.Point(105, 572);
-            this.brnRefresh.Margin = new System.Windows.Forms.Padding(4);
-            this.brnRefresh.Name = "brnRefresh";
-            this.brnRefresh.Size = new System.Drawing.Size(140, 28);
-            this.brnRefresh.TabIndex = 24;
-            this.brnRefresh.Text = "Refresh";
-            this.brnRefresh.UseVisualStyleBackColor = true;
-            this.brnRefresh.Click += new System.EventHandler(this.brnRefresh_Click);
+            brnRefresh.Location = new Point(92, 536);
+            brnRefresh.Margin = new Padding(4);
+            brnRefresh.Name = "brnRefresh";
+            brnRefresh.Size = new Size(122, 26);
+            brnRefresh.TabIndex = 24;
+            brnRefresh.Text = "Refresh";
+            brnRefresh.UseVisualStyleBackColor = true;
+            brnRefresh.Click += brnRefresh_Click;
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.tbYearParameter);
-            this.groupBox1.Controls.Add(this.label10);
-            this.groupBox1.Controls.Add(this.label9);
-            this.groupBox1.Controls.Add(this.tbSearch);
-            this.groupBox1.Controls.Add(this.btnSearch);
-            this.groupBox1.Location = new System.Drawing.Point(16, 6);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Size = new System.Drawing.Size(691, 128);
-            this.groupBox1.TabIndex = 25;
-            this.groupBox1.TabStop = false;
+            groupBox1.Controls.Add(buttonNewList);
+            groupBox1.Controls.Add(labelWatchListName);
+            groupBox1.Controls.Add(comboBox1);
+            groupBox1.Controls.Add(tbYearParameter);
+            groupBox1.Controls.Add(label10);
+            groupBox1.Controls.Add(label9);
+            groupBox1.Controls.Add(tbSearch);
+            groupBox1.Controls.Add(btnSearch);
+            groupBox1.Controls.Add(btnWatchList);
+            groupBox1.Controls.Add(btnAddToWatchlist);
+            groupBox1.Location = new Point(14, 6);
+            groupBox1.Margin = new Padding(4);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Padding = new Padding(4);
+            groupBox1.Size = new Size(605, 120);
+            groupBox1.TabIndex = 25;
+            groupBox1.TabStop = false;
+            // 
+            // buttonNewList
+            // 
+            buttonNewList.Location = new Point(501, 82);
+            buttonNewList.Name = "buttonNewList";
+            buttonNewList.Size = new Size(45, 26);
+            buttonNewList.TabIndex = 24;
+            buttonNewList.Text = "New List";
+            toolTip1.SetToolTip(buttonNewList, "Create new WatchList");
+            buttonNewList.UseVisualStyleBackColor = true;
+            buttonNewList.Click += buttonNewList_Click;
+            // 
+            // labelWatchListName
+            // 
+            labelWatchListName.AutoSize = true;
+            labelWatchListName.Location = new Point(7, 88);
+            labelWatchListName.Name = "labelWatchListName";
+            labelWatchListName.Size = new Size(97, 15);
+            labelWatchListName.TabIndex = 23;
+            labelWatchListName.Text = "WatchList Name:";
+            // 
+            // comboBox1
+            // 
+            comboBox1.FormattingEnabled = true;
+            comboBox1.Location = new Point(154, 84);
+            comboBox1.Name = "comboBox1";
+            comboBox1.Size = new Size(198, 23);
+            comboBox1.TabIndex = 22;
+            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
             // tbYearParameter
             // 
-            this.tbYearParameter.Location = new System.Drawing.Point(176, 48);
-            this.tbYearParameter.Margin = new System.Windows.Forms.Padding(4);
-            this.tbYearParameter.Name = "tbYearParameter";
-            this.tbYearParameter.Size = new System.Drawing.Size(132, 22);
-            this.tbYearParameter.TabIndex = 2;
+            tbYearParameter.Location = new Point(154, 45);
+            tbYearParameter.Margin = new Padding(4);
+            tbYearParameter.Name = "tbYearParameter";
+            tbYearParameter.Size = new Size(116, 23);
+            tbYearParameter.TabIndex = 2;
             // 
             // label10
             // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(8, 48);
-            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(42, 16);
-            this.label10.TabIndex = 21;
-            this.label10.Text = "Year :";
+            label10.AutoSize = true;
+            label10.Location = new Point(7, 45);
+            label10.Margin = new Padding(4, 0, 4, 0);
+            label10.Name = "label10";
+            label10.Size = new Size(35, 15);
+            label10.TabIndex = 21;
+            label10.Text = "Year :";
             // 
             // btnTop100
             // 
-            this.btnTop100.Location = new System.Drawing.Point(747, 572);
-            this.btnTop100.Margin = new System.Windows.Forms.Padding(4);
-            this.btnTop100.Name = "btnTop100";
-            this.btnTop100.Size = new System.Drawing.Size(141, 28);
-            this.btnTop100.TabIndex = 26;
-            this.btnTop100.Text = "Top 100 IMDb";
-            this.btnTop100.UseVisualStyleBackColor = true;
-            this.btnTop100.Click += new System.EventHandler(this.btnTop100_Click);
+            btnTop100.Location = new Point(654, 536);
+            btnTop100.Margin = new Padding(4);
+            btnTop100.Name = "btnTop100";
+            btnTop100.Size = new Size(123, 26);
+            btnTop100.TabIndex = 26;
+            btnTop100.Text = "Top 100 IMDb";
+            btnTop100.UseVisualStyleBackColor = true;
+            btnTop100.Click += btnTop100_Click;
             // 
             // btnRecommend
             // 
-            this.btnRecommend.Location = new System.Drawing.Point(896, 572);
-            this.btnRecommend.Margin = new System.Windows.Forms.Padding(4);
-            this.btnRecommend.Name = "btnRecommend";
-            this.btnRecommend.Size = new System.Drawing.Size(155, 28);
-            this.btnRecommend.TabIndex = 27;
-            this.btnRecommend.Text = "Recommend movie";
-            this.btnRecommend.UseVisualStyleBackColor = true;
-            this.btnRecommend.Click += new System.EventHandler(this.btnRecommend_Click);
+            btnRecommend.Location = new Point(784, 536);
+            btnRecommend.Margin = new Padding(4);
+            btnRecommend.Name = "btnRecommend";
+            btnRecommend.Size = new Size(136, 26);
+            btnRecommend.TabIndex = 27;
+            btnRecommend.Text = "Recommend movie";
+            btnRecommend.UseVisualStyleBackColor = true;
+            btnRecommend.Click += btnRecommend_Click;
             // 
             // pictureBox1
             // 
-            //this.pictureBox1.Image = Kolibri.net.Common.Utilities.Images.ImageUtilities.GetImageFromUrl(@"https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg");
-            this.pictureBox1.Image =  ImageUtilities.GetImageFromUrl(@"https://sprcdn-assets.sprinklr.com/674/f4f37a17-06e3-4fbd-8fe5-f2b4f2d3cb54-409022887.png");
-            
-
-            this.pictureBox1.Location = new System.Drawing.Point(768, 15);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(269, 89);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 23;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.Location = new Point(672, 14);
+            pictureBox1.Margin = new Padding(4);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(235, 83);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox1.TabIndex = 23;
+            pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // pbPoster
             // 
-            this.pbPoster.Location = new System.Drawing.Point(747, 130);
-            this.pbPoster.Margin = new System.Windows.Forms.Padding(4);
-            this.pbPoster.Name = "pbPoster";
-            this.pbPoster.Size = new System.Drawing.Size(304, 404);
-            this.pbPoster.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbPoster.TabIndex = 9;
-            this.pbPoster.TabStop = false;
+            pbPoster.Location = new Point(654, 122);
+            pbPoster.Margin = new Padding(4);
+            pbPoster.Name = "pbPoster";
+            pbPoster.Size = new Size(266, 379);
+            pbPoster.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbPoster.TabIndex = 9;
+            pbPoster.TabStop = false;
             // 
             // linkTrailer
             // 
-            this.linkTrailer.AutoSize = true;
-            this.linkTrailer.Location = new System.Drawing.Point(754, 544);
-            this.linkTrailer.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.linkTrailer.Name = "linkTrailer";
-            this.linkTrailer.Size = new System.Drawing.Size(81, 16);
-            this.linkTrailer.TabIndex = 29;
-            this.linkTrailer.TabStop = true;
-            this.linkTrailer.Text = "Watch trailer";
-            this.linkTrailer.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkTrailer_LinkClicked);
+            linkTrailer.AutoSize = true;
+            linkTrailer.Location = new Point(660, 510);
+            linkTrailer.Margin = new Padding(4, 0, 4, 0);
+            linkTrailer.Name = "linkTrailer";
+            linkTrailer.Size = new Size(74, 15);
+            linkTrailer.TabIndex = 29;
+            linkTrailer.TabStop = true;
+            linkTrailer.Text = "Watch trailer";
+            linkTrailer.LinkClicked += linkTrailer_LinkClicked;
             // 
             // labelImdbId
             // 
-            this.labelImdbId.AutoSize = true;
-            this.labelImdbId.Location = new System.Drawing.Point(16, 158);
-            this.labelImdbId.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelImdbId.Name = "labelImdbId";
-            this.labelImdbId.Size = new System.Drawing.Size(48, 16);
-            this.labelImdbId.TabIndex = 30;
-            this.labelImdbId.Text = "ImdbId";
+            labelImdbId.AutoSize = true;
+            labelImdbId.Location = new Point(14, 148);
+            labelImdbId.Margin = new Padding(4, 0, 4, 0);
+            labelImdbId.Name = "labelImdbId";
+            labelImdbId.Size = new Size(45, 15);
+            labelImdbId.TabIndex = 30;
+            labelImdbId.Text = "ImdbId";
             // 
             // labelImdbRating
             // 
-            this.labelImdbRating.AutoSize = true;
-            this.labelImdbRating.Location = new System.Drawing.Point(18, 340);
-            this.labelImdbRating.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelImdbRating.Name = "labelImdbRating";
-            this.labelImdbRating.Size = new System.Drawing.Size(76, 16);
-            this.labelImdbRating.TabIndex = 31;
-            this.labelImdbRating.Text = "ImdbRating";
+            labelImdbRating.AutoSize = true;
+            labelImdbRating.Location = new Point(16, 319);
+            labelImdbRating.Margin = new Padding(4, 0, 4, 0);
+            labelImdbRating.Name = "labelImdbRating";
+            labelImdbRating.Size = new Size(69, 15);
+            labelImdbRating.TabIndex = 31;
+            labelImdbRating.Text = "ImdbRating";
             // 
             // linkLabelOpenFilePath
             // 
-            this.linkLabelOpenFilePath.AutoSize = true;
-            this.linkLabelOpenFilePath.Location = new System.Drawing.Point(843, 544);
-            this.linkLabelOpenFilePath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.linkLabelOpenFilePath.Name = "linkLabelOpenFilePath";
-            this.linkLabelOpenFilePath.Size = new System.Drawing.Size(95, 16);
-            this.linkLabelOpenFilePath.TabIndex = 32;
-            this.linkLabelOpenFilePath.TabStop = true;
-            this.linkLabelOpenFilePath.Text = "Open File Path";
-            this.linkLabelOpenFilePath.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelOpenFilePath_LinkClicked);
+            linkLabelOpenFilePath.AutoSize = true;
+            linkLabelOpenFilePath.Location = new Point(738, 510);
+            linkLabelOpenFilePath.Margin = new Padding(4, 0, 4, 0);
+            linkLabelOpenFilePath.Name = "linkLabelOpenFilePath";
+            linkLabelOpenFilePath.Size = new Size(84, 15);
+            linkLabelOpenFilePath.TabIndex = 32;
+            linkLabelOpenFilePath.TabStop = true;
+            linkLabelOpenFilePath.Text = "Open File Path";
+            linkLabelOpenFilePath.LinkClicked += linkLabelOpenFilePath_LinkClicked;
             // 
             // MovieForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1067, 615);
-            this.Controls.Add(this.linkLabelOpenFilePath);
-            this.Controls.Add(this.labelImdbRating);
-            this.Controls.Add(this.labelImdbId);
-            this.Controls.Add(this.linkTrailer);
-            this.Controls.Add(this.btnRecommend);
-            this.Controls.Add(this.btnTop100);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.brnRefresh);
-            this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.btnWatchList);
-            this.Controls.Add(this.btnAddToWatchlist);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.tbMetascore);
-            this.Controls.Add(this.tbPlot);
-            this.Controls.Add(this.pbPoster);
-            this.Controls.Add(this.tbActors);
-            this.Controls.Add(this.tbGenre);
-            this.Controls.Add(this.tbRuntime);
-            this.Controls.Add(this.tbRated);
-            this.Controls.Add(this.tbYear);
-            this.Controls.Add(this.tbTitle);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4);
-            this.Name = "MovieForm";
-            this.Text = "Search for Movie";
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MovieForm_KeyDown);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPoster)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(934, 577);
+            Controls.Add(linkLabelOpenFilePath);
+            Controls.Add(labelImdbRating);
+            Controls.Add(labelImdbId);
+            Controls.Add(linkTrailer);
+            Controls.Add(btnRecommend);
+            Controls.Add(btnTop100);
+            Controls.Add(groupBox1);
+            Controls.Add(brnRefresh);
+            Controls.Add(pictureBox1);
+            Controls.Add(label8);
+            Controls.Add(label7);
+            Controls.Add(label6);
+            Controls.Add(label5);
+            Controls.Add(label4);
+            Controls.Add(label3);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            Controls.Add(tbMetascore);
+            Controls.Add(tbPlot);
+            Controls.Add(pbPoster);
+            Controls.Add(tbActors);
+            Controls.Add(tbGenre);
+            Controls.Add(tbRuntime);
+            Controls.Add(tbRated);
+            Controls.Add(tbYear);
+            Controls.Add(tbTitle);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            KeyPreview = true;
+            Margin = new Padding(4);
+            Name = "MovieForm";
+            Text = "Search for Movie";
+            KeyDown += MovieForm_KeyDown;
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pbPoster).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -491,6 +526,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private System.Windows.Forms.Label labelImdbId;
         private System.Windows.Forms.Label labelImdbRating;
         private System.Windows.Forms.LinkLabel linkLabelOpenFilePath;
+        private ComboBox comboBox1;
+        private Label labelWatchListName;
+        private ToolTip toolTip1;
+        private Button buttonNewList;
     }
 }
 

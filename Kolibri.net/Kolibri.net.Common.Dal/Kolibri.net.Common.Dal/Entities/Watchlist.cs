@@ -3,7 +3,7 @@ namespace Kolibri.net.Common.Dal.Entities
 {
     public class WatchList : Item
     {
-        public string WatchListName { get; set; } = "Default";
+        public string WatchListName { get; set; } = "MyMovies";
 
         public byte[] Picture { get; set; }
         public string Trailer { get; set; }
