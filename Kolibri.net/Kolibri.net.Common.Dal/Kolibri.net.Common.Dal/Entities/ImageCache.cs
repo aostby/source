@@ -13,23 +13,34 @@ using Kolibri.net.Common.Utilities;
 using LiteDB;
 using OMDbApiNet.Model;
 using System.Linq;
+using Microsoft.VisualBasic.ApplicationServices;
 
 namespace Kolibri.net.Common.Dal.Entities
 {
     public class ImageCache
     {
-
         ImagePosterDBController _ImageDB;
+        LiteDBController _LiteDB;
 
-        private int _max = 500;
+        private int _max =2000;
         
         private MemoryCache _cache = MemoryCache.Default;
+        private readonly UserSettings _userSettings;
+
         //private Dictionary<string, byte[]> _imageCache;
-        public string ApplicationName { get; set; }
+         public string ApplicationName { get; private set; }
+
+        public ImageCache(UserSettings userSettings)
+        {
+            this._userSettings = userSettings;
+            Init();
+        }
+
         internal string CachePath
         {
             get
             {
+              
                 FileInfo ret = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName, "images.xml"));
                 if (!ret.Directory.Exists) ret.Directory.Create();
                 return ret.FullName;
@@ -53,33 +64,11 @@ namespace Kolibri.net.Common.Dal.Entities
             }
         }
 
-        public ImageCache(bool init = true, string applicationName = null)
-        {
-            if (applicationName == null) ApplicationName = Assembly.GetCallingAssembly().GetName().Name;
-            else ApplicationName = applicationName;
-            if (init) { Init(); }
-        }
-        public ImageCache (LiteDBController LITEDB=null, bool init = true, string applicationName = null)
-        {
-            if (applicationName == null) ApplicationName = Assembly.GetCallingAssembly().GetName().Name;
-            else ApplicationName = applicationName;
-            //     if (_imageCache == null) _imageCache = new Dictionary<string, byte[]>();
-            if (init)
-            {
-
-                Init();
-                if (LITEDB != null)
-                {
-                    Task.Run(async () => await InitImages(LITEDB));
-                }
-            }
-        }
-
+      
         private void Init()
         {
-            //       _imageCache = new Dictionary<string, byte[]>();
-
-            _ImageDB = new ImagePosterDBController(true, false);
+            ApplicationName = Assembly.GetExecutingAssembly().GetName().Name;
+            _ImageDB = new ImagePosterDBController(DefaultPath(), false, false);
 
             try
             {
@@ -111,11 +100,19 @@ namespace Kolibri.net.Common.Dal.Entities
                 }
             }
             catch (Exception ex) { }
-        } 
-    
 
+            if (_LiteDB != null)
+            {
+                Task.Run(async () => await InitImages(_LiteDB));
+            }
+        }
+
+        public FileInfo DefaultPath() {
+         FileInfo ret = new FileInfo( Path.ChangeExtension(_userSettings.LiteDBFileInfo.FullName, ".imgdb"));
+            return ret;
+        }
         //Store Stuff in the cache  
-        public   void StoreItemsInCache(string key, byte[] arr)
+        public void StoreItemsInCache(string key, byte[] arr)
         { 
             //Do what you need to do here. Database Interaction, Serialization,etc.
             var cacheItemPolicy = new CacheItemPolicy()
@@ -168,6 +165,9 @@ namespace Kolibri.net.Common.Dal.Entities
                         _ImageDB.InsertImage(new ImagePoster(key, bitmap));
                         bmp.Dispose();
                     }
+                }
+                else { 
+                
                 }
             }
             catch (Exception ex)
@@ -316,7 +316,7 @@ namespace Kolibri.net.Common.Dal.Entities
             return true;
         }
 
-        public void InitImages(LiteDBController LITEDB,   IEnumerable<Item> items)
+        private void InitImages(LiteDBController LITEDB,   IEnumerable<Item> items)
         {
             var dic = items.OrderByDescending(mc => mc.ImdbRating)
                       .ToDictionary(mc => mc.ImdbId.ToString(),
@@ -384,77 +384,7 @@ namespace Kolibri.net.Common.Dal.Entities
             catch (Exception) { }
             return ret;
         }
-        /*   public async Task<bool> InitImages()
-        {
-            bool ret = true;
-            try
-            {
-                var items = _LITEDB.FindAllItems();
-                var dic = items.OrderByDescending(mc => mc.ImdbRating)
-                        .ToDictionary(mc => mc.ImdbId.ToString(),
-                                      mc => mc.Poster.ToString(),
-                                      StringComparer.OrdinalIgnoreCase).Distinct().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-                var task = Task.Run(async () => await (GetImagesAsync(dic)));
-                var taskNA = Task.Run(async () => await (GetNAImagesAsync(dic)));
-
-            }
-            catch (Exception ex)
-            { }
-            return ret;
-        }
-
-        public async Task<bool> GetNAImagesAsync(Dictionary<string, string> dic)
-        {
-            var items = dic.Where(item => item.Value == "N/A");
-            if (items.Count() < 1)
-                return false;
-
-            foreach (var item in items)
-            {
-                if (_imageCache.CacheImageExists(dic[item.Key]))
-                { continue; }
-                else
-                {
-                    try
-                    {
-                        ImagePoster img = _imageCache.FindImage(item.Key);
-                        if (img != null) continue;
-
-                        var movie = _LITEDB.FindMovie(item.Key, true);
-                        if (movie != null)
-                        {
-                            string path = string.Empty;
-                            if (!string.IsNullOrWhiteSpace(movie.BackdropPath))
-                                path = $"{movie.BackdropPath.TrimStart('/')}";
-                            else
-                                path = $"{movie.PosterPath.TrimStart('/')}";
-
-
-                            var url = $"https://image.tmdb.org/t/p/w300/{path}";
-                            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(url);
-
-                            webRequest.AllowWriteStreamBuffering = true;
-                            webRequest.Timeout = 30000;
-                            System.Net.WebResponse webResponse = webRequest.GetResponse();
-                            System.IO.Stream stream = webResponse.GetResponseStream();
-                            var image = (Bitmap)System.Drawing.Image.FromStream(stream);
-                            webResponse.Close();
-                            if (img == null)
-                            {
-                                _imageCache.InsertImage(movie.ImdbId, image);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-
-                    }
-                }
-            }
-            return true;
-        }
-        */
+    
         public async Task<bool> GetImagesAsync(Dictionary<string, string> dic)
         {
             bool ret = true;
@@ -594,45 +524,31 @@ namespace Kolibri.net.Common.Dal.Entities
         internal LiteDatabase _litePosterDB;
         internal ConnectionString ConnectionString;
 
-        internal string DefaultFilePath
+        internal ImagePosterDBController(FileInfo pahtToImageDB, bool exclusiveAccess = false, bool readOnly = true)
         {
-            get
-            {
-                string filepath = @"C:\inetpub\wwwroot\TMDB\ImagePoster.db";
-                if (!File.Exists(filepath))
-                    filepath = @"ImagePoster.db";
-                return new FileInfo(filepath).FullName;
-            }
-        }
 
-        internal ImagePosterDBController(bool exclusiveAccess = false, bool readOnly = true)
-        {
+            if (!pahtToImageDB.Directory.Exists)
+                pahtToImageDB.Directory.Create();
+            if(!pahtToImageDB.Exists)
+                pahtToImageDB.Create(); 
+
             ExclusiveConnection = exclusiveAccess;
-            readOnly = false;
+           
+
+
             ConnectionString = new ConnectionString()
             {
                 Connection = ExclusiveConnection ? ConnectionType.Direct : ConnectionType.Shared,
                 ReadOnly = readOnly,
                 Upgrade = false,
                 Password = null,
-                Filename = DefaultFilePath,
+                Filename = pahtToImageDB.FullName
             };
             
 
             _litePosterDB = new LiteDatabase(ConnectionString);
         }
-        internal void LiteDBController_old(bool exclusiveAccess = false)
-        {
-            #region dette veriker
-
-            if (exclusiveAccess)
-                _litePosterDB = new LiteDatabase(DefaultFilePath);
-            else
-                _litePosterDB = new LiteDatabase(new ConnectionString(DefaultFilePath) { Connection = ConnectionType.Shared });
-            return;
-
-            #endregion
-        }
+       
         internal void Dispose()
         {
             try
@@ -659,10 +575,14 @@ namespace Kolibri.net.Common.Dal.Entities
         }
 
         internal bool InsertImage(ImagePoster imagePoster)
-        {
+        {bool ret =true;
             try
             {
-                if (ImageExists(imagePoster.ImdbId)) return true;
+                if (ImageExists(imagePoster.ImdbId)) {
+                    
+                    
+                    
+                    return true; }
                 ImageBase imgbase = null;
 
                 using (var ms = new MemoryStream())

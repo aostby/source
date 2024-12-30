@@ -16,8 +16,8 @@ using System.Windows.Forms;
 namespace MoviesFromImdb.Controller
 {
     public class IMDBDAL
-    { 
-
+    {
+        private UserSettings _userSettings;
         private   LiteDBController _liteDB = null;
 
         public IMDBDAL(LiteDBController liteDB) {
@@ -25,14 +25,15 @@ namespace MoviesFromImdb.Controller
         }
         public IMDBDAL(UserSettings userSettings)
         {
+            _userSettings = userSettings;
             _liteDB = new LiteDBController(userSettings.LiteDBFileInfo, false, false);
         }
 
-   
-        public   DataSet GetAllMovies()
+
+        public DataSet GetAllMovies(string wishListName = null)
         {
-            
-            IEnumerable<WatchList> list = _liteDB.WishListFindAll().ToList();
+            IEnumerable<WatchList> list = _liteDB.WishListFindAll(watchListName: wishListName).ToList(); 
+
             DataSet ret = Kolibri.net.Common.Utilities.DataSetUtilities.AutoGenererDataSet(list.ToList());
             if (ret.Tables.Count != 0)
             {
@@ -43,44 +44,23 @@ namespace MoviesFromImdb.Controller
                     try
                     {
                         int pos = row.Table.Columns.IndexOf("Poster");
-                        var pic =   ImageUtilities.GetImageFromUrl(row[pos].ToString());
+                        var pic = ImageUtilities.GetImageFromUrl(row[pos].ToString());
                         pos = row.Table.Columns.IndexOf("Image");
                         row[pos] = pic;
 
                     }
-
                     catch (Exception)
                     {
                     }
                 }
             }
-
-
             return ret;
-            //string connectionString = ConfigurationManager.ConnectionStrings["DB"].ConnectionString;
-            //using (SqlConnection conn = new SqlConnection(connectionString))
-            //{
-            //    using (SqlCommand cmd = new SqlCommand("GetAllMovies", conn))
-            //    {
-            //        conn.Open();
-
-            //        cmd.CommandType = CommandType.StoredProcedure;
-
-            //        cmd.ExecuteNonQuery();
-            //        SqlDataAdapter da = new SqlDataAdapter(cmd);
-            //        DataSet ds = new DataSet();
-            //        da.Fill(ds);
-
-            //        return ds;
-            //    }
-            //}
-
-
         }
 
         public   bool AddMovie( WatchList entity)
         {
-        
+            if (_liteDB == null)
+                _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
             return _liteDB.WishListAdd(entity);
 
 

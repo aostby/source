@@ -17,7 +17,7 @@ namespace Kolibri.net.Common.Dal.Controller
         private const string API_DOC = "https://subdl.com/api-doc";
 
         private   string baseurl = "https://api.subdl.com/api/v1/subtitles";
-        private   string apikey = "";
+        public string apikey { get; set; }
         private   string languages = "NO,EN";
 
       //  string exampleQuery = $"https://api.subdl.com/api/v1/subtitles?api_key={apikey}&film_name=Inception&type=movie&languages=EN";

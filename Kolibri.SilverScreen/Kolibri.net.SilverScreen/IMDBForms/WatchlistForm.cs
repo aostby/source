@@ -1,9 +1,11 @@
-﻿using DGVPrinterHelper;
+﻿using com.sun.codemodel.@internal.util;
+using DGVPrinterHelper;
 using ExcelDataReader;
 using Kolibri.net.Common.Dal.Controller;
 using MoviesFromImdb.Controller;
 using System.ComponentModel;
 using System.Data;
+using System.Linq;
 using System.Text;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -15,11 +17,21 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private bool printovanje = false;
 
         private IMDBDAL _IMDBDAL;
+        private string _watchListName = "MyMovies";
 
-        public WatchlistForm(LiteDBController liteDB)
+        public WatchlistForm(LiteDBController liteDB, string watchListName)
         {
             InitializeComponent();
             _IMDBDAL = new IMDBDAL(liteDB);
+
+            if (!string.IsNullOrEmpty(watchListName))
+            {
+                _watchListName = watchListName;
+            }
+
+            btnPrint.Tag = $"{watchListName}";
+
+
             FillUpGrid();
         }
 
@@ -27,7 +39,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             try
             {
-                dsMovies = _IMDBDAL.GetAllMovies();
+                dsMovies = _IMDBDAL.GetAllMovies(_watchListName);
                 if (dsMovies.Tables.Count == 0)
                 {
                     bsMovies.DataSource = null;
@@ -37,16 +49,26 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 gridMovies.SuspendLayout();
                 gridMovies.DataSource = bsMovies;
                 
+                List<string> list = new List<string>() { "Title", "Plot", "ImdbRating"};
 
                 for (int i = 0; i < gridMovies.Columns.Count; i++)
                 {
+                    if (!list.Contains(gridMovies.Columns[i].Name))
+                    { //gridMovies.Columns[i].Visible = false; //
+
+                        if (gridMovies.Name.Equals("ImdbId", StringComparison.OrdinalIgnoreCase)) {
+                            gridMovies.Columns[i].Visible = false;
+                        }
+
+                     }
+
                     if (gridMovies.Columns[i] is DataGridViewImageColumn)
                     {
                         ((DataGridViewImageColumn)gridMovies.Columns[i]).ImageLayout = DataGridViewImageCellLayout.Zoom;
-                        break;
+                        gridMovies.Columns[i].Visible = true;
                     }
                 }
-                gridMovies.ResumeLayout();
+                gridMovies.ResumeLayout(); 
             }
             catch (Exception ex)
             {
@@ -265,8 +287,6 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 delRng4.Delete(Type.Missing);
 
 
-
-
                 // Save the excel file under the captured location from the SaveFileDialog
                 xlWorkBook.SaveAs(sfd.FileName, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
                 xlexcel.DisplayAlerts = true;
@@ -333,7 +353,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
             DGVPrinter printer = new DGVPrinter();
 
-            printer.Title = "Watchlist";
+            printer.Title = (sender as Button).Tag.ToString();
             printer.SubTitle = "Movies for watching";
             printer.SubTitleFormatFlags = StringFormatFlags.LineLimit | StringFormatFlags.NoClip;
             printer.PageNumbers = true;
@@ -344,6 +364,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             printer.RowHeight = DGVPrinter.RowHeightSetting.CellHeight;
             printer.Footer = "Date :" + DateTime.Now.ToShortDateString();
             printer.FooterSpacing = 15;
+            printer.printDocument.DefaultPageSettings.Landscape = true;
+
 
             printer.PrintDataGridView(gridMovies);
         }

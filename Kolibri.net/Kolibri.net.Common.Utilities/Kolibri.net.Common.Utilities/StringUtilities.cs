@@ -767,17 +767,17 @@ namespace Kolibri.net.Common.Utilities
 
             foreach (string key in nvc.AllKeys)
             {
-                foreach (string value in nvc.GetValues(key))
-                {
+                //foreach (string value in nvc.GetValues(key))
+                //{
                     if (!first)
                     {
                         sb.Append("&");
                     }
 
-                    sb.AppendFormat("{0}={1}", Uri.EscapeDataString(key), Uri.EscapeDataString(value));
+                    sb.AppendFormat("{0}={1}", Uri.EscapeDataString(key), Uri.EscapeDataString(nvc.GetValues(key).FirstOrDefault().ToString()));
 
                     first = false;
-                }
+      //          }
             }
 
             return sb.ToString();

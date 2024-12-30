@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             splitContainer1 = new SplitContainer();
+            groupBoxFilter = new GroupBox();
+            checkBoxSimple = new CheckBox();
             groupBoxFileSearch = new GroupBox();
             radioButtonNew = new RadioButton();
             radioButtonNone = new RadioButton();
@@ -39,11 +41,17 @@
             splitContainer2 = new SplitContainer();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
-            checkBoxSimple = new CheckBox();
+            backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            backgroundWorker3 = new System.ComponentModel.BackgroundWorker();
+            backgroundWorker4 = new System.ComponentModel.BackgroundWorker();
+            radioButtonAlle = new RadioButton();
+            radioButtonNoneExistant = new RadioButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            groupBoxFilter.SuspendLayout();
             groupBoxFileSearch.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
@@ -60,6 +68,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(groupBoxFilter);
             splitContainer1.Panel1.Controls.Add(checkBoxSimple);
             splitContainer1.Panel1.Controls.Add(groupBoxFileSearch);
             splitContainer1.Panel1.Controls.Add(labelNumItemsDB);
@@ -70,8 +79,31 @@
             // 
             splitContainer1.Panel2.Controls.Add(splitContainer2);
             splitContainer1.Size = new Size(1633, 637);
-            splitContainer1.SplitterDistance = 63;
+            splitContainer1.SplitterDistance = 54;
             splitContainer1.TabIndex = 0;
+            // 
+            // groupBoxFilter
+            // 
+            groupBoxFilter.Controls.Add(radioButtonNoneExistant);
+            groupBoxFilter.Controls.Add(radioButtonAlle);
+            groupBoxFilter.Location = new Point(495, 34);
+            groupBoxFilter.Name = "groupBoxFilter";
+            groupBoxFilter.Size = new Size(221, 45);
+            groupBoxFilter.TabIndex = 6;
+            groupBoxFilter.TabStop = false;
+            groupBoxFilter.Text = "Filter";
+            // 
+            // checkBoxSimple
+            // 
+            checkBoxSimple.AutoSize = true;
+            checkBoxSimple.Checked = true;
+            checkBoxSimple.CheckState = CheckState.Checked;
+            checkBoxSimple.Location = new Point(722, 34);
+            checkBoxSimple.Name = "checkBoxSimple";
+            checkBoxSimple.Size = new Size(75, 19);
+            checkBoxSimple.TabIndex = 5;
+            checkBoxSimple.Text = "Forenklet";
+            checkBoxSimple.UseVisualStyleBackColor = true;
             // 
             // groupBoxFileSearch
             // 
@@ -154,14 +186,14 @@
             // splitContainer2.Panel1
             // 
             splitContainer2.Panel1.Controls.Add(statusStrip1);
-            splitContainer2.Size = new Size(1633, 570);
+            splitContainer2.Size = new Size(1633, 579);
             splitContainer2.SplitterDistance = 645;
             splitContainer2.TabIndex = 0;
             // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus });
-            statusStrip1.Location = new Point(0, 548);
+            statusStrip1.Location = new Point(0, 557);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(645, 22);
             statusStrip1.TabIndex = 0;
@@ -174,17 +206,27 @@
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // checkBoxSimple
+            // radioButtonAlle
             // 
-            checkBoxSimple.AutoSize = true;
-            checkBoxSimple.Checked = true;
-            checkBoxSimple.CheckState = CheckState.Checked;
-            checkBoxSimple.Location = new Point(722, 34);
-            checkBoxSimple.Name = "checkBoxSimple";
-            checkBoxSimple.Size = new Size(75, 19);
-            checkBoxSimple.TabIndex = 5;
-            checkBoxSimple.Text = "Forenklet";
-            checkBoxSimple.UseVisualStyleBackColor = true;
+            radioButtonAlle.AutoSize = true;
+            radioButtonAlle.Checked = true;
+            radioButtonAlle.Location = new Point(15, 20);
+            radioButtonAlle.Name = "radioButtonAlle";
+            radioButtonAlle.Size = new Size(45, 19);
+            radioButtonAlle.TabIndex = 0;
+            radioButtonAlle.TabStop = true;
+            radioButtonAlle.Text = "Alle";
+            radioButtonAlle.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonNoneExistant
+            // 
+            radioButtonNoneExistant.AutoSize = true;
+            radioButtonNoneExistant.Location = new Point(88, 20);
+            radioButtonNoneExistant.Name = "radioButtonNoneExistant";
+            radioButtonNoneExistant.Size = new Size(111, 19);
+            radioButtonNoneExistant.TabIndex = 1;
+            radioButtonNoneExistant.Text = "IkkeEksisterende";
+            radioButtonNoneExistant.UseVisualStyleBackColor = true;
             // 
             // MultiMediaForm
             // 
@@ -199,6 +241,8 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            groupBoxFilter.ResumeLayout(false);
+            groupBoxFilter.PerformLayout();
             groupBoxFileSearch.ResumeLayout(false);
             groupBoxFileSearch.PerformLayout();
             splitContainer2.Panel1.ResumeLayout(false);
@@ -224,5 +268,12 @@
         private RadioButton radioButtonNone;
         private RadioButton radioButtonAll;
         private CheckBox checkBoxSimple;
+        private GroupBox groupBoxFilter;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker2;
+        private System.ComponentModel.BackgroundWorker backgroundWorker3;
+        private System.ComponentModel.BackgroundWorker backgroundWorker4;
+        private RadioButton radioButtonNoneExistant;
+        private RadioButton radioButtonAlle;
     }
 }

@@ -1,19 +1,25 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using com.sun.org.apache.xpath.@internal.functions;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
+using OMDbApiNet;
 using OMDbApiNet.Model;
 using System.Data;
+using System.Windows.Forms.VisualStyles;
+using TMDbLib.Objects.Find;
 using TMDbLib.Objects.Movies;
+using TMDbLib.Objects.TvShows;
+using Cast = TMDbLib.Objects.TvShows.Cast;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
-    public partial class DetailsFormItem : Form
+    public partial class DetailsFormSeries : Form
     {
         private BindingSource _bsMovies;
-        internal Item _item;
+        internal SeasonEpisode _seasonEpisode;
         internal FileItem _itemPath;
         internal LiteDBController _liteDB;
         internal OMDBController _OMDB;
@@ -21,63 +27,56 @@ namespace Kolibri.net.SilverScreen.Forms
         internal SubDLSubtitleController _subDL;
         internal ImageCache _imageCache;
 
-        [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
-        //public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr)
-        //{ 
-        //    InitializeComponent();
-        //    _liteDB = contr;
-        //    _item = item;
-        //    this.FormBorderStyle = FormBorderStyle.None;
-        //    Init(_item);
-        //}
-        public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr
-            , OMDBController omdb=null
+        private UserSettings _settings;
+
+
+     [Obsolete("Designer only", true)] public DetailsFormSeries() { InitializeComponent(); }
+
+        public DetailsFormSeries(SeasonEpisode seasonEpisode, LiteDBController contr
+            , OMDBController omdb = null
             , TMDBController tmdb = null
-            , SubDLSubtitleController subDL=null  
-            , ImageCache imagecache=null
+            , SubDLSubtitleController subDL = null
+            , ImageCache imagecache = null
             )
         {
             InitializeComponent();
             _liteDB = contr;
-            _item = item;
+            if (_liteDB != null)
+            {
+                _settings = _liteDB.GetUserSettings();
+            }
+            _seasonEpisode = seasonEpisode;
             this.FormBorderStyle = FormBorderStyle.None;
             _OMDB = omdb;
-            _TMDB=tmdb;
-            _subDL = subDL; 
-            _imageCache = imagecache;  
-            Init(_item);
+            _TMDB = tmdb;
+            _subDL = subDL;
+            _imageCache = imagecache;
+            Init(_seasonEpisode);
         }
 
-        private void Init(Item item)
+        private async void Init(SeasonEpisode seasonEpisode)
         {
-            tbTitle.Text = item.Title;
-            tbYear.Text = item.Year;
-            tbRated.Text = item.ImdbRating;
+            tbTitle.Text = seasonEpisode.Title;
+            tbYear.Text = seasonEpisode.Released.Substring(0, 4);
+            tbRated.Text = seasonEpisode.ImdbRating;
             tbRated.BackColor = Color.Red;
             int rating = 0;
-            if (item.ImdbRating.IsNumeric() && item.ImdbRating.Substring(0, 1).ToInt32() > 0)
-                rating = item.ImdbRating.Substring(0, 1).ToInt32();
+            if (seasonEpisode.ImdbRating.IsNumeric() && seasonEpisode.ImdbRating.Substring(0, 1).ToInt32() > 0)
+                rating = seasonEpisode.ImdbRating.Substring(0, 1).ToInt32();
             if (rating >= 3 && rating <= 4) { tbRated.BackColor = Color.Red; }
             if (rating >= 4 && rating <= 5) { tbRated.BackColor = Color.LightSalmon; }
             else if (rating >= 5 && rating <= 6) { tbRated.BackColor = Color.LightGreen; }
             else if (rating >= 7 && rating <= 8) { tbRated.BackColor = Color.LimeGreen; }
             else if (rating >= 9) { tbRated.BackColor = Color.Green; }
 
-            tbRuntime.Text = item.Runtime;
-            tbGenre.Text = item.Genre;
-            tbActors.Text = item.Actors;
-            tbPlot.Text = item.Plot;
-            tbMetascore.Text = item.Metascore;
-  
-            pbPoster.ImageLocation = item.Poster;
             try
             {
-                UserSettings settings = _liteDB.GetUserSettings();
 
-                try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); }
-                try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { }
-                try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { }
-                try { _imageCache = new ImageCache(settings); } catch (Exception ex) { }
+
+                try { _OMDB = new OMDBController(_settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); }
+                try { _TMDB = new TMDBController(_liteDB, $"{_settings.TMDBkey}"); } catch (Exception ex) { }
+                try { _subDL = new SubDLSubtitleController(_settings); } catch (Exception) { }
+                try { _imageCache = new ImageCache(_settings); } catch (Exception ex) { }
             }
             catch (Exception ex)
             {
@@ -86,16 +85,41 @@ namespace Kolibri.net.SilverScreen.Forms
 
             //Dersom alt er initialisert, sett farger
             InitButtons();
+            if (seasonEpisode != null && seasonEpisode.ImdbId != null)
+            {
+                var temp = _liteDB.FindTvEpisode(seasonEpisode.ImdbId);
+                if (temp == null && _OMDB != null)
+                {
+                    var tvEp = await _TMDB.FindByImdbId(seasonEpisode.ImdbId, seasonEpisode.Episode.ToInt32());
+                    if (tvEp != null)
+                    {
+                        tvEp.ExternalIds = new TMDbLib.Objects.General.ExternalIdsTvEpisode() { ImdbId = seasonEpisode.ImdbId };
+                        temp = tvEp;
+                        _liteDB.Upsert(tvEp);
+                    }
+                }
+                if (temp != null)
+                {
+
+                    tbRuntime.Text = temp.Runtime.ToString();
+                    //tbGenre.Text = seasonEpisodenre;
+                    tbActors.Text = string.Join(",", temp.Crew.ToList().Select(x => x.Name)); //seasonEpisode.Actors;
+                    tbPlot.Text = temp.Overview;  // seasonEpisode.Plot;
+                    tbMetascore.Text = temp.VoteAverage.ToString(); // seasonEpisode.Metascore;
+                    pbPoster.ImageLocation = _TMDB.GetImageUrl(temp.StillPath);
+
+                }
+            }
         }
 
         private void InitButtons(bool verbose = false)
         {
             try
             {
-                string path = _liteDB.FindFile(_item.ImdbId).FullName;
+                string path = _liteDB.FindFile(_seasonEpisode.ImdbId).FullName;
                 toolTipDetail.SetToolTip(linkLabelOpenFilepath, path);
                 FileInfo info = new FileInfo(path);
-                _itemPath = new FileItem(_item.ImdbId, info.FullName);
+                _itemPath = new FileItem(_seasonEpisode.ImdbId, info.FullName);
                 if (!info.Exists) { labelFileExists.ForeColor = Color.Salmon; toolTipDetail.SetToolTip(labelFileExists, info.Exists.ToString()); }
                 if (info.Directory.Exists) { labelFileExists.ForeColor = Color.Green; }
                 try
@@ -210,13 +234,13 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 if (sender.Equals(linkTrailer))
                 {
-                    Uri link = new Uri($"https://www.imdb.com/title/{_item.ImdbId}/");
+                    Uri link = new Uri($"https://www.imdb.com/title/{_seasonEpisode.ImdbId}/");
                     // System.Diagnostics.Process.Start(link);
                     FileUtilities.Start(link);
                 }
                 else if (sender.Equals(linkLabelOpenFilepath))
                 {
-                    string path = _liteDB.FindFile(_item.ImdbId).FullName;
+                    string path = _liteDB.FindFile(_seasonEpisode.ImdbId).FullName;
 
                     if (File.Exists(path))
                     {
@@ -234,9 +258,9 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         private void buttonDeleteItem_Click(object sender, EventArgs e)
         {
-            var deletd = _liteDB.DeleteItem(_item.ImdbId);
+            var deletd = _liteDB.DeleteItem(_seasonEpisode.ImdbId);
             if (deletd != 1)
-                MessageBox.Show($"Deletion of item {_item.ImdbId}  failed");
+                MessageBox.Show($"Deletion of item {_seasonEpisode.ImdbId}  failed");
         }
 
         private void pbPoster_MouseHover(object sender, EventArgs e)
@@ -303,7 +327,7 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                var t = Task.Run(() => _TMDB.GetMovieSimilar(_item.Title, _item.Year.ToInt32()));
+                var t = Task.Run(() => _TMDB.GetMovieSimilar(_seasonEpisode.Title, _seasonEpisode.Released.Substring(0,4).ToInt32()));
                 var liste = t.Result.ToList();
 
                 List<Item> imdbItems = new List<Item>();
@@ -339,8 +363,8 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
 
                 DataTable dt = new DataView(ds.Tables[0]).ToTable(false, cols.ToArray());
-                dt.TableName = FileUtilities.SafeFileName(_item.Title);
-                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet($"{_item.Title} - {_item.Year} - Søk etter lignende filmer - fant {dt.Rows.Count} stk, {imdbItems.Count} lokalt.", dt, this.Size);
+                dt.TableName = FileUtilities.SafeFileName(_seasonEpisode.Title);
+                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet($"{_seasonEpisode.Title} - {_seasonEpisode.Released} - Søk etter lignende filmer - fant {dt.Rows.Count} stk, {imdbItems.Count} lokalt.", dt, this.Size);
             }
             catch (Exception ex)
             {
@@ -353,15 +377,15 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                var t = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
-                var theList = t.Cast.ToList();
+                //var t = await _TMDB.GetMovieCredits(_seasonEpisode.Title, _seasonEpisode.Released.Substring(0,4).ToInt32());
+                //var theList = t.Cast.ToList();
 
-                var ds = DataSetUtilities.AutoGenererDataSet(theList.ToList<Cast>());
+                //var ds = DataSetUtilities.AutoGenererDataSet(theList.ToList<Cast>());
 
-                DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(false);
-                dt.TableName = DataSetUtilities.LegalTableName("Actors");
+                //DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(false);
+                //dt.TableName = DataSetUtilities.LegalTableName("Actors");
 
-                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_item.Title, dt.DataSet, this.Size);
+                //Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_seasonEpisode.Title, dt.DataSet, this.Size);
 
 
             }
@@ -393,7 +417,7 @@ namespace Kolibri.net.SilverScreen.Forms
             propertyGrid1.Size = new System.Drawing.Size(400, 300);
             propertyGrid1.TabIndex = 1;
             propertyGrid1.Text = "Innstillinger";
-            propertyGrid1.SelectedObject = _item;
+            propertyGrid1.SelectedObject = _seasonEpisode;
             propertyGrid1.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Bottom;
             propertyGrid1.Size = new Size(495, 480);
             // propertyGrid1.Dock = DockStyle.Top;
@@ -404,9 +428,9 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (res == DialogResult.OK)
             {
-                _liteDB.Update(_item);
+                _liteDB.Update(_seasonEpisode);
                 _liteDB.Update(_itemPath);
-                Init(_item);
+                Init(_seasonEpisode);
             }
         }
         private void Button_Click(object? sender, EventArgs e)
@@ -430,11 +454,11 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
                 bool dirExists = Directory.Exists(Path.Combine(info.Directory.FullName, "Subs"));
-                var mmi = _OMDB.GetItemByImdbId(_item.ImdbId);
+                var mmi = _OMDB.GetItemByImdbId(_seasonEpisode.ImdbId);
                 dirExists = dirExists && mmi.Type == "movie";
                 if (info.Exists && !dirExists)
                 {
-                    var jall = _subDL.SearchByIMDBid(_item.ImdbId);
+                    var jall = _subDL.SearchByIMDBid(_seasonEpisode.ImdbId);
                     if (jall.status == true && jall.subtitles != null && jall.subtitles.Count >= 1)
                     {
                         foreach (var sub in jall.subtitles)

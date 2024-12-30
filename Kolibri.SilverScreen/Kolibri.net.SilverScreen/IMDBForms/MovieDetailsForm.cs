@@ -32,7 +32,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             _IMDBDAL = new IMDBDAL(_liteDB);
             InitializeComponent();
             tbTitle.Text = obj.Title;
-            tbYear.Text = obj.Year;
+            tbYear.Text = obj.Year.EndsWith('-') ? obj.Year.TrimEnd('-'): obj.Year;
             tbRated.Text = obj.ImdbRating;
             tbRuntime.Text = obj.Runtime;
             tbGenre.Text = obj.Genre;

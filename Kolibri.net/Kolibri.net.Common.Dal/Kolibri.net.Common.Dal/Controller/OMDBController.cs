@@ -44,6 +44,7 @@ namespace Kolibri.net.Common.Dal.Controller
             }
             catch (Exception ex)
             {
+              
                 ret = null;
             }
             return ret;

@@ -10,6 +10,8 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
 using System.Security;
+using System.Drawing.Imaging;
+using IronSoftware.Drawing;
 
 namespace Kolibri.net.Common.Images
 
@@ -195,8 +197,8 @@ namespace Kolibri.net.Common.Images
             Bitmap bitmap = new Bitmap(16, 16);
             Graphics canvas = Graphics.FromImage(bitmap);
 
-            canvas.DrawImage(a, new Rectangle(0, 0, 16, 16));
-            canvas.DrawImage(b, new Rectangle(0, 0, 16, 16));
+            canvas.DrawImage(a, new System.Drawing.Rectangle(0, 0, 16, 16));
+            canvas.DrawImage(b, new System.Drawing.Rectangle(0, 0, 16, 16));
             //canvas.DrawImage(a, new Point(0, 0));
             //canvas.DrawImage(b, new Point(0, 0));
             canvas.Save();
@@ -439,9 +441,9 @@ namespace Kolibri.net.Common.Images
         public static Icon GetFolderIcon() { return Icons.MakeTransperent(GetFolderIcon(SystemIconSize.Small, FolderType.Closed)); }
         public static Icon MakeTransperent(Icon ico)
         {
-            return MakeTransperent(ico, Color.Transparent);
+            return MakeTransperent(ico, System.Drawing.Color.Transparent);
         }
-        public static Icon MakeTransperent(Icon ico, Color color)
+        public static Icon MakeTransperent(Icon ico, System.Drawing.Color color)
         {
             using (Bitmap bitmap = ico.ToBitmap())
             {
@@ -548,7 +550,7 @@ namespace Kolibri.net.Common.Images
                 int.TryParse(strArr[1].Trim(), out index);
             }
         }
-
+       
         public static Icon ExtractFromRegistryString(string regString, SystemIconSize size)
         {
             string fileName;
@@ -605,6 +607,18 @@ namespace Kolibri.net.Common.Images
                 }
             }
             return null;
+        }
+
+        public static Icon ImageToIcon(Bitmap image) {
+
+        return ImageToIcon(image as Image);
+        }
+
+        public static Icon ImageToIcon(Image image)
+        {
+            var Hicon = (image as Bitmap).GetHicon();
+            Icon newIcon = Icon.FromHandle(Hicon);
+            return newIcon;
         }
 
 

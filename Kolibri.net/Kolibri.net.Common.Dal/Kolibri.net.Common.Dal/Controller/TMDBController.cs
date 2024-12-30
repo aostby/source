@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Diagnostics;
 using TMDbLib.Objects.Credit;
+using TMDbLib.Objects.Find;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
@@ -22,6 +23,7 @@ namespace Kolibri.net.Common.Dal.Controller
         //API -- https://developers.themoviedb.org/3/getting-started/introduction
         //key https://www.themoviedb.org/talk/60a834cb501cf2005930515e?page=1#60a834cb501cf20059305161
 
+        //rottentomatoes-csharp på github
 
         public TMDBController(LiteDBController contr, string apikey = null)
         {
@@ -219,124 +221,8 @@ namespace Kolibri.net.Common.Dal.Controller
             settings.TMDBkey = ret;
             _contr.Upsert(settings);
             return ret;
-        }
-
-      
-
-        //private   async Task Main( )
-        //{
-        //    // Instantiate a new client, all that's needed is an API key, but it's possible to 
-        //    // also specify if SSL should be used, and if another server address should be used.
-        //      TMDbClient client = _client;
-
-        //    // We need the config from TMDb in case we want to get stuff like images
-        //    // The config needs to be fetched for each new client we create, but we can cache it to a file (as in this example).
-        //    await FetchConfig(client);
-
-        //    // Try fetching a movie
-        //    await FetchMovieExample(client);
-
-        //    // Once we've got a movie, or person, or so on, we can display images. 
-        //    // TMDb follow the pattern shown in the following example
-        //    // This example also shows an important feature of most of the Get-methods.
-        //    await FetchImagesExample(client);
-
-        //    Console.WriteLine("Done.");
-        //    Console.ReadLine();
-        //}
-
-        //private static async Task FetchConfig(TMDbClient client)
-        //{
-        //    FileInfo configJson = new FileInfo("config.json");
-
-        //    Console.WriteLine("Config file: " + configJson.FullName + ", Exists: " + configJson.Exists);
-
-        //    if (configJson.Exists && configJson.LastWriteTimeUtc >= DateTime.UtcNow.AddHours(-1))
-        //    {
-        //        Console.WriteLine("Using stored config");
-        //        string json = File.ReadAllText(configJson.FullName, Encoding.UTF8);
-
-        //        //client.SetConfig(Instance.DeserializeFromString<TMDbConfig>(json));
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("Getting new config");
-        //        TMDbConfig config = await client.GetConfigAsync();
-
-        //        Console.WriteLine("Storing config");
-        //        string json = TMDbJsonSerializer.Instance.SerializeToString(config);
-        //        File.WriteAllText(configJson.FullName, json, Encoding.UTF8);
-        //    }
-
-        //    Spacer();
-        //}
-
-        //private static async Task FetchImagesExample(TMDbClient client)
-        //{
-        //    const int movieId = 76338; // Thor: The Dark World (2013)
-
-        //    // In the call below, we're fetching the wanted movie from TMDb, but we're also doing something else.
-        //    // We're requesting additional data, in this case: Images. This means that the Movie property "Images" will be populated (else it will be null).
-        //    // We could combine these properties, requesting even more information in one go:
-        //    //      client.GetMovieAsync(movieId, MovieMethods.Images);
-        //    //      client.GetMovieAsync(movieId, MovieMethods.Images | MovieMethods.Releases);
-        //    //      client.GetMovieAsync(movieId, MovieMethods.Images | MovieMethods.Trailers | MovieMethods.Translations);
-        //    //
-        //    // .. and so on..
-        //    // 
-        //    // Note: Each method normally corresponds to a property on the resulting object. If you haven't requested the information, the property will most likely be null.
-
-        //    // Also note, that while we could have used 'client.GetMovieImagesAsync()' - it was better to do it like this because we also wanted the Title of the movie.
-        //    Movie movie = await client.GetMovieAsync(movieId, MovieMethods.Images);
-
-        //    Console.WriteLine("Fetching images for '" + movie.Title + "'");
-
-        //    // Images come in two forms, each dispayed below
-        //    Console.WriteLine("Displaying Backdrops");
-        //    await ProcessImages(client, movie.Images.Backdrops.Take(3), client.Config.Images.BackdropSizes);
-        //    Console.WriteLine();
-
-        //    Console.WriteLine("Displaying Posters");
-        //    await ProcessImages(client, movie.Images.Posters.Take(3), client.Config.Images.PosterSizes);
-        //    Console.WriteLine();
-
-        //    Spacer();
-        //}
-
-        //private static async Task ProcessImages(TMDbClient client, IEnumerable<ImageData> images, IEnumerable<string> sizes)
-        //{
-        //    // Displays basic information about each image, as well as all the possible adresses for it.
-        //    // All images should be available in all the sizes provided by the configuration.
-
-        //    List<ImageData> imagesLst = images.ToList();
-        //    List<string> sizesLst = sizes.ToList();
-
-        //    foreach (ImageData imageData in imagesLst)
-        //    {
-        //        Console.WriteLine(imageData.FilePath);
-        //        Console.WriteLine("\t " + imageData.Width + "x" + imageData.Height);
-
-        //        // Calculate the images path
-        //        // There are multiple resizing available for each image, directly from TMDb.
-        //        // There's always the "original" size if you're in doubt which to choose.
-        //        foreach (string size in sizesLst)
-        //        {
-        //            Uri imageUri = client.GetImageUrl(size, imageData.FilePath);
-        //            Console.WriteLine("\t -> " + imageUri);
-        //        }
-
-        //        Console.WriteLine();
-        //    }
-
-        //    // Download an image for testing, uses the internal HttpClient in the API.
-        //    Console.WriteLine("Downloading image for the first url, as a test");
-
-        //    Uri testUrl = client.GetImageUrl(sizesLst.First(), imagesLst.First().FilePath);
-        //    byte[] bts = await client.GetImageBytesAsync(sizesLst.First(), imagesLst.First().FilePath);
-
-        //    Console.WriteLine($"Downloaded {testUrl}: {bts.Length} bytes");
-        //}
-
+        } 
+     
         private static void Spacer()
         {
             Console.WriteLine();
@@ -377,6 +263,22 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             var ret = await _client.GetTvEpisodeAsync(tvshowId, seasonNumber, episodeNumber);
             return ret;
+
+        }
+        public async Task<FindContainer> FindById(string imdbId)
+        {
+            var ret = await _client.FindAsync(TMDbLib.Objects.Find.FindExternalSource.Imdb, imdbId);
+            return ret;
+
+        }
+        public async Task< TvEpisode >FindByImdbId(string imdbId, int episodenr)
+        {
+            var tmp = await _client.FindAsync(TMDbLib.Objects.Find.FindExternalSource.Imdb, imdbId);
+            var show = tmp.TvEpisode[0].ShowId;
+            var season = tmp.TvEpisode[0].SeasonNumber;
+
+            var next = await _client.GetTvEpisodeAsync(show, season , episodenr);
+            return next;
 
         }
 

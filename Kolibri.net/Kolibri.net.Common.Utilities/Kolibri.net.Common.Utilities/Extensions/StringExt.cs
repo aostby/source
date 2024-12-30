@@ -8,7 +8,9 @@
             if (string.IsNullOrEmpty(number)) return 0;
 
             number = number.ToLower().Replace("s", string.Empty);
+            number = number.ToLower().Replace("S", string.Empty);
             number = number.ToLower().Replace("e", string.Empty);
+            number = number.ToLower().Replace("E", string.Empty);
 
             if (number.IsNumeric())
             {

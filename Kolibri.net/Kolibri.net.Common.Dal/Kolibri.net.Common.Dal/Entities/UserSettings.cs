@@ -29,6 +29,13 @@ namespace Kolibri.net.Common.Dal.Entities
         [DisplayName(nameof(UserName))]
         public string UserName { get; set; } = Environment.UserName;
 
+
+        [BrowsableAttribute(true)]
+        [ReadOnly(true)]
+        [Description($"{nameof(FavoriteWatchList)} - the current watchlist Im editing")]
+        [DisplayName(nameof(FavoriteWatchList))]
+        public string FavoriteWatchList { get; set; } = "MyMovies";
+
         [BrowsableAttribute(true)]
         [Description(nameof(OMDBkey))]
         [DisplayName(nameof(OMDBkey))]
@@ -43,6 +50,9 @@ namespace Kolibri.net.Common.Dal.Entities
         [Description(nameof(SUBDLkey))]
         [DisplayName(nameof(SUBDLkey))]
         public string SUBDLkey { get; set; } = null;
+
+
+
 
         [BrowsableAttribute(true)]
         [Description(nameof(UserFilePaths))]

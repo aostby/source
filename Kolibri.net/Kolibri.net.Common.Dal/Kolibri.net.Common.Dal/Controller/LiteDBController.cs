@@ -1,9 +1,11 @@
 ﻿using com.sun.org.apache.bcel.@internal.generic;
 using com.sun.tools.corba.se.idl;
+using java.awt;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
 using OMDbApiNet.Model;
+using TMDbLib.Objects.TvShows;
 using Season = OMDbApiNet.Model.Season;
 
 
@@ -274,6 +276,56 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
+        public bool Insert(TvEpisode ep)
+        {
+            try
+            {
+                _liteDB.GetCollection<TvEpisode>("TvEpisode")
+                    .Insert(ep.ExternalIds.ImdbId, ep);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public bool Upsert(TvEpisode ep)
+        {
+            if (ep == null) return false;
+
+            try
+            {
+                Insert(ep);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Update(ep);
+                }
+                catch (Exception exu)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool Update(TvEpisode ep)
+        {
+            try
+            {
+                _liteDB.GetCollection<TvEpisode>("TvEpisode")
+                    .Update(ep.ExternalIds.Id, ep);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
         public bool Update(SeasonEpisode ep)
         {
             try
@@ -307,6 +359,32 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
                             .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public TvEpisode FindTvEpisode(string imdbId)
+        {
+            try
+            {
+                return _liteDB.GetCollection<TvEpisode>("TvEpisode")
+                            .Find(x => x.ExternalIds.ImdbId == imdbId).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public  List<SeasonEpisode> FindAllSeasonEpisodes()
+        {
+            try
+            {
+                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode").FindAll().ToList(); 
+                            
             }
             catch (Exception ex)
             {
@@ -741,16 +819,29 @@ switch (searchCriteria)
         }
 
 
-        public IEnumerable<WatchList> WishListFindAll(string type = null)
+        public List<WatchList> WishListFindAll(string type = null, string watchListName = null)
         {
+            //if (!string.IsNullOrEmpty(type))
+            //{
+            //    var list = _liteDB.GetCollection<WatchList>("WatchList").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
+            //    return list;
+            //}
+            //else
+
+            var temp = _liteDB.GetCollection<WatchList>("WatchList").FindAll().ToList();
+            var list = temp.ToList();
             if (!string.IsNullOrEmpty(type))
             {
-                var list = _liteDB.GetCollection<WatchList>("WatchList").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
-                return list;
+                list = list.Where(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
             }
-            else
-                return _liteDB.GetCollection<WatchList>("WatchList")
-                    .FindAll();
+              
+            if (!string.IsNullOrEmpty(watchListName))
+            {
+                list = list.Where(x => x.WatchListName.Equals(watchListName, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+       
+            return list.ToList();
+
         }
         public WatchList WishListGetItemByID(string id)
         {

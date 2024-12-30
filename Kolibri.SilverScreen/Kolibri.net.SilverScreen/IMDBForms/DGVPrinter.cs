@@ -1713,11 +1713,11 @@ namespace DGVPrinterHelper //AllocationRequest
             if (!(typeof(DataGridView).IsInstanceOfType(dgv)))
                 throw new Exception("Invalid Parameter passed to DGVPrinter.");
 
-            // save the datagridview we're printing
+            // save the datagridview we're printing  
             this.dgv = dgv;
             
             // display dialog and print
-            if (DialogResult.OK == DisplayPrintDialog())
+            if (DialogResult.OK ==  DisplayPrintDialog())
             {
                 PrintNoDisplay(dgv);
             }
