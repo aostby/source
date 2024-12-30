@@ -91,12 +91,14 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 case MultimediaType.movie:
                 case MultimediaType.Movies:
+                    
                     var list = new List<Item>();
                     list = GetItems(_files);
                     count = list.Count;
                     ShowGridForDBItems(list);
                     break;
                 case MultimediaType.Series:
+                  
                     var episodes = new List<SeasonEpisode>();
                     episodes = GetEpisodes(_files);
                     count = episodes.Count;
@@ -134,8 +136,7 @@ namespace Kolibri.net.SilverScreen.Forms
             return ret; 
         }
         private List<SeasonEpisode> GetEpisodes(IEnumerable<FileItem> files = null)
-        {
-            
+        { 
             var ret = _liteDB.FindAllSeasonEpisodes();
             if (files != null && files.Count() >= 1)
             {
@@ -166,7 +167,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     SetLabelText($"Searching for {_type}.....");
                     var lookup = _files.Distinct().ToDictionary(x => x.ImdbId);
 
-                    if (list != null)
+                    if (list != null&&list.Count>0)
                     {
                         var searchList = list;
                         resultTable = DataSetUtilities.AutoGenererTypedDataSet(new System.Collections.ArrayList(searchList.ToArray())).Tables[0];
@@ -283,9 +284,14 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (!radioButtonNone.Checked)
                 {
                     MultiMediaSearchController searchController = new MultiMediaSearchController(_settings, updateNewOnly: radioButtonNew.Checked);
-                    if(_type.Equals(Constants.MultimediaType.movie)||_type.Equals(Constants.MultimediaType.Movies)) Task.Run(async () => searchController.SearchForMovies(dInfo) );
-               else     if (_type.Equals(Constants.MultimediaType.Series) || _type.Equals(Constants.MultimediaType.Series)) Task.Run(async () => searchController.SearchForSeries(dInfo));
+                    if (_type.Equals(Constants.MultimediaType.movie) || _type.Equals(Constants.MultimediaType.Movies)) Task.Run(async () => searchController.SearchForMovies(dInfo));
+                    else if (_type.Equals(Constants.MultimediaType.Series) || _type.Equals(Constants.MultimediaType.Series)) Task.Run(async () => searchController.SearchForSeries(dInfo));
 
+                }
+                else if (_type.Equals(Constants.MultimediaType.Series))
+                {
+                    MultiMediaSearchController searchController = new MultiMediaSearchController(_settings, updateNewOnly: radioButtonNew.Checked);
+                    Task.Run(async () => searchController.SearchForSeries(dInfo));
                 }
                 Init();
             }
@@ -304,10 +310,12 @@ namespace Kolibri.net.SilverScreen.Forms
                 {
                     case MultimediaType.movie:
                     case MultimediaType.Movies:
+                       
                         var movie = _liteDB.FindItem(tableItem.Rows[0]["ImdbId"].ToString());
                         SetForm(movie, splitContainer2.Panel2);
                         break;
                     case MultimediaType.Series:
+                       
                         var series = _liteDB.FindSeasonEpisode(tableItem.Rows[0]["ImdbId"].ToString());
                         SetForm(new DetailsFormSeries(series, _liteDB, _OMDB, _TMDB, null, _imageCache), splitContainer2.Panel2);
                         break;
@@ -324,6 +332,21 @@ namespace Kolibri.net.SilverScreen.Forms
                 SetLabelText(ex.Message);
             }
         }
+
+        private void Nullstill()
+        {
+            try
+            { Form form = new Form();
+            SetForm(form, splitContainer2.Panel1);
+            SetForm(form, splitContainer2.Panel1);
+
+            }
+            catch (Exception)
+            { 
+            }
+           
+        }
+
         private void DataGridView_LocalSelectionChanged(object sender, EventArgs e)
         {
             try

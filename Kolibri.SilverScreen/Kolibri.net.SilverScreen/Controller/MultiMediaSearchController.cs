@@ -272,7 +272,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     else
                     {
                         //Mangler tmdbID
-                        movie = new OMDbApiNet.Model.Item() { Title = title, Year = year.ToString(), ImdbRating = "Unknown", Response = "false", TomatoUrl = file.FullName};
+                        var temp  = new OMDbApiNet.Model.Item() { Title = title, Year = year.ToString(), ImdbRating = "Unknown", Response = "false", TomatoUrl = file.FullName};
                     }
                 }
 
@@ -299,7 +299,6 @@ namespace Kolibri.net.SilverScreen.Controller
 
         public async void SearchForSeries(DirectoryInfo dir)
         {  Dictionary<string, Season> _seasonDic = null;
-
         List<Season> listOfFileSeasons = null;
             List<Season> listOfSeasons = null;
 
@@ -533,11 +532,11 @@ namespace Kolibri.net.SilverScreen.Controller
                     ds = new DataSet();
                     ds.Tables.Add(temp);
                 }
-                string filePath = Path.Combine(dir.FullName, resultTable.TableName + ".xlsx");
-                try { if (File.Exists(filePath)) File.Delete(filePath); } catch (Exception) { }
+          //      string filePath = Path.Combine(dir.FullName, resultTable.TableName + ".xlsx");
+          //      try { if (File.Exists(filePath)) File.Delete(filePath); } catch (Exception) { }
 
            //     Kolibri.net.Common.Utilities.ExcelUtilities.GenerateExcel2007(new FileInfo(filePath), temp.DataSet);
-                Kolibri.net.Common.Utilities.FileUtilities.OpenFolderHighlightFile(new FileInfo(filePath));
+            //    Kolibri.net.Common.Utilities.FileUtilities.OpenFolderHighlightFile(new FileInfo(filePath));
             }
 
             #endregion

@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Diagnostics;
 using TMDbLib.Objects.Credit;
+using TMDbLib.Objects.Find;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
@@ -262,6 +263,22 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             var ret = await _client.GetTvEpisodeAsync(tvshowId, seasonNumber, episodeNumber);
             return ret;
+
+        }
+        public async Task<FindContainer> FindById(string imdbId)
+        {
+            var ret = await _client.FindAsync(TMDbLib.Objects.Find.FindExternalSource.Imdb, imdbId);
+            return ret;
+
+        }
+        public async Task< TvEpisode >FindByImdbId(string imdbId, int episodenr)
+        {
+            var tmp = await _client.FindAsync(TMDbLib.Objects.Find.FindExternalSource.Imdb, imdbId);
+            var show = tmp.TvEpisode[0].ShowId;
+            var season = tmp.TvEpisode[0].SeasonNumber;
+
+            var next = await _client.GetTvEpisodeAsync(show, season , episodenr);
+            return next;
 
         }
 

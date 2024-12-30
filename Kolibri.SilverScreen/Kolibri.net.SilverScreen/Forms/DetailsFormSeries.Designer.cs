@@ -30,7 +30,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DetailsFormItem));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DetailsFormSeries));
             label8 = new Label();
             label7 = new Label();
             label6 = new Label();
@@ -56,7 +56,9 @@ namespace Kolibri.net.SilverScreen.Forms
             toolTipDetail = new ToolTip(components);
             buttonRediger = new Button();
             buttonSubtitleSearch = new Button();
+            dataGridView1 = new DataGridView();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
             // 
             // label8
@@ -212,7 +214,7 @@ namespace Kolibri.net.SilverScreen.Forms
             pbPoster.Location = new Point(14, 12);
             pbPoster.Margin = new Padding(4, 3, 4, 3);
             pbPoster.Name = "pbPoster";
-            pbPoster.Size = new Size(476, 378);
+            pbPoster.Size = new Size(483, 378);
             pbPoster.SizeMode = PictureBoxSizeMode.Zoom;
             pbPoster.TabIndex = 26;
             pbPoster.TabStop = false;
@@ -285,7 +287,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // buttonSearch
             // 
             buttonSearch.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSearch.Location = new Point(415, 398);
+            buttonSearch.Location = new Point(422, 396);
             buttonSearch.Name = "buttonSearch";
             buttonSearch.Size = new Size(75, 23);
             buttonSearch.TabIndex = 46;
@@ -307,7 +309,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // buttonSubtitleSearch
             // 
             buttonSubtitleSearch.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSubtitleSearch.Location = new Point(415, 422);
+            buttonSubtitleSearch.Location = new Point(422, 420);
             buttonSubtitleSearch.Name = "buttonSubtitleSearch";
             buttonSubtitleSearch.Size = new Size(75, 23);
             buttonSubtitleSearch.TabIndex = 48;
@@ -316,11 +318,20 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonSubtitleSearch.UseVisualStyleBackColor = true;
             buttonSubtitleSearch.Click += buttonSubtitleSearch_Click;
             // 
-            // DetailsFormItem
+            // dataGridView1
+            // 
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Location = new Point(561, 12);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.Size = new Size(774, 702);
+            dataGridView1.TabIndex = 49;
+            // 
+            // DetailsFormSeries
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(504, 754);
+            ClientSize = new Size(1347, 754);
+            Controls.Add(dataGridView1);
             Controls.Add(buttonSubtitleSearch);
             Controls.Add(buttonRediger);
             Controls.Add(buttonSearch);
@@ -349,10 +360,11 @@ namespace Kolibri.net.SilverScreen.Forms
             KeyPreview = true;
             Margin = new Padding(4, 3, 4, 3);
             MinimumSize = new Size(16, 39);
-            Name = "DetailsFormItem";
+            Name = "DetailsFormSeries";
             Text = "Movie Detail ";
             KeyDown += MovieDetailsForm_KeyDown;
             ((System.ComponentModel.ISupportInitialize)pbPoster).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -384,5 +396,6 @@ namespace Kolibri.net.SilverScreen.Forms
         private ToolTip toolTipDetail;
         private Button buttonRediger;
         private Button buttonSubtitleSearch;
+        private DataGridView dataGridView1;
     }
 }

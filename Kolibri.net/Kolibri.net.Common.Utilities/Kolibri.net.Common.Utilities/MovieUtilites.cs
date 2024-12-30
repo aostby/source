@@ -99,6 +99,8 @@ namespace Kolibri.net.Common.Utilities
                 {
                     year = Convert.ToInt32((match.Value));
                 }
+                if (directoryName.Contains($"({year})"))
+                    return year;
 
                 var k = Regex.Matches(dir, pattern);
                 if (k.Count > 1)

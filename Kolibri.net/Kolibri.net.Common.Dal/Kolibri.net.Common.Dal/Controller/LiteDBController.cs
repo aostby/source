@@ -5,6 +5,7 @@ using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
 using OMDbApiNet.Model;
+using TMDbLib.Objects.TvShows;
 using Season = OMDbApiNet.Model.Season;
 
 
@@ -275,6 +276,56 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
+        public bool Insert(TvEpisode ep)
+        {
+            try
+            {
+                _liteDB.GetCollection<TvEpisode>("TvEpisode")
+                    .Insert(ep.ExternalIds.ImdbId, ep);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public bool Upsert(TvEpisode ep)
+        {
+            if (ep == null) return false;
+
+            try
+            {
+                Insert(ep);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Update(ep);
+                }
+                catch (Exception exu)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool Update(TvEpisode ep)
+        {
+            try
+            {
+                _liteDB.GetCollection<TvEpisode>("TvEpisode")
+                    .Update(ep.ExternalIds.Id, ep);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
         public bool Update(SeasonEpisode ep)
         {
             try
@@ -314,6 +365,20 @@ namespace Kolibri.net.Common.Dal.Controller
                 return null;
             }
         }
+
+        public TvEpisode FindTvEpisode(string imdbId)
+        {
+            try
+            {
+                return _liteDB.GetCollection<TvEpisode>("TvEpisode")
+                            .Find(x => x.ExternalIds.ImdbId == imdbId).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public  List<SeasonEpisode> FindAllSeasonEpisodes()
         {
             try
