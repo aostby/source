@@ -1,4 +1,5 @@
-﻿using System;
+﻿using javax.xml.crypto;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Kolibri.net.Common.Images.Entities
 
         public ImagePoster(string imdbid, Bitmap image)
         {
-            ImdbId = imdbid;
+            ImdbId = imdbid;         
             Image = image;
         }
 

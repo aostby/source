@@ -30,11 +30,13 @@
         {
             splitContainer1 = new SplitContainer();
             groupBoxFilter = new GroupBox();
+            radioButtonFilterNoneExistant = new RadioButton();
+            radioButtonFilterAlle = new RadioButton();
             checkBoxSimple = new CheckBox();
             groupBoxFileSearch = new GroupBox();
-            radioButtonNew = new RadioButton();
-            radioButtonNone = new RadioButton();
-            radioButtonAll = new RadioButton();
+            radioButtonUpdateNew = new RadioButton();
+            radioButtonUpdateNone = new RadioButton();
+            radioButtonUpdateAll = new RadioButton();
             labelNumItemsDB = new Label();
             textBoxSource = new TextBox();
             buttonOpenFolder = new Button();
@@ -45,8 +47,6 @@
             backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
             backgroundWorker3 = new System.ComponentModel.BackgroundWorker();
             backgroundWorker4 = new System.ComponentModel.BackgroundWorker();
-            radioButtonAlle = new RadioButton();
-            radioButtonNoneExistant = new RadioButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -84,14 +84,38 @@
             // 
             // groupBoxFilter
             // 
-            groupBoxFilter.Controls.Add(radioButtonNoneExistant);
-            groupBoxFilter.Controls.Add(radioButtonAlle);
+            groupBoxFilter.Controls.Add(radioButtonFilterNoneExistant);
+            groupBoxFilter.Controls.Add(radioButtonFilterAlle);
             groupBoxFilter.Location = new Point(495, 34);
             groupBoxFilter.Name = "groupBoxFilter";
             groupBoxFilter.Size = new Size(221, 45);
             groupBoxFilter.TabIndex = 6;
             groupBoxFilter.TabStop = false;
             groupBoxFilter.Text = "Filter";
+            // 
+            // radioButtonFilterNoneExistant
+            // 
+            radioButtonFilterNoneExistant.AutoSize = true;
+            radioButtonFilterNoneExistant.Location = new Point(88, 20);
+            radioButtonFilterNoneExistant.Name = "radioButtonFilterNoneExistant";
+            radioButtonFilterNoneExistant.Size = new Size(111, 19);
+            radioButtonFilterNoneExistant.TabIndex = 1;
+            radioButtonFilterNoneExistant.Text = "IkkeEksisterende";
+            radioButtonFilterNoneExistant.UseVisualStyleBackColor = true;
+            radioButtonFilterNoneExistant.CheckedChanged += radioButtonFilter_CheckedChanged;
+            // 
+            // radioButtonFilterAlle
+            // 
+            radioButtonFilterAlle.AutoSize = true;
+            radioButtonFilterAlle.Checked = true;
+            radioButtonFilterAlle.Location = new Point(15, 20);
+            radioButtonFilterAlle.Name = "radioButtonFilterAlle";
+            radioButtonFilterAlle.Size = new Size(45, 19);
+            radioButtonFilterAlle.TabIndex = 0;
+            radioButtonFilterAlle.TabStop = true;
+            radioButtonFilterAlle.Text = "Alle";
+            radioButtonFilterAlle.UseVisualStyleBackColor = true;
+            radioButtonFilterAlle.CheckedChanged += radioButtonFilter_CheckedChanged;
             // 
             // checkBoxSimple
             // 
@@ -107,9 +131,9 @@
             // 
             // groupBoxFileSearch
             // 
-            groupBoxFileSearch.Controls.Add(radioButtonNew);
-            groupBoxFileSearch.Controls.Add(radioButtonNone);
-            groupBoxFileSearch.Controls.Add(radioButtonAll);
+            groupBoxFileSearch.Controls.Add(radioButtonUpdateNew);
+            groupBoxFileSearch.Controls.Add(radioButtonUpdateNone);
+            groupBoxFileSearch.Controls.Add(radioButtonUpdateAll);
             groupBoxFileSearch.Location = new Point(803, 10);
             groupBoxFileSearch.Name = "groupBoxFileSearch";
             groupBoxFileSearch.Size = new Size(302, 39);
@@ -117,37 +141,37 @@
             groupBoxFileSearch.TabStop = false;
             groupBoxFileSearch.Text = "Oppdater";
             // 
-            // radioButtonNew
+            // radioButtonUpdateNew
             // 
-            radioButtonNew.AutoSize = true;
-            radioButtonNew.Location = new Point(6, 14);
-            radioButtonNew.Name = "radioButtonNew";
-            radioButtonNew.Size = new Size(46, 19);
-            radioButtonNew.TabIndex = 2;
-            radioButtonNew.Text = "Nye";
-            radioButtonNew.UseVisualStyleBackColor = true;
+            radioButtonUpdateNew.AutoSize = true;
+            radioButtonUpdateNew.Location = new Point(6, 14);
+            radioButtonUpdateNew.Name = "radioButtonUpdateNew";
+            radioButtonUpdateNew.Size = new Size(46, 19);
+            radioButtonUpdateNew.TabIndex = 2;
+            radioButtonUpdateNew.Text = "Nye";
+            radioButtonUpdateNew.UseVisualStyleBackColor = true;
             // 
-            // radioButtonNone
+            // radioButtonUpdateNone
             // 
-            radioButtonNone.AutoSize = true;
-            radioButtonNone.Checked = true;
-            radioButtonNone.Location = new Point(58, 14);
-            radioButtonNone.Name = "radioButtonNone";
-            radioButtonNone.Size = new Size(55, 19);
-            radioButtonNone.TabIndex = 1;
-            radioButtonNone.TabStop = true;
-            radioButtonNone.Text = "Ingen";
-            radioButtonNone.UseVisualStyleBackColor = true;
+            radioButtonUpdateNone.AutoSize = true;
+            radioButtonUpdateNone.Checked = true;
+            radioButtonUpdateNone.Location = new Point(58, 14);
+            radioButtonUpdateNone.Name = "radioButtonUpdateNone";
+            radioButtonUpdateNone.Size = new Size(55, 19);
+            radioButtonUpdateNone.TabIndex = 1;
+            radioButtonUpdateNone.TabStop = true;
+            radioButtonUpdateNone.Text = "Ingen";
+            radioButtonUpdateNone.UseVisualStyleBackColor = true;
             // 
-            // radioButtonAll
+            // radioButtonUpdateAll
             // 
-            radioButtonAll.AutoSize = true;
-            radioButtonAll.Location = new Point(119, 14);
-            radioButtonAll.Name = "radioButtonAll";
-            radioButtonAll.Size = new Size(45, 19);
-            radioButtonAll.TabIndex = 0;
-            radioButtonAll.Text = "Alle";
-            radioButtonAll.UseVisualStyleBackColor = true;
+            radioButtonUpdateAll.AutoSize = true;
+            radioButtonUpdateAll.Location = new Point(119, 14);
+            radioButtonUpdateAll.Name = "radioButtonUpdateAll";
+            radioButtonUpdateAll.Size = new Size(45, 19);
+            radioButtonUpdateAll.TabIndex = 0;
+            radioButtonUpdateAll.Text = "Alle";
+            radioButtonUpdateAll.UseVisualStyleBackColor = true;
             // 
             // labelNumItemsDB
             // 
@@ -206,28 +230,6 @@
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // radioButtonAlle
-            // 
-            radioButtonAlle.AutoSize = true;
-            radioButtonAlle.Checked = true;
-            radioButtonAlle.Location = new Point(15, 20);
-            radioButtonAlle.Name = "radioButtonAlle";
-            radioButtonAlle.Size = new Size(45, 19);
-            radioButtonAlle.TabIndex = 0;
-            radioButtonAlle.TabStop = true;
-            radioButtonAlle.Text = "Alle";
-            radioButtonAlle.UseVisualStyleBackColor = true;
-            // 
-            // radioButtonNoneExistant
-            // 
-            radioButtonNoneExistant.AutoSize = true;
-            radioButtonNoneExistant.Location = new Point(88, 20);
-            radioButtonNoneExistant.Name = "radioButtonNoneExistant";
-            radioButtonNoneExistant.Size = new Size(111, 19);
-            radioButtonNoneExistant.TabIndex = 1;
-            radioButtonNoneExistant.Text = "IkkeEksisterende";
-            radioButtonNoneExistant.UseVisualStyleBackColor = true;
-            // 
             // MultiMediaForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -264,16 +266,16 @@
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabelStatus;
         private GroupBox groupBoxFileSearch;
-        private RadioButton radioButtonNew;
-        private RadioButton radioButtonNone;
-        private RadioButton radioButtonAll;
+        private RadioButton radioButtonUpdateNew;
+        private RadioButton radioButtonUpdateNone;
+        private RadioButton radioButtonUpdateAll;
         private CheckBox checkBoxSimple;
         private GroupBox groupBoxFilter;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.ComponentModel.BackgroundWorker backgroundWorker2;
         private System.ComponentModel.BackgroundWorker backgroundWorker3;
         private System.ComponentModel.BackgroundWorker backgroundWorker4;
-        private RadioButton radioButtonNoneExistant;
-        private RadioButton radioButtonAlle;
+        private RadioButton radioButtonFilterNoneExistant;
+        private RadioButton radioButtonFilterAlle;
     }
 }

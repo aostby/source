@@ -40,6 +40,7 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.movieImageList = new System.Windows.Forms.ImageList(this.components);
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.detailsViewBtn = new System.Windows.Forms.Button();
@@ -68,7 +69,6 @@
             this.plotContentLabel = new System.Windows.Forms.Label();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.mainLayout.SuspendLayout();
             this.headerLayout.SuspendLayout();
             this.leftLayout.SuspendLayout();
@@ -208,6 +208,10 @@
             // 
             this.columnHeader3.Text = "Type";
             this.columnHeader3.Width = 80;
+            // 
+            // columnHeader4
+            // 
+            this.columnHeader4.Text = "ImdbRating";
             // 
             // movieImageList
             // 
@@ -611,10 +615,6 @@
             this.statusLabel.Size = new System.Drawing.Size(1219, 17);
             this.statusLabel.Spring = true;
             this.statusLabel.Text = "Clear searchfield to show all items in list";
-            // 
-            // columnHeader4
-            // 
-            this.columnHeader4.Text = "ImdbRating";
             // 
             // ShowLocalSeries
             // 

@@ -1,6 +1,7 @@
 ﻿using MovieFileLibrary;
 using System.Data;
 using System.Text.RegularExpressions;
+using System.Xml.Schema;
 
 namespace Kolibri.net.Common.Utilities
 {
@@ -114,6 +115,8 @@ namespace Kolibri.net.Common.Utilities
                     if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(biggest))
                         year = biggest;
 
+                    if ((biggest - smallest) < 4)
+                        year = smallest; // 2012 utgitt i 2009
 
 
                     else if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(smallest))

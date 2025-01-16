@@ -76,6 +76,7 @@
             this.createIMGLinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.createMOVIELinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.grusToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.getBase64ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -334,7 +335,8 @@
             // 
             this.bilderToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.sorterBilderToolStripMenuItem,
-            this.reduserBildestørrelseToolStripMenuItem});
+            this.reduserBildestørrelseToolStripMenuItem,
+            this.getBase64ToolStripMenuItem});
             this.bilderToolStripMenuItem.Name = "bilderToolStripMenuItem";
             this.bilderToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
             this.bilderToolStripMenuItem.Text = "Bilder";
@@ -447,6 +449,13 @@
             this.grusToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.grusToolStripMenuItem.Text = "grus";
             // 
+            // getBase64ToolStripMenuItem
+            // 
+            this.getBase64ToolStripMenuItem.Name = "getBase64ToolStripMenuItem";
+            this.getBase64ToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.getBase64ToolStripMenuItem.Text = "Get Base64";
+            this.getBase64ToolStripMenuItem.Click += new System.EventHandler(this.getBase64ToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -515,5 +524,6 @@
         private System.Windows.Forms.ToolStripMenuItem getVMProductDetailsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem finnDuplikaterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem convertMovieToMP4ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem getBase64ToolStripMenuItem;
     }
 }

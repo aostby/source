@@ -32,15 +32,17 @@
             filToolStripMenuItem = new ToolStripMenuItem();
             lukkToolStripMenuItem = new ToolStripMenuItem();
             liteDBFilepathToolStripMenuItem = new ToolStripMenuItem();
+            innstillingerToolStripMenuItem = new ToolStripMenuItem();
             verktøyToolStripMenuItem = new ToolStripMenuItem();
             finnDuplikaterToolStripMenuItem = new ToolStripMenuItem();
+            flyttMapperToolStripMenuItem = new ToolStripMenuItem();
             multiMediaToolStripMenuItem = new ToolStripMenuItem();
             movieslocalToolStripMenuItem = new ToolStripMenuItem();
             serieslocalToolStripMenuItem = new ToolStripMenuItem();
             grusToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
-            innstillingerToolStripMenuItem = new ToolStripMenuItem();
+            flyttFilmerToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
@@ -66,20 +68,27 @@
             // lukkToolStripMenuItem
             // 
             lukkToolStripMenuItem.Name = "lukkToolStripMenuItem";
-            lukkToolStripMenuItem.Size = new Size(180, 22);
+            lukkToolStripMenuItem.Size = new Size(151, 22);
             lukkToolStripMenuItem.Text = "Lukk";
             lukkToolStripMenuItem.Click += lukkToolStripMenuItem_Click;
             // 
             // liteDBFilepathToolStripMenuItem
             // 
             liteDBFilepathToolStripMenuItem.Name = "liteDBFilepathToolStripMenuItem";
-            liteDBFilepathToolStripMenuItem.Size = new Size(180, 22);
+            liteDBFilepathToolStripMenuItem.Size = new Size(151, 22);
             liteDBFilepathToolStripMenuItem.Text = "LiteDB filepath";
             liteDBFilepathToolStripMenuItem.Click += liteDBFilepathToolStripMenuItem_Click;
             // 
+            // innstillingerToolStripMenuItem
+            // 
+            innstillingerToolStripMenuItem.Name = "innstillingerToolStripMenuItem";
+            innstillingerToolStripMenuItem.Size = new Size(151, 22);
+            innstillingerToolStripMenuItem.Text = "Innstillinger";
+            innstillingerToolStripMenuItem.Click += innstillingerToolStripMenuItem_Click;
+            // 
             // verktøyToolStripMenuItem
             // 
-            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem });
+            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem, flyttMapperToolStripMenuItem });
             verktøyToolStripMenuItem.Name = "verktøyToolStripMenuItem";
             verktøyToolStripMenuItem.Size = new Size(58, 20);
             verktøyToolStripMenuItem.Text = "Verktøy";
@@ -87,9 +96,16 @@
             // finnDuplikaterToolStripMenuItem
             // 
             finnDuplikaterToolStripMenuItem.Name = "finnDuplikaterToolStripMenuItem";
-            finnDuplikaterToolStripMenuItem.Size = new Size(153, 22);
+            finnDuplikaterToolStripMenuItem.Size = new Size(180, 22);
             finnDuplikaterToolStripMenuItem.Text = "Finn duplikater";
             finnDuplikaterToolStripMenuItem.Click += finnDuplikaterToolStripMenuItem_Click;
+            // 
+            // flyttMapperToolStripMenuItem
+            // 
+            flyttMapperToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { flyttFilmerToolStripMenuItem });
+            flyttMapperToolStripMenuItem.Name = "flyttMapperToolStripMenuItem";
+            flyttMapperToolStripMenuItem.Size = new Size(180, 22);
+            flyttMapperToolStripMenuItem.Text = "Flytt mapper";
             // 
             // multiMediaToolStripMenuItem
             // 
@@ -133,12 +149,12 @@
             toolStripStatusLabelStatus.Size = new Size(39, 17);
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // innstillingerToolStripMenuItem
+            // flyttFilmerToolStripMenuItem
             // 
-            innstillingerToolStripMenuItem.Name = "innstillingerToolStripMenuItem";
-            innstillingerToolStripMenuItem.Size = new Size(180, 22);
-            innstillingerToolStripMenuItem.Text = "Innstillinger";
-            innstillingerToolStripMenuItem.Click += innstillingerToolStripMenuItem_Click;
+            flyttFilmerToolStripMenuItem.Name = "flyttFilmerToolStripMenuItem";
+            flyttFilmerToolStripMenuItem.Size = new Size(180, 22);
+            flyttFilmerToolStripMenuItem.Text = "Flytt filmer";
+            flyttFilmerToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -176,5 +192,7 @@
         private ToolStripMenuItem serieslocalToolStripMenuItem;
         private ToolStripStatusLabel toolStripStatusLabelStatus;
         private ToolStripMenuItem innstillingerToolStripMenuItem;
+        private ToolStripMenuItem flyttMapperToolStripMenuItem;
+        private ToolStripMenuItem flyttFilmerToolStripMenuItem;
     }
 }
