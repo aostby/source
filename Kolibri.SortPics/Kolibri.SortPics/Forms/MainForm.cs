@@ -304,6 +304,28 @@ namespace SortPics.Forms
                 MessageBox.Show(ex.Message, ex.GetType().FullName);
             }
         }
+
+        private void getBase64ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OpenFileDialog ofd = new OpenFileDialog();
+                ofd.Title = "Velg bildefil du vil konvertere til Base64";
+
+                DialogResult res = ofd.ShowDialog(this);
+                if (res == DialogResult.OK)
+                {
+                    Image img = ImageUtilities.OpenImage(ofd.FileName);
+                    string b = ImageUtilities.ImageToBase64(img, ImageFormat.Png);
+
+                    OutputDialogs.ShowRichTextBoxDialog(ofd.FileName, b, this.Size);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().FullName);
+            }
+        }
     }
 }
  

@@ -206,7 +206,11 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
             var fbdEX = new VistaFolderBrowserDialog();
             fbdEX.RootFolder = Environment.SpecialFolder.MyComputer;
-            
+
+            fbdEX.Description = $"{text}";
+            fbdEX.UseDescriptionForTitle = true;
+
+
             fbdEX.SelectedPath = initalPath;
             //  SendKeys.SendWait("{TAB}{TAB}{DOWN}{UP}");
             SendKeys.Send("{TAB}{TAB}{RIGHT}");
@@ -218,7 +222,7 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             else return null;
         }
 
-  
+
         internal static class PInvoke
         {
             static PInvoke() { }
@@ -355,9 +359,9 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             System.IO.DirectoryInfo dir1 = source;
             System.IO.DirectoryInfo dir2 = destination;
 
-            IEnumerable<System.IO.FileInfo> list1 = dir1.GetFiles("*.*", System.IO.SearchOption.AllDirectories).OrderBy (f => f.FullName);
+            IEnumerable<System.IO.FileInfo> list1 = dir1.GetFiles("*.*", System.IO.SearchOption.AllDirectories).OrderBy(f => f.FullName);
 
-            IEnumerable<System.IO.FileInfo> list2 = dir2.GetFiles("*.*",System.IO.SearchOption.AllDirectories).OrderBy (f => f.FullName);    
+            IEnumerable<System.IO.FileInfo> list2 = dir2.GetFiles("*.*", System.IO.SearchOption.AllDirectories).OrderBy(f => f.FullName);
 
             bool IsInDestination = false;
             bool IsInSource = false;
@@ -421,6 +425,20 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             return ret.ToString();
         }
 
+        public static void OpenFolderInExplorer(string fullName)
+        {
+            string filePath = fullName;
+            if (!Directory.Exists(filePath))
+            {
+                return;
+            }
+
+            // combine the arguments together
+            // it doesn't matter if there is a space after ','
+            string argument = "/select, \"" + filePath + "\"";
+
+            System.Diagnostics.Process.Start("explorer.exe", argument);
+        }
     }
     internal class FileCompare : System.Collections.Generic.IEqualityComparer<System.IO.FileInfo>
     {

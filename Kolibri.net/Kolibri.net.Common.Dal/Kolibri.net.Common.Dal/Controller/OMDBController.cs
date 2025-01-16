@@ -123,7 +123,7 @@ namespace Kolibri.net.Common.Dal.Controller
                             if (insert && ret != null && _LITEDB != null)
                             {
                                 string title = ret.Title;
-                                _LITEDB.Insert(ret);
+                                _LITEDB.Upsert(ret);
                             }
                         }
                         catch (Exception ex)

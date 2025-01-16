@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using System.Data;
-using System.Reflection;
-using System.Runtime.Caching;
-using System.Xml;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using LiteDB;
 using OMDbApiNet.Model;
-using System.Linq;
-using Microsoft.VisualBasic.ApplicationServices;
+using System.Data;
+using System.Reflection;
+using System.Runtime.Caching;
+using System.Xml;
 
 namespace Kolibri.net.Common.Dal.Entities
 {
@@ -194,9 +187,10 @@ namespace Kolibri.net.Common.Dal.Entities
         public Bitmap RetrieveImage(string key)
         {
             Bitmap ret = null;
+            Byte[] arr = null;
             try
             {
-                var arr = GetItemsFromCache(key);
+                //var arr = GetItemsFromCache(key);
                 if (arr == null)
                 {
                     if (_ImageDB.ImageExists(key))

@@ -9,6 +9,7 @@ using static Kolibri.net.SilverScreen.Controls.Constants;
 using Kolibri.net.SilverScreen.Forms;
 using sun.tools.tree;
 using java.awt.print;
+using Kolibri.Common.VisualizeOMDbItem;
 
 namespace Kolibri.SilverScreen.Forms
 {
@@ -95,8 +96,12 @@ namespace Kolibri.SilverScreen.Forms
             }
             else if (sender.Equals(serieslocalToolStripMenuItem))
             {
-                newMDIChild = new MultiMediaForm(MultimediaType.Series, _userSettings);
+                newMDIChild = new ShowLocalSeries(_userSettings);
+            }else if (sender.Equals(flyttFilmerToolStripMenuItem))
+            {
+                newMDIChild = new SortMultimediaDesktopForm (MultimediaType.Movies, _userSettings);
             }
+
             newMDIChild.MdiParent = this;
             newMDIChild.Show();
         }

@@ -3,6 +3,7 @@ using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using OMDbApiNet.Model;
+using System;
 using System.ComponentModel;
 using System.Data;
 using System.Windows.Forms;
@@ -76,6 +77,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 dgv.KeyDown += Dgv_KeyDown;
                 dgv.CellValueChanged += Dgv_CellValueChanged;
                 dgv.RowPrePaint += Dgv_RowPrePaint;
+                
                 dgv.Name = tablename;
                 try
                 {
@@ -95,6 +97,54 @@ namespace Kolibri.net.SilverScreen.Controls
             { }
 
             return ret;
+        }
+
+        private void Dgv_MouseClick(object? sender, MouseEventArgs e)
+        {
+            try
+            {    string val = string.Empty;
+                string title = null; int year = 0; int index = 0;
+                if (e.Button == MouseButtons.Right)
+                {
+
+                    DataGridView dgv = sender as DataGridView;
+
+                    if (dgv.SelectedRows.Count > 0)
+                        index = dgv.SelectedRows[0].Index;
+                    else
+                        try
+                        {
+                            index = dgv.CurrentRow.Index;
+
+                        }
+                        catch (Exception) { index = 0; dgv.ClearSelection(); }
+
+
+
+                    val = dgv.SelectedRows[index].Cells["ImdbId"].Value.ToString();
+                    var org = val;
+
+                    var res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.InputBox("Set imdbid for this title", "set value", ref val);
+                    if (res == DialogResult.OK)
+                    {
+                        var OMDB = new OMDBController(_LITEDB.GetUserSettings().OMDBkey, _LITEDB);
+                        
+                        var fetched = OMDB.GetItemByImdbId(val);
+                        if (_LITEDB.Upsert(fetched)) {
+                            var orgfile = _LITEDB.FindFile(org);
+                            if (_LITEDB.Delete(orgfile) == 1)
+                            {
+                                orgfile.ImdbId = fetched.ImdbId;
+                                _LITEDB.Upsert(orgfile);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         public DataGridView GetMovieItemDataGridView(DataTable tableItem)
@@ -120,7 +170,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 dgv.KeyDown += Dgv_KeyDown;
                 dgv.CellValueChanged += Dgv_CellValueChanged;
                 dgv.RowPrePaint += Dgv_RowPrePaint;
-
+                dgv.MouseClick += Dgv_MouseClick;
                 try
                 {
                     dgv.Columns["Title"].DisplayIndex = 0; // or 1, 2, 3 etc dersom dgv ikke er added to panel 2 funker ikke dette 
