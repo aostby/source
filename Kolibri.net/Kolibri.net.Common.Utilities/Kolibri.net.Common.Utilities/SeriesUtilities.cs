@@ -14,20 +14,20 @@ namespace Kolibri.net.Common.Utilities
         /// </summary>
         /// <param name="infos"></param>
         /// <returns></returns>
-        public static DataTable SeriesEpisode(FileInfo[] infos)
+        public static DataTable SeriesEpisode(List<string> infos, bool useTitle=true)
         {
-            DataTable table = DataSetUtilities.ColumnNamesToDataTable("Name", "Season", "Episode", "FullName").Tables[0];
+            DataTable table = DataSetUtilities.ColumnNamesToDataTable((useTitle?"Title":"Name"), "Season", "Episode", "FullName").Tables[0];
             Regex regex = new Regex(@"(?<season>[Ss]\d{1,2})((?<sep>[-+]?)(?<episode>[Ee]\d{1,2}))+");
             string title = string.Empty;
-            foreach (FileInfo info in infos)
+            foreach (string info in infos)
             {
-                string file = Path.GetFileNameWithoutExtension(info.FullName);
+                string file = Path.GetFileNameWithoutExtension(info);
                 Match match = regex.Match(file);
                 if (match.Success)
                 {
                     title = MovieUtilites.GetMovieTitle(file);
                     Console.WriteLine(match.Value);
-                    table.Rows.Add(title, match.Groups["season"].Value, match.Groups["episode"].Value, info.FullName);
+                    table.Rows.Add(title, match.Groups["season"].Value.ToInt32().ToString(), match.Groups["episode"].Value.ToInt32().ToString(), info);
                 }
                 else
                 {
@@ -52,7 +52,7 @@ namespace Kolibri.net.Common.Utilities
                             //throw new Exception($"RegEx failed ({file}) in method { System.Reflection.MethodBase.GetCurrentMethod().Name}");
                         }
                         else
-                            table.Rows.Add(title, "1", episode, info.FullName);
+                            table.Rows.Add(title, "1", episode, info);
                     }
                 }
             }

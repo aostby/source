@@ -1,4 +1,5 @@
-﻿using MovieFileLibrary;
+﻿using com.sun.org.apache.bcel.@internal.generic;
+using MovieFileLibrary;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Xml.Schema;
@@ -102,6 +103,7 @@ namespace Kolibri.net.Common.Utilities
                 }
                 if (directoryName.Contains($"({year})"))
                     return year;
+                //else if (directoryName.Contains($"[{year}]"))                    return year;
 
                 var k = Regex.Matches(dir, pattern);
                 if (k.Count > 1)
@@ -112,7 +114,13 @@ namespace Kolibri.net.Common.Utilities
 
                     var biggest = matches.Select(i => Int32.Parse(i.ToString())).ToList().Max();
                     var smallest = matches.Select(i => Int32.Parse(i.ToString())).ToList().Min();
-                    if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(biggest))
+
+                    if (directoryName.Contains($"({biggest})"))
+                        return biggest;
+                    if (directoryName.Contains($"({smallest})"))
+                        return smallest;
+
+                        if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(biggest))
                         year = biggest;
 
                     if ((biggest - smallest) < 4)
@@ -207,5 +215,32 @@ namespace Kolibri.net.Common.Utilities
         "*.tod", "*.ts", "*.tts", "*.txd", "*.vob", "*.vro", "*.webm", "*.wm", "*.wmv", "*.wtv",
         "*.xesc"
         };
+        public static List<string> MoviesCommonFileExt(bool withPunctuation = false)
+        {
+            var ret = new List<string>() { "avi", "mkv", "mp4", "mpg", "mpeg" };
+
+            if (withPunctuation)
+                ret = ret.Select(r => string.Concat('.', r)).ToList();
+
+            return ret.Distinct().ToList();
+        }
+        public static List<string> MoviesFileExt(bool withPunctuation = false)
+        {
+            var ret= new List<string>() { 
+                "3g2", "3gp", "amv", "asf", "avi", "drc", "flv", "flv", "flv", "f4v",
+                "f4p", "f4a", "f4b", "gif", "gifv", "m4v", "mkv", "mng", "mov", "qt", 
+                "mp4", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe", "mpv", "mpg", "mpeg", 
+                "m2v", "MTS", "M2TS", "TS", "mxf", "nsv", "ogv", "ogg", "rm", "rmvb", 
+                "roq", "svi", "vob", "webm", "wmv", "yuv", "ts" };
+            if (withPunctuation)
+                ret = ret.Select(r => string.Concat('.', r)).ToList();
+
+            return ret.Distinct().ToList();
+        }
+        public static List<string> MulitpartFilter()
+        {
+            var filterList = new List<string>() { "CD", ".PART", " PART", "Disk0", "Extra", "@__thumb" };
+            return filterList;
+        }
     }
 }

@@ -44,7 +44,7 @@ namespace Kolibri.net.Common.Dal.Entities
         [BrowsableAttribute(true)]
         [Description(nameof(TMDBkey))]
         [DisplayName(nameof(TMDBkey))]
-        public string TMDBkey { get; set; } = null;
+        public string TMDBkey { get; set; } = "c6b31d1cdad6a56a23f0c913e2482a31";
 
         [BrowsableAttribute(true)]
         [Description(nameof(SUBDLkey))]

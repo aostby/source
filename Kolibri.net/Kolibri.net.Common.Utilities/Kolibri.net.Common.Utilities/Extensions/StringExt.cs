@@ -1,4 +1,6 @@
-﻿namespace Kolibri.net.Common.Utilities.Extensions
+﻿using Newtonsoft.Json;
+
+namespace Kolibri.net.Common.Utilities.Extensions
 {
     public static class StringExt
     {   
@@ -32,6 +34,13 @@
 
             bool isNum = Double.TryParse(Convert.ToString(Expression), System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retNum);
             return isNum;
+        }
+
+        public static string JsonSerializeObject<T>(this T obj, bool format = false) where T : class
+        {
+            string text = JsonConvert.SerializeObject(obj, (format? Formatting.Indented:Formatting.None));
+
+            return text;
         }
 
     }

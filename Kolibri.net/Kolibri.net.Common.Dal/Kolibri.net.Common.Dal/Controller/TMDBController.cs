@@ -269,7 +269,6 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             var ret = await _client.FindAsync(TMDbLib.Objects.Find.FindExternalSource.Imdb, imdbId);
             return ret;
-
         }
         public async Task< TvEpisode >FindByImdbId(string imdbId, int episodenr)
         {
