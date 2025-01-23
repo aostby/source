@@ -10,6 +10,9 @@ using Kolibri.net.SilverScreen.Forms;
 using sun.tools.tree;
 using java.awt.print;
 using Kolibri.Common.VisualizeOMDbItem;
+using OMDbApiNet.Model;
+using java.nio.file;
+using com.sun.org.apache.bcel.@internal;
 
 namespace Kolibri.SilverScreen.Forms
 {
@@ -116,14 +119,24 @@ namespace Kolibri.SilverScreen.Forms
                     SameFileController contr = new SameFileController(ex);
                     var list = contr.GetDupes();
                     var ds = DataSetUtilities.AutoGenererDataSet(list);
-                    Visualizers.VisualizeDataSet("Dupes", ds, this.Size);
+                    Visualizers.VisualizeDataSet($"Dupes {ds.Tables[0].Rows.Count}", ds, this.Size);
                     var byFolder = contr.GetDupesByFolder();
                     if (list.Count() != byFolder.Count() && byFolder.Count >= 1)
                     {
                         if (MessageBox.Show("Do you want to see dupes by folders also?", "More choices awailable", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-                            ds = DataSetUtilities.AutoGenererDataSet(list);
-                            Visualizers.VisualizeDataSet("Dupes by folder", ds, this.Size);
+                            var filterList = Kolibri.net.Common.Utilities.MovieUtilites.MulitpartFilter();
+                            var liste = byFolder.FindAll(x => !x.FilePath.FullName.Contains("CD"));
+
+                            foreach (string item in filterList)
+                            {
+                                liste = liste.FindAll(x => !x.FilePath.FullName.Contains(item, StringComparison.OrdinalIgnoreCase));
+                            }
+ 
+                       
+
+                            ds = DataSetUtilities.AutoGenererDataSet(liste);
+                            Visualizers.VisualizeDataSet($"Dupes by folder ({ds.Tables[0].Rows.Count}) - fiter: {string.Join(' ', filterList.ToArray())}", ds, this.Size);
                         }
                     }
                 }

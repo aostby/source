@@ -8,6 +8,7 @@ using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
+using OMDbApiNet;
 using OMDbApiNet.Model;
 
 namespace Kolibri.net.Common.Dal.Controller
@@ -15,7 +16,7 @@ namespace Kolibri.net.Common.Dal.Controller
     public class OMDBController
     {
         private string _apikey;
-        public OMDbApiNet.OmdbType type = OMDbApiNet.OmdbType.Movie;
+        //public OMDbApiNet.OmdbType _type = OMDbApiNet.OmdbType.Movie;
         private OMDbApiNet.OmdbClient _client;
         private LiteDBController _LITEDB;
         /// <summary>
@@ -27,24 +28,40 @@ namespace Kolibri.net.Common.Dal.Controller
             if (string.IsNullOrEmpty(apikey))
                 throw new Exception("API key for OMDB is null. This is not allowed. Please obtain an API key from OMDb API at omdbapi.com");
             _apikey = apikey;
-            type = OMDbApiNet.OmdbType.Movie;
+            //_type = OMDbApiNet.OmdbType.Movie;
 
             _client = new OMDbApiNet.OmdbClient(apikey);
             _LITEDB = contr;
 
         }
 
-        public Item GetMovieByIMDBTitle(string title, int year)
+        public Item GetMovieByIMDBTitle(string title, int year )
         {
             Item ret = null;
             try
             {
-                var query = OMDbApiNet.Utilities.QueryBuilder.GetItemByTitleQuery(title, type, year, false);
+                var query = OMDbApiNet.Utilities.QueryBuilder.GetItemByTitleQuery(title, OmdbType.Movie, year, false);
                 ret = _client.GetItemByTitle(title, year, false);
             }
             catch (Exception ex)
             {
               
+                ret = null;
+            }
+            return ret;
+        }
+
+        public Item GetSeriesByTitle(string title, int? year)
+        {
+            Item ret = null;
+            try
+            {
+                var query = OMDbApiNet.Utilities.QueryBuilder.GetItemByTitleQuery(title, OmdbType.Series,year, false);
+                ret = _client.GetItemByTitle(title, year, false);
+            }
+            catch (Exception ex)
+            {
+
                 ret = null;
             }
             return ret;
@@ -171,7 +188,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return test.SearchResults;
             }
             catch (Exception ex)
-            { return null; }
+            { return new List<SearchItem> (); }
         }
 
         public List<SearchItem> GetByTitle(string title, int year, OMDbApiNet.OmdbType type, int pages = 1)

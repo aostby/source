@@ -30,6 +30,7 @@
         {
             splitContainer1 = new SplitContainer();
             groupBoxFilter = new GroupBox();
+            radioButtonFilterNotMatched = new RadioButton();
             radioButtonFilterNoneExistant = new RadioButton();
             radioButtonFilterAlle = new RadioButton();
             checkBoxSimple = new CheckBox();
@@ -78,25 +79,37 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(splitContainer2);
-            splitContainer1.Size = new Size(1633, 637);
-            splitContainer1.SplitterDistance = 54;
+            splitContainer1.Size = new Size(1266, 731);
+            splitContainer1.SplitterDistance = 79;
             splitContainer1.TabIndex = 0;
             // 
             // groupBoxFilter
             // 
+            groupBoxFilter.Controls.Add(radioButtonFilterNotMatched);
             groupBoxFilter.Controls.Add(radioButtonFilterNoneExistant);
             groupBoxFilter.Controls.Add(radioButtonFilterAlle);
-            groupBoxFilter.Location = new Point(495, 34);
+            groupBoxFilter.Location = new Point(389, 34);
             groupBoxFilter.Name = "groupBoxFilter";
-            groupBoxFilter.Size = new Size(221, 45);
+            groupBoxFilter.Size = new Size(327, 45);
             groupBoxFilter.TabIndex = 6;
             groupBoxFilter.TabStop = false;
             groupBoxFilter.Text = "Filter";
             // 
+            // radioButtonFilterNotMatched
+            // 
+            radioButtonFilterNotMatched.AutoSize = true;
+            radioButtonFilterNotMatched.Location = new Point(191, 20);
+            radioButtonFilterNotMatched.Name = "radioButtonFilterNotMatched";
+            radioButtonFilterNotMatched.Size = new Size(75, 19);
+            radioButtonFilterNotMatched.TabIndex = 2;
+            radioButtonFilterNotMatched.Text = "Uten treff";
+            radioButtonFilterNotMatched.UseVisualStyleBackColor = true;
+            radioButtonFilterNotMatched.CheckedChanged += radioButtonFilter_CheckedChanged;
+            // 
             // radioButtonFilterNoneExistant
             // 
             radioButtonFilterNoneExistant.AutoSize = true;
-            radioButtonFilterNoneExistant.Location = new Point(88, 20);
+            radioButtonFilterNoneExistant.Location = new Point(70, 20);
             radioButtonFilterNoneExistant.Name = "radioButtonFilterNoneExistant";
             radioButtonFilterNoneExistant.Size = new Size(111, 19);
             radioButtonFilterNoneExistant.TabIndex = 1;
@@ -210,23 +223,23 @@
             // splitContainer2.Panel1
             // 
             splitContainer2.Panel1.Controls.Add(statusStrip1);
-            splitContainer2.Size = new Size(1633, 579);
-            splitContainer2.SplitterDistance = 645;
+            splitContainer2.Size = new Size(1266, 648);
+            splitContainer2.SplitterDistance = 390;
             splitContainer2.TabIndex = 0;
             // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus });
-            statusStrip1.Location = new Point(0, 557);
+            statusStrip1.Location = new Point(0, 626);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(645, 22);
+            statusStrip1.Size = new Size(390, 22);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabelStatus
             // 
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
-            toolStripStatusLabelStatus.Size = new Size(630, 17);
+            toolStripStatusLabelStatus.Size = new Size(375, 17);
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
             // 
@@ -234,7 +247,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1633, 637);
+            ClientSize = new Size(1266, 731);
             Controls.Add(splitContainer1);
             Name = "MultiMediaForm";
             Text = "MultiMediaForm";
@@ -277,5 +290,6 @@
         private System.ComponentModel.BackgroundWorker backgroundWorker4;
         private RadioButton radioButtonFilterNoneExistant;
         private RadioButton radioButtonFilterAlle;
+        private RadioButton radioButtonFilterNotMatched;
     }
 }

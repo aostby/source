@@ -724,6 +724,14 @@ namespace Kolibri.net.Common.Utilities
             return files;
         }
 
+        public static List<string> GetFiles(DirectoryInfo path, List<string > extensions, SearchOption searchOption) {
+            var searchFiles = Directory.EnumerateFiles(path.FullName, "*.*", searchOption)
+                                     .Where(file => extensions.ToArray()
+                                      .Contains(Path.GetExtension(file)));
+            return searchFiles.ToList<string>();
+        }
+
+
         /// <summary>
         /// Metode som henter ett array av FileInfo fra en oppgitt sti, searchpattern kan splittes opp vha pipe ("|"), eksempel   var searchStr = "*." + string.Join("|*.", Utilities.FileUtilities.MoviesFileExt());
         /// </summary>
@@ -949,25 +957,12 @@ namespace Kolibri.net.Common.Utilities
             ret = ds;
             return ret;
         }
-        public static List<string> MoviesCommonFileExt(bool withPunctuation=false)
-        {
-            var ret = new List<string>() { "avi", "mkv", "mp4", "mpg", "mpeg" };
-
-            if (withPunctuation)
-                ret = ret.Select(r => string.Concat('.', r)).ToList();
-
-            return ret.Distinct().ToList();
-        }
-        public static List<string> MoviesFileExt()
-        {
-            return new List<string>() { "3g2", "3gp", "amv", "asf", "avi", "drc", "flv", "flv", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "gifv", "m4v", "mkv", "mng", "mov", "qt", "mp4", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe", "mpv", "mpg", "mpeg", "m2v", "MTS", "M2TS", "TS", "mxf", "nsv", "ogv", "ogg", "rm", "rmvb", "roq", "svi", "vob", "webm", "wmv", "yuv", "ts" };
-        }
+    
         public static List<string> PictureFileExt()
         {
 
             return new List<string>() { "JPEG", "JPG", "PNG", "GIF", "WEBP", "TIFF", "PSD", "RAW", "BMP", "HEIF", "INDD", "SVG", "AI", "EPS", "PDF" };
         }
-
 
 
 

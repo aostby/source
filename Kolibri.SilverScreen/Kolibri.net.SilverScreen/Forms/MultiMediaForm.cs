@@ -1,4 +1,6 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using com.sun.jndi.toolkit.dir;
+using com.sun.org.apache.bcel.@internal.generic;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
@@ -7,12 +9,14 @@ using Kolibri.net.SilverScreen.Controls;
 using Kolibri.net.SilverScreen.IMDBForms;
 using OMDbApiNet.Model;
 using System.Data;
+using TMDbLib.Objects.Search;
 using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class MultiMediaForm : Form
     {
+        private List<string> _initializedMissing = new List<string>();
         LiteDBController _liteDB;
         TMDBController _TMDB;
         OMDBController _OMDB;
@@ -30,107 +34,192 @@ namespace Kolibri.net.SilverScreen.Forms
             this._settings = settings;
             this.Text = $"{_type.ToString()}";
             _liteDB = new LiteDBController(new FileInfo(settings.LiteDBFilePath), false, false);
-
+            
             Init();
 
         }
 
         private void Init()
         {
-            if (!checkBoxSimple.Checked && _settings != null)
-            {
-                if (string.IsNullOrEmpty(_settings.TMDBkey))
-                    checkBoxSimple.Checked = true;
-            }
-            if (_type.Equals(MultimediaType.Series))
-            {
-                checkBoxSimple.Checked = true;
-            }
-
-            _imageCache = new ImageCache(_settings);
-            try
-            {
-                if (_type.Equals(MultimediaType.movie))
-                {
-                    if (!string.IsNullOrEmpty(_settings.OMDBkey))
-                        _TMDB = new TMDBController(_liteDB, _settings.OMDBkey);
-                }
-            }
-            catch (Exception)
-            {
-                _TMDB = null;
-            }
-            buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
-
-            _files = new List<FileItem>();
-            this.Text = $"{_type.ToString()} - {_settings.LiteDBFilePath}";
-            var path = GetCurentPath();
-            textBoxSource.Text = path;
-            SetLabelText($"Current filepaht: {path} - Searching for {_type}");
-
-            _files = _liteDB.FindAllFileItems(new DirectoryInfo(path)).ToList();
-            //filter
-            if (radioButtonFilterNoneExistant.Checked)
-            {
-                var filtered = _files.Where(x => !x.ItemFileInfo.Exists);
-                if (filtered != null ) _files = filtered;
-            }
-
-            if (_dgvController == null) _dgvController = new DataGrivViewControls(_type, _liteDB);
-            int count = 0;
-
-            switch (_type)
-            {
-                case MultimediaType.movie:
-                case MultimediaType.Movies:
-
-                    var list = new List<Item>();
-                    list = GetItems(_files);
-                    count = list.Count;
-                    ShowGridForDBItems(list);
-                    break;
-                case MultimediaType.Series:
-
-                    var episodes = new List<SeasonEpisode>();
-                    episodes = GetEpisodes(_files);
-                    count = episodes.Count;
-                    ShowGridForDBEpisodes(episodes);
-                    break;
-                case MultimediaType.Audio:
-                    break;
-                case MultimediaType.Pictures:
-                    break;
-                default:
-                    break;
-            }
             
-            List<string> common = FileUtilities.MoviesCommonFileExt(true);
-            var masks = common.Select(r => string.Concat('*', r)).ToArray();
-            var searchStr = "*" + string.Join("|*", common);
-            int antall = FileUtilities.GetFiles(new DirectoryInfo(GetCurentPath()), searchStr, true).Count();
-            labelNumItemsDB.Text = $"{count} of {antall} total files found";
+            {
+                
+                int diff = 0;
+                List<string> common = MovieUtilites.MoviesCommonFileExt(true);
+                var masks = common.Select(r => string.Concat('*', r)).ToArray();
+                var searchStr = "*" + string.Join("|*", common);
 
-            SetLabelText(labelNumItemsDB.Text);
-        }
+                if (!checkBoxSimple.Checked && _settings != null)
+                {
+                    if (string.IsNullOrEmpty(_settings.TMDBkey))
+                        checkBoxSimple.Checked = true;
+                }
+                if (_type.Equals(MultimediaType.Series))
+                {
+                    checkBoxSimple.Checked = true;
+                }
 
-        private List<Item> GetItems(IEnumerable<FileItem> files = null)
+                _imageCache = new ImageCache(_settings);
+                try
+                {
+                    if (_type.Equals(MultimediaType.movie))
+                    {
+                        if (!string.IsNullOrEmpty(_settings.OMDBkey))
+                            _TMDB = new TMDBController(_liteDB, _settings.OMDBkey);
+                    }
+                }
+                catch (Exception)
+                {
+                    _TMDB = null;
+                }
+                buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
+
+                _files = new List<FileItem>();
+                this.Text = $"{_type.ToString()} - {_settings.LiteDBFilePath}";
+                var path = GetCurentPath();
+                textBoxSource.Text = path;
+                SetLabelText($"Current filepaht: {path} - Searching for {_type}");
+
+                _files = _liteDB.FindAllFileItems(new DirectoryInfo(path)).ToList();
+                //filter
+                if (!radioButtonFilterAlle.Checked)
+                {   
+                    SetForm(new Form());
+                    if (radioButtonFilterNoneExistant.Checked)
+                    {
+                        diff = _files.Count();
+                        var filtered = _files.Where(x => !x.ItemFileInfo.Exists);
+                        if (filtered != null)
+                        {
+                            diff = filtered.Count();
+                            _files = filtered;
+                        }
+                    }
+                    else if (radioButtonFilterNotMatched.Checked)
+                    {
+                        diff = Directory.EnumerateFiles(GetCurentPath(),"*.*", SearchOption.AllDirectories )                           
+                           .Where(file => MovieUtilites.MoviesCommonFileExt(true).ToArray() 
+                            .Contains(Path.GetExtension(file)))
+                            .Count();
+
+                        if (_files.Count()!=diff)
+                        { var sublist = new List<string>();
+                            //         var searchFiles = FileUtilities.GetFiles(new DirectoryInfo(GetCurentPath()), searchStr, SearchOption.AllDirectories);
+                            var searchFiles = Directory.EnumerateFiles(GetCurentPath(), "*.*", SearchOption.AllDirectories)
+                                    .Where(file => MovieUtilites.MoviesCommonFileExt(true).ToArray()
+                                     .Contains(Path.GetExtension(file))).ToList();
+
+
+                            foreach (var srch in searchFiles)
+                            {
+                                if (sublist.Contains(srch)) continue;
+
+                                var has = _files.ToList().Find(cus => cus.FullName.Equals(srch));
+                                if (has == null)
+                                {
+                                    sublist.Add(srch);
+                                    var filter = Kolibri.net.Common.Utilities.MovieUtilites.MulitpartFilter();
+                                    var matches = filter.Where(x => srch.ToLower().Contains(x.ToLower()));
+                                    if (matches != null && matches.Count() > 0)
+                                    {
+                                        if (!masks.Contains("@__thumb"))
+                                        {
+                                            sublist.Add($"[MULTIPART] The file is a mulitpart file: {srch}");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var test = _liteDB.FindByFileName(new FileInfo(srch));
+                                        if (test == null )
+                                        {
+                                            sublist.Add($"[NULL] The file is not found by LiteDB search for FilteItems using: {srch}");
+                                            if (!_initializedMissing.Contains(srch) && searchFiles.Count() < 85)
+                                            {
+                                                try
+                                                {
+                                                    IMDBForms.MovieForm form = new MovieForm(_settings, new FileInfo(srch));
+                                                    form.Show();
+                                                    _initializedMissing.Add(srch);
+                                                }
+                                                catch (Exception ex)
+                                                { }
+
+                                            }
+                                            else {
+
+                                                SetLabelText($"Too many files {searchFiles.Count()} - select a smaller collection.");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (sublist.Count > 0)
+                            {
+                                Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBox(
+                                    $"{(diff - _files.Count())} - {radioButtonFilterNotMatched.Text}",
+                                    string.Join(Environment.NewLine, sublist.ToArray()), FastColoredTextBoxNS.Language.Custom, this.Size);
+                            }
+                        }
+                        else
+                        {
+                            _files = new List<FileItem>();
+                        }
+                        
+                    }
+                }
+
+
+                if (_dgvController == null) _dgvController = new DataGrivViewControls(_type, _liteDB);
+                int count = 0;
+
+                switch (_type)
+                {
+                    case MultimediaType.movie:
+                    case MultimediaType.Movies:
+
+                        var list = new List<Item>();
+                        list = GetItems(_files);
+                        count = list.Count;
+                        ShowGridForDBItems(list);
+                        break;
+                    case MultimediaType.Series:
+
+                        var episodes = new List<SeasonEpisode>();
+                        episodes = GetEpisodes(_files);
+                        count = episodes.Count;
+                        ShowGridForDBEpisodes(episodes);
+                        break;
+                    case MultimediaType.Audio:
+                        break;
+                    case MultimediaType.Pictures:
+                        break;
+                    default:
+                        break;
+                }
+                string text = $"{count} found in LiteDB";
+                if (!radioButtonFilterAlle.Checked)
+                    text = $"{count} / diff: {diff} files";
+                labelNumItemsDB.Text = text;
+                SetLabelText(labelNumItemsDB.Text);
+               
+            }
+      }
+
+        private List<Item> GetItems(IEnumerable<FileItem> searchFiles = null)
         {
             var task = Task.Run<Task<IEnumerable<Item>>>(async () => await _liteDB.FindAllItems(_type.ToString()));
             var ret = task.Result.Result.ToList();
-            if (files != null  )
+            if (searchFiles != null)
             {
                 var sublist = new List<Item>();
 
-                foreach (var item in files)
+                foreach (var srch in searchFiles)
                 {
-                    var has = ret.Find(cus => cus.ImdbId.Equals(item.ImdbId));
+                    var has = ret.Find(cus => cus.ImdbId.Equals(srch.ImdbId));
                     if (has != null) sublist.Add(has);
                 }
                 ret = sublist;
-                //ret = ret.Where(x=> x.ImdbId.Equals( files.ToList().Find(y=>y.ImdbId.Equals(x.ImdbId)
-                //                 || x.ImdbId.Equals(files.ToList().Find(t=>t.ImdbId.Equals(x.Title, StringComparison.OrdinalIgnoreCase)))
             }
-
             return ret;
         }
         private List<SeasonEpisode> GetEpisodes(IEnumerable<FileItem> files = null)
@@ -227,8 +316,8 @@ namespace Kolibri.net.SilverScreen.Forms
 
                     ShowGridView(resultTable);
                 }
-                else {
-
+                else
+                {
                     ShowGridView(resultTable);
                 }
             }
@@ -299,7 +388,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 else if (_type.Equals(Constants.MultimediaType.Series))
                 {
 
-                    Task.Run(async () => searchController.SearchForSeries(dInfo));
+                    Task.Run(async () => searchController.SearchForSeriesEpisodes(dInfo));
                 }
                 Init();
             }
@@ -401,7 +490,19 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 SplitterPanel panel = setPanel;
                 if (panel == null) panel = splitContainer2.Panel2;
-                panel.Controls.Clear();
+                if (panel ==  splitContainer2.Panel1){
+                    foreach (Control item in panel.Controls)
+                    {
+                        if (!item.Equals(statusStrip1)) {
+                            panel.Controls.Remove(item);
+                        }
+                    }    
+                
+                }
+                else
+                {
+                    panel.Controls.Clear();
+                }
 
                 form.TopLevel = false;
                 form.FormBorderStyle = FormBorderStyle.None;
@@ -417,14 +518,24 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         private void SetLabelText(string text)
         {
+            try
+            {
+
+            toolStripStatusLabelStatus.GetCurrentParent().BringToFront();
             toolStripStatusLabelStatus.Text = text;
+            }
+            catch (Exception ex)
+            {
+
+             
+            }
         }
 
         private void radioButtonFilter_CheckedChanged(object sender, EventArgs e)
         {
             if (this.Visible)
-           
-            {     SetLabelText((sender as RadioButton).Text);
+            {
+                SetLabelText($"{(sender as RadioButton).Text} (initializing: {_initializedMissing.Count()})");
                 Init();
             }
         }

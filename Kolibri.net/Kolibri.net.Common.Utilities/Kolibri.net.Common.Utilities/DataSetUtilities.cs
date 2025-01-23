@@ -1,11 +1,16 @@
-﻿using Microsoft.CSharp;
+﻿using com.sun.rowset.@internal;
+using Kolibri.net.Common.Utilities.Extensions;
+using Microsoft.CSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Reflection;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -154,16 +159,33 @@ namespace Kolibri.net.Common.Utilities
             foreach (DataRow dr in table.Rows)
             {
                 // Convert each row into an entity object and add to the list
-                T newRow = dr.ConvertToEntity<T>();
+                T newRow = dr.ConvertToObject<T>();
                 returnObject.Add(newRow);
             }
 
             // Return the finished list
             return returnObject;
         }
+        /// <summary>
+        /// Utnytt json til å konvertere en tabellrad til ett objekt eller entitet
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="tableRow"></param>
+        /// <returns></returns>
+        public static T ConvertToObject<T>(this DataRow tableRow) where T : new() {
+            var settings = new JsonSerializerSettings { Converters = { new DataRowConverter() }, /* Add other settings asrequired.*/ };
+            var json = JsonConvert.SerializeObject(tableRow, Newtonsoft.Json.Formatting.Indented, settings);
+            return JsonConvert.DeserializeObject<T>(json); ;
+        }
 
+        /// <summary>
+        /// Konverter en datarad til en bestemt type objekt eller entitet
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="tableRow"></param>
+        /// <returns></returns>
         public static T ConvertToEntity<T>(this DataRow tableRow) where T : new()
-        {
+        {bool success = false;
             // Create a new type of the entity I want
             Type t = typeof(T);
             T returnObject = new T();
@@ -176,11 +198,12 @@ namespace Kolibri.net.Common.Utilities
                 PropertyInfo pInfo = t.GetProperty(colName.ToLower(),
                     BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
-                // did we find the property ?
-                if (pInfo != null)
-                {
+                if (pInfo == null)
+                { }
 
-
+                    // did we find the property ?
+                    if (pInfo != null)
+                { 
                     object val = tableRow[colName];
 
                     // is this a Nullable<> type
@@ -212,16 +235,60 @@ namespace Kolibri.net.Common.Utilities
                     try
                     {
                         pInfo.SetValue(returnObject, val, null);
+                      
                     }
                     catch (Exception ex)
                     { }
-
+                    success = true; 
                 }
             }
 
-            // return the entity object with values
+            // return the entity object with values, if not success, try serializing
+            if (!success) {
+                try
+                {
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = { new DataRowConverter() },
+                        // Add other settings as required.
+                    };
+                    var json = JsonConvert.SerializeObject(tableRow, Newtonsoft.Json.Formatting.Indented, settings);
+                    return JsonConvert.DeserializeObject<T>(json); 
+                }
+                catch (Exception)
+                { }
+            }
             return returnObject;
         }
+        private class DataRowConverter : JsonConverter<DataRow>
+        {
+            public override DataRow ReadJson(JsonReader reader, Type objectType, DataRow existingValue, bool hasExistingValue, JsonSerializer serializer)
+            {
+                throw new NotImplementedException(string.Format("{0} is only implemented for writing.", this));
+            }
+
+            public override void WriteJson(JsonWriter writer, DataRow row, JsonSerializer serializer)
+            {
+                var table = row.Table;
+                if (table == null)
+                    throw new JsonSerializationException("no table");
+                var contractResolver = serializer.ContractResolver as DefaultContractResolver;
+
+                writer.WriteStartObject();
+                foreach (DataColumn col in row.Table.Columns)
+                {
+                    var value = row[col];
+
+                    if (serializer.NullValueHandling == NullValueHandling.Ignore && (value == null || value == DBNull.Value))
+                        continue;
+
+                    writer.WritePropertyName(contractResolver != null ? contractResolver.GetResolvedPropertyName(col.ColumnName) : col.ColumnName);
+                    serializer.Serialize(writer, value);
+                }
+                writer.WriteEndObject();
+            }
+        }
+
         #endregion
 
         #region autogenerer dataset utfra lister og objekter
@@ -293,6 +360,13 @@ namespace Kolibri.net.Common.Utilities
             listeArr.AddRange(liste.ToArray());
             return AutoGenererDataSet(listeArr);
 
+        }
+
+        public static DataSet AutoGenererTypedDataSet<T>(List<T> liste) 
+        {
+            ArrayList listeArr = new ArrayList();
+            listeArr.AddRange(liste.ToArray());
+            return AutoGenererTypedDataSet(listeArr);
         }
 
         /// <summary>

@@ -89,6 +89,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 else
                 {
                     var search = _serieItems.Where(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    if(search == null||search.Length<1)
+                 search=       _serieItems.Where(x => x.Title.Contains(title, StringComparison.OrdinalIgnoreCase)).ToArray();
                     movies = new ItemSearch() { Search = search };
                 }
             }
@@ -290,8 +292,11 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 var folder = FolderUtilities.LetOppMappe(_userSettings.UserFilePaths.SeriesSourcePath, "Let opp mappe med serie(r)");
                 if (folder != null && folder.Exists)
                 {
-                    Form form = new Kolibri.net.SilverScreen.OMDBForms.OMDBSearchForSeries(folder, _userSettings);
+                    _userSettings.UserFilePaths.SeriesSourcePath = folder.FullName; 
+                    _userSettings.Save();   
+                    Form form = new Kolibri.net.SilverScreen.OMDBForms.OMDBSearchForSeriesForm(folder, _userSettings);
                     form.ShowDialog();
+
                 }
 
                 try

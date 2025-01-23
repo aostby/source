@@ -1,10 +1,8 @@
-﻿using com.sun.org.apache.bcel.@internal.generic;
-using com.sun.tools.corba.se.idl;
-using java.awt;
-using Kolibri.net.Common.Dal.Entities;
+﻿using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
 using OMDbApiNet.Model;
+using System.ComponentModel.Design;
 using TMDbLib.Objects.TvShows;
 using Season = OMDbApiNet.Model.Season;
 
@@ -98,6 +96,26 @@ namespace Kolibri.net.Common.Dal.Controller
             return _liteDB.GetCollection<Item>("Item")
                 .Find(x => x.Genre.Contains(genre));
         }
+
+        public IEnumerable<Item> GetAllItemsTypes()
+        {
+            var list = _liteDB.GetCollection<Item>("Item").FindAll().ToList();
+            var typeList = list.Select(o => o.Type).Distinct();
+            return list;
+        }
+        public IEnumerable<Item> GetAllItemsByType(string searchTerm)
+        {
+            StringComparison comp = StringComparison.Ordinal;
+
+            var temp = _liteDB.GetCollection<Item>("Item");
+            var list = temp.Find(x => x.Type.ToUpper().Contains(searchTerm.ToUpper()));
+            return list;
+        }
+        public IEnumerable<Item> FindItemsByType(OMDbApiNet.OmdbType type)
+        {
+            return GetAllItemsByType(type.ToString());
+        }
+
         public IEnumerable<Item> FindItemByGenreNew(string genre)
         {
             // This way is more efficient
@@ -121,9 +139,9 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 return null;
             }
-
         }
 
+        
         /// <summary>
         /// Insert a movie or series title
         /// </summary>
@@ -142,21 +160,6 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
-        public IEnumerable<Item> GetAllItemsTypes()
-        {
-            var list = _liteDB.GetCollection<Item>("Item").FindAll().ToList();
-            var typeList = list.Select(o => o.Type).Distinct();
-            return list;
-        }
-        public IEnumerable<Item> GetAllItemsByType(string searchTerm)
-        {
-            StringComparison comp = StringComparison.Ordinal;
-
-            var temp = _liteDB.GetCollection<Item>("Item");
-            var list = temp.Find(x => x.Type.ToUpper().Contains(searchTerm.ToUpper()));
-            return list;
-        }
-
 
         public bool Upsert(Item item)
         {
@@ -200,80 +203,17 @@ namespace Kolibri.net.Common.Dal.Controller
         }
 
         #region series
-
-        //internal Season FindSeason(string seriesName, int seasonNumber)
-        //{
-        //    try
-        //    {
-        //   return _liteOMDB.GetCollection<Season>("Season") 
-        //       .Find(x => x.Title.ToLower().Contains(seriesName.ToLower()) && x.SeasonNumber.Equals(seasonNumber)).FirstOrDefault();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return null;
-        //    }
-        //}
-
-
-        public Season FindSeason(string seriesName, string seasonnumber)
+        #region TvEpisode - TMDB
+        public TvEpisode FindTvEpisode(string imdbId)
         {
             try
             {
-                return _liteDB.GetCollection<Season>("Season")
-             .Find(x => x.Title.ToLower().Contains(seriesName.ToLower()) && x.SeasonNumber.Equals(seasonnumber)).FirstOrDefault();
-
+                return _liteDB.GetCollection<TvEpisode>("TvEpisode")
+                            .Find(x => x.ExternalIds.ImdbId == imdbId).FirstOrDefault();
             }
             catch (Exception ex)
             {
                 return null;
-            }
-        }
-
-        public bool Update(Season season)
-        {
-            return _liteDB.GetCollection<Season>("Season")
-                .Update(season.Title + season.SeasonNumber, season);
-        }
-        public bool Insert(Season season)
-        {
-            _liteDB.GetCollection<Season>("Season")
-                .Insert(season.Title + season.SeasonNumber, season);
-            return true;
-        }
-
-        public bool Upsert(Season season)
-        {
-            if (season == null) return false;
-
-            try
-            {
-                Insert(season);
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    Update(season);
-                }
-                catch (Exception exu)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public bool Insert(SeasonEpisode ep)
-        {
-            try
-            {
-                _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
-                    .Insert(ep.ImdbId, ep);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
             }
         }
         public bool Insert(TvEpisode ep)
@@ -281,7 +221,7 @@ namespace Kolibri.net.Common.Dal.Controller
             try
             {
                 _liteDB.GetCollection<TvEpisode>("TvEpisode")
-                    .Insert(ep.ExternalIds.ImdbId, ep);
+                    .Insert(ep.ExternalIds.ImdbId.GetHashCode(), ep);
                 return true;
             }
             catch (Exception ex)
@@ -289,7 +229,6 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
-
         public bool Upsert(TvEpisode ep)
         {
             if (ep == null) return false;
@@ -324,8 +263,227 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
+        #endregion
 
+        #region TvShow - TMDB
+        /// <summary>
+        /// Finner TMDB TvShow. Mye detaljer om show, lite om episoder.
+        /// </summary>
+        /// <param name="imdbid"></param>
+        /// <returns></returns>
+        public TvShow FindTvShow(string imdbid)
+        {
+            try
+            {
+                var list = _liteDB.GetCollection<TvShow>("TvShow").FindAll().ToList();
+                var tmp = list.ToList();
+                foreach (var item in tmp)
+                {
+                    if (item.ExternalIds != null && item.ExternalIds.ImdbId != null && item.ExternalIds.ImdbId.ToLower().Equals(imdbid.ToLower()))
+                    {
+                        return item;
+                        break;
+                    }
+                }
+                return null;
 
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public TvShow FindTvShowByTitle(string title)
+        {
+            try
+            {
+                var list = _liteDB.GetCollection<TvShow>("TvShow").FindAll().ToList();
+                var tmp = list.ToList();
+                foreach (var item in tmp)
+                {
+                    if(item.Name.ToLower().Equals(title.ToLower()))   
+                        return item;    
+                }
+                return null;
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public bool Insert(TvShow tv)
+        {
+            try
+            {
+                _liteDB.GetCollection<TvShow>("TvShow")
+                    .Insert(tv.Id, tv);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        public bool Upsert(TvShow tv)
+        {
+            if (tv == null) return false;
+
+            try
+            {
+                if (!Insert(tv))
+                    Update(tv);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Update(tv);
+                }
+                catch (Exception exu)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool Update(TvShow tv)
+        {
+            try
+            {
+                _liteDB.GetCollection<TvShow>("TvShow")
+                    .Update(tv.Id, tv);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        #endregion
+
+        #region SearchTvSeason - TMDB
+        #endregion
+
+        #region Season - OMDB
+        public Season FindSeason(string seriesName, string seasonnumber)
+        {
+            try
+            {
+                return _liteDB.GetCollection<Season>("Season")
+             .Find(x => x.Title.ToLower().Contains(seriesName.ToLower()) && x.SeasonNumber.Equals(seasonnumber)).FirstOrDefault();
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public bool Update(Season season)
+        {
+            return _liteDB.GetCollection<Season>("Season")
+                .Update(season.Title + season.SeasonNumber, season);
+        }
+        public bool Insert(Season season)
+        {
+            _liteDB.GetCollection<Season>("Season")
+                .Insert(season.Title + season.SeasonNumber, season);
+            return true;
+        }
+        public bool Upsert(Season season)
+        {
+            if (season == null) return false;
+
+            try
+            {
+             if(!   Insert(season))
+                    Update(season);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Update(season);
+                }
+                catch (Exception exu)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        #endregion
+
+        #region SeasonEpisode - OMDB
+        public SeasonEpisode FindSeasonEpisode(string imdbId)
+        {
+            try
+            {
+                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
+                            .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public List<SeasonEpisode> FindAllSeasonEpisodes()
+        {
+            try
+            {
+                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode").FindAll().ToList();
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public SeasonEpisode FindSeasonEpisode(string seriesName, string season, string episode)
+        {
+            
+            try
+            {//en må prøve å finne sesong og lete seg frem.
+
+                if (_liteDB.GetCollection<Season>().Count(Query.Contains("Title", seriesName)) > 0)
+                {
+                    var ses = _liteDB.GetCollection<Season>().Find(x => x.Title.ToLower() == seriesName.ToLower()
+                    && x.SeasonNumber == season).FirstOrDefault();
+
+                    var se =  ses.Episodes.Find(x => x.Episode == episode);
+                    if (!string.IsNullOrEmpty(se.ImdbId))
+                    {
+                        return FindSeasonEpisode(se.ImdbId);
+                    }
+                    else
+                    {
+                        var ret = FindAllSeasonEpisodes().FirstOrDefault(x => x.Episode == se.Episode && x.Released == se.Released && x.Title == se.Title);
+                        if (ret == null) ret = se;
+                        return ret;
+                    }
+                }
+                return null;
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
+        public bool Insert(SeasonEpisode ep)
+        {
+            try
+            {
+                _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
+                    .Insert(ep.ImdbId, ep);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
         public bool Update(SeasonEpisode ep)
         {
             try
@@ -339,7 +497,6 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
-
         public bool Upsert(SeasonEpisode ep)
         {
             bool ret = false;
@@ -352,69 +509,27 @@ namespace Kolibri.net.Common.Dal.Controller
 
             return ret;
         }
+        #endregion
 
-        public SeasonEpisode FindSeasonEpisode(string imdbId)
+        #region Episode - OMDB
+        /// <summary>
+        /// Episoder kan finnes via imdbId
+        /// </summary>
+        /// <param name="imdbId"></param>
+        /// <returns></returns>
+        public Episode GetEpisode(string imdbId)
         {
             try
             {
-                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
-                            .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+                var ret = _liteDB.GetCollection<Episode>("Episode")
+                                  .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+                return ret;
             }
             catch (Exception ex)
             {
                 return null;
             }
         }
-
-        public TvEpisode FindTvEpisode(string imdbId)
-        {
-            try
-            {
-                return _liteDB.GetCollection<TvEpisode>("TvEpisode")
-                            .Find(x => x.ExternalIds.ImdbId == imdbId).FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
-
-        public  List<SeasonEpisode> FindAllSeasonEpisodes()
-        {
-            try
-            {
-                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode").FindAll().ToList(); 
-                            
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
-
-        public SeasonEpisode FindSeasonEpisode(string seriesName, string season, string episode)
-        {
-            string id = HashString($"{seriesName}{season}".ToUpper());
-            try
-            {//en må prøve å finne sesong og lete seg frem.
-
-                if (_liteDB.GetCollection<Season>().Count(Query.Contains("Title", seriesName)) > 0)
-                {
-                    var ses = _liteDB.GetCollection<Season>().Find(x => x.Title.ToLower() == seriesName.ToLower()
-                    && x.SeasonNumber == season).FirstOrDefault();
-
-                    return ses.Episodes.Find(x => x.Episode == episode);
-                }
-                return null;
-
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-
-        }
-
         public bool Insert(Episode ep)
         {
             try
@@ -441,27 +556,14 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
-
         public bool Upsert(Episode ep)
         {
             bool ret = Insert(ep);
             if (!ret) ret = Update(ep);
             return ret;
         }
+        #endregion
 
-        public Episode GetEpisode(string imdbId)
-        {
-            try
-            {
-                var ret = _liteDB.GetCollection<Episode>("SeasonEpisode")
-                                  .Find(x => x.ImdbId == imdbId).FirstOrDefault();
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
 
         static string HashString(string text, string salt = "")
         {
@@ -539,8 +641,10 @@ namespace Kolibri.net.Common.Dal.Controller
         }
         public FileItem FindByFileName(FileInfo file)
         {
-            return _liteDB.GetCollection<FileItem>("FileItem")
-                .Find(x => x.FullName == file.FullName).FirstOrDefault();
+            var ret= _liteDB.GetCollection<FileItem>("FileItem")
+                .Find(x => x.FullName == file.FullName).FirstOrDefault(); 
+     
+            return ret;
         }
 
         /// <summary>
@@ -548,11 +652,13 @@ namespace Kolibri.net.Common.Dal.Controller
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public bool Upsert(FileItem file)
+        public bool Upsert(FileItem file, bool checkPath=false)
         {
-            if (!file.ItemFileInfo.Exists)
-            { return false; }
-
+            if (checkPath)
+            {
+                if (!file.ItemFileInfo.Exists)
+                { return false; }
+            }
             try
             {
                 _liteDB.GetCollection<FileItem>("FileItem")

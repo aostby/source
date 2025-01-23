@@ -119,8 +119,6 @@ namespace Kolibri.net.SilverScreen.Controls
                         }
                         catch (Exception) { index = 0; dgv.ClearSelection(); }
 
-
-
                     val = dgv.SelectedRows[index].Cells["ImdbId"].Value.ToString();
                     var org = val;
 

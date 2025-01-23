@@ -16,6 +16,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 {
     public partial class MovieForm : Form
     {
+        FileInfo _info = null;
         LiteDBController _liteDB;
         OMDBController _omdbController;
         //string _apiKey = "e17f08db";
@@ -26,6 +27,16 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             _userSettings = userSettings;
             InitializeComponent();
             Init();
+        }
+        public MovieForm(UserSettings userSettings, FileInfo info)
+        {_info = info;  
+            _userSettings = userSettings;
+            InitializeComponent();
+            Init();
+            tbSearch.Text = MovieUtilites.GetMovieTitle(info.FullName);
+            tbYearParameter.Text = MovieUtilites.GetYear(info.Directory.FullName).ToString();
+            buttonUpdate.Visible = true;
+
         }
         public MovieForm(UserSettings userSettings, Item item)
         {
@@ -40,11 +51,11 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             try
             {
-                _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
+                //          _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
                 this.Text = $"{Assembly.GetExecutingAssembly().GetName().Name} - {_userSettings.FavoriteWatchList}";
                 var list = _liteDB.WishListFindAll().ToList();
                 var names = list.Select(c => c.WatchListName.ToString()).Distinct();
-                
+
                 comboBox1.DataSource = names.ToList();
                 if (names.Contains(_userSettings.FavoriteWatchList))
                     comboBox1.SelectedIndex = comboBox1.Items.IndexOf(_userSettings.FavoriteWatchList);
@@ -361,7 +372,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {if (!this.Visible) return;
+        {
+            if (!this.Visible) return;
             try
             {
                 _userSettings.FavoriteWatchList = (sender as ComboBox).SelectedValue.ToString();
@@ -369,6 +381,47 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             catch (Exception ex)
             {
+            }
+
+        }
+
+        private void buttonUpdate_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+                if (!string.IsNullOrEmpty(labelImdbId.Text))
+                {
+                    string imdbId = labelImdbId.Text;
+                    Item mov = _liteDB.FindItem(imdbId);
+                    if (mov != null)
+                    {
+                        mov.TomatoUrl = _info.FullName;
+                        _liteDB.Update(mov);
+                        _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                    }
+                    else if (mov == null)             
+                    {
+                        OMDBController oMDB = new OMDBController(_userSettings.OMDBkey, _liteDB);
+                        mov= oMDB.GetItemByImdbId(imdbId);
+                        if (mov != null)
+                        {
+                            mov.TomatoUrl = _info.FullName;
+                      var i =       _liteDB.Upsert(mov);
+                      var  f=     _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                        }
+                        else
+                        {
+                            throw new Exception($"no movie found: {tbSearch.Text}");
+                                }
+
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
             }
 
         }

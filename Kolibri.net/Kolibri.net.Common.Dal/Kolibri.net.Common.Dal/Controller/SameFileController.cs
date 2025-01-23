@@ -19,15 +19,17 @@ namespace Kolibri.net.Common.Dal.Controller
             _currentList = new List<SearchFile>();
             DataTable resultTable = null;
 
-            List<string> common = Utilities.FileUtilities.MoviesCommonFileExt();
+            List<string> common = Utilities.MovieUtilites.MoviesCommonFileExt();
             var searchStr = "*." + string.Join("|*.", common);
-            var list =  Utilities.FileUtilities.GetFiles(DirInfo, searchStr, true);
+            //var list =  Utilities.FileUtilities.GetFiles(DirInfo, searchStr, true);
+            var list = Utilities.FileUtilities.GetFiles(DirInfo, searchStr, SearchOption.AllDirectories);
 
             if (list.Count() < 1) return _currentList;
             var count = 0;
             foreach (var file in list)
             {
-                _currentList.Add(new SearchFile { Name = Utilities.MovieUtilites.GetMovieTitle(file.Name), FilePath = new FileInfo(file.FullName) });
+                // _currentList.Add(new SearchFile { Name = Utilities.MovieUtilites.GetMovieTitle(file.Name), FilePath = new FileInfo(file.FullName) });
+                _currentList.Add(new SearchFile { Name = Utilities.MovieUtilites.GetMovieTitle(file), FilePath = new FileInfo(file) });
             }
             return _currentList;
         }

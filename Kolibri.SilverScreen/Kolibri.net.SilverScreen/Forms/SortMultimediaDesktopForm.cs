@@ -104,7 +104,7 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                var extList = Kolibri.net.Common.Utilities.FileUtilities.MoviesCommonFileExt();
+                var extList = Kolibri.net.Common.Utilities.MovieUtilites.MoviesCommonFileExt();
 
                 var allowedExtensions = extList.ConvertAll(d => d.ToUpper());
                 var jall = SourcePath.GetFiles("*.*", System.IO.SearchOption.AllDirectories);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Kolibri.net.SilverScreen.Controls
 {
-  public   class Constants
+    public class Constants
     {
         public enum MultimediaType { movie, Movies, Series, Audio, Pictures }
 
@@ -45,6 +45,7 @@ namespace Kolibri.net.SilverScreen.Controls
             }
         }
 
-        
+       
+
     }
 }

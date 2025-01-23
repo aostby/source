@@ -70,6 +70,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             labelImdbRating = new Label();
             linkLabelOpenFilePath = new LinkLabel();
             toolTip1 = new ToolTip(components);
+            buttonUpdate = new Button();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
@@ -294,6 +295,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(buttonUpdate);
             groupBox1.Controls.Add(buttonNewList);
             groupBox1.Controls.Add(labelWatchListName);
             groupBox1.Controls.Add(comboBox1);
@@ -447,6 +449,17 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             linkLabelOpenFilePath.Text = "Open File Path";
             linkLabelOpenFilePath.LinkClicked += linkLabelOpenFilePath_LinkClicked;
             // 
+            // buttonUpdate
+            // 
+            buttonUpdate.Location = new Point(551, 46);
+            buttonUpdate.Name = "buttonUpdate";
+            buttonUpdate.Size = new Size(47, 26);
+            buttonUpdate.TabIndex = 25;
+            buttonUpdate.Text = "Update local";
+            buttonUpdate.UseVisualStyleBackColor = true;
+            buttonUpdate.Visible = false;
+            buttonUpdate.Click += buttonUpdate_Click;
+            // 
             // MovieForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -530,6 +543,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private Label labelWatchListName;
         private ToolTip toolTip1;
         private Button buttonNewList;
+        private Button buttonUpdate;
     }
 }
 
