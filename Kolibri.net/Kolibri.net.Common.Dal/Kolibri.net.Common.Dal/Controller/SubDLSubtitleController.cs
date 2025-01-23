@@ -63,8 +63,8 @@ namespace Kolibri.net.Common.Dal.Controller
                 queryParams.Add("film_name", name);
             }
 
-            //  https://api.subdl.com/api/v1/subtitles?api_key=2gHHygdT4rS_uTtd11AlLun6f-eYjWgU&languages=NO%2CEN&year=2019&type=tv&film_name=See
-            //  https://api.subdl.com/api/v1/subtitles?api_key=2gHHygdT4rS_uTtd11AlLun6f-eYjWgU&languages=NO%2CEN&film_name=See&type=tv
+            //  https://api.subdl.com/api/v1/subtitles?api_key=APIKEYU&languages=NO%2CEN&year=2019&type=tv&film_name=See
+            //  https://api.subdl.com/api/v1/subtitles?api_key=APIKEY&languages=NO%2CEN&film_name=See&type=tv
 
             string url = baseurl + StringUtilities.ToQueryString(queryParams);
             ret = Execute(url);

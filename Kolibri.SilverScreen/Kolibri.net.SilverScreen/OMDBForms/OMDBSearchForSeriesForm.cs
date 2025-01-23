@@ -22,7 +22,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 {
     public partial class OMDBSearchForSeriesForm : Form
     {
-        
+
 
         public DirectoryInfo Source { get; private set; }
         private UserSettings _settings;
@@ -58,14 +58,14 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             {
                 var path = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(Source, MovieUtilites.MoviesCommonFileExt(true), SearchOption.AllDirectories).FirstOrDefault();
                 string title = $"{MovieUtilites.GetMovieTitle(path)}";
-             string year =    $"{MovieUtilites.GetYear(Source.Name)}".Trim();
+                string year = $"{MovieUtilites.GetYear(Source.Name)}".Trim();
                 textBoxManual.Text = $"{title}".Trim();
             }
             catch (Exception)
             {
                 textBoxManual.Text = "Tulsa King";
             }
-           
+
         }
 
         private void SetStatusLabelText(string message)
@@ -98,7 +98,8 @@ namespace Kolibri.net.SilverScreen.OMDBForms
         }
 
         private void buttonSearch_Click(object sender, EventArgs e)
-        {this.Cursor = Cursors.WaitCursor;  
+        {
+            this.Cursor = Cursors.WaitCursor;
             _contr = new MultiMediaSearchController(_settings);
             _contr.ProgressUpdated += OnProgressUpdated;
 
@@ -128,7 +129,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     string error = $"{Source.Name} - {ex.Message}";
                     Log.AppendLine($"{error}{Environment.NewLine}{"*".PadRight(72, '*')}");
                     SetStatusLabelText(error);
-                    
+
                     Application.DoEvents();
                     Thread.Sleep(20);
                 }
@@ -156,7 +157,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 //Kolibri.net.SilverScreen.Controls.DataGrivViewControls dgwController = new Controls.DataGrivViewControls(MultimediaType.Series, _liteDB);
                 //dataGridView1 = new DataGridView();
                 //dataGridView1 = dgwController.GetSeasonEpisodeDataGridView(resultTable);
-                Log.AppendLine(_contr.CurrentLog.ToString());  
+                Log.AppendLine(_contr.CurrentLog.ToString());
                 if (Log.Length >= 72)
                 {
                     OutputDialogs.ShowRichTextBoxDialog($"{nameof(Log)} - {DateTime.Now.ToShortTimeString()}", Log.ToString(), this.Size);
@@ -169,7 +170,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             }
             this.Cursor = Cursors.Default;
         }
-       
+
         private void buttonManual_Click(object sender, EventArgs e)
         {
 
@@ -181,6 +182,22 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+        private void buttonLog_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var str = _contr.CurrentLog.ToString();
+                if (!string.IsNullOrEmpty(str))
+                {
+                    OutputDialogs.ShowRichTextBox($"{this.Text} - {DateTime.Now.ToShortTimeString()}", str.ToString(), this.Size);
+                }
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabelText($"Log not found ({this.Text}) - {ex.Message}");
             }
         }
     }

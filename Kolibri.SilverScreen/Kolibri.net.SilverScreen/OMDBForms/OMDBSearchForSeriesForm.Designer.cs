@@ -39,6 +39,7 @@
             radioButtonCombo = new RadioButton();
             buttonSearch = new Button();
             dataGridView1 = new DataGridView();
+            buttonLog = new Button();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -86,7 +87,7 @@
             // 
             groupBoxManual.Controls.Add(buttonManual);
             groupBoxManual.Controls.Add(textBoxManual);
-            groupBoxManual.Location = new Point(12, 78);
+            groupBoxManual.Location = new Point(12, 109);
             groupBoxManual.Name = "groupBoxManual";
             groupBoxManual.Size = new Size(241, 80);
             groupBoxManual.TabIndex = 2;
@@ -112,12 +113,13 @@
             // 
             // groupBoxSearchType
             // 
+            groupBoxSearchType.Controls.Add(buttonLog);
             groupBoxSearchType.Controls.Add(radioButtonLocal);
             groupBoxSearchType.Controls.Add(radioButtonCombo);
             groupBoxSearchType.Controls.Add(buttonSearch);
             groupBoxSearchType.Location = new Point(12, 15);
             groupBoxSearchType.Name = "groupBoxSearchType";
-            groupBoxSearchType.Size = new Size(241, 56);
+            groupBoxSearchType.Size = new Size(241, 88);
             groupBoxSearchType.TabIndex = 1;
             groupBoxSearchType.TabStop = false;
             groupBoxSearchType.Text = "Kilde for detalj søk";
@@ -164,6 +166,16 @@
             dataGridView1.Size = new Size(530, 428);
             dataGridView1.TabIndex = 0;
             // 
+            // buttonLog
+            // 
+            buttonLog.Location = new Point(11, 58);
+            buttonLog.Name = "buttonLog";
+            buttonLog.Size = new Size(215, 23);
+            buttonLog.TabIndex = 3;
+            buttonLog.Text = "Vis logg";
+            buttonLog.UseVisualStyleBackColor = true;
+            buttonLog.Click += buttonLog_Click;
+            // 
             // OMDBSearchForSeriesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -200,5 +212,6 @@
         private GroupBox groupBoxManual;
         private Button buttonManual;
         private TextBox textBoxManual;
+        private Button buttonLog;
     }
 }

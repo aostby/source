@@ -10,7 +10,7 @@ using OMDbApiNet.Model;
 using System.Data;
 using System.Net;
 using System.Reflection;
-using System.Text; 
+using System.Text;
 
 namespace Kolibri.net.SilverScreen.IMDBForms
 {
@@ -29,7 +29,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             Init();
         }
         public MovieForm(UserSettings userSettings, FileInfo info)
-        {_info = info;  
+        {
+            _info = info;
             _userSettings = userSettings;
             InitializeComponent();
             Init();
@@ -129,32 +130,81 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
                 url = "http://www.omdbapi.com/?t=" + tbSearch.Text.Trim() + "&y=" + tbYearParameter.Text.Trim() + $"&apikey={_userSettings.OMDBkey}";
             }
+            string json = null;
 
             using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
             {
-                var json = wc.DownloadString(url);
-                var result = JsonConvert.DeserializeObject<WatchList>(json);
 
-                if (result.Response == "True")
+                try
                 {
-                    tbTitle.Text = result.Title;
-                    tbYear.Text = result.Year;
-                    tbRated.Text = result.ImdbRating;
-                    tbRuntime.Text = result.Runtime;
-                    tbGenre.Text = result.Genre;
-                    tbActors.Text = result.Actors;
-                    tbPlot.Text = result.Plot;
-                    tbMetascore.Text = result.Metascore;
-                    pbPoster.ImageLocation = result.Poster;
-                    labelImdbId.Text = result.ImdbId;
-                    labelImdbRating.Text = result.ImdbRating;
+                    try
+                    {
+                        string year = tbYearParameter.Text.Trim().ToInt32().ToString();
 
-                    linkLabelOpenFilePath.BackColor = Control.DefaultBackColor;
+                        Item local = _liteDB.FindItemByTitle(tbSearch.Text.Trim()).FirstOrDefault();
+                        if (local != null && local.Year != year) { local = null; }
+
+                        if (local != null)
+                        {
+                            json = local.JsonSerializeObject();
+                            try
+                            {
+                                tbTitle.Text = local.Title;
+                                tbYear.Text = local.Year;
+                                tbRated.Text = local.ImdbRating;
+                                tbRuntime.Text = local.Runtime;
+                                tbGenre.Text = local.Genre;
+                                tbActors.Text = local.Actors;
+                                tbPlot.Text = local.Plot;
+                                tbMetascore.Text = local.Metascore;
+                                pbPoster.ImageLocation = local.Poster;
+                                labelImdbId.Text = local.ImdbId;
+                                labelImdbRating.Text = local.ImdbRating;
+
+                                linkLabelOpenFilePath.BackColor = Control.DefaultBackColor;
+
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            return;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+json = wc.DownloadString(url);
+
+                    var result = JsonConvert.DeserializeObject<WatchList>(json);
+
+                    if (result.Response == "True")
+                    {
+                        tbTitle.Text = result.Title;
+                        tbYear.Text = result.Year;
+                        tbRated.Text = result.ImdbRating;
+                        tbRuntime.Text = result.Runtime;
+                        tbGenre.Text = result.Genre;
+                        tbActors.Text = result.Actors;
+                        tbPlot.Text = result.Plot;
+                        tbMetascore.Text = result.Metascore;
+                        pbPoster.ImageLocation = result.Poster;
+                        labelImdbId.Text = result.ImdbId;
+                        labelImdbRating.Text = result.ImdbRating;
+
+                        linkLabelOpenFilePath.BackColor = Control.DefaultBackColor;
+                    }
+
+                    else
+                    {
+                        MessageBox.Show("Movie not found!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    MessageBox.Show("Movie not found!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Movie not found! {ex.Message}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
+
             }
         }
 
@@ -400,20 +450,20 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         _liteDB.Update(mov);
                         _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
                     }
-                    else if (mov == null)             
+                    else if (mov == null)
                     {
                         OMDBController oMDB = new OMDBController(_userSettings.OMDBkey, _liteDB);
-                        mov= oMDB.GetItemByImdbId(imdbId);
+                        mov = oMDB.GetItemByImdbId(imdbId);
                         if (mov != null)
                         {
                             mov.TomatoUrl = _info.FullName;
-                      var i =       _liteDB.Upsert(mov);
-                      var  f=     _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                            var i = _liteDB.Upsert(mov);
+                            var f = _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
                         }
                         else
                         {
                             throw new Exception($"no movie found: {tbSearch.Text}");
-                                }
+                        }
 
 
                     }

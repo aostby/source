@@ -32,8 +32,15 @@ namespace Kolibri.net.Common.FormUtilities.Forms
   
      
         public class OutputDialogs
+    {
+        public static DialogResult ShowRichTextBox(string title, string text, System.Drawing.Size size)
         {
-            public static DialogResult ShowRichTextBoxDialog(string title, string text, System.Drawing.Size size)
+            Form form = OutputFormController.RichTextBoxForm(title, text, size);
+            form.Show();
+            form.DialogResult = DialogResult.OK;
+            return form.DialogResult;
+        }
+        public static DialogResult ShowRichTextBoxDialog(string title, string text, System.Drawing.Size size)
             {
                 Form form = OutputFormController.RichTextBoxForm(title, text, size);
                 form.ShowDialog();
