@@ -20,7 +20,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         [JsonProperty("ImdbId")]
         public string ImdbId { get; set; }
 
-    
+        [JsonProperty("TomatoUrl")]
+        public string TomatoUrl { get; set; }
+
+
 
 
     }

@@ -26,6 +26,11 @@ namespace Kolibri.net.Common.Dal.Entities
         public ImageCache(UserSettings userSettings)
         {
             this._userSettings = userSettings;
+            if (userSettings != null)
+            {
+                _LiteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
+            }
+
             Init();
         }
 

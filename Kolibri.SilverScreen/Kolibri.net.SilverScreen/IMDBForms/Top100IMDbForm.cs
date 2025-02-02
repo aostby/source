@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Data;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 
 
 namespace Kolibri.net.SilverScreen.IMDBForms
@@ -33,7 +34,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 //var serializer = new JavaScriptSerializer();
                 //var movies = serializer.Serialize(list.ToList().OrderByDescending(o => o.ImdbRating).ToList());
 
-         var movies=       JsonConvert.SerializeObject(list.ToList().OrderByDescending(o => o.ImdbRating).ToList(), Formatting.Indented);
+                var movies= JsonConvert.SerializeObject(list.ToList().OrderByDescending(o => o.ImdbRating).ToList(), Formatting.Indented);
 
                 movies = movies.Replace("ImdbRating", "Rank");
                 movies = movies.Replace("ReleaseDate", "Year");
@@ -41,7 +42,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 var result = JsonConvert.DeserializeObject<List<Top100IMDb>>(movies);
 
                 gridTop100.AutoGenerateColumns = true;
-                gridTop100.DataSource = result;
+                  gridTop100.DataSource = result;
 
                 this.gridTop100.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;//Title
                 this.gridTop100.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;//Rank
@@ -88,7 +89,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private void miMovieDetails_Click(object sender, EventArgs e)
         {
-            string tt = gridTop100[gridTop100.ColumnCount - 1, gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
+               string tt = gridTop100[gridTop100.ColumnCount - 2, gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
+            //string tt = gridTop100.SelectedRows[0].Cells["ImdbId"].Value.ToString();
 
             string url = "http://www.omdbapi.com/?i=" +tt + "&apikey=e17f08db";
 

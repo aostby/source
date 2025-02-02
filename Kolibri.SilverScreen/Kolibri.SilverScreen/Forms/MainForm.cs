@@ -95,11 +95,11 @@ namespace Kolibri.SilverScreen.Forms
             Form newMDIChild = null;
             if (sender.Equals(movieslocalToolStripMenuItem))
             {
-                newMDIChild = new MultiMediaForm(MultimediaType.Movies, _userSettings);
+                newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
             }
             else if (sender.Equals(serieslocalToolStripMenuItem))
             {
-                newMDIChild = new ShowLocalSeries(_userSettings);
+                newMDIChild = new ShowLocalSeriesForm(_userSettings);
             }else if (sender.Equals(flyttFilmerToolStripMenuItem))
             {
                 newMDIChild = new SortMultimediaDesktopForm (MultimediaType.Movies, _userSettings);
@@ -171,35 +171,67 @@ namespace Kolibri.SilverScreen.Forms
         {
             Form form = new Form();
             form.Size = new Size(500, 500);
-            PropertyGrid propertyGrid1 = new PropertyGrid();
-            propertyGrid1.CommandsVisibleIfAvailable = true;
-            propertyGrid1.Location = new Point(10, 20);
-            propertyGrid1.Size = new System.Drawing.Size(400, 300);
-            propertyGrid1.TabIndex = 1;
-            propertyGrid1.Text = "Innstillinger";
-            this.Controls.Add(propertyGrid1);
-            propertyGrid1.SelectedObject = _userSettings;
-            propertyGrid1.Dock = DockStyle.Top;
-            propertyGrid1.Anchor = AnchorStyles.Top | AnchorStyles.Right|AnchorStyles.Left|AnchorStyles.Bottom;
-
-            form.Controls.Add(propertyGrid1);
 
             Button button = new Button();
             button.DialogResult = DialogResult.OK;
             button.Text = "Lagre";
             button.Click += Button_Click;
-            button.Anchor = AnchorStyles.Bottom|AnchorStyles.Right;
-            propertyGrid1.Dock = DockStyle.Bottom;
+            button.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            button.Dock = DockStyle.Bottom;
             button.BringToFront();
             form.Controls.Add(button);
+
+            PropertyGrid propertyGrid1 = new PropertyGrid();
+            propertyGrid1.CommandsVisibleIfAvailable = true;
+            //propertyGrid1.Location = new Point(10, 20);
+            propertyGrid1.Size = new System.Drawing.Size(400, 300);
+            propertyGrid1.TabIndex = 1;
+            propertyGrid1.Text = "Innstillinger";
+            propertyGrid1.SelectedObject = _userSettings;
+            propertyGrid1.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Bottom;
+            propertyGrid1.Size = new Size(495, 480);
+            // propertyGrid1.Dock = DockStyle.Top;
+            form.Controls.Add(propertyGrid1);
+
             var res = form.ShowDialog();
-
-
             if (res == DialogResult.OK)
             {
                 _userSettings.Save();
                 InitUserSettings(new FileInfo(_userSettings.LiteDBFilePath));
             }
+
+
+            /*   Form form = new Form();
+               form.Size = new Size(500, 500);
+               PropertyGrid propertyGrid1 = new PropertyGrid();
+               propertyGrid1.CommandsVisibleIfAvailable = true;
+               propertyGrid1.Location = new Point(10, 20);
+               propertyGrid1.Size = new System.Drawing.Size(400, 300);
+               propertyGrid1.TabIndex = 1;
+               propertyGrid1.Text = "Innstillinger";
+               this.Controls.Add(propertyGrid1);
+               propertyGrid1.SelectedObject = _userSettings;
+               propertyGrid1.Dock = DockStyle.Top;
+               propertyGrid1.Anchor = AnchorStyles.Top | AnchorStyles.Right|AnchorStyles.Left|AnchorStyles.Bottom;
+
+               form.Controls.Add(propertyGrid1);
+
+               Button button = new Button();
+               button.DialogResult = DialogResult.OK;
+               button.Text = "Lagre";
+               button.Click += Button_Click;
+               button.Anchor = AnchorStyles.Bottom|AnchorStyles.Right;
+               propertyGrid1.Dock = DockStyle.Bottom;
+               button.BringToFront();
+               form.Controls.Add(button);
+               var res = form.ShowDialog();
+
+
+               if (res == DialogResult.OK)
+               {
+                   _userSettings.Save();
+                   InitUserSettings(new FileInfo(_userSettings.LiteDBFilePath));
+               }*/
 
         }
 

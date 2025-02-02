@@ -14,7 +14,7 @@ using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
-    public partial class MultiMediaForm : Form
+    public partial class ShowLocalMoviesForm : Form
     {
         private List<string> _initializedMissing = new List<string>();
         LiteDBController _liteDB;
@@ -27,7 +27,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private IEnumerable<FileItem> _files;
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
 
-        public MultiMediaForm(MultimediaType type, UserSettings settings)
+        public ShowLocalMoviesForm(MultimediaType type, UserSettings settings)
         {
             InitializeComponent();
             _type = type;
@@ -414,7 +414,8 @@ namespace Kolibri.net.SilverScreen.Forms
                     case MultimediaType.Series:
 
                         var series = _liteDB.FindSeasonEpisode(tableItem.Rows[0]["ImdbId"].ToString());
-                        SetForm(new DetailsFormSeries(series, _liteDB, _OMDB, _TMDB, null, _imageCache), splitContainer2.Panel2);
+                   //     SetForm(new DetailsFormSeries(series, _liteDB, _OMDB, _TMDB, null, _imageCache), splitContainer2.Panel2);
+                   throw new NotImplementedException(); 
                         break;
                     case MultimediaType.Audio:
                         break;
@@ -474,7 +475,8 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (_type.Equals(MultimediaType.Series))
             {
-                form = new DetailsFormSeries(mm as SeasonEpisode, _liteDB, _OMDB, _TMDB, null, _imageCache);
+                // form = new DetailsFormSeries(mm as SeasonEpisode, _liteDB, _OMDB, _TMDB, null, _imageCache);
+                throw new NotImplementedException();
             }
             else
             {

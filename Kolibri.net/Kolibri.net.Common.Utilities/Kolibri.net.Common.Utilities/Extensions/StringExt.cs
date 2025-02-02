@@ -13,10 +13,9 @@ namespace Kolibri.net.Common.Utilities.Extensions
             number = number.ToLower().Replace("S", string.Empty);
             number = number.ToLower().Replace("e", string.Empty);
             number = number.ToLower().Replace("E", string.Empty);
-
+            number = number.ToLower().Replace("n/a", "0");
             if (number.IsNumeric())
             {
-
                 return Int32.Parse(
                     number,
                     System.Globalization.NumberStyles.Integer,
@@ -38,10 +37,13 @@ namespace Kolibri.net.Common.Utilities.Extensions
 
         public static string JsonSerializeObject<T>(this T obj, bool format = false) where T : class
         {
-            string text = JsonConvert.SerializeObject(obj, (format? Formatting.Indented:Formatting.None));
+            string text = JsonConvert.SerializeObject(obj, (format? Formatting.Indented:Formatting.Indented));
 
             return text;
         }
-
+        public static string FirstToUpper(this string str)
+        {
+            return  StringUtilities.FirstToUpper(str);
+        }
     }
 }

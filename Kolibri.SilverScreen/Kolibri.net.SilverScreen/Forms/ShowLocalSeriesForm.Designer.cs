@@ -2,7 +2,7 @@
 
 namespace Kolibri.Common.VisualizeOMDbItem
 {
-    partial class ShowLocalSeries
+    partial class ShowLocalSeriesForm
     {
         /// <summary>
         /// Variabile di progettazione necessaria.
@@ -31,7 +31,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ShowLocalSeries));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ShowLocalSeriesForm));
             mainLayout = new TableLayoutPanel();
             headerLayout = new TableLayoutPanel();
             buttonLookUp = new Button();
@@ -46,9 +46,9 @@ namespace Kolibri.Common.VisualizeOMDbItem
             columnHeader4 = new ColumnHeader();
             movieImageList = new ImageList(components);
             tableLayoutPanel1 = new TableLayoutPanel();
+            buttonEdit = new Button();
             detailsViewBtn = new Button();
             label1 = new Label();
-            resultsToGet = new ComboBox();
             tileViewBtn = new Button();
             rightLayout = new TableLayoutPanel();
             labelOpen = new Label();
@@ -217,7 +217,9 @@ namespace Kolibri.Common.VisualizeOMDbItem
             movieList.TabIndex = 2;
             movieList.TileSize = new Size(100, 200);
             movieList.UseCompatibleStateImageBehavior = false;
+            movieList.ColumnClick += movieList_ColumnClick;
             movieList.ItemSelectionChanged += movieList_ItemSelectionChanged;
+            movieList.DoubleClick += movieList_DoubleClick;
             // 
             // columnHeader1
             // 
@@ -252,14 +254,15 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // 
             // tableLayoutPanel1
             // 
-            tableLayoutPanel1.ColumnCount = 4;
+            tableLayoutPanel1.ColumnCount = 5;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 22.5F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 22.5F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel1.Controls.Add(buttonEdit, 1, 0);
             tableLayoutPanel1.Controls.Add(detailsViewBtn, 3, 0);
             tableLayoutPanel1.Controls.Add(label1, 0, 0);
-            tableLayoutPanel1.Controls.Add(resultsToGet, 1, 0);
             tableLayoutPanel1.Controls.Add(tileViewBtn, 2, 0);
             tableLayoutPanel1.Dock = DockStyle.Fill;
             tableLayoutPanel1.Location = new Point(4, 623);
@@ -270,15 +273,29 @@ namespace Kolibri.Common.VisualizeOMDbItem
             tableLayoutPanel1.Size = new Size(617, 41);
             tableLayoutPanel1.TabIndex = 3;
             // 
+            // buttonEdit
+            // 
+            buttonEdit.BackColor = SystemColors.Control;
+            buttonEdit.Dock = DockStyle.Fill;
+            buttonEdit.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            buttonEdit.Location = new Point(212, 3);
+            buttonEdit.Margin = new Padding(4, 3, 4, 3);
+            buttonEdit.Name = "buttonEdit";
+            buttonEdit.Size = new Size(111, 35);
+            buttonEdit.TabIndex = 4;
+            buttonEdit.Text = "Edit item";
+            buttonEdit.UseVisualStyleBackColor = false;
+            buttonEdit.Click += buttonEdit_Click;
+            // 
             // detailsViewBtn
             // 
             detailsViewBtn.BackColor = SystemColors.Control;
             detailsViewBtn.Dock = DockStyle.Fill;
             detailsViewBtn.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            detailsViewBtn.Location = new Point(480, 3);
+            detailsViewBtn.Location = new Point(465, 3);
             detailsViewBtn.Margin = new Padding(4, 3, 4, 3);
             detailsViewBtn.Name = "detailsViewBtn";
-            detailsViewBtn.Size = new Size(133, 35);
+            detailsViewBtn.Size = new Size(126, 35);
             detailsViewBtn.TabIndex = 3;
             detailsViewBtn.Text = "Grid";
             detailsViewBtn.UseVisualStyleBackColor = false;
@@ -292,23 +309,10 @@ namespace Kolibri.Common.VisualizeOMDbItem
             label1.Location = new Point(4, 0);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(207, 41);
+            label1.Size = new Size(200, 41);
             label1.TabIndex = 0;
             label1.Text = "Results found";
             label1.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // resultsToGet
-            // 
-            resultsToGet.Dock = DockStyle.Fill;
-            resultsToGet.DropDownStyle = ComboBoxStyle.DropDownList;
-            resultsToGet.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            resultsToGet.FormattingEnabled = true;
-            resultsToGet.Items.AddRange(new object[] { "10", "20", "30", "40", "50", "100" });
-            resultsToGet.Location = new Point(219, 3);
-            resultsToGet.Margin = new Padding(4, 3, 4, 3);
-            resultsToGet.Name = "resultsToGet";
-            resultsToGet.Size = new Size(115, 24);
-            resultsToGet.TabIndex = 1;
             // 
             // tileViewBtn
             // 
@@ -316,10 +320,10 @@ namespace Kolibri.Common.VisualizeOMDbItem
             tileViewBtn.Dock = DockStyle.Fill;
             tileViewBtn.Enabled = false;
             tileViewBtn.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            tileViewBtn.Location = new Point(342, 3);
+            tileViewBtn.Location = new Point(331, 3);
             tileViewBtn.Margin = new Padding(4, 3, 4, 3);
             tileViewBtn.Name = "tileViewBtn";
-            tileViewBtn.Size = new Size(130, 35);
+            tileViewBtn.Size = new Size(126, 35);
             tileViewBtn.TabIndex = 2;
             tileViewBtn.Text = "Tile";
             tileViewBtn.UseVisualStyleBackColor = false;
@@ -697,7 +701,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             statusLabel.Spring = true;
             statusLabel.Text = "Clear searchfield to show all items in list";
             // 
-            // ShowLocalSeries
+            // ShowLocalSeriesForm
             // 
             AcceptButton = searchBtn;
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -708,7 +712,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4, 3, 4, 3);
             MinimumSize = new Size(989, 686);
-            Name = "ShowLocalSeries";
+            Name = "ShowLocalSeriesForm";
             Text = "OMDb Series";
             mainLayout.ResumeLayout(false);
             headerLayout.ResumeLayout(false);
@@ -742,7 +746,6 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox resultsToGet;
         private System.Windows.Forms.Button detailsViewBtn;
         private System.Windows.Forms.Button tileViewBtn;
         private System.Windows.Forms.TableLayoutPanel rightLayout;
@@ -771,6 +774,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private Label labelRating;
         private Label labelOpen;
         private Button button1;
+        private Button buttonEdit;
     }
 }
 

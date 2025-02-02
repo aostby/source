@@ -15,5 +15,7 @@ public class KolibriTVShow : Interfaces.KolibriMedia
     public TvShow TvShow { get; set; }
     public Item Item { get; set; }
     public List<Episode> EpisodeList { get; set; } = new List<Episode>();
+    public List<KolibriSeason> SeasonList { get; set; } = new List<KolibriSeason>();
+    
 
 }

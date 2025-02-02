@@ -17,6 +17,9 @@ using static Kolibri.net.SilverScreen.Controls.Constants;
 using Kolibri.net.Common.Dal.Controller;
 using static com.sun.tools.javac.util.Name;
 using OMDbApiNet.Model;
+using com.sun.corba.se.impl.orbutil;
+using Kolibri.net.Common.Utilities.Extensions;
+using Kolibri.net.Common.FormUtilities;
 
 namespace Kolibri.net.SilverScreen.OMDBForms
 {
@@ -52,12 +55,12 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
             SetStatusLabelText($"{Source.FullName} - {Source.GetDirectories().Length} subfolders found.");
 
-            _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath));
+            _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false);
 
             try
             {
                 var path = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(Source, MovieUtilites.MoviesCommonFileExt(true), SearchOption.AllDirectories).FirstOrDefault();
-                string title = $"{MovieUtilites.GetMovieTitle(path)}";
+                string title = $"{MovieUtilites.GetMovieTitle(path)}".FirstToUpper();
                 string year = $"{MovieUtilites.GetYear(Source.Name)}".Trim();
                 textBoxManual.Text = $"{title}".Trim();
             }
@@ -79,6 +82,14 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 else
                 {
                     toolStripStatusLabelStatus.Text = message;
+                    Thread.Sleep(1);
+                }
+                try
+                {
+                    Application.DoEvents();
+                }
+                catch (Exception)
+                {
                 }
             }
             catch (Exception ex)
@@ -118,6 +129,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         var test = _contr.SearchForSeriesAsync(Source);
                         epList = test.Result.SelectMany(x => x.EpisodeList).OrderBy(x => x.Title).ToList();
                         table = DataSetUtilities.AutoGenererDataSet<Episode>(epList).Tables[0];
+                        table = SeriesUtilities.SortAndFormatSeriesTable(table);
 
                     }
                     else { table = _contr.SearchForSeriesEpisodes(Source); }
@@ -134,19 +146,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     Thread.Sleep(20);
                 }
 
-                DataTable resultTable = null;
-                foreach (DataTable table in list)
-                {
-                    if (resultTable == null)
-                    {
-                        resultTable = table;
-                    }
-                    else
-                    {
-                        resultTable.Merge(table);
-                    }
-
-                }
+                DataTable resultTable = DataSetUtilities.MergeListOfSimilarTables(list);
                 //ta bort duplikate rader
                 var tmp = new DataView(resultTable, null, $"{resultTable.Columns[0].ColumnName} ASC, SeasonNumber ASC, EpisodeNumber ASC", DataViewRowState.CurrentRows).ToTable(true, DataSetUtilities.ColumnNames(resultTable));
 
@@ -176,7 +176,9 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
             try
             {
-                IMDBForms.MovieForm form = new IMDBForms.MovieForm(_settings, new FileInfo(textBoxManual.Text));
+                var yearItem = _liteDB.FindItem(textBoxManual.Text);
+                var year = yearItem != null ? yearItem.Year : string.Empty;
+                IMDBForms.MovieForm form = new IMDBForms.MovieForm(_settings, new FileInfo(textBoxManual.Text), year );
                 form.ShowDialog();
             }
             catch (Exception ex)
@@ -198,6 +200,54 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             catch (Exception ex)
             {
                 SetStatusLabelText($"Log not found ({this.Text}) - {ex.Message}");
+            }
+        }
+
+        private void textBoxManual_TextChanged(object sender, EventArgs e)
+        {
+            buttonImdbIdSearch.Enabled = textBoxManual.Text.StartsWith("tt", StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        private void buttonImdbIdSearch_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Item item = null;
+                using (OMDBController omdbC = new OMDBController(_settings.OMDBkey))
+                {
+                   // item = _liteDB.FindItem(textBoxManual.Text); //Ikke hent lokal kopi, poenget med manuelt søk er å hente ny versjon fra OMDB
+                    if (item == null) item = omdbC.GetItemByImdbId(textBoxManual.Text);
+                    if (item == null)
+                    {
+                        using (TMDBController contr = new TMDBController(_liteDB, _settings.TMDBkey))
+                        {
+                            var t = Task.Run(()=>  contr.FindById(textBoxManual.Text)).GetAwaiter().GetResult();
+                            if (t != null)
+                            {
+                                
+                                Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog($"{t.GetType().Name} - {textBoxManual.Text}", t.JsonSerializeObject(), this.Size);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (_liteDB.Upsert(item))
+                        {
+                            string text = $"Oppdaterte lokal database med {item.Title} - {item.ImdbId} ({item.Year})";
+                            SetStatusLabelText(text);
+                            MessageBox.Show(text, "Lokal database oppdatert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else {
+                            string text = $"Feil ved oppdatering av lokal database. Sjekk innstillinger. {item.Title} - {item.ImdbId} ({item.Year})";
+                            SetStatusLabelText(text);
+                            MessageBox.Show(text, "Lokal database oppdatert", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
     }

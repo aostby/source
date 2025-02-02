@@ -32,14 +32,15 @@
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
             splitContainer1 = new SplitContainer();
             groupBoxManual = new GroupBox();
+            buttonImdbIdSearch = new Button();
             buttonManual = new Button();
             textBoxManual = new TextBox();
             groupBoxSearchType = new GroupBox();
+            buttonLog = new Button();
             radioButtonLocal = new RadioButton();
             radioButtonCombo = new RadioButton();
             buttonSearch = new Button();
             dataGridView1 = new DataGridView();
-            buttonLog = new Button();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -85,6 +86,7 @@
             // 
             // groupBoxManual
             // 
+            groupBoxManual.Controls.Add(buttonImdbIdSearch);
             groupBoxManual.Controls.Add(buttonManual);
             groupBoxManual.Controls.Add(textBoxManual);
             groupBoxManual.Location = new Point(12, 109);
@@ -93,6 +95,16 @@
             groupBoxManual.TabIndex = 2;
             groupBoxManual.TabStop = false;
             groupBoxManual.Text = "Manuelt søk";
+            // 
+            // buttonImdbIdSearch
+            // 
+            buttonImdbIdSearch.Location = new Point(8, 46);
+            buttonImdbIdSearch.Name = "buttonImdbIdSearch";
+            buttonImdbIdSearch.Size = new Size(75, 23);
+            buttonImdbIdSearch.TabIndex = 4;
+            buttonImdbIdSearch.Text = "ImdbId søk";
+            buttonImdbIdSearch.UseVisualStyleBackColor = true;
+            buttonImdbIdSearch.Click += buttonImdbIdSearch_Click;
             // 
             // buttonManual
             // 
@@ -110,6 +122,7 @@
             textBoxManual.Name = "textBoxManual";
             textBoxManual.Size = new Size(219, 23);
             textBoxManual.TabIndex = 0;
+            textBoxManual.TextChanged += textBoxManual_TextChanged;
             // 
             // groupBoxSearchType
             // 
@@ -123,6 +136,16 @@
             groupBoxSearchType.TabIndex = 1;
             groupBoxSearchType.TabStop = false;
             groupBoxSearchType.Text = "Kilde for detalj søk";
+            // 
+            // buttonLog
+            // 
+            buttonLog.Location = new Point(11, 58);
+            buttonLog.Name = "buttonLog";
+            buttonLog.Size = new Size(215, 23);
+            buttonLog.TabIndex = 3;
+            buttonLog.Text = "Vis logg";
+            buttonLog.UseVisualStyleBackColor = true;
+            buttonLog.Click += buttonLog_Click;
             // 
             // radioButtonLocal
             // 
@@ -166,16 +189,6 @@
             dataGridView1.Size = new Size(530, 428);
             dataGridView1.TabIndex = 0;
             // 
-            // buttonLog
-            // 
-            buttonLog.Location = new Point(11, 58);
-            buttonLog.Name = "buttonLog";
-            buttonLog.Size = new Size(215, 23);
-            buttonLog.TabIndex = 3;
-            buttonLog.Text = "Vis logg";
-            buttonLog.UseVisualStyleBackColor = true;
-            buttonLog.Click += buttonLog_Click;
-            // 
             // OMDBSearchForSeriesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -213,5 +226,6 @@
         private Button buttonManual;
         private TextBox textBoxManual;
         private Button buttonLog;
+        private Button buttonImdbIdSearch;
     }
 }

@@ -13,10 +13,10 @@ using TMDbLib.Objects.TvShows;
 
 namespace Kolibri.net.Common.Dal.Controller
 {
-    public class TMDBController
+    public class TMDBController: IDisposable
     {
         private   TMDbLib.Client.TMDbClient _client;
-        private   LiteDBController _contr;
+        private   LiteDBController _liteDB;
         private string _apiKey = string.Empty;// "YOUR_API_KEY";
         public string ApiKey { get { return _apiKey; } }
         //Account https://www.themoviedb.org/faq/account --- https://www.themoviedb.org/u/aostby behind the barricades
@@ -37,7 +37,7 @@ namespace Kolibri.net.Common.Dal.Controller
             { this._apiKey = apikey; }
 
             _client = new TMDbLib.Client.TMDbClient(_apiKey);
-            _contr = contr;
+            _liteDB = contr;
         }
 
         private TMDbConfig GetDefaultSettings() {
@@ -72,7 +72,7 @@ namespace Kolibri.net.Common.Dal.Controller
         }
         public Movie GetMovie(string id, bool isImdbId)
         {
-            LiteDBController contr = _contr;
+            LiteDBController contr = _liteDB;
 
             Movie movie = contr.FindMovie(id.ToString(), isImdbId);
             if (movie == null)
@@ -91,7 +91,7 @@ namespace Kolibri.net.Common.Dal.Controller
         }
         public Movie GetMovie(int id)
         {
-            LiteDBController contr = _contr;
+            LiteDBController contr = _liteDB;
 
             Movie movie = contr.FindMovie(id.ToString());
             if (movie == null)
@@ -156,26 +156,26 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             Movie movie = GetMovie(searchMovie.Id);
             if (movie == null) return null;
-            Item item = new Item();
-
-
-            item.Title = movie.Title;
-            item.ImdbId = movie.ImdbId;
-            item.Country = movie.OriginalLanguage;
-            item.Language = movie.SpokenLanguages[0].Name;
-            item.Year = (movie.ReleaseDate == null ? DateTime.Now.Year : movie.ReleaseDate.GetValueOrDefault().Year).ToString();
-            item.Type = "Movie";
-            item.Poster = item.Poster;
-            item.ImdbRating = $"{movie.VoteAverage}";
-            item.Genre = string.Join(", ", movie.Genres.Select(s=>s.Name).ToArray());
-
+            Item item = _liteDB.FindItem(movie.ImdbId);
+            if (item == null)
+            {
+                item = new Item();
+                item.Title = movie.Title;
+                item.ImdbId = movie.ImdbId;
+                item.Country = movie.OriginalLanguage;
+                item.Language = movie.SpokenLanguages[0].Name;
+                item.Year = (movie.ReleaseDate == null ? DateTime.Now.Year : movie.ReleaseDate.GetValueOrDefault().Year).ToString();
+                item.Type = "Movie";
+                item.Poster = item.Poster;
+                item.ImdbRating = $"{movie.VoteAverage}";
+                item.Genre = string.Join(", ", movie.Genres.Select(s => s.Name).ToArray());
+            }
             return item;
-
         }
 
         public  string GetTMDBKey(bool obtain = false, bool replace = false)
         {
-            UserSettings settings = _contr.GetUserSettings();
+            UserSettings settings = _liteDB.GetUserSettings();
             string ret = string.Empty;
             if (!obtain)
             { 
@@ -219,7 +219,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 }
             }
             settings.TMDBkey = ret;
-            _contr.Upsert(settings);
+            _liteDB.Upsert(settings);
             return ret;
         } 
      
@@ -340,5 +340,18 @@ namespace Kolibri.net.Common.Dal.Controller
 
 
         #endregion
+
+        public void Dispose()
+        {
+
+            try
+            {
+                // _liteDB.Dispose();
+                GC.Collect();
+            }
+            catch (Exception)
+            {
+            }
+        }
     }
 }

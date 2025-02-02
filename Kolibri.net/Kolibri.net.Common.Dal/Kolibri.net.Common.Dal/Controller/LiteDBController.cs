@@ -2,7 +2,6 @@
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
 using OMDbApiNet.Model;
-using System.ComponentModel.Design;
 using TMDbLib.Objects.TvShows;
 using Season = OMDbApiNet.Model.Season;
 
@@ -56,7 +55,7 @@ namespace Kolibri.net.Common.Dal.Controller
             }
         }
 
-        #region Item table funcitons
+        #region Item table funcitonss
         public async Task< IEnumerable<Item>> FindAllItems(string type = null)
         {
             IEnumerable<Item> items = null;
@@ -72,11 +71,31 @@ namespace Kolibri.net.Common.Dal.Controller
             } 
             return items;   
             }
-
+    public Item FindItem(string imdbId)
+        {
+            try
+            {
+                var ret = _liteDB.GetCollection<Item>("Item")
+                                         .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+                return ret;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
         public Item FindItemByTitle(string title, int year)
         {
-            return _liteDB.GetCollection<Item>("Item")
-                .Find(x => x.Title == title.Trim() && x.Year == year.ToString()).FirstOrDefault();
+            if (year < 1800)
+            {
+                return FindItemByTitle(title).First();
+            }
+            else
+            {
+                var ret = _liteDB.GetCollection<Item>("Item")
+                    .Find(x => x.Title == title.Trim() && x.Year == year.ToString()).FirstOrDefault();
+                return ret;
+            }
         }
         public IEnumerable<Item> FindItemByTitle(string searchTerm)
         {
@@ -127,19 +146,7 @@ namespace Kolibri.net.Common.Dal.Controller
 
         }
 
-        public Item FindItem(string imdbId)
-        {
-            try
-            {
-                var ret = _liteDB.GetCollection<Item>("Item")
-                                         .Find(x => x.ImdbId == imdbId).FirstOrDefault();
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
+    
 
         
         /// <summary>
@@ -180,8 +187,11 @@ namespace Kolibri.net.Common.Dal.Controller
             return _liteDB.GetCollection<Item>("Item")
                 .Update(movie.ImdbId, movie);
         }
-
-        public int DeleteItem(string id)
+        public bool Delete(Item item)
+        {
+            return DeleteItem(item.ImdbId) >= 1;
+        }
+            public int DeleteItem(string id)
         {
             try
             {
@@ -760,10 +770,8 @@ switch (searchCriteria)
 
         public TMDbLib.Objects.Movies.Movie FindMovie(string id, bool isImdbId = false)
         {
-
             if (isImdbId)
             {
-
                 return _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                     .Find(x => x.ImdbId == id).FirstOrDefault();
 
@@ -816,9 +824,6 @@ switch (searchCriteria)
             return _liteDB.GetCollection<TMDbLib.Objects.Movies.Movie>("Movie")
                 .Update(movie.Id, movie);
         }
-
-
-
 
         public int DeleteMovie(string id)
         {
