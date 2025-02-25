@@ -124,6 +124,7 @@ namespace Kolibri.net.Common.Dal.Controller
         public Item GetMovieByIMDBid(string imdbId, bool insert = false)
         {
 
+            
             Item ret = null;
             try
             {
@@ -131,12 +132,16 @@ namespace Kolibri.net.Common.Dal.Controller
                 {
 
                     if (_liteDB != null)
+                    {
                         ret = _liteDB.FindItem(imdbId);
+                        if (ret == null)
+                            ret = _client.GetItemById(imdbId);
+                    }
                     if (ret == null)
                     {
                         try
                         {
-                            ret = _client.GetItemById(imdbId, false);
+                            
                             if (insert && ret != null && _liteDB != null)
                             {
                                 string title = ret.Title;

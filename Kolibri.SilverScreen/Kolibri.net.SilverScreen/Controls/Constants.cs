@@ -39,6 +39,7 @@ namespace Kolibri.net.SilverScreen.Controls
                     "Episode",
                     "ImdbRating",
                     "ImdbId",
+                   "TomatoUrl"
                 };
 
                 return visibleColumns;

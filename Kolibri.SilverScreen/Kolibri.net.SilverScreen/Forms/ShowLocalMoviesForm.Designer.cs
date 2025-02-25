@@ -50,6 +50,7 @@
             backgroundWorker3 = new System.ComponentModel.BackgroundWorker();
             backgroundWorker4 = new System.ComponentModel.BackgroundWorker();
             toolTip1 = new ToolTip(components);
+            labelNumItemsFILE = new Label();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -71,6 +72,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(labelNumItemsFILE);
             splitContainer1.Panel1.Controls.Add(groupBoxFilter);
             splitContainer1.Panel1.Controls.Add(checkBoxSimple);
             splitContainer1.Panel1.Controls.Add(groupBoxFileSearch);
@@ -246,6 +248,15 @@
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
             // 
+            // labelNumItemsFILE
+            // 
+            labelNumItemsFILE.AutoSize = true;
+            labelNumItemsFILE.Location = new Point(12, 51);
+            labelNumItemsFILE.Name = "labelNumItemsFILE";
+            labelNumItemsFILE.Size = new Size(64, 15);
+            labelNumItemsFILE.TabIndex = 7;
+            labelNumItemsFILE.Text = "Antall (FIL)";
+            // 
             // ShowLocalMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -295,5 +306,6 @@
         private RadioButton radioButtonFilterAlle;
         private RadioButton radioButtonFilterNotMatched;
         private ToolTip toolTip1;
+        private Label labelNumItemsFILE;
     }
 }

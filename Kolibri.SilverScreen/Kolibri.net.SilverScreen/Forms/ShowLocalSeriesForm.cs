@@ -99,12 +99,12 @@ namespace Kolibri.Common.VisualizeOMDbItem
             return item;
         }
 
-        public Image getImage(string url)
+        public async Task<Image> getImage(string url)
         {
             Image img = null;
             try
             {
-                var test = _imgCache.FindImage(url);
+                var test = await _imgCache.FindImageAsync(url);
                 if (test != null)
                 {
                     img = test.Image;
@@ -116,7 +116,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     byte[] bytes = wc.DownloadData(url);
                     MemoryStream ms = new MemoryStream(bytes);
                     img = Image.FromStream(ms);
-                    _imgCache.InsertImage(url, (Bitmap)img);
+                 await   _imgCache.InsertImageAsync(url, (Bitmap)img);
                     SetStatusLabelText($"Image read from {url}");
                 }
             }
@@ -169,7 +169,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             enableSearch();
             refreshMovieList();
         }
-        private void refreshMovieList()
+        private async void refreshMovieList()
         {
             try
             {
@@ -177,12 +177,12 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 movieImageList.Images.Clear();
                 foreach (Item movie in movies)
                 {
-                    var jall = _imgCache.FindImage(movie.ImdbId);
+                    var jall = await _imgCache.FindImageAsync(movie.ImdbId);
                     if (jall == null)
                     {
-                        var img = getImage(movie.Poster);
+                        var img = await getImage(movie.Poster);
                         movieImageList.Images.Add(movie.ImdbId, img);
-                        _imgCache.InsertImage(movie.ImdbId, (Bitmap)img);
+                     await   _imgCache.InsertImageAsync(movie.ImdbId, (Bitmap)img);
                     }
                     else { movieImageList.Images.Add(movie.ImdbId, (Image)jall.Image); }
                     movieList.Items.Add(movie.Title, movie.ImdbId);
@@ -276,7 +276,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             if (!e.IsSelected)
                 return;
             //pictureBox.Image = getImage(e.Item.SubItems[3].Text);
-            pictureBox.Image = getImage(e.Item.SubItems[e.Item.SubItems.Count - 1].Text);
+            pictureBox.Image = await getImage(e.Item.SubItems[e.Item.SubItems.Count - 1].Text);
             Item result = await getMovieDetails(e.Item.ImageKey);
             if (result == null)
             {
@@ -419,7 +419,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     {
                         //MessageBox.Show(ex.Message, ex.GetType().Name);
 
-                                                        var folder = FolderUtilities.LetOppMappe(_userSettings.UserFilePaths.SeriesSourcePath, $"{ex.Message}");
+                                                                        var folder = FolderUtilities.LetOppMappe(_userSettings.UserFilePaths.SeriesSourcePath, $"{ex.Message}");
                         if (folder != null && folder.Exists && item != null)
                         {
                             item.TomatoUrl = folder.FullName;

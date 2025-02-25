@@ -101,7 +101,7 @@ namespace Kolibri.net.Common.Dal.Entities
 
             if (_LiteDB != null)
             {
-                Task.Run(async () => await InitImages(_LiteDB));
+                Task.Run(async () => await InitImagesAsync(_LiteDB));
             }
         }
 
@@ -144,11 +144,11 @@ namespace Kolibri.net.Common.Dal.Entities
             }
         } 
     
-        public bool InsertImage(string key, Bitmap bitmap)
+        public async Task<bool>  InsertImageAsync(string key, Bitmap bitmap)
         {
             bool ret = false;
             var cache = CacheImageExists(key);
-            var db = _ImageDB.ImageExists(key);
+            var db = await _ImageDB.ImageExists(key);
             bool insert = (!cache|| !db);
             try
             {
@@ -178,9 +178,9 @@ namespace Kolibri.net.Common.Dal.Entities
             return GetItemsFromCache(key); 
         }
 
-        public ImagePoster FindImage(string key)
+        public async Task< ImagePoster> FindImageAsync(string key)
         {
-            var ret = RetrieveImage(key);
+            var ret = await RetrieveImageAsync(key);
 
             if (ret == null)
             { return null; }
@@ -189,7 +189,7 @@ namespace Kolibri.net.Common.Dal.Entities
                 return new ImagePoster(key, ret);
             }
         }
-        public Bitmap RetrieveImage(string key)
+        public async Task< Bitmap> RetrieveImageAsync(string key)
         {
             Bitmap ret = null;
             Byte[] arr = null;
@@ -198,7 +198,7 @@ namespace Kolibri.net.Common.Dal.Entities
                 //var arr = GetItemsFromCache(key);
                 if (arr == null)
                 {
-                    if (_ImageDB.ImageExists(key))
+                    if (await _ImageDB.ImageExists(key))
                     {
                         var imagePoster = _ImageDB.FindImage(key);
                         if (imagePoster == null) return null;
@@ -226,6 +226,7 @@ namespace Kolibri.net.Common.Dal.Entities
             { ret = null; }
             return ret;
         }
+ 
         public bool CacheImageExists(string key)
         {
             try
@@ -235,12 +236,12 @@ namespace Kolibri.net.Common.Dal.Entities
             catch (Exception)
             {
                 return false;
-            } 
-        } 
+            }
+        }
 
         #region from DB
 
-        public async Task<bool> InitImages(LiteDBController LITEDB)
+        public async Task<bool> InitImagesAsync(LiteDBController LITEDB)
         {
             bool ret = true;
             try
@@ -248,7 +249,7 @@ namespace Kolibri.net.Common.Dal.Entities
                 var items =await LITEDB.FindAllItems();
                 var dic = items.OrderByDescending(mc => mc.ImdbRating)
                         .ToDictionary(mc => mc.ImdbId.ToString(),
-                                      mc => mc.Poster.ToString(),
+                                      mc => mc.Poster?.ToString(),
                                       StringComparer.OrdinalIgnoreCase).Distinct().Take(_max).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
                 var task = Task.Run(async () => await (GetImagesAsync(LITEDB, dic)));
@@ -297,7 +298,7 @@ namespace Kolibri.net.Common.Dal.Entities
                                     using (var image = (Bitmap)System.Drawing.Image.FromStream(stream))
                                     {
                                         webResponse.Close();
-                                        InsertImage(url, image);
+                                        await InsertImageAsync(url, image);
 
                                         if (img == null)
                                         {
@@ -346,7 +347,7 @@ namespace Kolibri.net.Common.Dal.Entities
 
                             if (img != null)
                             {
-                                InsertImage(key, img.Image);
+                            await    InsertImageAsync(key, img.Image);
                                 img.Image.Dispose();
                                 continue;
                             }
@@ -364,14 +365,13 @@ namespace Kolibri.net.Common.Dal.Entities
                                 {
                                     var image = (Bitmap)System.Drawing.Image.FromStream(stream);
                                     webResponse.Close();
-                                    InsertImage(url, image);
-                                    InsertImage(key, image);
+                                   await InsertImageAsync(url, image);
 
-                                    if (img == null)
-                                    {
-                                        _ImageDB.InsertImage(new ImagePoster(key, image));
-                                        image.Dispose();
-                                    }
+                                    //if (img == null)
+                                    //{
+                                    //    _ImageDB.InsertImage(new ImagePoster(key, image));
+                                    //    image.Dispose();
+                                    //}
                                 }
                             }
                         }
@@ -396,9 +396,7 @@ namespace Kolibri.net.Common.Dal.Entities
                     {
                         if (dic[key].Contains("N/A")) continue;
                         if (CacheImageExists(dic[key])) { continue; }
-                        if(_ImageDB.ImageExists(dic[key])) { continue; }
-
-
+                        if(await _ImageDB.ImageExists(dic[key])) { continue; }
 
                         var url = dic[key];
                             System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(url);
@@ -410,7 +408,7 @@ namespace Kolibri.net.Common.Dal.Entities
                             var image = (Bitmap)System.Drawing.Image.FromStream(stream);
                             webResponse.Close(); 
 
-                             InsertImage(key, image);  
+                             await InsertImageAsync(key, image);  
                         
                     }
                     catch (Exception ex)
@@ -560,28 +558,33 @@ namespace Kolibri.net.Common.Dal.Entities
         }
 
         #region ImagePoster
-        internal bool ImageExists(string ImdbId)
+        internal async Task<bool> ImageExists(string ImdbId)
         {
             bool ret = false;
             try
             {
-                var count = _litePosterDB.GetCollection<ImageBase>("ImageBase").Count(Query.EQ("_id", ImdbId));
-                return (count > 0);
+                if (ImdbId.StartsWith("tt"))
+                {
+
+                    var count =   _litePosterDB.GetCollection<ImageBase>("ImageBase").Count(Query.EQ("_id", ImdbId));
+                    return count > 0;
+                }
+                else return false;
             }
             catch (Exception)
             { }
             return ret;
         }
 
-        internal bool InsertImage(ImagePoster imagePoster)
+        internal async Task< bool> InsertImage(ImagePoster imagePoster)
         {bool ret =true;
             try
             {
-                if (ImageExists(imagePoster.ImdbId)) {
-                    
-                    
-                    
-                    return true; }
+                if (await ImageExists(imagePoster.ImdbId))
+                {
+                    return true;
+                }
+
                 ImageBase imgbase = null;
 
                 using (var ms = new MemoryStream())

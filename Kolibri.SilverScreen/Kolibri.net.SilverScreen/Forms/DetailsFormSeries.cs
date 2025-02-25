@@ -58,8 +58,8 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 TabPage tabPage = new TabPage(s.SeasonNumber.PadLeft(2, '0'));
                 //SeriesUtilities.SortAndFormatSeriesTable()
-
                 DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false));
+
                 var table = DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
                 System.Data.DataColumn newColumn = new System.Data.DataColumn("Season", typeof(System.String));
                 newColumn.DefaultValue = s.SeasonNumber;
@@ -70,7 +70,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 tabControlSeasons.TabPages.Add(tabPage);
             }
         }
-        private void Init(Item item)
+        private async void Init(Item item)
         {if (item != null)
             {
 
@@ -107,7 +107,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 try
                 {
-                    pbPoster.Image = _imageCache.FindImage(item.Poster).Image;
+                    pbPoster.Image =   _imageCache.FindImageAsync(item.Poster).GetAwaiter().GetResult().Image;
                 }
                 catch (Exception)
                 {

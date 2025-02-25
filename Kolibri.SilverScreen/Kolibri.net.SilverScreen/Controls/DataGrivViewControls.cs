@@ -34,11 +34,13 @@ namespace Kolibri.net.SilverScreen.Controls
             _LITEDB = contr;
             
         }
-
-        public Form GetMulitMediaDBDataGridViewAsForm( DataTable table)
+        public Form GetMulitMediaDBDataGridViewAsForm(DataTable table) {
+            return GetMulitMediaDBDataGridViewAsForm(table, _type);
+        }
+        public    Form GetMulitMediaDBDataGridViewAsForm( DataTable table,MultimediaType type  )
         {
             DataGridView view = null;
-            if (!_type.Equals(MultimediaType.Series))
+            if (!type.Equals(MultimediaType.Series))
                 view = GetMovieItemDataGridView(table);
             else
                 view = GetSeasonEpisodeDataGridView(table);
@@ -145,7 +147,7 @@ namespace Kolibri.net.SilverScreen.Controls
             }
         }
 
-        public DataGridView GetMovieItemDataGridView(DataTable tableItem)
+        public   DataGridView GetMovieItemDataGridView(DataTable tableItem)
         {
             DataGridView ret = null;
             try
@@ -443,7 +445,15 @@ namespace Kolibri.net.SilverScreen.Controls
                     if (info != null)
                     {
                         FileInfo file = new FileInfo(info.FullName);
-                        FileUtilities.OpenFolderMarkFile(file);
+                        if (file.Exists) { FileUtilities.OpenFolderMarkFile(file); }
+                        else
+                        {
+                            FileUtilities.Start(new Uri($"https://www.imdb.com/title/{imdbid}"));
+                        }
+                    }
+                    else
+                    {
+                        FileUtilities.Start(new Uri($"https://www.imdb.com/title/{imdbid}"));
                     }
                 }
                 else

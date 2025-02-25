@@ -33,6 +33,14 @@ namespace Kolibri.net.SilverScreen.Controller
         private readonly bool? _updateTriState;
 
         private UserSettings _settings { get; }
+        /// <summary>
+        /// Oppdaterer utifra oppgitte parameter
+        /// </summary>
+        /// <param name="userSettings">MÅ være satt</param>
+        /// <param name="liteDB">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
+        /// <param name="tmdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
+        /// <param name="omdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
+        /// <param name="updateTriState">null = Ingenting, true=alt, false= kun filinfromasjon</param>
         public MultiMediaSearchController(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, bool? updateTriState = null)
         {
             CurrentLog = new StringBuilder();
@@ -140,12 +148,14 @@ namespace Kolibri.net.SilverScreen.Controller
 
                                     }
                                     FileUtilities.DeleteEmptyDirs(file.Directory);
+                                    SetStatusLabelText($"Søket fullført, siste var {file.Directory}.", "'FINISHED");
                                 }
                             }
                             catch (Exception ex)
                             { }
 
                         };
+                        SetStatusLabelText($"Søket fullført.", "'FINISHED");
                     }
                 }
 
@@ -186,7 +196,7 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
                 var test = _liteDB.FindByFileName(file);
-                if (test != null && _updateTriState == null)
+                if (test != null && _updateTriState == null||_updateTriState==false)
                 {
                     movie = _liteDB.FindItem(test.ImdbId);
                     if (movie != null)
@@ -194,6 +204,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         movie.TomatoUrl = file.FullName;
                         _liteDB.Update(movie);
                         _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                        SetStatusLabelText($"Lokal eksisterende {movie.Title}.", "EXISTS");
                         return movie;
                     }
                 }

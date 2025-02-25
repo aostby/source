@@ -36,13 +36,17 @@
             verktøyToolStripMenuItem = new ToolStripMenuItem();
             finnDuplikaterToolStripMenuItem = new ToolStripMenuItem();
             flyttMapperToolStripMenuItem = new ToolStripMenuItem();
+            flyttFilmerToolStripMenuItem = new ToolStripMenuItem();
             multiMediaToolStripMenuItem = new ToolStripMenuItem();
             movieslocalToolStripMenuItem = new ToolStripMenuItem();
             serieslocalToolStripMenuItem = new ToolStripMenuItem();
+            searchToolStripMenuItem = new ToolStripMenuItem();
+            genreSearchToolStripMenuItem = new ToolStripMenuItem();
             grusToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
-            flyttFilmerToolStripMenuItem = new ToolStripMenuItem();
+            bakgrunnOppdateringToolStripMenuItem = new ToolStripMenuItem();
+            filmerToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
@@ -88,7 +92,7 @@
             // 
             // verktøyToolStripMenuItem
             // 
-            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem, flyttMapperToolStripMenuItem });
+            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem, flyttMapperToolStripMenuItem, bakgrunnOppdateringToolStripMenuItem });
             verktøyToolStripMenuItem.Name = "verktøyToolStripMenuItem";
             verktøyToolStripMenuItem.Size = new Size(58, 20);
             verktøyToolStripMenuItem.Text = "Verktøy";
@@ -96,7 +100,7 @@
             // finnDuplikaterToolStripMenuItem
             // 
             finnDuplikaterToolStripMenuItem.Name = "finnDuplikaterToolStripMenuItem";
-            finnDuplikaterToolStripMenuItem.Size = new Size(180, 22);
+            finnDuplikaterToolStripMenuItem.Size = new Size(193, 22);
             finnDuplikaterToolStripMenuItem.Text = "Finn duplikater";
             finnDuplikaterToolStripMenuItem.Click += finnDuplikaterToolStripMenuItem_Click;
             // 
@@ -104,12 +108,19 @@
             // 
             flyttMapperToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { flyttFilmerToolStripMenuItem });
             flyttMapperToolStripMenuItem.Name = "flyttMapperToolStripMenuItem";
-            flyttMapperToolStripMenuItem.Size = new Size(180, 22);
+            flyttMapperToolStripMenuItem.Size = new Size(193, 22);
             flyttMapperToolStripMenuItem.Text = "Flytt mapper";
+            // 
+            // flyttFilmerToolStripMenuItem
+            // 
+            flyttFilmerToolStripMenuItem.Name = "flyttFilmerToolStripMenuItem";
+            flyttFilmerToolStripMenuItem.Size = new Size(131, 22);
+            flyttFilmerToolStripMenuItem.Text = "Flytt filmer";
+            flyttFilmerToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // multiMediaToolStripMenuItem
             // 
-            multiMediaToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { movieslocalToolStripMenuItem, serieslocalToolStripMenuItem });
+            multiMediaToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { movieslocalToolStripMenuItem, serieslocalToolStripMenuItem, searchToolStripMenuItem, genreSearchToolStripMenuItem });
             multiMediaToolStripMenuItem.Name = "multiMediaToolStripMenuItem";
             multiMediaToolStripMenuItem.Size = new Size(80, 20);
             multiMediaToolStripMenuItem.Text = "MultiMedia";
@@ -127,6 +138,20 @@
             serieslocalToolStripMenuItem.Size = new Size(148, 22);
             serieslocalToolStripMenuItem.Text = "Series (local)";
             serieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            // 
+            // searchToolStripMenuItem
+            // 
+            searchToolStripMenuItem.Name = "searchToolStripMenuItem";
+            searchToolStripMenuItem.Size = new Size(148, 22);
+            searchToolStripMenuItem.Text = "Search...";
+            searchToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            // 
+            // genreSearchToolStripMenuItem
+            // 
+            genreSearchToolStripMenuItem.Name = "genreSearchToolStripMenuItem";
+            genreSearchToolStripMenuItem.Size = new Size(148, 22);
+            genreSearchToolStripMenuItem.Text = "Genre search";
+            genreSearchToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // grusToolStripMenuItem
             // 
@@ -149,12 +174,19 @@
             toolStripStatusLabelStatus.Size = new Size(39, 17);
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // flyttFilmerToolStripMenuItem
+            // bakgrunnOppdateringToolStripMenuItem
             // 
-            flyttFilmerToolStripMenuItem.Name = "flyttFilmerToolStripMenuItem";
-            flyttFilmerToolStripMenuItem.Size = new Size(180, 22);
-            flyttFilmerToolStripMenuItem.Text = "Flytt filmer";
-            flyttFilmerToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            bakgrunnOppdateringToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filmerToolStripMenuItem });
+            bakgrunnOppdateringToolStripMenuItem.Name = "bakgrunnOppdateringToolStripMenuItem";
+            bakgrunnOppdateringToolStripMenuItem.Size = new Size(193, 22);
+            bakgrunnOppdateringToolStripMenuItem.Text = "Bakgrunn oppdatering";
+            // 
+            // filmerToolStripMenuItem
+            // 
+            filmerToolStripMenuItem.Name = "filmerToolStripMenuItem";
+            filmerToolStripMenuItem.Size = new Size(180, 22);
+            filmerToolStripMenuItem.Text = "Filmer";
+            filmerToolStripMenuItem.Click += filmerToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -194,5 +226,9 @@
         private ToolStripMenuItem innstillingerToolStripMenuItem;
         private ToolStripMenuItem flyttMapperToolStripMenuItem;
         private ToolStripMenuItem flyttFilmerToolStripMenuItem;
+        private ToolStripMenuItem searchToolStripMenuItem;
+        private ToolStripMenuItem genreSearchToolStripMenuItem;
+        private ToolStripMenuItem bakgrunnOppdateringToolStripMenuItem;
+        private ToolStripMenuItem filmerToolStripMenuItem;
     }
 }

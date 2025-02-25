@@ -334,10 +334,18 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             catch (Exception ex)
             {
                 (sender as LinkLabel).BackColor = Color.Red;
-
+                if (checkBoxLookUp.Checked)
+                {
+                    {
+                        FileInfo info = FileUtilities.LetOppFil(new DirectoryInfo(_userSettings.UserFilePaths.MoviesDestinationPath), $"Finn fil som matcher {labelImdbId.Text}");
+                        if (info.Exists)
+                        {
+                            FileItem item = new FileItem(labelImdbId.Text, info.FullName);
+                            _liteDB.Upsert(item);
+                        }
+                    }
+                }
             }
-
-
         }
 
         private void linkTrailer_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

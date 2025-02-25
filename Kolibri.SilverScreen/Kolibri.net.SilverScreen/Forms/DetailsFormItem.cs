@@ -88,7 +88,7 @@ namespace Kolibri.net.SilverScreen.Forms
             InitButtons();
         }
 
-        private void InitButtons(bool verbose = false)
+        private async void InitButtons(bool verbose = false)
         {
             try
             {
@@ -124,12 +124,12 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 try
                 {
-                    if (_imageCache.FindImage(nameof(buttonSearch)) == null) { _imageCache.InsertImage(nameof(buttonSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://github.com/JuzerShakir/Investigate_TMDb_Movies/raw/master/logo.jpg")); }
-                    if (_imageCache.FindImage(nameof(buttonSubtitleSearch)) == null) { _imageCache.InsertImage(nameof(buttonSubtitleSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://subdl.com/logo/fav.png")); }
+                    if (_imageCache.FindImageAsync(nameof(buttonSearch)) == null) {await _imageCache.InsertImageAsync(nameof(buttonSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://github.com/JuzerShakir/Investigate_TMDb_Movies/raw/master/logo.jpg")); }
+                    if (_imageCache.FindImageAsync(nameof(buttonSubtitleSearch)) == null) { await _imageCache.InsertImageAsync(nameof(buttonSubtitleSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://subdl.com/logo/fav.png")); }
 
-                    ImagePoster image = _imageCache.FindImage(nameof(buttonSearch));
+                    ImagePoster image = await _imageCache.FindImageAsync(nameof(buttonSearch));
                     buttonSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
-                    image = _imageCache.FindImage(nameof(buttonSubtitleSearch));
+                    image = await _imageCache.FindImageAsync(nameof(buttonSubtitleSearch));
                     buttonSubtitleSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
                 }
                 catch (Exception) { }

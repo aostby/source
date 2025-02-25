@@ -72,6 +72,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             linkLabelOpenFilePath = new LinkLabel();
             toolTip1 = new ToolTip(components);
             labelOmdbId = new Label();
+            checkBoxLookUp = new CheckBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
@@ -471,11 +472,22 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             labelOmdbId.TabIndex = 33;
             labelOmdbId.Text = "OmdbId";
             // 
+            // checkBoxLookUp
+            // 
+            checkBoxLookUp.AutoSize = true;
+            checkBoxLookUp.Location = new Point(823, 510);
+            checkBoxLookUp.Name = "checkBoxLookUp";
+            checkBoxLookUp.Size = new Size(111, 19);
+            checkBoxLookUp.TabIndex = 34;
+            checkBoxLookUp.Text = "LookUp missing";
+            checkBoxLookUp.UseVisualStyleBackColor = true;
+            // 
             // MovieForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(934, 577);
+            Controls.Add(checkBoxLookUp);
             Controls.Add(labelOmdbId);
             Controls.Add(linkLabelOpenFilePath);
             Controls.Add(labelImdbRating);
@@ -557,6 +569,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private Button buttonNewList;
         private Button buttonUpdate;
         private Label labelOmdbId;
+        private CheckBox checkBoxLookUp;
     }
 }
 

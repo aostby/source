@@ -13,6 +13,8 @@ using Kolibri.Common.VisualizeOMDbItem;
 using OMDbApiNet.Model;
 using java.nio.file;
 using com.sun.org.apache.bcel.@internal;
+using Kolibri.net.SilverScreen.Controller;
+using Microsoft.VisualBasic;
 
 namespace Kolibri.SilverScreen.Forms
 {
@@ -34,10 +36,11 @@ namespace Kolibri.SilverScreen.Forms
             catch (Exception) { }
         }
 
-        private void InitUserSettings(FileInfo liteDBPath=null)
+        private void InitUserSettings(FileInfo liteDBPath = null)
         {
             string dbPath = @"C:\TEMP\SilverScreen\SilverScreen.db";
-            if (liteDBPath != null) {
+            if (liteDBPath != null)
+            {
                 dbPath = liteDBPath.FullName;
             }
             else
@@ -100,10 +103,20 @@ namespace Kolibri.SilverScreen.Forms
             else if (sender.Equals(serieslocalToolStripMenuItem))
             {
                 newMDIChild = new ShowLocalSeriesForm(_userSettings);
-            }else if (sender.Equals(flyttFilmerToolStripMenuItem))
-            {
-                newMDIChild = new SortMultimediaDesktopForm (MultimediaType.Movies, _userSettings);
             }
+            else if (sender.Equals(flyttFilmerToolStripMenuItem))
+            {
+                newMDIChild = new SortMultimediaDesktopForm(MultimediaType.Movies, _userSettings);
+            }
+            else if (sender.Equals(searchToolStripMenuItem))
+            {
+                newMDIChild = new Kolibri.net.SilverScreen.IMDBForms.MovieForm(_userSettings);
+            }
+            else if (sender.Equals(genreSearchToolStripMenuItem))
+            {
+                newMDIChild = new net.Common.MovieAPI.Forms.BrowseMoviesForm(_userSettings);
+            }
+
 
             newMDIChild.MdiParent = this;
             newMDIChild.Show();
@@ -132,8 +145,8 @@ namespace Kolibri.SilverScreen.Forms
                             {
                                 liste = liste.FindAll(x => !x.FilePath.FullName.Contains(item, StringComparison.OrdinalIgnoreCase));
                             }
- 
-                       
+
+
 
                             ds = DataSetUtilities.AutoGenererDataSet(liste);
                             Visualizers.VisualizeDataSet($"Dupes by folder ({ds.Tables[0].Rows.Count}) - fiter: {string.Join(' ', filterList.ToArray())}", ds, this.Size);
@@ -158,7 +171,7 @@ namespace Kolibri.SilverScreen.Forms
                     _userSettings.LiteDBFilePath = tmp.FullName;
                     _userSettings.Save();
                     InitUserSettings(new FileInfo(_userSettings.LiteDBFilePath));
-                    
+
                 }
             }
             catch (Exception ex)
@@ -237,9 +250,34 @@ namespace Kolibri.SilverScreen.Forms
 
         private void Button_Click(object? sender, EventArgs e)
         {
-            (sender as Button ) .DialogResult = System.Windows.Forms.DialogResult.OK;
+            (sender as Button).DialogResult = System.Windows.Forms.DialogResult.OK;
             ((sender as Button).Parent as Form).DialogResult = DialogResult.OK;
-            ((sender as Button).Parent as Form).Close(); 
+            ((sender as Button).Parent as Form).Close();
         }
+
+        private void filmerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            var dInfo = FileUtilities.LetOppMappe(_userSettings.UserFilePaths.MoviesSourcePath, $"Let opp mappe ({Kolibri.net.SilverScreen.Controls.Constants.MultimediaType.Movies})");
+            if (dInfo != null && dInfo.Exists)
+            {
+                MultiMediaSearchController searchController = new MultiMediaSearchController(_userSettings, updateTriState: false);
+                searchController.ProgressUpdated += OnProgressUpdated;
+
+                {
+                    Task.Run(async () => searchController.SearchForMovies(dInfo));
+                }
+            }
+        }
+        private void OnProgressUpdated(object sender, string progress)
+        {
+            try
+            {
+                SetStatusLabel(progress);
+            }
+            catch (Exception ex)
+            { SetStatusLabel(ex.Message); }
+        }
+
     }
 }

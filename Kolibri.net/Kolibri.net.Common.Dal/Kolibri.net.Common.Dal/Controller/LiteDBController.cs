@@ -71,7 +71,7 @@ namespace Kolibri.net.Common.Dal.Controller
             } 
             return items;   
             }
-    public Item FindItem(string imdbId)
+        public Item FindItem(string imdbId)
         {
             try
             {
