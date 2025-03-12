@@ -179,7 +179,7 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 return _client.GetItemById(imdbId, true);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return null;
             }

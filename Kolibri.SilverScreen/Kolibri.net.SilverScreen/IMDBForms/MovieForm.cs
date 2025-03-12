@@ -34,6 +34,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             _info = info;
             _userSettings = userSettings;
             InitializeComponent();
+            this.Text = $"File: {info.Name}";
+            
             Init();
             tbSearch.Text = MovieUtilites.GetMovieTitle(info.FullName);
             tbYearParameter.Text = year;
@@ -439,6 +441,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         mov.TomatoUrl = _info.FullName;
                         _liteDB.Update(mov);
                         _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+
                     }
                     else if (mov == null)
                     {
@@ -449,13 +452,19 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                             mov.TomatoUrl = _info.FullName;
                             var i = _liteDB.Upsert(mov);
                             var f = _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                          
+                           
                         }
                         else
                         {
                             throw new Exception($"no movie found: {tbSearch.Text}");
-                        }
+                        } 
 
-
+                    }
+                    if (mov != null)
+                    {
+                        MessageBox.Show($"{_info.Name} has been updated.", $"({mov.Type}): {imdbId} - {mov.Title}");
+                        buttonUpdate.Enabled = false;
                     }
                 }
             }

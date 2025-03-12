@@ -25,12 +25,10 @@ namespace Kolibri.net.SilverScreen.Forms
         internal FileItem _itemPath;
         internal LiteDBController _liteDB;        
         internal SubDLSubtitleController _subDL;
-        internal ImageCache _imageCache;
+        internal ImageCacheDB _imageCache;
 
         private UserSettings _userSettings; 
-
-
-        public KolibriTVShow _ktv { get; }
+        public KolibriTVShow _ktv { get; } 
 
         [Obsolete("Designer only", true)] public DetailsFormSeries() { InitializeComponent(); }
 
@@ -42,7 +40,7 @@ namespace Kolibri.net.SilverScreen.Forms
             _ktv = kTV;
             var item = _ktv.Item;
             _userSettings = settings;
-            _imageCache = new ImageCache(_userSettings);
+            _imageCache = new ImageCacheDB(_userSettings);
             if (_ktv != null && _ktv.Item != null)
             {
                 this.Text += $" - {kTV.Item.Title}";
@@ -59,17 +57,36 @@ namespace Kolibri.net.SilverScreen.Forms
                 TabPage tabPage = new TabPage(s.SeasonNumber.PadLeft(2, '0'));
                 //SeriesUtilities.SortAndFormatSeriesTable()
                 DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false));
+                dgvtrls.CurrentItemChanged += HandleCurrentItemChanged;
 
                 var table = DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
                 System.Data.DataColumn newColumn = new System.Data.DataColumn("Season", typeof(System.String));
                 newColumn.DefaultValue = s.SeasonNumber;
                 table.Columns.Add(newColumn);
 
-                var contr = dgvtrls.GetMulitMediaDBDataGridViewAsForm(SeriesUtilities.SortAndFormatSeriesTable(table));
-                tabPage.Controls.Add(contr.Controls[0]);
+                var form = dgvtrls.GetMulitMediaDBDataGridViewAsForm(SeriesUtilities.SortAndFormatSeriesTable(table));
+                
+                tabPage.Controls.Add(form.Controls[0]);
                 tabControlSeasons.TabPages.Add(tabPage);
             }
         }
+
+        private void HandleCurrentItemChanged(object? sender, EventArgs e)
+        {
+            try
+            {
+                var poster = (sender as DataGrivViewControls).CurrentItem.Poster;
+                if (poster == null) {
+                    poster = _ktv.Item.Poster;
+                }
+                var img=  _imageCache.FindImageAsync(poster).GetAwaiter().GetResult();
+                this.pbPoster.Image = img.Image;
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
         private async void Init(Item item)
         {if (item != null)
             {

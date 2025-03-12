@@ -13,10 +13,24 @@ namespace Kolibri.net.SilverScreen.Controls
 {
     public class DataGrivViewControls
     {
+
+        public event EventHandler CurrentItemChanged;
+
+        protected virtual void OnCurrentItemChanged(EventArgs e)
+        {
+            EventHandler handler = CurrentItemChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+
+
         private LiteDBController _LITEDB;
         private MultimediaType _type;
 
-        private Item CurrentItem { get;   set; }
+        public Item CurrentItem { get;   set; }
 
         private SeasonEpisode CurrentSeasonEpisode { get;   set; }
 
@@ -73,7 +87,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 dgv.Columns.OfType<DataGridViewColumn>().ToList().ForEach(col => { if (visibleColumns.Contains(col.Name)) col.Visible = true; });
                 dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 dgv.AllowUserToResizeColumns = true;
-                dgv.SelectionChanged += new EventHandler(DataGridView_SelectionChanged);
+                dgv.SelectionChanged += new EventHandler(DataGridView_SelectionChanged);                
                 dgv.CellContentDoubleClick += new DataGridViewCellEventHandler(DataGridView_CellContentDoubleClick);
                 dgv.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(DataGridView_RowPrePaint);
                 dgv.KeyDown += Dgv_KeyDown;
@@ -312,7 +326,7 @@ namespace Kolibri.net.SilverScreen.Controls
         }
 
         private void DataGridView_SelectionChanged(object sender, EventArgs e)
-        { 
+        {
             string title = null; int year = 0; int index = 0;
             try
             {
@@ -328,8 +342,24 @@ namespace Kolibri.net.SilverScreen.Controls
                     }
                     catch (Exception) { index = 0; DataGridView1.ClearSelection(); }
                 CurrentItem = _LITEDB.FindItem(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
+                if (CurrentItem != null)
+                {
+                     OnCurrentItemChanged(EventArgs.Empty); 
+                    return;
+                }
                 CurrentSeasonEpisode = _LITEDB.FindSeasonEpisode(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
-                if (CurrentItem != null) return;
+                if (CurrentSeasonEpisode != null && CurrentSeasonEpisode.ImdbId != null) {
+                    using (OMDBController omdb = new OMDBController( _LITEDB.GetUserSettings().OMDBkey, _LITEDB)) {
+                        CurrentItem = omdb.GetItemByImdbId(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
+                        if (CurrentItem != null) { _LITEDB.Upsert(CurrentItem); }
+                    }
+                    if (CurrentItem != null)
+                    {
+                        if (CurrentItem != null) { OnCurrentItemChanged(EventArgs.Empty); }
+                        return;
+                    }
+                }
+
                 if (DataGridView1.Rows[index].Cells["Title"].Value
                           != null)
                 {
@@ -337,8 +367,14 @@ namespace Kolibri.net.SilverScreen.Controls
                         Cells["Title"].Value.ToString().Length != 0)
                     {
                         title = DataGridView1.Rows[index].Cells["Title"].Value.ToString();
-
-                        year = int.Parse(DataGridView1.Rows[index].Cells["Year"].Value.ToString());
+                        if (DataGridView1.Columns.Contains("Year"))
+                        {
+                            year = int.Parse(DataGridView1.Rows[index].Cells["Year"].Value.ToString());
+                        }
+                        else
+                        {
+                            year = int.Parse(DataGridView1.Rows[index].Cells["Released"].Value.ToString().Substring(0, 4));
+                        }
 
                         CurrentItem = _LITEDB.FindItemByTitle(title, year);
                     }
@@ -347,7 +383,9 @@ namespace Kolibri.net.SilverScreen.Controls
                 if (CurrentItem == null)
                 {
                     CurrentItem = new OMDbApiNet.Model.Item() { Title = title, Year = $"{year}", ImdbRating = "unknown" };
+                    OnCurrentItemChanged(EventArgs.Empty);
                 }
+           
             }
             catch (Exception ex) { }
         }

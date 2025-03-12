@@ -19,7 +19,7 @@ namespace Kolibri.net.SilverScreen.Forms
         internal OMDBController _OMDB;
         internal TMDBController _TMDB;
         internal SubDLSubtitleController _subDL;
-        internal ImageCache _imageCache;
+        internal ImageCacheDB _imageCache;
 
         [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
         //public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr)
@@ -34,7 +34,7 @@ namespace Kolibri.net.SilverScreen.Forms
             , OMDBController omdb=null
             , TMDBController tmdb = null
             , SubDLSubtitleController subDL=null  
-            , ImageCache imagecache=null
+            , ImageCacheDB imagecache=null
             )
         {
             InitializeComponent();
@@ -74,10 +74,10 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 UserSettings settings = _liteDB.GetUserSettings();
 
-                try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); }
-                try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { }
-                try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { }
-                try { _imageCache = new ImageCache(settings); } catch (Exception ex) { }
+                if (_OMDB == null) { try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
+                if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { } }
+                if (_subDL == null) { try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { } }
+                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } };
             }
             catch (Exception ex)
             {

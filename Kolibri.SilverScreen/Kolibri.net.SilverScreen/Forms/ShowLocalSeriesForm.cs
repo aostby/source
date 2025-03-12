@@ -7,6 +7,7 @@ using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
 using OMDbApiNet.Model;
+using sun.java2d.pipe;
 using System.Collections;
 using System.Data;
 using System.Net;
@@ -25,7 +26,9 @@ namespace Kolibri.Common.VisualizeOMDbItem
         //static IEnumerable<Item> _serieItems;
         private static List<Item> _serieItems;
         private UserSettings _userSettings;
-        private ImageCache _imgCache;
+        private ImageCacheDB _imgCache;
+
+        private LiteDBController _liteDB;
 
 
         public ShowLocalSeriesForm(UserSettings userSettings)
@@ -33,12 +36,12 @@ namespace Kolibri.Common.VisualizeOMDbItem
             InitializeComponent();
             this._userSettings = userSettings;
 
-            using (LiteDBController tmp = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
-            {
-                var seriesList = tmp.GetAllItemsByType("Series");
+            _liteDB = new(new FileInfo(_userSettings.LiteDBFilePath), false, false);
 
-                _serieItems = seriesList.OrderByDescending(x => x.ImdbRating).ToList();
-            }
+            var seriesList = _liteDB.GetAllItemsByType("Series");
+
+            _serieItems = seriesList.OrderByDescending(x => x.ImdbRating).ToList();
+
             lvwColumnSorter = new ListViewColumnSorter();
             this.movieList.ListViewItemSorter = lvwColumnSorter;
             Init();
@@ -63,7 +66,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             detailsViewBtn_Click(null, null);
             //resultsToGet.SelectedIndex = 1;
             //searchBtn_Click(null, null);
-            _imgCache = new ImageCache(_userSettings);
+            _imgCache = new ImageCacheDB(_userSettings);
 
             this.Text = $"Series list count: {_serieItems.Count()}";
         }
@@ -116,7 +119,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     byte[] bytes = wc.DownloadData(url);
                     MemoryStream ms = new MemoryStream(bytes);
                     img = Image.FromStream(ms);
-                 await   _imgCache.InsertImageAsync(url, (Bitmap)img);
+                    await _imgCache.InsertImageAsync(url, (Bitmap)img);
                     SetStatusLabelText($"Image read from {url}");
                 }
             }
@@ -124,7 +127,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             {
                 img = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
             }
-            return img;
+            return await Task.FromResult<Image>(img);
         }
 
         private void disableSearch()
@@ -163,8 +166,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 gotResults += result.Search.Count();
                 totalResults = result.totalResults;
                 movies.AddRange(result.Search);
-                _imgCache.Save();
-                SetStatusLabelText($"Image Cache saved to {_imgCache.DefaultPath()}");
+                //_imgCache.Save();
+                SetStatusLabelText($"Image Cache saved to {_imgCache.DefaultDBPath()}");
             }
             enableSearch();
             refreshMovieList();
@@ -182,7 +185,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     {
                         var img = await getImage(movie.Poster);
                         movieImageList.Images.Add(movie.ImdbId, img);
-                     await   _imgCache.InsertImageAsync(movie.ImdbId, (Bitmap)img);
+                        await _imgCache.InsertImageAsync(movie.ImdbId, (Bitmap)img);
                     }
                     else { movieImageList.Images.Add(movie.ImdbId, (Image)jall.Image); }
                     movieList.Items.Add(movie.Title, movie.ImdbId);
@@ -297,6 +300,16 @@ namespace Kolibri.Common.VisualizeOMDbItem
             typeContentLabel.Text = result.Genre;//  result.Type;
             runtimeContentLabel.Text = result.Runtime;
             plotContentLabel.Text = result.Plot;
+            try
+            {
+                if (_liteDB.FindFile(result.ImdbId) == null)
+                {
+                    movieList.Items[e.ItemIndex].BackColor = Color.LightSalmon;
+                }
+                else movieList.Items[e.ItemIndex].BackColor = Color.Wheat;
+            }
+            catch (Exception ex) { }
+
         }
 
         private void pictureBox_Click(object sender, EventArgs e)
@@ -386,40 +399,43 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     {
 
                         item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
-
                         var file = tmp.FindFile(item.ImdbId);
                         if (file != null)
                         {
                             if (file.ItemFileInfo.Exists)
                                 FileUtilities.OpenFolderHighlightFile(file.ItemFileInfo);
                             else if (Directory.Exists(file.FullName))
-                            {var path = new DirectoryInfo(file.FullName).GetDirectories(item.Title, SearchOption.AllDirectories).FirstOrDefault();
+                            {
+                                var path = new DirectoryInfo(file.FullName).GetDirectories(item.Title, SearchOption.AllDirectories).FirstOrDefault();
                                 if (path == null)
                                 {
                                     FolderUtilities.OpenFolderInExplorer(file.FullName);
                                 }
-                                else {
-                                    FolderUtilities.OpenFolderInExplorer(path.Exists? path.FullName:file.FullName);
+                                else
+                                {
+                                    FolderUtilities.OpenFolderInExplorer(path.Exists ? path.FullName : file.FullName);
                                 }
                             }
                             else { throw new FileNotFoundException($"{item.Title} - location not found"); }
                         }
                         else
                         {
-                            string testPaht = Path.Combine(_userSettings.UserFilePaths.SeriesSourcePath, item.Title);
-                            var test = new DirectoryInfo(testPaht).GetDirectories(item.Title).FirstOrDefault();
-                            if (test != null) { var folder = FolderUtilities.LetOppMappe(test.FullName, "Searching for missing folder"); }
+                            var files = new DirectoryInfo(_userSettings.UserFilePaths.SeriesSourcePath).GetFiles(item.Title.Replace(" ", "*"));
+                            var dir = files.FirstOrDefault().DirectoryName;
+
+
+                            if (dir != null) { var folder = FolderUtilities.LetOppMappe(dir, "Searching for missing folder"); }
                             else
                             {
-                                throw new FileNotFoundException($"{item.Title} - location not found");
+                                throw new FileNotFoundException($"{item.Title}");
                             }
                         }
                     }
-                            catch (Exception ex)
+                    catch (Exception ex)
                     {
                         //MessageBox.Show(ex.Message, ex.GetType().Name);
 
-                                                                        var folder = FolderUtilities.LetOppMappe(_userSettings.UserFilePaths.SeriesSourcePath, $"{ex.Message}");
+                        var folder = FolderUtilities.LetOppMappe(_userSettings.UserFilePaths.SeriesSourcePath, $"{ex.Message}");
                         if (folder != null && folder.Exists && item != null)
                         {
                             item.TomatoUrl = folder.FullName;
@@ -566,7 +582,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             {
                 item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
                 SetStatusLabelText($"{item.Title} - searching for {item.TotalSeasons} seasons.");
-                MultiMediaSearchController mmc = new MultiMediaSearchController(_userSettings);
+                MultiMediaSearchController mmc = new MultiMediaSearchController(_userSettings, _liteDB, updateTriState: false);
                 var show = mmc.GetShowById(item.ImdbId);
                 Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _userSettings);
                 form.ShowDialog();
@@ -584,7 +600,25 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 }
             }
         }
-    } 
+
+        private void toolStripMenuItemDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Item item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
+                if (_liteDB.Delete(item))
+                {
+                    SetStatusLabelText($"{item.Title} deleted. Please refresh");
+                    _serieItems.Remove(item);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabelText($"Error: {ex.Message}");
+            }
+        }
+    }
 
     /// <summary>
     /// This class is an implementation of the 'IComparer' interface. Used to sort columns by row value
@@ -696,6 +730,5 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 return OrderOfSort;
             }
         }
-
     }
 }

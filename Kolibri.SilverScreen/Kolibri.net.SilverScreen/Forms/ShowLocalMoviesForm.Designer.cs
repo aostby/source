@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             splitContainer1 = new SplitContainer();
             groupBoxFilter = new GroupBox();
+            buttonMissing = new Button();
             radioButtonFilterNotMatched = new RadioButton();
             radioButtonFilterNoneExistant = new RadioButton();
             radioButtonFilterAlle = new RadioButton();
@@ -50,7 +51,6 @@
             backgroundWorker3 = new System.ComponentModel.BackgroundWorker();
             backgroundWorker4 = new System.ComponentModel.BackgroundWorker();
             toolTip1 = new ToolTip(components);
-            labelNumItemsFILE = new Label();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -72,7 +72,6 @@
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(labelNumItemsFILE);
             splitContainer1.Panel1.Controls.Add(groupBoxFilter);
             splitContainer1.Panel1.Controls.Add(checkBoxSimple);
             splitContainer1.Panel1.Controls.Add(groupBoxFileSearch);
@@ -89,6 +88,7 @@
             // 
             // groupBoxFilter
             // 
+            groupBoxFilter.Controls.Add(buttonMissing);
             groupBoxFilter.Controls.Add(radioButtonFilterNotMatched);
             groupBoxFilter.Controls.Add(radioButtonFilterNoneExistant);
             groupBoxFilter.Controls.Add(radioButtonFilterAlle);
@@ -98,6 +98,17 @@
             groupBoxFilter.TabIndex = 6;
             groupBoxFilter.TabStop = false;
             groupBoxFilter.Text = "Filter";
+            // 
+            // buttonMissing
+            // 
+            buttonMissing.Enabled = false;
+            buttonMissing.Location = new Point(272, 16);
+            buttonMissing.Name = "buttonMissing";
+            buttonMissing.Size = new Size(49, 23);
+            buttonMissing.TabIndex = 3;
+            buttonMissing.Text = "Find";
+            buttonMissing.UseVisualStyleBackColor = true;
+            buttonMissing.Click += buttonMissing_Click;
             // 
             // radioButtonFilterNotMatched
             // 
@@ -248,15 +259,6 @@
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // labelNumItemsFILE
-            // 
-            labelNumItemsFILE.AutoSize = true;
-            labelNumItemsFILE.Location = new Point(12, 51);
-            labelNumItemsFILE.Name = "labelNumItemsFILE";
-            labelNumItemsFILE.Size = new Size(64, 15);
-            labelNumItemsFILE.TabIndex = 7;
-            labelNumItemsFILE.Text = "Antall (FIL)";
-            // 
             // ShowLocalMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -306,6 +308,6 @@
         private RadioButton radioButtonFilterAlle;
         private RadioButton radioButtonFilterNotMatched;
         private ToolTip toolTip1;
-        private Label labelNumItemsFILE;
+        private Button buttonMissing;
     }
 }

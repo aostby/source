@@ -76,6 +76,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
             button1 = new Button();
             statusStrip = new StatusStrip();
             statusLabel = new ToolStripStatusLabel();
+            contextMenuStrip1 = new ContextMenuStrip(components);
+            toolStripMenuItemDelete = new ToolStripMenuItem();
             mainLayout.SuspendLayout();
             headerLayout.SuspendLayout();
             leftLayout.SuspendLayout();
@@ -83,6 +85,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             rightLayout.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
             statusStrip.SuspendLayout();
+            contextMenuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // mainLayout
@@ -204,6 +207,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // 
             movieList.Alignment = ListViewAlignment.Default;
             movieList.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
+            movieList.ContextMenuStrip = contextMenuStrip1;
             movieList.Dock = DockStyle.Fill;
             movieList.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             movieList.FullRowSelect = true;
@@ -701,6 +705,19 @@ namespace Kolibri.Common.VisualizeOMDbItem
             statusLabel.Spring = true;
             statusLabel.Text = "Clear searchfield to show all items in list";
             // 
+            // contextMenuStrip1
+            // 
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItemDelete });
+            contextMenuStrip1.Name = "contextMenuStrip1";
+            contextMenuStrip1.Size = new Size(181, 48);
+            // 
+            // toolStripMenuItemDelete
+            // 
+            toolStripMenuItemDelete.Name = "toolStripMenuItemDelete";
+            toolStripMenuItemDelete.Size = new Size(180, 22);
+            toolStripMenuItemDelete.Text = "Delete item";
+            toolStripMenuItemDelete.Click += toolStripMenuItemDelete_Click;
+            // 
             // ShowLocalSeriesForm
             // 
             AcceptButton = searchBtn;
@@ -725,6 +742,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             ((System.ComponentModel.ISupportInitialize)pictureBox).EndInit();
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
+            contextMenuStrip1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -775,6 +793,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private Label labelOpen;
         private Button button1;
         private Button buttonEdit;
+        private ContextMenuStrip contextMenuStrip1;
+        private ToolStripMenuItem toolStripMenuItemDelete;
     }
 }
 
