@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Data;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 
 
 namespace Kolibri.net.SilverScreen.IMDBForms
@@ -26,14 +27,14 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             try
             {
-                 
+
                 Kolibri.net.Common.Dal.Controller.TMDBController contr = new TMDBController(_liteDB);
                 var sim = Task.Run(() => contr.GetMovieSimilar(title, year)).Result;//vi mangler ImdbId når vi gjør dette, vi må hente en liste av Movies
                 var list = Task.Run(() => contr.GetMovies(sim)).Result;
                 //var serializer = new JavaScriptSerializer();
                 //var movies = serializer.Serialize(list.ToList().OrderByDescending(o => o.ImdbRating).ToList());
 
-         var movies=       JsonConvert.SerializeObject(list.ToList().OrderByDescending(o => o.ImdbRating).ToList(), Formatting.Indented);
+                var movies = JsonConvert.SerializeObject(list.ToList().OrderByDescending(o => o.ImdbRating).ToList(), Formatting.Indented);
 
                 movies = movies.Replace("ImdbRating", "Rank");
                 movies = movies.Replace("ReleaseDate", "Year");
@@ -50,7 +51,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
             }
             catch (Exception ex)
-            { 
+            {
             }
         }
         private void top100Movies()
@@ -66,14 +67,14 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             //var serializer = new JavaScriptSerializer();
             //var movies = serializer.Serialize(_liteDB.FindAllItems().ToList()
             var movies =
-                JsonConvert.SerializeObject( 
-                    _liteDB.FindAllItems().GetAwaiter().GetResult() 
+                JsonConvert.SerializeObject(
+                    _liteDB.FindAllItems().GetAwaiter().GetResult()
                 .Where(m => m.ImdbRating != "N/A")
                 .OrderByDescending(o => o.ImdbRating)
                 .Take(number).ToList(), Formatting.Indented);
             movies = movies.Replace("ImdbRating", "Rank");
-              var result = JsonConvert.DeserializeObject<List<Top100IMDb>>(movies);
-           
+            var result = JsonConvert.DeserializeObject<List<Top100IMDb>>(movies);
+
 
             gridTop100.AutoGenerateColumns = true;
             gridTop100.DataSource = result;
@@ -88,9 +89,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private void miMovieDetails_Click(object sender, EventArgs e)
         {
-            string tt = gridTop100[gridTop100.ColumnCount - 1, gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
+            string tt = gridTop100[gridTop100.ColumnCount - 2, gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
+            //string tt = gridTop100.SelectedRows[0].Cells["ImdbId"].Value.ToString();
 
-            string url = "http://www.omdbapi.com/?i=" +tt + "&apikey=e17f08db";
+            string url = "http://www.omdbapi.com/?i=" + tt + "&apikey=e17f08db";
 
             using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
             {
@@ -128,6 +130,21 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private void Top100IMDbForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape) this.Close();
+        }
+
+        private void gridTop100_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
+        {
+            try
+            {
+                string tmp = $"{gridTop100.Rows[e.RowIndex].Cells["TomatoUrl"].Value}";
+
+                if (string.IsNullOrEmpty(tmp))
+                {
+                    gridTop100.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.PeachPuff;
+                }
+            }
+            catch (Exception) { }
+        
         }
     }
 }

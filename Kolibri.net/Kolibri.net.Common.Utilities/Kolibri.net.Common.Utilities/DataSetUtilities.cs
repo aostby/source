@@ -1315,6 +1315,32 @@ namespace Kolibri.net.Common.Utilities
             // Correct our little auto-property 'hack'
             File.WriteAllText(filename, File.ReadAllText(filename).Replace("//;", ""));
         }
+        public static DataTable MergeListOfSimilarTables(List<DataTable> list)         
+        {
+            //List<DataTable> list = new List<DataTable>();
+
+            DataTable ret = null;
+            foreach (DataTable table in list)
+            {
+                if (ret == null)
+                {
+                    ret = table;
+                }
+                else
+                {
+                    ret.Merge(table);
+                }
+            }
+
+            if (ret.DataSet == null) 
+            {
+                DataSet ds = new DataSet("Merge");
+                ds.Tables.Add(ret);
+                ret.TableName = "Merged";
+            }
+            return ret;
+        }
+
 
         #endregion
     }

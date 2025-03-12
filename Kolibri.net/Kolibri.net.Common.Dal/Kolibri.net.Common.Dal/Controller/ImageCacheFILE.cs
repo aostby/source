@@ -1,4 +1,4 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using LiteDB;
@@ -8,11 +8,11 @@ using System.Reflection;
 using System.Runtime.Caching;
 using System.Xml;
 
-namespace Kolibri.net.Common.Dal.Entities
+namespace Kolibri.net.Common.Dal.Controller
 {
-    public class ImageCache
+    public class ImageCacheFILE
     {
-        ImagePosterDBController _ImageDB;
+        
         LiteDBController _LiteDB;
 
         private int _max =2000;
@@ -23,9 +23,14 @@ namespace Kolibri.net.Common.Dal.Entities
         //private Dictionary<string, byte[]> _imageCache;
          public string ApplicationName { get; private set; }
 
-        public ImageCache(UserSettings userSettings)
+        public ImageCacheFILE(UserSettings userSettings)
         {
-            this._userSettings = userSettings;
+            _userSettings = userSettings;
+            if (userSettings != null)
+            {
+                _LiteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
+            }
+
             Init();
         }
 
@@ -61,7 +66,7 @@ namespace Kolibri.net.Common.Dal.Entities
         private void Init()
         {
             ApplicationName = Assembly.GetExecutingAssembly().GetName().Name;
-            _ImageDB = new ImagePosterDBController(DefaultPath(), false, false);
+            
 
             try
             {
@@ -96,8 +101,9 @@ namespace Kolibri.net.Common.Dal.Entities
 
             if (_LiteDB != null)
             {
-                Task.Run(async () => await InitImages(_LiteDB));
+                Task.Run(async () => await InitImagesAsync(_LiteDB));
             }
+
         }
 
         public FileInfo DefaultPath() {
@@ -139,12 +145,12 @@ namespace Kolibri.net.Common.Dal.Entities
             }
         } 
     
-        public bool InsertImage(string key, Bitmap bitmap)
+        public async Task<bool>  InsertImageAsync(string key, Bitmap bitmap)
         {
             bool ret = false;
-            var cache = CacheImageExists(key);
-            var db = _ImageDB.ImageExists(key);
-            bool insert = (!cache|| !db);
+             var cache = CacheImageExists(key);
+            //var db = await _ImageDB.ImageExists(key);
+            bool insert = (!cache );
             try
             {
                 if (insert)
@@ -155,7 +161,7 @@ namespace Kolibri.net.Common.Dal.Entities
                         bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
 
                         StoreItemsInCache(key, (byte[])ms.ToArray());
-                        _ImageDB.InsertImage(new ImagePoster(key, bitmap));
+                    
                         bmp.Dispose();
                     }
                 }
@@ -173,9 +179,9 @@ namespace Kolibri.net.Common.Dal.Entities
             return GetItemsFromCache(key); 
         }
 
-        public ImagePoster FindImage(string key)
+        public async Task< ImagePoster> FindImageAsync(string key)
         {
-            var ret = RetrieveImage(key);
+            var ret = await RetrieveImageAsync(key);
 
             if (ret == null)
             { return null; }
@@ -184,31 +190,18 @@ namespace Kolibri.net.Common.Dal.Entities
                 return new ImagePoster(key, ret);
             }
         }
-        public Bitmap RetrieveImage(string key)
+        public async Task< Bitmap> RetrieveImageAsync(string key)
         {
             Bitmap ret = null;
-            Byte[] arr = null;
+            byte[] arr = null;
             try
             {
-                //var arr = GetItemsFromCache(key);
-                if (arr == null)
-                {
-                    if (_ImageDB.ImageExists(key))
-                    {
-                        var imagePoster = _ImageDB.FindImage(key);
-                        if (imagePoster == null) return null;
-                        else
-                        {
-                            imagePoster.Image.Tag = key;
-                            return imagePoster.Image;
-                        }
-                    }
-                }
-                else
+               arr = GetItemsFromCache(key);
+        
                 {
                     // When retrieving, create a new Bitmap based on the bytes retrieved from the cached array
 
-                    using (MemoryStream ms = new MemoryStream((byte[])arr))
+                    using (MemoryStream ms = new MemoryStream(arr))
                     {
                         using (Bitmap bmp = new Bitmap(ms))
                         {
@@ -221,6 +214,7 @@ namespace Kolibri.net.Common.Dal.Entities
             { ret = null; }
             return ret;
         }
+ 
         public bool CacheImageExists(string key)
         {
             try
@@ -230,12 +224,12 @@ namespace Kolibri.net.Common.Dal.Entities
             catch (Exception)
             {
                 return false;
-            } 
-        } 
+            }
+        }
 
         #region from DB
 
-        public async Task<bool> InitImages(LiteDBController LITEDB)
+        public async Task<bool> InitImagesAsync(LiteDBController LITEDB)
         {
             bool ret = true;
             try
@@ -243,11 +237,11 @@ namespace Kolibri.net.Common.Dal.Entities
                 var items =await LITEDB.FindAllItems();
                 var dic = items.OrderByDescending(mc => mc.ImdbRating)
                         .ToDictionary(mc => mc.ImdbId.ToString(),
-                                      mc => mc.Poster.ToString(),
+                                      mc => mc.Poster?.ToString(),
                                       StringComparer.OrdinalIgnoreCase).Distinct().Take(_max).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-                var task = Task.Run(async () => await (GetImagesAsync(LITEDB, dic)));
-                var taskNA = Task.Run(async () => await ( GetNAImagesAsync(LITEDB,  dic)));
+                var task = Task.Run(async () => await GetImagesAsync(LITEDB, dic));
+                var taskNA = Task.Run(async () => await  GetNAImagesAsync(LITEDB,  dic));
 
             }
             catch (Exception ex)
@@ -268,8 +262,7 @@ namespace Kolibri.net.Common.Dal.Entities
                 {
                     try
                     {
-                        ImagePoster img = _ImageDB.FindImage(item.Key);
-                        if (img != null) { continue; }
+                   
 
                         var movie = LITEDB.FindMovie(item.Key, true);
                         if (movie != null)
@@ -282,23 +275,17 @@ namespace Kolibri.net.Common.Dal.Entities
 
 
                             var url = $"https://image.tmdb.org/t/p/w300/{path}";
-                            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(url);
+                            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
                             webRequest.AllowWriteStreamBuffering = true;
                             webRequest.Timeout = 30000;
                             using (System.Net.WebResponse webResponse = webRequest.GetResponse())
                             {
-                                using (System.IO.Stream stream = webResponse.GetResponseStream())
+                                using (Stream stream = webResponse.GetResponseStream())
                                 {
-                                    using (var image = (Bitmap)System.Drawing.Image.FromStream(stream))
+                                    using (var image = (Bitmap)Image.FromStream(stream))
                                     {
                                         webResponse.Close();
-                                        InsertImage(url, image);
-
-                                        if (img == null)
-                                        {
-                                            _ImageDB.InsertImage(new ImagePoster(movie.ImdbId, image));
-                                            image.Dispose();
-                                        }
+                                        await InsertImageAsync(url, image);
                                     }
                                 }
                             }
@@ -317,8 +304,8 @@ namespace Kolibri.net.Common.Dal.Entities
                                     mc => mc.Poster.ToString(),
                                     StringComparer.OrdinalIgnoreCase).Distinct().Take(_max).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            var task = Task.Run(async () => await (GetImagesAsync(LITEDB, dic)));
-            var taskNA = Task.Run(async () => await (GetNAImagesAsync(LITEDB, dic)));
+            var task = Task.Run(async () => await GetImagesAsync(LITEDB, dic));
+            var taskNA = Task.Run(async () => await GetNAImagesAsync(LITEDB, dic));
         }
 
         private async Task<bool> GetImagesAsync(LiteDBController LITEDB,  Dictionary<string, string> dic)
@@ -337,36 +324,25 @@ namespace Kolibri.net.Common.Dal.Entities
 
                         if (!CacheImageExists(dic[key]))
                         {
-                            img =_ImageDB.FindImage(key);
-
-                            if (img != null)
-                            {
-                                InsertImage(key, img.Image);
-                                img.Image.Dispose();
-                                continue;
-                            }
-                        }                    
-                        else
-                        {
+                 
                             var url = dic[key];
-                            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(url);
+                            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
 
                             webRequest.AllowWriteStreamBuffering = true;
                             webRequest.Timeout = 30000;
                             using (System.Net.WebResponse webResponse = webRequest.GetResponse())
                             {
-                                using (System.IO.Stream stream = webResponse.GetResponseStream())
+                                using (Stream stream = webResponse.GetResponseStream())
                                 {
-                                    var image = (Bitmap)System.Drawing.Image.FromStream(stream);
+                                    var image = (Bitmap)Image.FromStream(stream);
                                     webResponse.Close();
-                                    InsertImage(url, image);
-                                    InsertImage(key, image);
+                                   await InsertImageAsync(url, image);
 
-                                    if (img == null)
-                                    {
-                                        _ImageDB.InsertImage(new ImagePoster(key, image));
-                                        image.Dispose();
-                                    }
+                                    //if (img == null)
+                                    //{
+                                    //    _ImageDB.InsertImage(new ImagePoster(key, image));
+                                    //    image.Dispose();
+                                    //}
                                 }
                             }
                         }
@@ -391,21 +367,19 @@ namespace Kolibri.net.Common.Dal.Entities
                     {
                         if (dic[key].Contains("N/A")) continue;
                         if (CacheImageExists(dic[key])) { continue; }
-                        if(_ImageDB.ImageExists(dic[key])) { continue; }
-
-
+                   
 
                         var url = dic[key];
-                            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(url);
+                            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
 
                             webRequest.AllowWriteStreamBuffering = true;
                             webRequest.Timeout = 30000;
                             System.Net.WebResponse webResponse = webRequest.GetResponse();
-                            System.IO.Stream stream = webResponse.GetResponseStream();
-                            var image = (Bitmap)System.Drawing.Image.FromStream(stream);
+                            Stream stream = webResponse.GetResponseStream();
+                            var image = (Bitmap)Image.FromStream(stream);
                             webResponse.Close(); 
 
-                             InsertImage(key, image);  
+                             await InsertImageAsync(key, image);  
                         
                     }
                     catch (Exception ex)
@@ -503,7 +477,7 @@ namespace Kolibri.net.Common.Dal.Entities
 
             try
             {
-                _ImageDB.Dispose();
+               
             }
             catch (Exception)
             {
@@ -511,116 +485,6 @@ namespace Kolibri.net.Common.Dal.Entities
         }
     }
 
-    internal class ImagePosterDBController
-    {
-        internal bool ExclusiveConnection { get; set; }
-
-        internal LiteDatabase _litePosterDB;
-        internal ConnectionString ConnectionString;
-
-        internal ImagePosterDBController(FileInfo pahtToImageDB, bool exclusiveAccess = false, bool readOnly = true)
-        {
-
-            if (!pahtToImageDB.Directory.Exists)
-                pahtToImageDB.Directory.Create();
-            if(!pahtToImageDB.Exists)
-                pahtToImageDB.Create(); 
-
-            ExclusiveConnection = exclusiveAccess;
-           
-
-
-            ConnectionString = new ConnectionString()
-            {
-                Connection = ExclusiveConnection ? ConnectionType.Direct : ConnectionType.Shared,
-                ReadOnly = readOnly,
-                Upgrade = false,
-                Password = null,
-                Filename = pahtToImageDB.FullName
-            };
-            
-
-            _litePosterDB = new LiteDatabase(ConnectionString);
-        }
-       
-        internal void Dispose()
-        {
-            try
-            {
-                _litePosterDB.Dispose();
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        #region ImagePoster
-        internal bool ImageExists(string ImdbId)
-        {
-            bool ret = false;
-            try
-            {
-                var count = _litePosterDB.GetCollection<ImageBase>("ImageBase").Count(Query.EQ("_id", ImdbId));
-                return (count > 0);
-            }
-            catch (Exception)
-            { }
-            return ret;
-        }
-
-        internal bool InsertImage(ImagePoster imagePoster)
-        {bool ret =true;
-            try
-            {
-                if (ImageExists(imagePoster.ImdbId)) {
-                    
-                    
-                    
-                    return true; }
-                ImageBase imgbase = null;
-
-                using (var ms = new MemoryStream())
-                {
-                    using (var bitmap = new Bitmap(imagePoster.Image))
-                    {
-                        bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
-                        var SigBase64 = Convert.ToBase64String(ms.GetBuffer()); //Get Base64
-                        imgbase = new ImageBase(imagePoster.ImdbId, SigBase64);
-                    }
-                }
-                _litePosterDB.GetCollection<ImageBase>("ImageBase")
-                    .Insert(imagePoster.ImdbId, imgbase);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        internal ImagePoster FindImage(string imdbId)
-        {
-            ImagePoster ret = null;
-            try
-            {
-                var imgbase = _litePosterDB.GetCollection<ImageBase>("ImageBase")
-                    .FindById(imdbId);
-                //     .Find(x => x.ImdbId == imdbId).FirstOrDefault();
-
-                if (imgbase != null)
-                {
-                    ret = new ImagePoster(imgbase.ImdbId,ImageUtilities.Base64ToImage(imgbase.Base64) as Bitmap);
-                }
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
-
-        #endregion
-
-    }
+    
 
 }

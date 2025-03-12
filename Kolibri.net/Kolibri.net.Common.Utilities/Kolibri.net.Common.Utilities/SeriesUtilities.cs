@@ -104,5 +104,41 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
+
+        /// <summary>
+        /// usual columnnames =  "Name", "Title", "ImdbRating", "Year", "Rated", "Runtime", "Genre", "Plot" 
+        /// </summary>
+        /// <param name="formatTable"></param>
+        /// <returns></returns>
+        public static  DataTable SortAndFormatSeriesTable(DataTable? formatTable)
+        { string sortString = string.Empty;
+            string name = formatTable.Columns.Contains("Name") ? "name" : "Title";
+            string season = formatTable.Columns.Contains("Season") ? "Season" : "SeasonNumber";
+            string episode = formatTable.Columns.Contains("Episode") ? "Episode" : "EpisodeNumber";
+
+           sortString    = $"{season} ASC, {episode} ASC, {name} ASC";
+
+            DataTable resultTable = new DataView(formatTable, "", sortString, DataViewRowState.CurrentRows).ToTable();
+
+            List<string> columns = new List<string>() { "Name", "Title", "ImdbRating", "Year", "Rated", "Runtime", "Genre", "Plot" };
+            if ((!resultTable.Columns.Contains("Year") || !resultTable.Columns.Contains("Name")))
+                columns = DataSetUtilities.ColumnNames(resultTable).ToList();//series
+
+            resultTable = new DataView(resultTable, "", sortString, DataViewRowState.CurrentRows).ToTable(false, columns.ToArray());
+
+            if (resultTable.Columns.Contains("Response"))
+            {
+                resultTable.Columns["Response"].SetOrdinal(0);
+                resultTable = new DataView(resultTable, "", $"Response ASC, {sortString}", DataViewRowState.CurrentRows).ToTable(false, columns.ToArray());
+            }
+            if (resultTable.DataSet == null)
+            {
+                DataSet ds = new DataSet();
+                ds.Tables.Add(resultTable);
+            }
+
+            return resultTable;
+        }
+
     }
 }

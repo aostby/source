@@ -19,7 +19,7 @@ namespace Kolibri.net.SilverScreen.Forms
         internal OMDBController _OMDB;
         internal TMDBController _TMDB;
         internal SubDLSubtitleController _subDL;
-        internal ImageCache _imageCache;
+        internal ImageCacheDB _imageCache;
 
         [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
         //public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr)
@@ -34,7 +34,7 @@ namespace Kolibri.net.SilverScreen.Forms
             , OMDBController omdb=null
             , TMDBController tmdb = null
             , SubDLSubtitleController subDL=null  
-            , ImageCache imagecache=null
+            , ImageCacheDB imagecache=null
             )
         {
             InitializeComponent();
@@ -74,10 +74,10 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 UserSettings settings = _liteDB.GetUserSettings();
 
-                try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); }
-                try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { }
-                try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { }
-                try { _imageCache = new ImageCache(settings); } catch (Exception ex) { }
+                if (_OMDB == null) { try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
+                if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { } }
+                if (_subDL == null) { try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { } }
+                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } };
             }
             catch (Exception ex)
             {
@@ -88,7 +88,7 @@ namespace Kolibri.net.SilverScreen.Forms
             InitButtons();
         }
 
-        private void InitButtons(bool verbose = false)
+        private async void InitButtons(bool verbose = false)
         {
             try
             {
@@ -124,12 +124,12 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 try
                 {
-                    if (_imageCache.FindImage(nameof(buttonSearch)) == null) { _imageCache.InsertImage(nameof(buttonSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://github.com/JuzerShakir/Investigate_TMDb_Movies/raw/master/logo.jpg")); }
-                    if (_imageCache.FindImage(nameof(buttonSubtitleSearch)) == null) { _imageCache.InsertImage(nameof(buttonSubtitleSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://subdl.com/logo/fav.png")); }
+                    if (_imageCache.FindImageAsync(nameof(buttonSearch)) == null) {await _imageCache.InsertImageAsync(nameof(buttonSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://github.com/JuzerShakir/Investigate_TMDb_Movies/raw/master/logo.jpg")); }
+                    if (_imageCache.FindImageAsync(nameof(buttonSubtitleSearch)) == null) { await _imageCache.InsertImageAsync(nameof(buttonSubtitleSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://subdl.com/logo/fav.png")); }
 
-                    ImagePoster image = _imageCache.FindImage(nameof(buttonSearch));
+                    ImagePoster image = await _imageCache.FindImageAsync(nameof(buttonSearch));
                     buttonSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
-                    image = _imageCache.FindImage(nameof(buttonSubtitleSearch));
+                    image = await _imageCache.FindImageAsync(nameof(buttonSubtitleSearch));
                     buttonSubtitleSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
                 }
                 catch (Exception) { }

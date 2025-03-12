@@ -13,12 +13,12 @@ using OMDbApiNet.Model;
 
 namespace Kolibri.net.Common.Dal.Controller
 {
-    public class OMDBController
+    public class OMDBController:IDisposable
     {
         private string _apikey;
         //public OMDbApiNet.OmdbType _type = OMDbApiNet.OmdbType.Movie;
         private OMDbApiNet.OmdbClient _client;
-        private LiteDBController _LITEDB;
+        private LiteDBController _liteDB;
         /// <summary>
         ///  Insert your api key here. You can get one on http://www.omdbapi.com/
         /// </summary>
@@ -31,7 +31,7 @@ namespace Kolibri.net.Common.Dal.Controller
             //_type = OMDbApiNet.OmdbType.Movie;
 
             _client = new OMDbApiNet.OmdbClient(apikey);
-            _LITEDB = contr;
+            _liteDB = contr;
 
         }
 
@@ -71,7 +71,7 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             string ret = string.Empty;
 
-            UserSettings settings = _LITEDB.GetUserSettings();
+            UserSettings settings = _liteDB.GetUserSettings();
             if (!obtain)
             {
                 ret = settings.OMDBkey;
@@ -112,7 +112,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 }
             }
             settings.OMDBkey = ret;
-            _LITEDB.Upsert(settings);
+            _liteDB.Upsert(settings);
             return ret;
         }
         /// <summary>
@@ -124,23 +124,28 @@ namespace Kolibri.net.Common.Dal.Controller
         public Item GetMovieByIMDBid(string imdbId, bool insert = false)
         {
 
+            
             Item ret = null;
             try
             {
                 if (!string.IsNullOrEmpty(imdbId))
                 {
 
-                    if (_LITEDB != null)
-                        ret = _LITEDB.FindItem(imdbId);
+                    if (_liteDB != null)
+                    {
+                        ret = _liteDB.FindItem(imdbId);
+                        if (ret == null)
+                            ret = _client.GetItemById(imdbId);
+                    }
                     if (ret == null)
                     {
                         try
                         {
-                            ret = _client.GetItemById(imdbId, false);
-                            if (insert && ret != null && _LITEDB != null)
+                            
+                            if (insert && ret != null && _liteDB != null)
                             {
                                 string title = ret.Title;
-                                _LITEDB.Upsert(ret);
+                                _liteDB.Upsert(ret);
                             }
                         }
                         catch (Exception ex)
@@ -174,7 +179,7 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 return _client.GetItemById(imdbId, true);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return null;
             }
@@ -207,7 +212,7 @@ namespace Kolibri.net.Common.Dal.Controller
 
         }
 
-        public Season SeriesByImdbId(string imdbId, string seasonNumber)
+        public Season SeasonByImdbId(string imdbId, string seasonNumber)
         {
             try
             {
@@ -259,6 +264,17 @@ namespace Kolibri.net.Common.Dal.Controller
         internal Episode SeriesEpisode(string imdbid, int season, int episode)
         {
             return _client.GetEpisodeBySeriesId(imdbid, season, episode);
+        }
+
+        public void Dispose()
+        {
+            try {
+                if (_liteDB != null)
+                {
+                    //  _liteDB.Dispose();
+                    GC.Collect();
+                }
+            } catch (Exception) { }
         }
     }
 }

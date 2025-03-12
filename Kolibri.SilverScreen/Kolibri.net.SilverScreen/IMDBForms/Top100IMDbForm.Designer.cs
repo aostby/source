@@ -28,60 +28,60 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.gridTop100 = new System.Windows.Forms.DataGridView();
-            this.cmsOptions = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.miMovieDetails = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.gridTop100)).BeginInit();
-            this.cmsOptions.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            gridTop100 = new DataGridView();
+            cmsOptions = new ContextMenuStrip(components);
+            miMovieDetails = new ToolStripMenuItem();
+            ((System.ComponentModel.ISupportInitialize)gridTop100).BeginInit();
+            cmsOptions.SuspendLayout();
+            SuspendLayout();
             // 
             // gridTop100
             // 
-            this.gridTop100.AllowUserToAddRows = false;
-            this.gridTop100.AllowUserToDeleteRows = false;
-            this.gridTop100.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.gridTop100.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gridTop100.ContextMenuStrip = this.cmsOptions;
-            this.gridTop100.Location = new System.Drawing.Point(1, 1);
-            this.gridTop100.MultiSelect = false;
-            this.gridTop100.Name = "gridTop100";
-            this.gridTop100.ReadOnly = true;
-            this.gridTop100.RowHeadersVisible = false;
-            this.gridTop100.Size = new System.Drawing.Size(773, 539);
-            this.gridTop100.TabIndex = 0;
-            this.gridTop100.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gridTop100_CellMouseDown);
-            this.gridTop100.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.miMovieDetails_Click);
+            gridTop100.AllowUserToAddRows = false;
+            gridTop100.AllowUserToDeleteRows = false;
+            gridTop100.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            gridTop100.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            gridTop100.ContextMenuStrip = cmsOptions;
+            gridTop100.Location = new Point(1, 1);
+            gridTop100.Margin = new Padding(4, 3, 4, 3);
+            gridTop100.MultiSelect = false;
+            gridTop100.Name = "gridTop100";
+            gridTop100.ReadOnly = true;
+            gridTop100.RowHeadersVisible = false;
+            gridTop100.Size = new Size(902, 622);
+            gridTop100.TabIndex = 0;
+            gridTop100.CellMouseDown += gridTop100_CellMouseDown;
+            gridTop100.RowPrePaint += gridTop100_RowPrePaint;
+            gridTop100.MouseDoubleClick += miMovieDetails_Click;
             // 
             // cmsOptions
             // 
-            this.cmsOptions.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miMovieDetails});
-            this.cmsOptions.Name = "cmsOptions";
-            this.cmsOptions.Size = new System.Drawing.Size(177, 26);
+            cmsOptions.Items.AddRange(new ToolStripItem[] { miMovieDetails });
+            cmsOptions.Name = "cmsOptions";
+            cmsOptions.Size = new Size(177, 26);
             // 
             // miMovieDetails
             // 
-            this.miMovieDetails.Name = "miMovieDetails";
-            this.miMovieDetails.Size = new System.Drawing.Size(176, 22);
-            this.miMovieDetails.Text = "Show movie details";
-            this.miMovieDetails.Click += new System.EventHandler(this.miMovieDetails_Click);
+            miMovieDetails.Name = "miMovieDetails";
+            miMovieDetails.Size = new Size(176, 22);
+            miMovieDetails.Text = "Show movie details";
+            miMovieDetails.Click += miMovieDetails_Click;
             // 
             // Top100IMDbForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(773, 544);
-            this.Controls.Add(this.gridTop100);
-            this.KeyPreview = true;
-            this.Name = "Top100IMDbForm";
-            this.Text = "Top 100 IMDb movies";
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Top100IMDbForm_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.gridTop100)).EndInit();
-            this.cmsOptions.ResumeLayout(false);
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(902, 628);
+            Controls.Add(gridTop100);
+            KeyPreview = true;
+            Margin = new Padding(4, 3, 4, 3);
+            Name = "Top100IMDbForm";
+            Text = "Top 100 IMDb movies";
+            KeyDown += Top100IMDbForm_KeyDown;
+            ((System.ComponentModel.ISupportInitialize)gridTop100).EndInit();
+            cmsOptions.ResumeLayout(false);
+            ResumeLayout(false);
 
         }
 

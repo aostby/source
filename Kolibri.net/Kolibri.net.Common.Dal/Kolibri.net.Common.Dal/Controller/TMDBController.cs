@@ -13,10 +13,10 @@ using TMDbLib.Objects.TvShows;
 
 namespace Kolibri.net.Common.Dal.Controller
 {
-    public class TMDBController
+    public class TMDBController: IDisposable
     {
         private   TMDbLib.Client.TMDbClient _client;
-        private   LiteDBController _contr;
+        private   LiteDBController _liteDB;
         private string _apiKey = string.Empty;// "YOUR_API_KEY";
         public string ApiKey { get { return _apiKey; } }
         //Account https://www.themoviedb.org/faq/account --- https://www.themoviedb.org/u/aostby behind the barricades
@@ -37,10 +37,10 @@ namespace Kolibri.net.Common.Dal.Controller
             { this._apiKey = apikey; }
 
             _client = new TMDbLib.Client.TMDbClient(_apiKey);
-            _contr = contr;
+            _liteDB = contr;
         }
 
-        private TMDbConfig GetDefaultSettings() {
+        public static  TMDbConfig GetDefaultSettings() {
             string json = @"{""images"":{""base_url"":""http://image.tmdb.org/t/p/"",""secure_base_url"":""https://image.tmdb.org/t/p/"",""backdrop_sizes"":[""w300"",""w780"",""w1280"",""original""],""logo_sizes"":[""w45"",""w92"",""w154"",""w185"",""w300"",""w500"",""original""],""poster_sizes"":[""w92"",""w154"",""w185"",""w342"",""w500"",""w780"",""original""],""profile_sizes"":[""w45"",""w185"",""h632"",""original""],""still_sizes"":[""w92"",""w185"",""w300"",""original""]},""change_keys"":[""adult"",""air_date"",""also_known_as"",""alternative_titles"",""biography"",""birthday"",""budget"",""cast"",""certifications"",""character_names"",""created_by"",""crew"",""deathday"",""episode"",""episode_number"",""episode_run_time"",""freebase_id"",""freebase_mid"",""general"",""genres"",""guest_stars"",""homepage"",""images"",""imdb_id"",""languages"",""name"",""network"",""origin_country"",""original_name"",""original_title"",""overview"",""parts"",""place_of_birth"",""plot_keywords"",""production_code"",""production_companies"",""production_countries"",""releases"",""revenue"",""runtime"",""season"",""season_number"",""season_regular"",""spoken_languages"",""status"",""tagline"",""title"",""translations"",""tvdb_id"",""tvrage_id"",""type"",""video"",""videos""]}";
 
             
@@ -72,7 +72,7 @@ namespace Kolibri.net.Common.Dal.Controller
         }
         public Movie GetMovie(string id, bool isImdbId)
         {
-            LiteDBController contr = _contr;
+            LiteDBController contr = _liteDB;
 
             Movie movie = contr.FindMovie(id.ToString(), isImdbId);
             if (movie == null)
@@ -91,7 +91,7 @@ namespace Kolibri.net.Common.Dal.Controller
         }
         public Movie GetMovie(int id)
         {
-            LiteDBController contr = _contr;
+            LiteDBController contr = _liteDB;
 
             Movie movie = contr.FindMovie(id.ToString());
             if (movie == null)
@@ -156,26 +156,26 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             Movie movie = GetMovie(searchMovie.Id);
             if (movie == null) return null;
-            Item item = new Item();
-
-
-            item.Title = movie.Title;
-            item.ImdbId = movie.ImdbId;
-            item.Country = movie.OriginalLanguage;
-            item.Language = movie.SpokenLanguages[0].Name;
-            item.Year = (movie.ReleaseDate == null ? DateTime.Now.Year : movie.ReleaseDate.GetValueOrDefault().Year).ToString();
-            item.Type = "Movie";
-            item.Poster = item.Poster;
-            item.ImdbRating = $"{movie.VoteAverage}";
-            item.Genre = string.Join(", ", movie.Genres.Select(s=>s.Name).ToArray());
-
+            Item item = _liteDB.FindItem(movie.ImdbId);
+            if (item == null)
+            {
+                item = new Item();
+                item.Title = movie.Title;
+                item.ImdbId = movie.ImdbId;
+                item.Country = movie.OriginalLanguage;
+                item.Language = movie.SpokenLanguages[0].Name;
+                item.Year = (movie.ReleaseDate == null ? DateTime.Now.Year : movie.ReleaseDate.GetValueOrDefault().Year).ToString();
+                item.Type = "Movie";
+                item.Poster = item.Poster;
+                item.ImdbRating = $"{movie.VoteAverage}";
+                item.Genre = string.Join(", ", movie.Genres.Select(s => s.Name).ToArray());
+            }
             return item;
-
         }
 
         public  string GetTMDBKey(bool obtain = false, bool replace = false)
         {
-            UserSettings settings = _contr.GetUserSettings();
+            UserSettings settings = _liteDB.GetUserSettings();
             string ret = string.Empty;
             if (!obtain)
             { 
@@ -219,7 +219,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 }
             }
             settings.TMDBkey = ret;
-            _contr.Upsert(settings);
+            _liteDB.Upsert(settings);
             return ret;
         } 
      
@@ -340,5 +340,18 @@ namespace Kolibri.net.Common.Dal.Controller
 
 
         #endregion
+
+        public void Dispose()
+        {
+
+            try
+            {
+                // _liteDB.Dispose();
+                GC.Collect();
+            }
+            catch (Exception)
+            {
+            }
+        }
     }
 }

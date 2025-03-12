@@ -32,12 +32,12 @@ namespace Kolibri.net.SilverScreen.Forms
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DetailsFormSeries));
             label8 = new Label();
-            label7 = new Label();
-            label6 = new Label();
-            label5 = new Label();
-            label4 = new Label();
-            label2 = new Label();
-            label1 = new Label();
+            labelMetascore = new Label();
+            labelActors = new Label();
+            labelGenre = new Label();
+            labelRuntime = new Label();
+            labelYear = new Label();
+            labelTitle = new Label();
             tbMetascore = new TextBox();
             tbPlot = new RichTextBox();
             tbActors = new TextBox();
@@ -56,9 +56,13 @@ namespace Kolibri.net.SilverScreen.Forms
             toolTipDetail = new ToolTip(components);
             buttonRediger = new Button();
             buttonSubtitleSearch = new Button();
-            dataGridView1 = new DataGridView();
+            labelTotalSeasons = new Label();
+            textBoxTotalSeasons = new TextBox();
+            tabControlSeasons = new TabControl();
+            tabPage1 = new TabPage();
+            tabPage2 = new TabPage();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            tabControlSeasons.SuspendLayout();
             SuspendLayout();
             // 
             // label8
@@ -71,66 +75,66 @@ namespace Kolibri.net.SilverScreen.Forms
             label8.TabIndex = 36;
             label8.Text = "Plot (double click for more)";
             // 
-            // label7
+            // labelMetascore
             // 
-            label7.AutoSize = true;
-            label7.Location = new Point(12, 562);
-            label7.Margin = new Padding(4, 0, 4, 0);
-            label7.Name = "label7";
-            label7.Size = new Size(62, 15);
-            label7.TabIndex = 35;
-            label7.Text = "Metascore";
+            labelMetascore.AutoSize = true;
+            labelMetascore.Location = new Point(12, 562);
+            labelMetascore.Margin = new Padding(4, 0, 4, 0);
+            labelMetascore.Name = "labelMetascore";
+            labelMetascore.Size = new Size(62, 15);
+            labelMetascore.TabIndex = 35;
+            labelMetascore.Text = "Metascore";
             // 
-            // label6
+            // labelActors
             // 
-            label6.AutoSize = true;
-            label6.Location = new Point(12, 515);
-            label6.Margin = new Padding(4, 0, 4, 0);
-            label6.Name = "label6";
-            label6.Size = new Size(41, 15);
-            label6.TabIndex = 34;
-            label6.Text = "Actors";
+            labelActors.AutoSize = true;
+            labelActors.Location = new Point(12, 515);
+            labelActors.Margin = new Padding(4, 0, 4, 0);
+            labelActors.Name = "labelActors";
+            labelActors.Size = new Size(41, 15);
+            labelActors.TabIndex = 34;
+            labelActors.Text = "Actors";
             // 
-            // label5
+            // labelGenre
             // 
-            label5.AutoSize = true;
-            label5.Location = new Point(49, 473);
-            label5.Margin = new Padding(4, 0, 4, 0);
-            label5.Name = "label5";
-            label5.Size = new Size(38, 15);
-            label5.TabIndex = 33;
-            label5.Text = "Genre";
+            labelGenre.AutoSize = true;
+            labelGenre.Location = new Point(49, 473);
+            labelGenre.Margin = new Padding(4, 0, 4, 0);
+            labelGenre.Name = "labelGenre";
+            labelGenre.Size = new Size(38, 15);
+            labelGenre.TabIndex = 33;
+            labelGenre.Text = "Genre";
             // 
-            // label4
+            // labelRuntime
             // 
-            label4.AutoSize = true;
-            label4.Location = new Point(181, 562);
-            label4.Margin = new Padding(4, 0, 4, 0);
-            label4.Name = "label4";
-            label4.Size = new Size(52, 15);
-            label4.TabIndex = 32;
-            label4.Text = "Runtime";
+            labelRuntime.AutoSize = true;
+            labelRuntime.Location = new Point(181, 562);
+            labelRuntime.Margin = new Padding(4, 0, 4, 0);
+            labelRuntime.Name = "labelRuntime";
+            labelRuntime.Size = new Size(52, 15);
+            labelRuntime.TabIndex = 32;
+            labelRuntime.Text = "Runtime";
             // 
-            // label2
+            // labelYear
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(12, 473);
-            label2.Margin = new Padding(4, 0, 4, 0);
-            label2.Name = "label2";
-            label2.Size = new Size(29, 15);
-            label2.TabIndex = 30;
-            label2.Text = "Year";
+            labelYear.AutoSize = true;
+            labelYear.Location = new Point(12, 473);
+            labelYear.Margin = new Padding(4, 0, 4, 0);
+            labelYear.Name = "labelYear";
+            labelYear.Size = new Size(29, 15);
+            labelYear.TabIndex = 30;
+            labelYear.Text = "Year";
             // 
-            // label1
+            // labelTitle
             // 
-            label1.AutoSize = true;
-            label1.ImageAlign = ContentAlignment.MiddleLeft;
-            label1.Location = new Point(12, 428);
-            label1.Margin = new Padding(4, 0, 4, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(29, 15);
-            label1.TabIndex = 29;
-            label1.Text = "Title";
+            labelTitle.AutoSize = true;
+            labelTitle.ImageAlign = ContentAlignment.MiddleLeft;
+            labelTitle.Location = new Point(12, 428);
+            labelTitle.Margin = new Padding(4, 0, 4, 0);
+            labelTitle.Name = "labelTitle";
+            labelTitle.Size = new Size(29, 15);
+            labelTitle.TabIndex = 29;
+            labelTitle.Text = "Title";
             // 
             // tbMetascore
             // 
@@ -318,20 +322,63 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonSubtitleSearch.UseVisualStyleBackColor = true;
             buttonSubtitleSearch.Click += buttonSubtitleSearch_Click;
             // 
-            // dataGridView1
+            // labelTotalSeasons
             // 
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Location = new Point(561, 12);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(774, 702);
-            dataGridView1.TabIndex = 49;
+            labelTotalSeasons.AutoSize = true;
+            labelTotalSeasons.Location = new Point(360, 562);
+            labelTotalSeasons.Margin = new Padding(4, 0, 4, 0);
+            labelTotalSeasons.Name = "labelTotalSeasons";
+            labelTotalSeasons.Size = new Size(74, 15);
+            labelTotalSeasons.TabIndex = 51;
+            labelTotalSeasons.Text = "TotalSeasons";
+            // 
+            // textBoxTotalSeasons
+            // 
+            textBoxTotalSeasons.Location = new Point(360, 578);
+            textBoxTotalSeasons.Margin = new Padding(4, 3, 4, 3);
+            textBoxTotalSeasons.Name = "textBoxTotalSeasons";
+            textBoxTotalSeasons.ReadOnly = true;
+            textBoxTotalSeasons.Size = new Size(137, 23);
+            textBoxTotalSeasons.TabIndex = 50;
+            // 
+            // tabControlSeasons
+            // 
+            tabControlSeasons.Controls.Add(tabPage1);
+            tabControlSeasons.Controls.Add(tabPage2);
+            tabControlSeasons.Location = new Point(513, 12);
+            tabControlSeasons.Name = "tabControlSeasons";
+            tabControlSeasons.SelectedIndex = 0;
+            tabControlSeasons.Size = new Size(822, 730);
+            tabControlSeasons.TabIndex = 52;
+            // 
+            // tabPage1
+            // 
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(814, 702);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "tabPage1";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Location = new Point(4, 24);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(814, 702);
+            tabPage2.TabIndex = 1;
+            tabPage2.Text = "tabPage2";
+            tabPage2.UseVisualStyleBackColor = true;
             // 
             // DetailsFormSeries
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1347, 754);
-            Controls.Add(dataGridView1);
+            Controls.Add(tabControlSeasons);
+            Controls.Add(labelTotalSeasons);
+            Controls.Add(textBoxTotalSeasons);
             Controls.Add(buttonSubtitleSearch);
             Controls.Add(buttonRediger);
             Controls.Add(buttonSearch);
@@ -341,12 +388,12 @@ namespace Kolibri.net.SilverScreen.Forms
             Controls.Add(linkLabelOpenFilepath);
             Controls.Add(linkTrailer);
             Controls.Add(label8);
-            Controls.Add(label7);
-            Controls.Add(label6);
-            Controls.Add(label5);
-            Controls.Add(label4);
-            Controls.Add(label2);
-            Controls.Add(label1);
+            Controls.Add(labelMetascore);
+            Controls.Add(labelActors);
+            Controls.Add(labelGenre);
+            Controls.Add(labelRuntime);
+            Controls.Add(labelYear);
+            Controls.Add(labelTitle);
             Controls.Add(tbMetascore);
             Controls.Add(tbPlot);
             Controls.Add(pbPoster);
@@ -361,10 +408,10 @@ namespace Kolibri.net.SilverScreen.Forms
             Margin = new Padding(4, 3, 4, 3);
             MinimumSize = new Size(16, 39);
             Name = "DetailsFormSeries";
-            Text = "Movie Detail ";
+            Text = "Serie Detail ";
             KeyDown += MovieDetailsForm_KeyDown;
             ((System.ComponentModel.ISupportInitialize)pbPoster).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            tabControlSeasons.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -372,12 +419,12 @@ namespace Kolibri.net.SilverScreen.Forms
         #endregion
 
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label labelMetascore;
+        private System.Windows.Forms.Label labelActors;
+        private System.Windows.Forms.Label labelGenre;
+        private System.Windows.Forms.Label labelRuntime;
+        private System.Windows.Forms.Label labelYear;
+        private System.Windows.Forms.Label labelTitle;
         private System.Windows.Forms.TextBox tbMetascore;
         internal System.Windows.Forms.RichTextBox tbPlot;
         internal System.Windows.Forms.PictureBox pbPoster;
@@ -396,6 +443,10 @@ namespace Kolibri.net.SilverScreen.Forms
         private ToolTip toolTipDetail;
         private Button buttonRediger;
         private Button buttonSubtitleSearch;
-        private DataGridView dataGridView1;
+        private Label labelTotalSeasons;
+        private TextBox textBoxTotalSeasons;
+        private TabControl tabControlSeasons;
+        private TabPage tabPage1;
+        private TabPage tabPage2;
     }
 }

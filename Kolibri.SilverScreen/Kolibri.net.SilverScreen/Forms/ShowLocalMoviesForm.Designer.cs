@@ -1,6 +1,6 @@
 ﻿namespace Kolibri.net.SilverScreen.Forms
 {
-    partial class MultiMediaForm
+    partial class ShowLocalMoviesForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,8 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             splitContainer1 = new SplitContainer();
             groupBoxFilter = new GroupBox();
+            buttonMissing = new Button();
             radioButtonFilterNotMatched = new RadioButton();
             radioButtonFilterNoneExistant = new RadioButton();
             radioButtonFilterAlle = new RadioButton();
@@ -48,6 +50,7 @@
             backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
             backgroundWorker3 = new System.ComponentModel.BackgroundWorker();
             backgroundWorker4 = new System.ComponentModel.BackgroundWorker();
+            toolTip1 = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -85,6 +88,7 @@
             // 
             // groupBoxFilter
             // 
+            groupBoxFilter.Controls.Add(buttonMissing);
             groupBoxFilter.Controls.Add(radioButtonFilterNotMatched);
             groupBoxFilter.Controls.Add(radioButtonFilterNoneExistant);
             groupBoxFilter.Controls.Add(radioButtonFilterAlle);
@@ -94,6 +98,17 @@
             groupBoxFilter.TabIndex = 6;
             groupBoxFilter.TabStop = false;
             groupBoxFilter.Text = "Filter";
+            // 
+            // buttonMissing
+            // 
+            buttonMissing.Enabled = false;
+            buttonMissing.Location = new Point(272, 16);
+            buttonMissing.Name = "buttonMissing";
+            buttonMissing.Size = new Size(49, 23);
+            buttonMissing.TabIndex = 3;
+            buttonMissing.Text = "Find";
+            buttonMissing.UseVisualStyleBackColor = true;
+            buttonMissing.Click += buttonMissing_Click;
             // 
             // radioButtonFilterNotMatched
             // 
@@ -184,6 +199,7 @@
             radioButtonUpdateAll.Size = new Size(45, 19);
             radioButtonUpdateAll.TabIndex = 0;
             radioButtonUpdateAll.Text = "Alle";
+            toolTip1.SetToolTip(radioButtonUpdateAll, "Sletter alle Items og FileItems før søk (beholder filen på disk)");
             radioButtonUpdateAll.UseVisualStyleBackColor = true;
             // 
             // labelNumItemsDB
@@ -243,14 +259,14 @@
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // MultiMediaForm
+            // ShowLocalMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1266, 731);
             Controls.Add(splitContainer1);
-            Name = "MultiMediaForm";
-            Text = "MultiMediaForm";
+            Name = "ShowLocalMoviesForm";
+            Text = "Show local movies";
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel1.PerformLayout();
             splitContainer1.Panel2.ResumeLayout(false);
@@ -291,5 +307,7 @@
         private RadioButton radioButtonFilterNoneExistant;
         private RadioButton radioButtonFilterAlle;
         private RadioButton radioButtonFilterNotMatched;
+        private ToolTip toolTip1;
+        private Button buttonMissing;
     }
 }

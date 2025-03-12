@@ -54,8 +54,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             label9 = new Label();
             btnAddToWatchlist = new Button();
             btnWatchList = new Button();
-            brnRefresh = new Button();
+            btnClear = new Button();
             groupBox1 = new GroupBox();
+            buttonUpdate = new Button();
             buttonNewList = new Button();
             labelWatchListName = new Label();
             comboBox1 = new ComboBox();
@@ -70,7 +71,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             labelImdbRating = new Label();
             linkLabelOpenFilePath = new LinkLabel();
             toolTip1 = new ToolTip(components);
-            buttonUpdate = new Button();
+            labelOmdbId = new Label();
+            checkBoxLookUp = new CheckBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
@@ -181,7 +183,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(11, 174);
+            label2.Location = new Point(11, 178);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
             label2.Size = new Size(29, 15);
@@ -191,7 +193,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(11, 264);
+            label3.Location = new Point(11, 268);
             label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
             label3.Size = new Size(37, 15);
@@ -201,7 +203,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(11, 221);
+            label4.Location = new Point(11, 225);
             label4.Margin = new Padding(4, 0, 4, 0);
             label4.Name = "label4";
             label4.Size = new Size(52, 15);
@@ -211,7 +213,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(10, 385);
+            label5.Location = new Point(10, 389);
             label5.Margin = new Padding(4, 0, 4, 0);
             label5.Name = "label5";
             label5.Size = new Size(38, 15);
@@ -221,7 +223,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(10, 346);
+            label6.Location = new Point(10, 350);
             label6.Margin = new Padding(4, 0, 4, 0);
             label6.Name = "label6";
             label6.Size = new Size(41, 15);
@@ -282,16 +284,16 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             btnWatchList.UseVisualStyleBackColor = true;
             btnWatchList.Click += btnWatchList_Click;
             // 
-            // brnRefresh
+            // btnClear
             // 
-            brnRefresh.Location = new Point(92, 536);
-            brnRefresh.Margin = new Padding(4);
-            brnRefresh.Name = "brnRefresh";
-            brnRefresh.Size = new Size(122, 26);
-            brnRefresh.TabIndex = 24;
-            brnRefresh.Text = "Refresh";
-            brnRefresh.UseVisualStyleBackColor = true;
-            brnRefresh.Click += brnRefresh_Click;
+            btnClear.Location = new Point(92, 536);
+            btnClear.Margin = new Padding(4);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new Size(122, 26);
+            btnClear.TabIndex = 24;
+            btnClear.Text = "Clear fields";
+            btnClear.UseVisualStyleBackColor = true;
+            btnClear.Click += brnRefresh_Click;
             // 
             // groupBox1
             // 
@@ -313,6 +315,17 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             groupBox1.Size = new Size(605, 120);
             groupBox1.TabIndex = 25;
             groupBox1.TabStop = false;
+            // 
+            // buttonUpdate
+            // 
+            buttonUpdate.Location = new Point(551, 46);
+            buttonUpdate.Name = "buttonUpdate";
+            buttonUpdate.Size = new Size(47, 26);
+            buttonUpdate.TabIndex = 25;
+            buttonUpdate.Text = "Update local";
+            buttonUpdate.UseVisualStyleBackColor = true;
+            buttonUpdate.Visible = false;
+            buttonUpdate.Click += buttonUpdate_Click;
             // 
             // buttonNewList
             // 
@@ -350,6 +363,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             tbYearParameter.Name = "tbYearParameter";
             tbYearParameter.Size = new Size(116, 23);
             tbYearParameter.TabIndex = 2;
+            tbYearParameter.TextChanged += tbYearParameter_TextChanged;
             // 
             // label10
             // 
@@ -420,7 +434,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // labelImdbId
             // 
             labelImdbId.AutoSize = true;
-            labelImdbId.Location = new Point(14, 148);
+            labelImdbId.Location = new Point(20, 148);
             labelImdbId.Margin = new Padding(4, 0, 4, 0);
             labelImdbId.Name = "labelImdbId";
             labelImdbId.Size = new Size(45, 15);
@@ -449,22 +463,32 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             linkLabelOpenFilePath.Text = "Open File Path";
             linkLabelOpenFilePath.LinkClicked += linkLabelOpenFilePath_LinkClicked;
             // 
-            // buttonUpdate
+            // labelOmdbId
             // 
-            buttonUpdate.Location = new Point(551, 46);
-            buttonUpdate.Name = "buttonUpdate";
-            buttonUpdate.Size = new Size(47, 26);
-            buttonUpdate.TabIndex = 25;
-            buttonUpdate.Text = "Update local";
-            buttonUpdate.UseVisualStyleBackColor = true;
-            buttonUpdate.Visible = false;
-            buttonUpdate.Click += buttonUpdate_Click;
+            labelOmdbId.AutoSize = true;
+            labelOmdbId.Location = new Point(18, 160);
+            labelOmdbId.Name = "labelOmdbId";
+            labelOmdbId.Size = new Size(51, 15);
+            labelOmdbId.TabIndex = 33;
+            labelOmdbId.Text = "OmdbId";
+            // 
+            // checkBoxLookUp
+            // 
+            checkBoxLookUp.AutoSize = true;
+            checkBoxLookUp.Location = new Point(823, 510);
+            checkBoxLookUp.Name = "checkBoxLookUp";
+            checkBoxLookUp.Size = new Size(111, 19);
+            checkBoxLookUp.TabIndex = 34;
+            checkBoxLookUp.Text = "LookUp missing";
+            checkBoxLookUp.UseVisualStyleBackColor = true;
             // 
             // MovieForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(934, 577);
+            Controls.Add(checkBoxLookUp);
+            Controls.Add(labelOmdbId);
             Controls.Add(linkLabelOpenFilePath);
             Controls.Add(labelImdbRating);
             Controls.Add(labelImdbId);
@@ -472,7 +496,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             Controls.Add(btnRecommend);
             Controls.Add(btnTop100);
             Controls.Add(groupBox1);
-            Controls.Add(brnRefresh);
+            Controls.Add(btnClear);
             Controls.Add(pictureBox1);
             Controls.Add(label8);
             Controls.Add(label7);
@@ -529,7 +553,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private System.Windows.Forms.Button btnAddToWatchlist;
         private System.Windows.Forms.Button btnWatchList;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button brnRefresh;
+        private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox tbYearParameter;
         private System.Windows.Forms.Label label10;
@@ -544,6 +568,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private ToolTip toolTip1;
         private Button buttonNewList;
         private Button buttonUpdate;
+        private Label labelOmdbId;
+        private CheckBox checkBoxLookUp;
     }
 }
 

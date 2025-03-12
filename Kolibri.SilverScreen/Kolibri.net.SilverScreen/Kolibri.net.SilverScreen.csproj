@@ -25,7 +25,7 @@
     <Compile Update="Forms\DetailsFormSeries.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\MultiMediaForm.cs">
+    <Compile Update="Forms\ShowLocalMoviesForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Properties\Resources.Designer.cs">

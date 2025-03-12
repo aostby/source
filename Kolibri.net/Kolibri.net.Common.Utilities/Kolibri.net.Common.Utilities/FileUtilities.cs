@@ -1164,13 +1164,21 @@ namespace Kolibri.net.Common.Utilities
 
 
         public static void MoveCopy(FileInfo source, FileInfo target)
-        {
+        {if (!source.Exists) return;
+
             // assuming that target directory exists
             if (!target.Directory.Exists)
                 target.Directory.Create();
 
-            if (!target.Exists)
-                File.Copy(source.FullName, target.FullName);
+            if (!target.Exists&&source.Exists)
+            {
+                try
+                {
+                    File.Copy(source.FullName, target.FullName);
+                }
+                catch (Exception) { }
+              
+            }
             else
                 for (int i = 1; ; ++i)
                 {

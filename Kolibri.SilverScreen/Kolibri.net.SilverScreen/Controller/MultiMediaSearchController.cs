@@ -1,34 +1,28 @@
-﻿using com.sun.tools.@internal.ws.processor.model;
+﻿using jdk.nashorn.@internal.ir;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
-using Kolibri.net.Common.Dal.Interfaces;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
-
+using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
 using TMDbLib.Objects.TvShows;
-//using Microsoft.Office.Interop.Excel;
+using static com.sun.tools.javac.util.Name;
 
 namespace Kolibri.net.SilverScreen.Controller
 {
     public class MultiMediaSearchController
     {
-
-        public event EventHandler<string> ProgressUpdated; 
-
+        public event EventHandler<string> ProgressUpdated;
         public StringBuilder CurrentLog { get; set; }
         private LiteDBController _liteDB;
         private TMDBController _TMDB;
         private OMDBController _OMDB;
         private SeriesCache _seriesCache;
-
 
         /// <summary>
         /// Oppdatering: 
@@ -39,6 +33,14 @@ namespace Kolibri.net.SilverScreen.Controller
         private readonly bool? _updateTriState;
 
         private UserSettings _settings { get; }
+        /// <summary>
+        /// Oppdaterer utifra oppgitte parameter
+        /// </summary>
+        /// <param name="userSettings">MÅ være satt</param>
+        /// <param name="liteDB">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
+        /// <param name="tmdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
+        /// <param name="omdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
+        /// <param name="updateTriState">null = Ingenting, true=alt, false= kun filinfromasjon</param>
         public MultiMediaSearchController(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, bool? updateTriState = null)
         {
             CurrentLog = new StringBuilder();
@@ -48,27 +50,27 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 if (liteDB != null) { _liteDB = liteDB; } else { _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false); }
             }
-            catch (Exception ex) { SetStatusLabelText(ex.Message); }
+            catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
             try
             {
                 if (tmdb != null) { _TMDB = tmdb; } else { _TMDB = new TMDBController(_liteDB, _settings.TMDBkey); }
                 _seriesCache = new SeriesCache(new FileInfo(_liteDB.ConnectionString.Filename).Directory);
 
             }
-            catch (Exception ex) { SetStatusLabelText(ex.Message); }
+            catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
             try
             {
                 if (omdb != null) { _OMDB = omdb; } else { _OMDB = new OMDBController(_settings.OMDBkey, liteDB); }
             }
-            catch (Exception ex) { SetStatusLabelText(ex.Message); }
+            catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
         }
 
-        private void SetStatusLabelText(string message)
+        private void SetStatusLabelText(string message, string type = "INFO" )
         {
             try
             {
                 if (CurrentLog == null) CurrentLog = new StringBuilder();
-                string text = $"{DateTime.Now.ToShortTimeString()} {message}";
+                string text = $"{DateTime.Now.ToShortTimeString()} [{type.ToUpper()}] {message}";
 
                 CurrentLog.AppendLine(text);
                 ProgressUpdated?.Invoke(this, text);
@@ -82,7 +84,7 @@ namespace Kolibri.net.SilverScreen.Controller
         #region Movie Item
         public async void SearchForMovies(DirectoryInfo dir)
         {
-            if (_TMDB == null || _OMDB == null) {SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.");  return; }
+            if (_TMDB == null || _OMDB == null) { SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR"); return; }
 
             List<Item> _currentList = new List<Item>();
             DataTable resultTable = null;
@@ -97,9 +99,9 @@ namespace Kolibri.net.SilverScreen.Controller
                 {
                     foreach (FileItem fi in _liteDB.FindAllFileItems(dir))
                     {
-                        SetStatusLabelText($"Sletter {fi.FullName} fra databasen.");
-                        //_liteDB.DeleteItem(item.ImdbId);
-                        _liteDB.Delete(fi); 
+                        SetStatusLabelText($"Sletter {fi.FullName} fra databasen.", "DELETE");
+                        _liteDB.DeleteItem(fi.ImdbId);
+                        _liteDB.Delete(fi);
                     }
                 }
                 catch (Exception) { }
@@ -125,7 +127,7 @@ namespace Kolibri.net.SilverScreen.Controller
                             if (movie != null)
                             {
                                 _currentList.Add(movie);
-                                SetStatusLabelText($"Legger til {movie.Title} i listen.");
+                                SetStatusLabelText($"Legger til {movie.Title} i listen.", "ADDED");
                             }
                             else
                             {
@@ -142,16 +144,18 @@ namespace Kolibri.net.SilverScreen.Controller
                                     foreach (var item in removeFiles)
                                     {
                                         item.Delete();
-                                        SetStatusLabelText($"Slettet {item.Name} fra {file.Directory.Name}.");
+                                        SetStatusLabelText($"Slettet {item.Name} fra {file.Directory.Name}.", "DELETE");
 
                                     }
                                     FileUtilities.DeleteEmptyDirs(file.Directory);
+                                    SetStatusLabelText($"Søket fullført, siste var {file.Directory}.", "'FINISHED");
                                 }
                             }
                             catch (Exception ex)
                             { }
 
                         };
+                        SetStatusLabelText($"Søket fullført.", "'FINISHED");
                     }
                 }
 
@@ -192,7 +196,7 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
                 var test = _liteDB.FindByFileName(file);
-                if (test != null && _updateTriState == null)
+                if (test != null && _updateTriState == null||_updateTriState==false)
                 {
                     movie = _liteDB.FindItem(test.ImdbId);
                     if (movie != null)
@@ -200,6 +204,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         movie.TomatoUrl = file.FullName;
                         _liteDB.Update(movie);
                         _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                        SetStatusLabelText($"Lokal eksisterende {movie.Title}.", "EXISTS");
                         return movie;
                     }
                 }
@@ -339,33 +344,92 @@ namespace Kolibri.net.SilverScreen.Controller
             CurrentLog = new StringBuilder();
 
             var fList = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(dir, MovieUtilites.MoviesCommonFileExt(true), SearchOption.AllDirectories);
-            if (fList.Count() < 1) { SetStatusLabelText($"Fant ingen filer i {dir.FullName}."); return new List<KolibriTVShow>(); }
+            if (fList.Count() < 1) { SetStatusLabelText($"Fant ingen filer i {dir.FullName}.", "NOTFOUND"); return new List<KolibriTVShow>(); }
             var dt = SeriesUtilities.SeriesEpisode(fList);
-            var list = DataSetUtilities.ColumnNames(dt);
             List<Episode> epList = DataSetUtilities.ConvertToList<Episode>(dt);
+            return GetKolibriTVShows(epList);
+        }
+
+        public KolibriTVShow GetShowById(string imdbid)
+        {
+            if (imdbid.IsNumeric()) throw new Exception("Probably not an ImdbId, they start with tt: " + imdbid);
+            Item item = _liteDB.FindItem(imdbid);
+            //TvShow tv = Task.Run(() => _liteDB.FindTvShowByTitle(item.Title.FirstToUpper())).GetAwaiter().GetResult();
+
+            List<DataTable> datatableList = new List<DataTable>();
+            List<KolibriSeason> seasonList = new List<KolibriSeason>();
+
+            for (int i = 0; i < item.TotalSeasons.ToInt32(); i++)
+            {
+                try
+                {
+
+
+                    Season ses = _OMDB.SeasonByImdbId(item.ImdbId, (i + 1).ToString());
+                    if (ses != null)
+                    {
+                        KolibriSeason kses = JsonConvert.DeserializeObject<KolibriSeason>(ses.JsonSerializeObject());
+                        kses.Title = item.Title;
+                        kses.SeriesImdbId = item.ImdbId;
+                        seasonList.Add(kses);
+
+                        var table = DataSetUtilities.AutoGenererDataSet<SeasonEpisode>(kses.Episodes.ToList()).Tables[0];
+                        System.Data.DataColumn newColumn = new System.Data.DataColumn("Season", typeof(System.String));
+                        newColumn.DefaultValue = i.ToString();
+                        table.Columns.Add(newColumn);
+
+                        var epTable = SeriesUtilities.SortAndFormatSeriesTable(table);
+                        datatableList.Add(epTable);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    var jaa = i;
+                }
+            }
+            var eplist = DataSetUtilities.ConvertToList<Episode>(DataSetUtilities.MergeListOfSimilarTables(datatableList));
+            var ret= GetKolibriTVShows(eplist, item?.Title).FirstOrDefault();
+            ret.SeasonList = seasonList;
+            ret.Item = item;
+            return ret;
+        }
+
+        private List<KolibriTVShow> GetKolibriTVShows(List<Episode> epList, string showName=null)
+        {
             Dictionary<string, KolibriTVShow> showDic = new Dictionary<string, KolibriTVShow>();
             foreach (var omdbEpisode in epList)
             {
-                SetStatusLabelText($"Behandler {omdbEpisode.Title}... Vennligst vent.");
+                SetStatusLabelText($"Behandler {omdbEpisode.Title} - {omdbEpisode.SeasonNumber} - {omdbEpisode.EpisodeNumber}... Vennligst vent.", "INFO");
                 KolibriTVShow show = new KolibriTVShow() { Title = omdbEpisode.Title };
-                    if (showDic.Keys.Contains(omdbEpisode.Title))
-                    {
-                        show = showDic[omdbEpisode.Title];
-                    }
+                if (showDic.Keys.Contains(omdbEpisode.Title))
+                {
+                    show = showDic[omdbEpisode.Title]; 
+                }
                 try
                 {
-                    bool upsert = false; 
-                    if (show.Item == null) show.Item = _liteDB.FindItemByTitle(omdbEpisode.Title).FirstOrDefault() ?? GetItem(show.Title).Result;
-                    if (show.TvShow == null) show.TvShow = _liteDB.FindTvShowByTitle(omdbEpisode.Title);
+                    bool upsert = false;
+                    if (show.Item == null) show.Item = _liteDB.FindItemByTitle(showName??omdbEpisode.Title.FirstToUpper()).FirstOrDefault() ?? GetItem(show.Title).Result;
+                    if (show.Item == null) {
+                        show.Item = _liteDB.FindItem(omdbEpisode.ImdbId);
+                        if (show.Item == null && !string.IsNullOrEmpty(omdbEpisode.ImdbId)) {
+                            show.Item = _OMDB.GetItemByImdbId(omdbEpisode.ImdbId);
+                            if (show.Item != null) _liteDB.Upsert(show.Item);
+                        }
+                    }
+                    if (show.TvShow == null) show.TvShow = _liteDB.FindTvShowByTitle(showName??omdbEpisode.Title.FirstToUpper());
+                    if (show.TvShow == null) show.TvShow = _liteDB.FindTvShowByTitle(showName.FirstToUpper());
                     Episode ep = omdbEpisode;
-                    SeasonEpisode sep = _liteDB.FindSeasonEpisode(show.Title, omdbEpisode.SeasonNumber.ToInt32().ToString(), omdbEpisode.EpisodeNumber.ToInt32().ToString());
+                    SeasonEpisode sep = _liteDB.FindSeasonEpisode(showName, omdbEpisode.SeasonNumber.ToInt32().ToString(), omdbEpisode.EpisodeNumber.ToInt32().ToString());
                     if (sep == null && show.TvShow != null)
                     {
-                        ep = show.EpisodeList.FirstOrDefault(x => x.SeasonNumber.Equals(omdbEpisode.SeasonNumber) && x.EpisodeNumber.Equals(omdbEpisode.EpisodeNumber));
+                   var tempEp = show.EpisodeList.FirstOrDefault(x => x.SeasonNumber.Equals(omdbEpisode.SeasonNumber) && x.EpisodeNumber.Equals(omdbEpisode.EpisodeNumber));
+                        if(tempEp!=null)
+                        { ep = tempEp; }
                     }
                     if (sep != null)
                     {
-                        var jall=  _liteDB.GetEpisode(sep.ImdbId);
+                        var jall = _liteDB.GetEpisode(sep.ImdbId);
                         if (ep == null) { ep = omdbEpisode; upsert = true; };
                         if (string.IsNullOrWhiteSpace(ep.ImdbId)) ep.ImdbId = sep.ImdbId;
                         if (string.IsNullOrWhiteSpace(ep.SeriesId)) ep.SeriesId = omdbEpisode.SeriesId;
@@ -379,11 +443,12 @@ namespace Kolibri.net.SilverScreen.Controller
                 }
                 catch (AggregateException aex)
                 {
-                    SetStatusLabelText($"{aex.Message}.");
+                    SetStatusLabelText($"{aex.Message}.", aex.GetType().Name);
                 }
                 catch (Exception ex)
                 {
-                    SetStatusLabelText($"{ex.Message}.");
+                    omdbEpisode.Error = ex.Message;
+                    SetStatusLabelText($"{omdbEpisode.Title} - {omdbEpisode.SeasonNumber} - {omdbEpisode.EpisodeNumber}: {ex.Message}.", "ERROR");
                 }
             }
 
@@ -397,7 +462,7 @@ namespace Kolibri.net.SilverScreen.Controller
             foreach (var title in titleList)
             {
                 currentItem = title;
-                SetStatusLabelText($"{currentItem}.");
+                SetStatusLabelText($"{currentItem}.", "INFO");
                 try
                 {
 
@@ -407,7 +472,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         currentItem = item.Title;
                         var imdbId = item.ImdbId;
 
-                        SetStatusLabelText($"Item: {item.Title} - {item.ImdbId}.");
+                        SetStatusLabelText($"Item: {item.Title} - {item.ImdbId}.", "INFO");
 
                         TvShow tvShow = _liteDB.FindTvShow(imdbId);
                         if (tvShow == null)
@@ -424,7 +489,7 @@ namespace Kolibri.net.SilverScreen.Controller
                             foreach (var s in tvShow.Seasons)
                             {
                                 if (s.SeasonNumber == 0) s.SeasonNumber = 1;
-                                
+
                                 var season = _liteDB.FindSeason(item.Title, s.SeasonNumber.ToString()) ?? _OMDB.SeriesBySeason(item.Title, s.SeasonNumber.ToString());
                                 _liteDB.Upsert(season);
                                 foreach (var se in season.Episodes)
@@ -437,6 +502,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                         {
                                             episode.Response = FileUtilities.SafeFileName(item.Title);
                                             _liteDB.Upsert(episode);
+                                            SetStatusLabelText($"Item: {item.Title} - {item.ImdbId} ({episode.SeasonNumber} - {episode.EpisodeNumber}).", "EP_OMDB");
                                         }
                                     }
                                     if (episode != null)
@@ -444,27 +510,27 @@ namespace Kolibri.net.SilverScreen.Controller
                                         if (!totEpisodes.ToList().Any(s => (s.SeriesId == episode.SeriesId && s.Title == episode.Title)))
                                         {
                                             totEpisodes.Add(episode);
-                                            var b = _liteDB.Upsert(episode);
+                                            SetStatusLabelText($"Item: {item.Title} - {item.ImdbId} ({episode.SeasonNumber} - {episode.EpisodeNumber}).", "EP_ADDList");
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    
+
                 }
-                catch (AggregateException aex) { SetStatusLabelText($"{currentItem} {aex.Message} - {aex.InnerException}"); }
-                catch (Exception ex) { SetStatusLabelText($"{currentItem} {ex.Message} - {ex.InnerException}"); }//throw new Exception($"Error: {ex} - {currentItem}"); }
+                catch (AggregateException aex) { SetStatusLabelText($"{currentItem} {aex.Message} - {aex.InnerException}", aex.GetType().Name); }
+                catch (Exception ex) { SetStatusLabelText($"{currentItem} {ex.Message} - {ex.InnerException}", ex.GetType().Name); }//throw new Exception($"Error: {ex} - {currentItem}"); }
             }
             var ds = DataSetUtilities.AutoGenererTypedDataSet(totEpisodes.ToList());
-            var ret = FormatReturnTable(ds.Tables[0]);
+            var ret = SeriesUtilities.SortAndFormatSeriesTable(ds.Tables[0]);
             ret.TableName = FileUtilities.SafeFileName(currentItem);
             return ret;
         }
 
         public DataTable SearchForSeriesEpisodes(DirectoryInfo dir)
         {
-            SetStatusLabelText($"Init {dir.FullName}.");
+            SetStatusLabelText($"Init {dir.FullName}.", "INFO");
             var showList = new List<TvShow>();
 
             var fList = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(dir, MovieUtilites.MoviesCommonFileExt(true), SearchOption.AllDirectories);
@@ -478,6 +544,145 @@ namespace Kolibri.net.SilverScreen.Controller
 
             var titleList = table.AsEnumerable().Select(dr => dr.Field<string>(serCol)).Distinct().ToList().OrderBy(n => n).ToList();
             return SearchForSeriesEpisodes(titleList);
+        }
+   
+        private async Task<Item> GetItem(string seriesName)
+        {
+            Item item = null;
+            try
+            {
+                try { item = _liteDB.FindItemByTitle(seriesName).FirstOrDefault(); } catch (Exception ex) { }
+                if (item == null)
+                {
+                    var itemList = _liteDB.FindItemsByType(OMDbApiNet.OmdbType.Series);
+                    item = itemList.Where(x => x.Title.Equals(seriesName)).FirstOrDefault();
+                    if (item == null)
+                    {
+                        var il = _liteDB.FindAllFileItems().ToList().FindAll(x => Path.GetFileNameWithoutExtension(x.FullName).ToArray().First() == seriesName.ToArray().First());
+                        foreach (var fi in il)
+                        {
+                            var fiName = MovieUtilites.GetMovieTitle(fi.FullName);
+                            if (fiName.Equals(seriesName))
+                            { item = _liteDB.FindItem(fi.ImdbId); break; }
+                        }
+                    }
+                }
+
+                if (item == null)
+                {
+                    List<SearchItem> seriesSearchItemList = _OMDB.GetByTitle(seriesName, OMDbApiNet.OmdbType.Series).ToList();
+                    if (seriesSearchItemList.Count >= 1)
+                    {
+                        var seriesSearchItem = seriesSearchItemList.Find(x => x.Title.Equals(seriesName));
+                        if (seriesSearchItem == null)
+                            seriesSearchItem = seriesSearchItemList.FirstOrDefault();
+
+                        try { item = _liteDB.FindItem(seriesSearchItem.ImdbId); } catch (Exception ex) { }
+
+                        if (item == null && seriesSearchItem != null)
+                        {
+                            item = _OMDB.GetMovieByIMDBid(seriesSearchItem.ImdbId, insert:true);
+                            if (item != null) { _liteDB.Upsert(item); }
+                            else { SetStatusLabelText($"No Item found for {seriesName} - {seriesSearchItem}"); }
+                        }
+                    }
+                    if (item == null)
+                    {
+                        try
+                        {
+                            var t = Task.Run(() => _TMDB.FetchSerie(seriesName));
+                            var res = t.Result;
+                            if (res.Count > 0)
+                            {
+                                var tv = Task.Run(() => _TMDB.GetTVShow(res.First().Id));
+                                var tvRes = tv.Result;
+                                if (tvRes != null && tvRes.ExternalIds != null)
+                                {
+                                    var imdbId = tvRes.ExternalIds.ImdbId;
+                                    item = _OMDB.GetItemByImdbId(imdbId);
+                                }
+                                if (tvRes != null) {
+                                    _liteDB.Upsert(tvRes);
+                                }
+
+                            }
+                            else { SetStatusLabelText($"{seriesName} - no item found ({System.Reflection.MethodBase.GetCurrentMethod().Name})", "NOTFOUND"); }
+                        }
+                        catch (Exception ex)
+                        {
+                            SetStatusLabelText($"{seriesName} - {ex}", ex.GetType().Name);
+                        }
+                    }
+                }
+            }
+            catch (AggregateException aex)
+            {
+                SetStatusLabelText($"{seriesName} - {aex} {aex.InnerException}", aex.GetType().Name);
+            }
+            return item;
+        }
+
+
+        private Season GetSeason(Item item, string seriesName, string seasonnumber)
+        {
+            Season season = null;
+            if (season == null && item != null)
+            {
+                season = _liteDB.FindSeason(item.Title, seasonnumber.ToString());
+            }
+            else if (item == null)
+            {
+                season = _liteDB.FindSeason(seriesName, seasonnumber);
+            }
+            if (season == null)
+            {
+                if (item != null)
+                {
+                    season = _OMDB.SeasonByImdbId(item.ImdbId, seasonnumber);
+                    if (season == null)
+                        season = _OMDB.SeriesBySeason(seriesName, seasonnumber);
+                    if (season != null)
+                        _liteDB.Upsert(season);
+                }
+                else
+                {
+                    season = _OMDB.SeriesBySeason(seriesName, seasonnumber.ToString());
+                }
+            }
+
+            return season;
+        }
+        private List<Season> GetSeasonList(string seriesname, string season)
+        {
+            return _seriesCache.Get(seriesname, season.ToInt32());
+        }
+        private bool CompareNumberOfSeasonEpisodes(string seriesTitle, Season season, List<Season> listOfFileSeasons)
+        {
+            bool ret = false;
+            try
+            {
+                Season tempSeason = null;
+                List<Season> tempList = listOfFileSeasons;
+                if (tempList == null)
+
+                    _seriesCache.Get(seriesTitle, season.SeasonNumber.ToInt32()).ToList();
+                tempSeason = tempList.Find(e => e != null && e.SeasonNumber.ToInt32().ToString() == season.SeasonNumber.ToString());
+
+                if (season != null && season.Episodes != null && season.TotalSeasons != null)
+                {
+                    if (tempSeason.Episodes.Count != season.Episodes.Count())
+                    {
+                        //          SetLabelText($"{seriesTitle} ({season.SeasonNumber}) - Forskjell mellom angitt OMDB/TMDB antall episoder totalt {season.Episodes.Count}  for sesongen og antall episoder i fillisten {tempSeason.Episodes.Count}");
+                    }
+                    else
+                    {
+                        //        SetLabelText($"{seriesTitle} ({season.SeasonNumber}) - OK - angitt OMDB/TMDB antall episoder totalt {season.Episodes.Count}  for sesongen og antall episoder i fillisten {tempSeason.Episodes.Count} stemmer overens.");
+                        ret = true;
+                    }
+                }
+            }
+            catch (Exception ex) { };
+            return ret;
         }
         private DataTable SearchForSeriesEpisodesList(List<string> titleList)
         {
@@ -546,38 +751,10 @@ namespace Kolibri.net.SilverScreen.Controller
                 catch (Exception ex) { }//throw new Exception($"Error: {ex} - {currentItem}"); }
             }
             var ds = DataSetUtilities.AutoGenererTypedDataSet(totEpisodes.ToList());
-            var ret = FormatReturnTable(ds.Tables[0]);
+            var ret = SeriesUtilities.SortAndFormatSeriesTable(ds.Tables[0]);
             ret.TableName = FileUtilities.SafeFileName(currentItem);
             return ret;
         }
-
-
-        private DataTable FormatReturnTable(DataTable? formatTable)
-        {
-            string name = formatTable.Columns.Contains("Name") ? "name" : "Title";
-            string season = formatTable.Columns.Contains("Season") ? "Season" : "SeasonNumber";
-            string episode = formatTable.Columns.Contains("Episode") ? "Episode" : "EpisodeNumber";
-            DataTable resultTable = new DataView(formatTable, "", $"{name} ASC, {season} ASC, {episode} ASC", DataViewRowState.CurrentRows).ToTable();
-
-            List<string> columns = new List<string>() { "Name", "Title", "ImdbRating", "Year", "Rated", "Runtime", "Genre", "Plot" };
-            if ((!resultTable.Columns.Contains("Year") || !resultTable.Columns.Contains("Name")))
-                columns = DataSetUtilities.ColumnNames(resultTable).ToList();//series
-
-            resultTable = new DataView(resultTable, "", $"{name} asc, ImdbRating desc, Title ASC", DataViewRowState.CurrentRows).ToTable(false, columns.ToArray());
-
-            if (resultTable.Columns.Contains("Response"))
-            {
-                resultTable.Columns["Response"].SetOrdinal(0);
-            }
-            if (resultTable.DataSet == null)
-            {
-                DataSet ds = new DataSet();
-                ds.Tables.Add(resultTable);
-            }
-
-            return resultTable;
-        }
-
         private List<Season> CreateSeasonListTotal(DataTable dataTable)
         {
 
@@ -608,7 +785,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                      TotalSeasons = seasons.Count.ToString()
                                  }).FirstOrDefault();
                         s.Episodes = new List<SeasonEpisode>();
-                           SetStatusLabelText($"File - found {s.Title}");
+                        SetStatusLabelText($"File - found {s.Title}", "FOUND");
                         foreach (DataRow row in dt.Rows)
                         {
                             showTitle = row["Name"].ToString();
@@ -630,7 +807,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                     Title = epTitle,
                                     ImdbRating = "N/A"
                                 };
-                                SetStatusLabelText($"File - episode found {ep.JsonSerializeObject()}");
+                                SetStatusLabelText($"File - episode found {ep.JsonSerializeObject()}", "INFO");
                                 SeasonEpisode epCached = _seriesCache.Get(showTitle, s.SeasonNumber.ToInt32(), episode.ToInt32());
                                 if (epCached == null)
                                 {
@@ -668,7 +845,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                     catch (Exception)
                                     {
                                     }
-                                      SetStatusLabelText($"File - episode added to cache {ep.JsonSerializeObject()}");
+                                    SetStatusLabelText($"File - episode added to cache {ep.JsonSerializeObject()}", "CACHEADD");
                                     _seriesCache.Add(showTitle, season.ToInt32(), ep);
                                 }
                                 else
@@ -695,139 +872,6 @@ namespace Kolibri.net.SilverScreen.Controller
                 }
 
             }
-            return ret;
-        }
-        private async Task<Item> GetItem(string seriesName)
-        {
-            Item item = null;
-            try
-            { 
-            try { item = _liteDB.FindItemByTitle(seriesName).FirstOrDefault(); } catch (Exception ex) { }
-            if (item == null)
-            {
-                var itemList = _liteDB.FindItemsByType(OMDbApiNet.OmdbType.Series);
-                item = itemList.Where(x => x.Title.Equals(seriesName)).FirstOrDefault();
-                if (item == null)
-                {
-                    var il = _liteDB.FindAllFileItems().ToList().FindAll(x => Path.GetFileNameWithoutExtension(x.FullName).ToArray().First() == seriesName.ToArray().First());
-                    foreach (var fi in il)
-                    {
-                        var fiName = MovieUtilites.GetMovieTitle(fi.FullName);
-                        if (fiName.Equals(seriesName))
-                        { item = _liteDB.FindItem(fi.ImdbId); break; }
-                    }
-                }
-            }
-
-            if (item == null)
-            {
-                List<SearchItem> seriesSearchItemList = _OMDB.GetByTitle(seriesName, OMDbApiNet.OmdbType.Series).ToList();
-                if (seriesSearchItemList.Count >= 1)
-                {
-                    var seriesSearchItem = seriesSearchItemList.Find(x => x.Title.Equals(seriesName));
-                    if (seriesSearchItem == null)
-                        seriesSearchItem = seriesSearchItemList.FirstOrDefault();
-
-                    try { item = _liteDB.FindItem(seriesSearchItem.ImdbId); } catch (Exception ex) { }
-
-                    if (item == null && seriesSearchItem != null)
-                    {
-                        item = _OMDB.GetMovieByIMDBid(seriesSearchItem.ImdbId);
-                        if (item != null) { _liteDB.Upsert(item); }
-                        else { /*SetLabelText($"No Item found for {title}");*/ }
-                    }
-                }
-                if (item == null)
-                {
-                        try
-                        {
-                            var t = Task.Run(() => _TMDB.FetchSerie(seriesName));
-                            var res = t.Result;
-                            if (res.Count > 0)
-                            {
-                                var tv = Task.Run(() => _TMDB.GetTVShow(res.First().Id));
-                                var tvRes = tv.Result;
-                                if (tvRes != null && tvRes.ExternalIds != null)
-                                {
-                                    var imdbId = tvRes.ExternalIds.ImdbId;
-                                    item = _OMDB.GetItemByImdbId(imdbId);
-                                }
-                            }
-                            else { SetStatusLabelText($"{seriesName} - no item found ({System.Reflection.MethodBase.GetCurrentMethod().Name})"); }
-                        }
-                        catch (Exception ex)
-                        {
-                            SetStatusLabelText($"{seriesName} - {ex}");
-                        }
-                }
-            }
-            }
-            catch (AggregateException aex)
-            {
-                SetStatusLabelText($"{seriesName} - {aex} {aex.InnerException}");
-            }
-            return item;
-        }
-
-        private Season GetSeason(Item item, string seriesName, string seasonnumber)
-        {
-            Season season = null;
-            if (season == null && item != null)
-            {
-                season = _liteDB.FindSeason(item.Title, seasonnumber.ToString());
-            }
-            else if (item == null)
-            {
-                season = _liteDB.FindSeason(seriesName, seasonnumber);
-            }
-            if (season == null)
-            {
-                if (item != null)
-                {
-                    season = _OMDB.SeriesByImdbId(item.ImdbId, seasonnumber);
-                    if (season == null)
-                        season = _OMDB.SeriesBySeason(seriesName, seasonnumber);
-                    if (season != null)
-                        _liteDB.Upsert(season);
-                }
-                else
-                {
-                    season = _OMDB.SeriesBySeason(seriesName, seasonnumber.ToString());
-                }
-            }
-
-            return season;
-        }
-        private List<Season> GetSeasonList(string seriesname, string season)
-        {
-            return _seriesCache.Get(seriesname, season.ToInt32());
-        }
-        private bool CompareNumberOfSeasonEpisodes(string seriesTitle, Season season, List<Season> listOfFileSeasons)
-        {
-            bool ret = false;
-            try
-            {
-                Season tempSeason = null;
-                List<Season> tempList = listOfFileSeasons;
-                if (tempList == null)
-
-                    _seriesCache.Get(seriesTitle, season.SeasonNumber.ToInt32()).ToList();
-                tempSeason = tempList.Find(e => e != null && e.SeasonNumber.ToInt32().ToString() == season.SeasonNumber.ToString());
-
-                if (season != null && season.Episodes != null && season.TotalSeasons != null)
-                {
-                    if (tempSeason.Episodes.Count != season.Episodes.Count())
-                    {
-                        //          SetLabelText($"{seriesTitle} ({season.SeasonNumber}) - Forskjell mellom angitt OMDB/TMDB antall episoder totalt {season.Episodes.Count}  for sesongen og antall episoder i fillisten {tempSeason.Episodes.Count}");
-                    }
-                    else
-                    {
-                        //        SetLabelText($"{seriesTitle} ({season.SeasonNumber}) - OK - angitt OMDB/TMDB antall episoder totalt {season.Episodes.Count}  for sesongen og antall episoder i fillisten {tempSeason.Episodes.Count} stemmer overens.");
-                        ret = true;
-                    }
-                }
-            }
-            catch (Exception ex) { };
             return ret;
         }
     }

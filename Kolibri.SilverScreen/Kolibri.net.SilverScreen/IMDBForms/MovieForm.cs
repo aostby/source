@@ -10,7 +10,8 @@ using OMDbApiNet.Model;
 using System.Data;
 using System.Net;
 using System.Reflection;
-using System.Text; 
+using System.Text;
+using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.IMDBForms
 {
@@ -28,13 +29,17 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             InitializeComponent();
             Init();
         }
-        public MovieForm(UserSettings userSettings, FileInfo info)
-        {_info = info;  
+        public MovieForm(UserSettings userSettings, FileInfo info, string year="")
+        {
+            _info = info;
             _userSettings = userSettings;
             InitializeComponent();
+            this.Text = $"File: {info.Name}";
+            
             Init();
             tbSearch.Text = MovieUtilites.GetMovieTitle(info.FullName);
-            tbYearParameter.Text = MovieUtilites.GetYear(info.Directory.FullName).ToString();
+            tbYearParameter.Text = year;
+            if(string.IsNullOrWhiteSpace(year)) tbYearParameter.Text = MovieUtilites.GetYear(info.Directory.FullName).ToString();
             buttonUpdate.Visible = true;
 
         }
@@ -91,8 +96,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
+            int YearParameterNumber;
+            int.TryParse(tbYearParameter.Text.Trim().TrimEnd('-'), out YearParameterNumber);
 
-
+            #region tomt søk - retur med beskjed
             if (string.IsNullOrEmpty(tbSearch.Text))
             {
                 Random rand = new Random();
@@ -102,58 +109,87 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     tmp = tmp.Where(m => m.Year == tbYearParameter.Text);
                 }
 
-
                 var movi = tmp.Skip(rand.Next(tmp.Count())).FirstOrDefault();
                 tbSearch.Text = movi.Title;
                 tbYearParameter.Text = movi.Year;
-
-                // MessageBox.Show("Please enter movie name!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); return;
+                MessageBox.Show("Please enter movie name!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); return;
             }
+            #endregion
 
+            var parameter = "t"; //title
+            if (tbSearch.Text.StartsWith("tt", StringComparison.OrdinalIgnoreCase)) { parameter = "i"; } //id //https://www.omdbapi.com/ - options
+            string url = $@"http://www.omdbapi.com/?{parameter}={tbSearch.Text.Trim()}";
+            if (parameter.Equals("t") && YearParameterNumber>1800) { url += "&y=" + tbYearParameter.Text.Trim(); }
+            url += $"&apikey={_userSettings.OMDBkey}";
 
-
-            string url;
-            if (string.IsNullOrEmpty(tbYearParameter.Text))
-            {
-                url = "http://www.omdbapi.com/?t=" + tbSearch.Text.Trim() + $"&apikey={_userSettings.OMDBkey}";
-            }
-            else
-            {
-
-                int YearParameterNumber;
-                if (!int.TryParse(tbYearParameter.Text, out YearParameterNumber))
-                {
-                    MessageBox.Show("The Year format is bad;Enter only year!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                url = "http://www.omdbapi.com/?t=" + tbSearch.Text.Trim() + "&y=" + tbYearParameter.Text.Trim() + $"&apikey={_userSettings.OMDBkey}";
-            }
+            string json = null;
 
             using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
             {
-                var json = wc.DownloadString(url);
-                var result = JsonConvert.DeserializeObject<WatchList>(json);
-
-                if (result.Response == "True")
+                try
                 {
-                    tbTitle.Text = result.Title;
-                    tbYear.Text = result.Year;
-                    tbRated.Text = result.ImdbRating;
-                    tbRuntime.Text = result.Runtime;
-                    tbGenre.Text = result.Genre;
-                    tbActors.Text = result.Actors;
-                    tbPlot.Text = result.Plot;
-                    tbMetascore.Text = result.Metascore;
-                    pbPoster.ImageLocation = result.Poster;
-                    labelImdbId.Text = result.ImdbId;
-                    labelImdbRating.Text = result.ImdbRating;
+                    string year = tbYearParameter.Text.Trim().TrimEnd('-').ToInt32().ToString();
+                    Item sItem = parameter == "t" ? _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(),YearParameterNumber) : _liteDB.FindItem(tbSearch.Text.Trim().FirstToUpper());
+                    if (sItem != null && sItem.Year.TrimEnd('–').ToInt32() != YearParameterNumber) { sItem = null; }
 
-                    linkLabelOpenFilePath.BackColor = Control.DefaultBackColor;
+                    if (sItem == null)
+                    {
+                        json = wc.DownloadString(url);
+                        //  var result = JsonConvert.DeserializeObject<WatchList>(json);
+                        sItem = JsonConvert.DeserializeObject<Item>(json);
+                    }
+                    if (sItem!=null)
+                    {
+                        tbTitle.Text = sItem.Title;
+                        tbYear.Text = sItem.Year;
+                        tbRated.Text = sItem.ImdbRating;
+                        tbRuntime.Text = sItem.Runtime;
+                        tbGenre.Text = sItem.Genre;
+                        tbActors.Text = sItem.Actors;
+                        tbPlot.Text = sItem.Plot;
+                        tbMetascore.Text = sItem.Metascore;
+                        pbPoster.ImageLocation = sItem.Poster;
+                        labelImdbId.Text = sItem.ImdbId;
+                        labelImdbRating.Text = sItem.ImdbRating;
+                        var file= _liteDB.FindFile(labelImdbId.Text);
+                        linkLabelOpenFilePath.BackColor = file==null ?Color.Yellow:( (file!=null&&file.ItemFileInfo.Exists)? Control.DefaultBackColor:Color.LightSalmon);
+                    
+                        try
+                        {
+                            string alternative = string.Empty;
+                            using (TMDBController tmdbC = new TMDBController(_liteDB, _userSettings.TMDBkey))
+                            {
+                               var t= Task.Run(()=>tmdbC.FindById(labelImdbId.Text));
+                             var res = t.Result;
+                                if (sItem.Type.StartsWith("serie", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var tmpTV = tmdbC.GetTVShow(res.TvResults.FirstOrDefault().Id);
+                                }
+                                else
+                                {
+
+                                    var tmpMov = tmdbC.GetMovie(res.MovieResults.FirstOrDefault().Id);
+                                    
+                                    labelOmdbId.Text = tmpMov.Id.ToString();
+                                      alternative =    tmpMov.AlternativeTitles.JsonSerializeObject().TrimEnd("null".ToCharArray());
+                                    toolTip1.SetToolTip(tbTitle, alternative);
+
+                                }
+                            }
+                            toolTip1.SetToolTip(tbTitle, alternative);
+                        }
+                        catch (Exception)
+                        {   toolTip1.SetToolTip(tbTitle, string.Empty);
+                        }
+                     
+
+
+                    }
+                    else { MessageBox.Show("Movie not found!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); }
                 }
-                else
+                catch (Exception ex)
                 {
-                    MessageBox.Show("Movie not found!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Movie not found! {ex.Message}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
@@ -274,7 +310,6 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
 
         }
-
         private string TrailerUrl(string imdbId = null)
         {
             if (!string.IsNullOrEmpty(imdbId))
@@ -301,10 +336,18 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             catch (Exception ex)
             {
                 (sender as LinkLabel).BackColor = Color.Red;
-
+                if (checkBoxLookUp.Checked)
+                {
+                    {
+                        FileInfo info = FileUtilities.LetOppFil(new DirectoryInfo(_userSettings.UserFilePaths.MoviesDestinationPath), $"Finn fil som matcher {labelImdbId.Text}");
+                        if (info.Exists)
+                        {
+                            FileItem item = new FileItem(labelImdbId.Text, info.FullName);
+                            _liteDB.Upsert(item);
+                        }
+                    }
+                }
             }
-
-
         }
 
         private void linkTrailer_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -329,8 +372,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
-        private AutoCompleteStringCollection ToAutoCompleteStringCollection(
-           IEnumerable<string> enumerable)
+        private AutoCompleteStringCollection ToAutoCompleteStringCollection(IEnumerable<string> enumerable)
         {
             if (enumerable == null) throw new ArgumentNullException("enumerable");
             var autoComplete = new AutoCompleteStringCollection();
@@ -399,23 +441,30 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         mov.TomatoUrl = _info.FullName;
                         _liteDB.Update(mov);
                         _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+
                     }
-                    else if (mov == null)             
+                    else if (mov == null)
                     {
                         OMDBController oMDB = new OMDBController(_userSettings.OMDBkey, _liteDB);
-                        mov= oMDB.GetItemByImdbId(imdbId);
+                        mov = oMDB.GetItemByImdbId(imdbId);
                         if (mov != null)
                         {
                             mov.TomatoUrl = _info.FullName;
-                      var i =       _liteDB.Upsert(mov);
-                      var  f=     _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                            var i = _liteDB.Upsert(mov);
+                            var f = _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                          
+                           
                         }
                         else
                         {
                             throw new Exception($"no movie found: {tbSearch.Text}");
-                                }
+                        } 
 
-
+                    }
+                    if (mov != null)
+                    {
+                        MessageBox.Show($"{_info.Name} has been updated.", $"({mov.Type}): {imdbId} - {mov.Title}");
+                        buttonUpdate.Enabled = false;
                     }
                 }
             }
@@ -424,6 +473,12 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
 
+        }
+
+        private void tbYearParameter_TextChanged(object sender, EventArgs e)
+        {
+            if (tbYearParameter.Text.Length == 0) { tbYearParameter.BackColor = Color.White; }
+            else { tbYearParameter.BackColor = tbYearParameter.Text.Length == 4 ? Color.White : Color.LightSalmon; }
         }
     }
 }
