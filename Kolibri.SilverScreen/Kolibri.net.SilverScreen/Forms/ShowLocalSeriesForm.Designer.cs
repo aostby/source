@@ -44,6 +44,10 @@ namespace Kolibri.Common.VisualizeOMDbItem
             columnHeader2 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
             columnHeader4 = new ColumnHeader();
+            columnHeader5 = new ColumnHeader();
+            contextMenuStrip1 = new ContextMenuStrip(components);
+            toolStripMenuItemDelete = new ToolStripMenuItem();
+            toolStripMenuItemSetIMDBTagOnFolder = new ToolStripMenuItem();
             movieImageList = new ImageList(components);
             tableLayoutPanel1 = new TableLayoutPanel();
             buttonEdit = new Button();
@@ -56,11 +60,11 @@ namespace Kolibri.Common.VisualizeOMDbItem
             labelRating = new Label();
             countryContentLabel = new Label();
             directorContentLabel = new Label();
-            productionContentLabel = new Label();
+            imdbContentLabel = new Label();
             titleContentLabel = new Label();
             pictureBox = new PictureBox();
             titleLabel = new Label();
-            productionLabel = new Label();
+            imdbLabel = new Label();
             directorLabel = new Label();
             countryLabel = new Label();
             plotLabel = new Label();
@@ -76,16 +80,14 @@ namespace Kolibri.Common.VisualizeOMDbItem
             button1 = new Button();
             statusStrip = new StatusStrip();
             statusLabel = new ToolStripStatusLabel();
-            contextMenuStrip1 = new ContextMenuStrip(components);
-            toolStripMenuItemDelete = new ToolStripMenuItem();
             mainLayout.SuspendLayout();
             headerLayout.SuspendLayout();
             leftLayout.SuspendLayout();
+            contextMenuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             rightLayout.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
             statusStrip.SuspendLayout();
-            contextMenuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // mainLayout
@@ -206,7 +208,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // movieList
             // 
             movieList.Alignment = ListViewAlignment.Default;
-            movieList.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
+            movieList.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4, columnHeader5 });
             movieList.ContextMenuStrip = contextMenuStrip1;
             movieList.Dock = DockStyle.Fill;
             movieList.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -243,6 +245,30 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // columnHeader4
             // 
             columnHeader4.Text = "ImdbRating";
+            // 
+            // columnHeader5
+            // 
+            columnHeader5.Text = "ImdbId";
+            // 
+            // contextMenuStrip1
+            // 
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItemDelete, toolStripMenuItemSetIMDBTagOnFolder });
+            contextMenuStrip1.Name = "contextMenuStrip1";
+            contextMenuStrip1.Size = new Size(194, 48);
+            // 
+            // toolStripMenuItemDelete
+            // 
+            toolStripMenuItemDelete.Name = "toolStripMenuItemDelete";
+            toolStripMenuItemDelete.Size = new Size(193, 22);
+            toolStripMenuItemDelete.Text = "Delete item";
+            toolStripMenuItemDelete.Click += contextMenu_Click;
+            // 
+            // toolStripMenuItemSetIMDBTagOnFolder
+            // 
+            toolStripMenuItemSetIMDBTagOnFolder.Name = "toolStripMenuItemSetIMDBTagOnFolder";
+            toolStripMenuItemSetIMDBTagOnFolder.Size = new Size(193, 22);
+            toolStripMenuItemSetIMDBTagOnFolder.Text = "Set IMDB tag on folder";
+            toolStripMenuItemSetIMDBTagOnFolder.Click += contextMenu_Click;
             // 
             // movieImageList
             // 
@@ -344,11 +370,11 @@ namespace Kolibri.Common.VisualizeOMDbItem
             rightLayout.Controls.Add(labelRating, 1, 4);
             rightLayout.Controls.Add(countryContentLabel, 2, 3);
             rightLayout.Controls.Add(directorContentLabel, 2, 2);
-            rightLayout.Controls.Add(productionContentLabel, 2, 1);
+            rightLayout.Controls.Add(imdbContentLabel, 2, 1);
             rightLayout.Controls.Add(titleContentLabel, 2, 0);
             rightLayout.Controls.Add(pictureBox, 0, 0);
             rightLayout.Controls.Add(titleLabel, 1, 0);
-            rightLayout.Controls.Add(productionLabel, 1, 1);
+            rightLayout.Controls.Add(imdbLabel, 1, 1);
             rightLayout.Controls.Add(directorLabel, 1, 2);
             rightLayout.Controls.Add(countryLabel, 1, 3);
             rightLayout.Controls.Add(plotLabel, 1, 10);
@@ -448,17 +474,18 @@ namespace Kolibri.Common.VisualizeOMDbItem
             directorContentLabel.Size = new Size(202, 20);
             directorContentLabel.TabIndex = 12;
             // 
-            // productionContentLabel
+            // imdbContentLabel
             // 
-            productionContentLabel.AutoSize = true;
-            productionContentLabel.Dock = DockStyle.Fill;
-            productionContentLabel.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            productionContentLabel.ImageAlign = ContentAlignment.TopLeft;
-            productionContentLabel.Location = new Point(593, 47);
-            productionContentLabel.Margin = new Padding(4, 9, 4, 9);
-            productionContentLabel.Name = "productionContentLabel";
-            productionContentLabel.Size = new Size(202, 20);
-            productionContentLabel.TabIndex = 11;
+            imdbContentLabel.AutoSize = true;
+            imdbContentLabel.Dock = DockStyle.Fill;
+            imdbContentLabel.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            imdbContentLabel.ImageAlign = ContentAlignment.TopLeft;
+            imdbContentLabel.Location = new Point(593, 47);
+            imdbContentLabel.Margin = new Padding(4, 9, 4, 9);
+            imdbContentLabel.Name = "imdbContentLabel";
+            imdbContentLabel.Size = new Size(202, 20);
+            imdbContentLabel.TabIndex = 11;
+            imdbContentLabel.Click += pictureBox_Click;
             // 
             // titleContentLabel
             // 
@@ -501,19 +528,19 @@ namespace Kolibri.Common.VisualizeOMDbItem
             titleLabel.Text = "Title:";
             titleLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // productionLabel
+            // imdbLabel
             // 
-            productionLabel.AutoSize = true;
-            productionLabel.Dock = DockStyle.Fill;
-            productionLabel.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            productionLabel.ImageAlign = ContentAlignment.MiddleLeft;
-            productionLabel.Location = new Point(384, 47);
-            productionLabel.Margin = new Padding(4, 9, 4, 9);
-            productionLabel.Name = "productionLabel";
-            productionLabel.Size = new Size(201, 20);
-            productionLabel.TabIndex = 2;
-            productionLabel.Text = "Production:";
-            productionLabel.TextAlign = ContentAlignment.MiddleLeft;
+            imdbLabel.AutoSize = true;
+            imdbLabel.Dock = DockStyle.Fill;
+            imdbLabel.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            imdbLabel.ImageAlign = ContentAlignment.MiddleLeft;
+            imdbLabel.Location = new Point(384, 47);
+            imdbLabel.Margin = new Padding(4, 9, 4, 9);
+            imdbLabel.Name = "imdbLabel";
+            imdbLabel.Size = new Size(201, 20);
+            imdbLabel.TabIndex = 2;
+            imdbLabel.Text = "ID:";
+            imdbLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // directorLabel
             // 
@@ -705,19 +732,6 @@ namespace Kolibri.Common.VisualizeOMDbItem
             statusLabel.Spring = true;
             statusLabel.Text = "Clear searchfield to show all items in list";
             // 
-            // contextMenuStrip1
-            // 
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItemDelete });
-            contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(181, 48);
-            // 
-            // toolStripMenuItemDelete
-            // 
-            toolStripMenuItemDelete.Name = "toolStripMenuItemDelete";
-            toolStripMenuItemDelete.Size = new Size(180, 22);
-            toolStripMenuItemDelete.Text = "Delete item";
-            toolStripMenuItemDelete.Click += toolStripMenuItemDelete_Click;
-            // 
             // ShowLocalSeriesForm
             // 
             AcceptButton = searchBtn;
@@ -735,6 +749,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             headerLayout.ResumeLayout(false);
             headerLayout.PerformLayout();
             leftLayout.ResumeLayout(false);
+            contextMenuStrip1.ResumeLayout(false);
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             rightLayout.ResumeLayout(false);
@@ -742,7 +757,6 @@ namespace Kolibri.Common.VisualizeOMDbItem
             ((System.ComponentModel.ISupportInitialize)pictureBox).EndInit();
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
-            contextMenuStrip1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -769,7 +783,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private System.Windows.Forms.TableLayoutPanel rightLayout;
         private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.Label titleLabel;
-        private System.Windows.Forms.Label productionLabel;
+        private System.Windows.Forms.Label imdbLabel;
         private System.Windows.Forms.Label directorLabel;
         private System.Windows.Forms.Label countryLabel;
         private System.Windows.Forms.Label plotLabel;
@@ -780,7 +794,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private System.Windows.Forms.Label titleContentLabel;
         private System.Windows.Forms.Label countryContentLabel;
         private System.Windows.Forms.Label directorContentLabel;
-        private System.Windows.Forms.Label productionContentLabel;
+        private System.Windows.Forms.Label imdbContentLabel;
         private System.Windows.Forms.Label yearContentLabel;
         private System.Windows.Forms.Label totalContentLabel;
         private System.Windows.Forms.Label typeContentLabel;
@@ -795,6 +809,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private Button buttonEdit;
         private ContextMenuStrip contextMenuStrip1;
         private ToolStripMenuItem toolStripMenuItemDelete;
+        private ToolStripMenuItem toolStripMenuItemSetIMDBTagOnFolder;
+        private ColumnHeader columnHeader5;
     }
 }
 

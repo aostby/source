@@ -42,6 +42,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="IMDbDataFiles\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

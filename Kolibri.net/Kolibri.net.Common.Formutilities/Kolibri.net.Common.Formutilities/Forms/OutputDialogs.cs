@@ -59,7 +59,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             {
                 return ShowRichTextBoxDialog(title, text, (FastColoredTextBoxNS.Language)language, size);
             }
-
             /// <summary>
             /// 
             /// </summary>
@@ -74,8 +73,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                 Enum.TryParse(language, out lang);
                 return ShowRichTextBoxDialog(title, text, lang, size);
             }
-
-
             /// <summary>
             /// 
             /// </summary>
@@ -106,7 +103,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             }
 
 
-
             public static DialogResult ShowDataTableDialog(string title, DataTable table, System.Drawing.Size size)
             {
                 Form form = new Form();
@@ -126,7 +122,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
                 return form.DialogResult;
             }
-
             public static DialogResult ShowDataTableDialog(string title, DataTable table, DataColumn presentInDetail, System.Drawing.Size size)
             {
                 Form form = new Form();
@@ -252,7 +247,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
                 }
             }
-
             internal static void ShowDataTableDialog_KeyDown(object sender, KeyEventArgs e)
             {
                 DataTable table = null;
@@ -308,7 +302,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                 e.Handled = true;
             }
 
-
             private static void VisualizeTextFiles_SelectionChanged(object sender, EventArgs e)
             {
                 ComboBox box = sender as ComboBox;
@@ -325,7 +318,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                 output.KeyDown += FCTB_KeyDown;
                 splitC.Panel2.Controls.Add(output);
             }
-
             internal static void FCTB_KeyDown(object sender, KeyEventArgs e)
             {
                 FastColoredTextBox textBoxQuery = sender as FastColoredTextBox;

@@ -51,7 +51,10 @@ namespace Kolibri.net.Common.Dal.Entities
         [DisplayName(nameof(SUBDLkey))]
         public string SUBDLkey { get; set; } = null;
 
-
+        [BrowsableAttribute(true)]
+        [Description(nameof(IMDbDataFiles))]
+        [DisplayName(nameof(IMDbDataFiles))]
+        public string IMDbDataFiles { get; set; } = "https://datasets.imdbws.com/";
 
 
         [BrowsableAttribute(true)]
