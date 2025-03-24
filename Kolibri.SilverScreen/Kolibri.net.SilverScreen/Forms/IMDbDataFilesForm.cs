@@ -3,24 +3,25 @@ using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
+using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows.Forms.DataVisualization.Charting;
-
+using TMDbLib.Objects.General;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class IMDbDataFilesForm : Form
     {
+        bool _cancel=false;
+
         private UserSettings _userSettings;
         private ToolTip _toolTip;
         private DirectoryInfo _destinationDir;
-        private ImageCacheDB _imgCache;
-        private LiteDBController contr;
-        private List<string> localImdbIds;
-        private List<string> seriesList;
+        private LiteDBController _contr;
 
         private Dictionary<string, List<string>> _lineDic = new Dictionary<string, List<string>>();
-     
+        // private Dictionary<string, object> _lineDic = new Dictionary<string, object>();
+
 
         Regex regexName = new Regex("\"[^\"]+\""),
           regexYear = new Regex("\\d+$"),
@@ -30,16 +31,14 @@ namespace Kolibri.net.SilverScreen.Forms
           regexMovieName = new Regex("^[^(]+");
 
 
-        private List<string> _gzFiles = new List<string>() {  "title.basics.tsv.gz",  "title.episode.tsv.gz", "title.crew.tsv.gz", "title.ratings.tsv.gz", "name.basics.tsv.gz", "title.akas.tsv.gz", "title.principals.tsv.gz" };
+        private List<string> _gzFiles = new List<string>() { "title.basics.tsv.gz", "title.episode.tsv.gz", "title.crew.tsv.gz", "title.ratings.tsv.gz", "name.basics.tsv.gz", "title.akas.tsv.gz", "title.principals.tsv.gz" };
 
         private List<string> _files;
 
         public IMDbDataFilesForm(UserSettings settings)
         {
             InitializeComponent();
-            _userSettings = settings; 
-            contr = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
-           
+            _userSettings = settings;
             _files = _gzFiles.Select(s => s.Replace(".gz", string.Empty)).ToList();
             Init();
         }
@@ -65,28 +64,34 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         private void Init()
         {
-            localImdbIds = contr.FindAllFileItems().Select(t => t.ImdbId).ToList();
-            seriesList   = contr.GetAllItemsByType("Series").Select(t => t.ImdbId).ToList();
+
             toolStripProgressBar1.Visible = false;
-         
-            SetStatusLabelText($"Initializing buttons {DateTime.Now.ToShortTimeString()}.");
-            var list = this.Controls.OfType<FlowLayoutPanel>().ToList();
-            foreach (var child in list)
+
+            SetStatusLabelText($"[INITIALIZING] All buttons {DateTime.Now.ToShortTimeString()}.");
+            var list = this.Controls.OfType<GroupBox>().ToList();
+            foreach (var item in list)
             {
-                child.Controls.Clear();
-                child.Enabled = true;
+                foreach (var child in item.Controls.OfType<FlowLayoutPanel>().ToList())
+                {
+                    child.Controls.Clear();
+                    child.Enabled = true;
+                }
             }
+     
 
             _destinationDir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, nameof(_userSettings.IMDbDataFiles)));
             if ((!_destinationDir.Exists)) _destinationDir.Create();
+            _contr = new LiteDBController(new FileInfo(Path.Combine(_destinationDir.FullName, "ImdbDataFiles.db")), false, false);
 
             linkLabelOnline.Text = _userSettings.IMDbDataFiles;
             linkLabelOnline.Tag = _userSettings.IMDbDataFiles;
             linkLabelLocal.Text = _destinationDir.FullName;
             linkLabelLocal.Tag = _destinationDir;
+            linkLabelIMDBdb.Text = _contr.ConnectionString.Filename;
+            linkLabelIMDBdb.Tag = _contr.ConnectionString.Filename;
 
             _toolTip = new ToolTip();
-            _imgCache = new Kolibri.net.Common.Dal.Controller.ImageCacheDB(_userSettings);
+
 
 
             try
@@ -126,9 +131,10 @@ namespace Kolibri.net.SilverScreen.Forms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
-        private FileInfo GetDestination(Button button) {
-        var file= new FileInfo(Path.Combine(_destinationDir.FullName, button.Text));
-            
+        private FileInfo GetDestination(Button button)
+        {
+            var file = new FileInfo(Path.Combine(_destinationDir.FullName, button.Text));
+
             return file;
         }
 
@@ -153,69 +159,29 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 SetStatusLabelText($"{lines.Count()} files found. Enabeling buttons [{DateTime.Now.ToShortTimeString()}] {Path.GetFileNameWithoutExtension(info.Name)}: {info.Name} ({FileUtilities.GetFilesize(length)})");
 
-                var progress = InitProgressBar();
+                var progress = InitProgressBar(toolStripProgressBar1);
+                res = await GetItemsFrom(key, lines, _contr, progress);
 
-                switch (key)
-                {
-                    case "title.episode.tsv":
-                        if (!_lineDic.ContainsKey("title.basics.tsv"))
-                        {
-                            try
-                            {
-                                buttondatafile_Click(new Button() { Text = key, Name = key }, e);
-
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-                        }
-                        var filteredBiglist = await GetEpisodes(info.Name, lines, localImdbIds, progress);
-                        var episodeList = filteredBiglist.Where(a => seriesList.Where(b => b == a.SeriesId).Any());
-                        foreach (var item in episodeList)
-                        {
-
-                            var localEp = contr.GetEpisode(item.ImdbId);
-                            if (localEp == null) //, kan være tusen stykker totalt
-                            {
-
-                                SetStatusLabelText($"Updating Series episodes: {item.Title}  {counter} / {lines.Count()} ");
-                                //     contr.Upsert(item);  TODO - hent fra TMDB
-
-                            }
-                        }
-                        break;
-                    case "name.basics.tsv":
-
-                        break;
-                    case "title.basics.tsv":
-                        res = await GetItemsFrom(key, lines, progress);
-                        break;
-
-                    default:
-                        res = await GetItemsFrom(key, lines, progress);
-                        break;
-
-                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
-            }
-            
-      
+        }
+
+
 
         private async void buttondatafile_Click(object? sender, EventArgs e)
         {
             try
             {
-                Progress<int> progress = InitProgressBar();
+                Progress<int> progress = InitProgressBar(toolStripProgressBar1);
 
                 Button button = (sender as Button);
                 button.Enabled = false;
-                FileInfo info =GetDestination(button);
+                FileInfo info = GetDestination(button);
                 toolStripProgressBar1.Visible = true;
-                var result = await ReadIMDBData(  button, progress);                
+                var result = await ReadIMDBData(button, progress);
                 toolStripProgressBar1.Visible = false;
                 button.Enabled = true;
                 if (!result) { throw new Exception($"Failed to read {info.Name}"); }
@@ -228,7 +194,7 @@ namespace Kolibri.net.SilverScreen.Forms
             Init();
         }
 
- 
+
 
         /// <summary>
         /// Leser data fra en stor fil, dersom den er diger, filtreres den opp imot imdbId som ligger i DB fra før.
@@ -244,14 +210,14 @@ namespace Kolibri.net.SilverScreen.Forms
 
             SetStatusLabelText($"Initializing [{DateTime.Now.ToShortTimeString()}] {Path.GetFileNameWithoutExtension(info.Name)} ({FileUtilities.GetFilesize(info.Length)}): {info.Name}");
             var huge = FileUtilities.GetFilesize(info.Length).Contains("gib", StringComparison.OrdinalIgnoreCase);
-            
-            List<string> lines = huge? await info.ReadAllLinesAsync(localImdbIds, progress):await info.ReadAllLinesAsync(progress:progress);
+            var localImdbIds = _contr.FindAllItems().GetAwaiter().GetResult().Select(s => s.ImdbId).ToList();
+            List<string> lines = huge ? await info.ReadAllLinesAsync(localImdbIds, progress) : await info.ReadAllLinesAsync(null, progress: progress);
             _lineDic[info.Name] = lines;
             //button.Tag = ret;
             ret = lines.Count() > 0;
             return ret;
         }
-        private async Task<List<Episode>> GetEpisodes(string name, IEnumerable<string> lines, List<string> localImdbIds, IProgress<int> progress)
+       /* private async Task<List<Episode>> GetEpisodes(string name, IEnumerable<string> lines, IProgress<int> progress)
         {
             List<Episode> items = new List<Episode>();
 
@@ -264,93 +230,169 @@ namespace Kolibri.net.SilverScreen.Forms
                 int progressPercentage = (int)((double)counter / totalItems * 100);
                 if (progressPercentage.Equals(0)) progressPercentage = 1;
                 if (progressPercentage > 100) progressPercentage = 100;
-         
-              
-                if (line.Contains("-------------") || line.Contains("tconst")||string.IsNullOrWhiteSpace(line)) { continue; }
-                var arr = line.Split("\t");                
-                if (localImdbIds.Find(x => x.Equals(arr[1])) == null)
+                if (progressPercentage > lastPercentage)
                 {
-                    if (progressPercentage > lastPercentage)
-                    {lastPercentage = progressPercentage;   
-                        SetStatusLabelText($"(status: {counter}/{lines.Count()} - {progressPercentage}%)"); await Task.Delay(4);
-                        progress.Report(progressPercentage);
-                        await Task.Delay(10);
-                    }   
-                    continue;
+                    lastPercentage = progressPercentage;
+                    SetStatusLabelText($"(status: {counter}/{lines.Count()} - {progressPercentage}%)"); await Task.Delay(4);
+                    progress.Report(progressPercentage);
+                    await Task.Delay(10);
                 }
-                //SetStatusLabelText($" {line}");
-                OMDbApiNet.Model.Episode item = new Episode();
-                item.ImdbId = arr[0];
-                item.SeriesId = arr[1];
-                item.SeasonNumber = arr[2];
-                item.EpisodeNumber = arr[3];
 
-                SetStatusLabelText($"Found episode for SeriesID: {item.SeriesId} (status: {counter}/{lines.Count()} - {progressPercentage}%)");
-                item.Title = $"Season {item.SeasonNumber} Episode {item.EpisodeNumber}";
-                items.Add(item);
+                if (line.Contains("-------------") || line.Contains("tconst") || string.IsNullOrWhiteSpace(line)) { continue; }
+                var arr = line.Split("\t");
+
+            
             }
             return items;
         }
-
-        private async Task<List<Item>> GetItemsFrom(string name, IEnumerable<string> lines, IProgress<int> progress)
-        {
-          
+        */
+        private async Task<List<Item>> GetItemsFrom(string name, List<string> orglines, LiteDBController contr,   IProgress<int> progress)
+        {  
+            List<string> lines = orglines.ToList();
             int counter = 0;
-            long currentLength = 0;
             long totalLength = lines.Count();
             int lastPercentage = 0;
-            List<Item> items = new List<Item>();
-            
-            Item item = new Item();
-       
+            List<Item> items = new List<Item>(); 
+          
+            List<string> localImdbIds = new List<string>();
+
+            SetStatusLabelText($"[INITIALIZING] {name} {DateTime.Now.ToShortTimeString()} - Starting with {localImdbIds.Count()} items in {_contr.ConnectionString.Filename}");
+            await Task.Delay(1);
+
+
+            if (name.Contains("title.basics"))
+            {
+                  localImdbIds = _contr.FindAllItems().GetAwaiter().GetResult().Select(s => s.ImdbId).ToList();
+                if (localImdbIds.Count() > 0)
+                {
+                    SetStatusLabelText($"[INITIALIZING] {name} {DateTime.Now.ToShortTimeString()} - Taking the first {localImdbIds.Count()} away");
+                    await Task.Delay(1);
+                    //lines = orglines. GetRange(localImdbIds.Count(), orglines.Count() - localImdbIds.Count());
+                    lines = orglines.Take<string>(new Range(localImdbIds.Count(), orglines.Count() - localImdbIds.Count())).ToList();
+
+                    totalLength = lines.Count();
+                    counter = localImdbIds.Count(); 
+                }
+            } 
 
             foreach (string line in lines)
-            {
-                counter++; currentLength += line.Length;
+            {   
+                counter++;
+                if (line.Contains("-------------") || line.Contains("nconst") || line.Contains("tconst") || string.IsNullOrWhiteSpace(line))
+                { continue; }
+
+             
+                await Task.Delay(1);
+
                 if (progress != null)
                 {
-                    int percentage = (int)((currentLength / (double)totalLength) * 100.0);
-                    if (percentage > lastPercentage)
+                    int percentage = (int)((counter / (double)totalLength) * 100.0);
+                    if (percentage == 0) percentage = 1;
+                    if (percentage <= 99 && percentage > lastPercentage)
                     {
                         lastPercentage = percentage;
                         progress.Report(lastPercentage);
                     }
                 }
 
-                if (line.Contains("-------------")||line.Contains("nconst")|| line.Contains("tconst")||string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
+                if (_cancel) {
+                    SetStatusLabelText($"[CANCEL] Cancel button pressed at ({counter}/{totalLength}) ");
+                   _cancel = false; 
+                    break;
                 }
-                SetStatusLabelText($" {line}");
 
                 var arr = line.Split("\t");
-                if (localImdbIds.Find(x => x.Equals(arr.FirstOrDefault())) == null)
-                {
-                    item.ImdbId = arr.FirstOrDefault();
-                }
-                if (line.StartsWith('"'.ToString()) && regexSeason.Match(line).Value != string.Empty)
-                {
-                    string year = regexYear.Match(line).Value;
 
-                    item.Title = regexName.Match(line).Value.Replace("\"", "").Replace("'", "´");
-                    item.Year = (year == string.Empty ? "'" : year + ", '");
-                    item.Title = regexEpisodeName.Match(line).Value.Replace("{", "").Trim().Replace("'", "´");
-                    // item.Season= regexSeason.Match(line).Value.Replace("(#", "") ;
-                    // item.Episode = regexEpisode.Match(line).Value.Replace(")}", "").Replace(".", "") + ", 1);");
+                if (name.Contains("name.basics")) {
+
+                    // "nconst	primaryName	birthYear	deathYear	primaryProfession	knownForTitles"
+                    throw new NotImplementedException(name);
+
                 }
-                else
+                if (name.Contains("title.ratings"))
                 {
-                    if (counter < 15) continue;
-                    string year = regexYear.Match(line).Value;
-                    item.Title = regexMovieName.Match(line).Value.Trim().Replace("'", "´");
-                    item.Year = (year == string.Empty ? "'" : "', " + year);
+                    Item item = _contr.FindItem(arr[0]);
+                    if (item != null)
+                    {
+                        item.Rated = arr[1];
+                        item.ImdbVotes = arr[2];
+                        contr.Update(item);
+                        SetStatusLabelText($"[UPDATE] ({counter}/{totalLength} - {lastPercentage}%) {item.ImdbId} - {item.Title}  ");
+                        await Task.Delay(2);
+                    }
                 }
-                items.Add(item);
+
+
+                else if (name.Contains("title.crew"))
+                {
+                    Item item = _contr.FindItem(arr[0]);
+                    if (item != null)
+                    {
+                        //item.Writer = 
+                    }
+                }
+
+                else if (name.Contains("episode"))
+                {
+                    //SetStatusLabelText($" {line}");
+                    OMDbApiNet.Model.Episode ep = new Episode();
+                    ep.ImdbId = arr[0];
+                    ep.SeriesId = arr[1];
+                    ep.SeasonNumber = arr[2];
+                    ep.EpisodeNumber = arr[3];
+                    ep.Title = $"Season {ep.SeasonNumber} Episode {ep.EpisodeNumber}";
+
+
+
+                    var tt = _contr.FindItem(ep.SeriesId);
+                    if (tt != null)
+                    {
+                        ep.Genre ??= tt.Genre;
+                    }
+
+                    tt = _contr.FindItem(ep.ImdbId);
+                    if (tt != null)
+                    {
+                        ep.Title = tt.Title == null ? ep.Title = $"Season {ep.SeasonNumber} Episode {ep.EpisodeNumber}" : tt.Title;
+                    }
+
+                    if (_contr.Insert(ep))
+                    {
+                        SetStatusLabelText($"[INSERT] ({counter}/{totalLength} - {lastPercentage}%) Found episode for SeriesID: {ep.SeriesId} - {ep.Title} (status: {counter}/{lines.Count()} - {lastPercentage}%)");
+
+
+                    }
+
+                }
+
+                else if (arr.Length.Equals(9) && (arr[1].Equals("tvEpisode") || arr[1].Equals("tvSeries") || arr[1].Equals("movie")) && arr[5].CompareTo("1920") >= 0)
+                {
+
+                    if (!localImdbIds.Contains(arr[0]))
+                    {
+                        Item item = new Item();
+                        item.ImdbId = arr.FirstOrDefault();
+                        bool isAdult = arr[4].Equals("1");
+                        item.Type = arr[1];
+                        item.Title = arr[2];
+                        item.Year = arr[5];
+                        item.Runtime = $"{arr[7].ToInt32()}";
+                        item.Genre = arr[8];
+                        if (_contr.Insert(item))
+                        {
+                            SetStatusLabelText($"[INSERT] ({counter}/{totalLength} - {lastPercentage}%) {item.ImdbId} - {item.Title}  ");
+                            await Task.Delay(2);
+                        }
+                    }
+                }
+          
+
             }
+            progress.Report(100);
             return items;
         }
 
-        private void SetToolTipForButton(Button button, bool checkLines=false)
+        private void SetToolTipForButton(Button button, bool checkLines = false)
         {
             Dictionary<string, string> tDic = new Dictionary<string, string>() {
             { "name.basics", $"{Environment.NewLine}Names of actors and other prominent persons{Environment.NewLine} nconst\tprimaryName\tbirthYear\tdeathYear\tprimaryProfession\tknownForTitles" },
@@ -366,7 +408,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (!checkLines)
                 {
                     FileInfo info = new FileInfo(Path.Combine(_destinationDir.FullName, button.Text));
-                    var key = string.Join(".",  info.Name.Split(".").Take(2));
+                    var key = string.Join(".", info.Name.Split(".").Take(2));
                     if (info.Exists)
                     {
                         button.BackColor = Color.LimeGreen;
@@ -387,12 +429,13 @@ namespace Kolibri.net.SilverScreen.Forms
                         button.BackColor = Color.LightSalmon;
                         _toolTip.SetToolTip(button, $"{button.Text} does not exist. Please hit button to download");
                     }
-                   
+
                 }
-                else {
-                    if (_lineDic.Keys.Count>0&&_lineDic.Keys.First(x => x.Contains(button.Text)) != null)
+                else
+                {
+                    if (_lineDic.Keys.Count > 0 && _lineDic.Keys.First(x => x.Contains(button.Text)) != null)
                     { button.BackColor = Color.LimeGreen; }
-                    else { button.BackColor = _lineDic.Keys.Count >= 0 ? Color.LightSalmon:   Color.LightYellow; }
+                    else { button.BackColor = _lineDic.Keys.Count >= 0 ? Color.LightSalmon : Color.LightYellow; }
                 }
             }
             catch (Exception ex)
@@ -433,13 +476,43 @@ namespace Kolibri.net.SilverScreen.Forms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
-        private Progress<int> InitProgressBar()
+        private Progress<int> InitProgressBar(ToolStripProgressBar pb)
         {
-            toolStripProgressBar1.Visible = true;
-            toolStripProgressBar1.Minimum = 0;
-            toolStripProgressBar1.Maximum = 100;
-            Progress<int> progress = new Progress<int>(value => { toolStripProgressBar1.Value = value; });
+            pb.Visible = true;
+            pb.Minimum = 0;
+            pb.Maximum = 100;
+            pb.Value = 0;
+            Progress<int> progress = new Progress<int>(value =>
+            {
+                if (value <= 100)
+                    pb.Value = value;
+                else pb.Value = 100;
+                try
+                {
+                    Thread.Sleep(2);
+
+                    using (Graphics gr = pb.ProgressBar.CreateGraphics())
+                    {
+                        //Switch to Antialiased drawing for better (smoother) graphic results
+                        gr.SmoothingMode = SmoothingMode.AntiAlias;
+                        gr.DrawString(value.ToString() + "%",
+                            SystemFonts.DefaultFont,
+                            Brushes.Black,
+                            new PointF(pb.Width / 2 - (gr.MeasureString(value.ToString() + "%",
+                                SystemFonts.DefaultFont).Width / 2.0F),
+                            pb.Height / 2 - (gr.MeasureString(value.ToString() + "%",
+                                SystemFonts.DefaultFont).Height / 2.0F)));
+                    }
+                }
+                catch (Exception ex)
+                { }
+            });
             return progress;
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            _cancel = true;
         }
     }
 }

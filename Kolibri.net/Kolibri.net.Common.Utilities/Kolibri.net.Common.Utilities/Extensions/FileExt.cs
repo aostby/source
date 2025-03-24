@@ -27,9 +27,8 @@ namespace Kolibri.net.Common.Utilities.Extensions
         /// </summary>
         private const FileOptions DefaultOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
 
-        public static Task<List<string>> ReadAllLinesAsync(this FileInfo info, List<string> imdbIds = null, IProgress <int> progress = null)
+        public static Task<List<string>> ReadAllLinesAsync(this FileInfo info, List<string> imdbIds , IProgress <int> progress = null)
         {
-
             return ReadAllLinesAsync(info.FullName, Encoding.UTF8, imdbIds, progress);
         }
         //arr_lines = System.Text.RegularExpression.Regex.Matches(str_text, "^.*word1.*", RegexOptions.Multiline).Cast<Match>().Select(m => m.ToString()).ToArray()
@@ -50,15 +49,13 @@ namespace Kolibri.net.Common.Utilities.Extensions
                 string line;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {counter++;
-                    currentLength += line.Length;   
+                    currentLength += line.Length;
 
-                    if(imdbIds == null) 
-                        lines.AppendLine(line);
+                    if (imdbIds == null)
+                    { lines.AppendLine(line); }
                     else
                     {
-                        if (imdbIds.Any(s => line.Contains(s))){
-                            lines.AppendLine(line);
-                        }
+                        lines.AppendLine(line);
                     }
                     if (progress != null)
                     {
@@ -68,6 +65,7 @@ namespace Kolibri.net.Common.Utilities.Extensions
                         {
                             lastPercentage = percentage;
                             progress.Report(lastPercentage);
+                            await Task.Delay(1);
                         }
                     }
 

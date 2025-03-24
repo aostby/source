@@ -14,6 +14,7 @@ namespace Kolibri.net.Common.Utilities.Extensions
             number = number.ToLower().Replace("e", string.Empty);
             number = number.ToLower().Replace("E", string.Empty);
             number = number.ToLower().Replace("n/a", "0");
+            number = number.ToLower().Replace("\\n", "0");
             if (number.IsNumeric())
             {
                 return Int32.Parse(
