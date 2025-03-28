@@ -95,31 +95,46 @@ namespace Kolibri.SilverScreen.Forms
 
         private void multiMedialocalToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form newMDIChild = null;
-            if (sender.Equals(movieslocalToolStripMenuItem))
-            {
-                newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
-            }
-            else if (sender.Equals(serieslocalToolStripMenuItem))
-            {
-                newMDIChild = new ShowLocalSeriesForm(_userSettings);
-            }
-            else if (sender.Equals(flyttFilmerToolStripMenuItem))
-            {
-                newMDIChild = new SortMultimediaDesktopForm(MultimediaType.Movies, _userSettings);
-            }
-            else if (sender.Equals(searchToolStripMenuItem))
-            {
-                newMDIChild = new Kolibri.net.SilverScreen.IMDBForms.MovieForm(_userSettings);
-            }
-            else if (sender.Equals(genreSearchToolStripMenuItem))
-            {
-                newMDIChild = new net.Common.MovieAPI.Forms.BrowseMoviesForm(_userSettings);
-            }
 
+            try
+            {
+                Form newMDIChild = null;
+                if (sender.Equals(movieslocalToolStripMenuItem))
+                {
+                    newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
+                }
+                else if (sender.Equals(serieslocalToolStripMenuItem))
+                {
+                    newMDIChild = new ShowLocalSeriesForm(_userSettings);
+                }
+                else if (sender.Equals(flyttFilmerToolStripMenuItem))
+                {
+                    newMDIChild = new SortMultimediaDesktopForm(MultimediaType.Movies, _userSettings);
+                }
+                else if (sender.Equals(searchToolStripMenuItem))
+                {
+                    newMDIChild = new Kolibri.net.SilverScreen.IMDBForms.MovieForm(_userSettings);
+                }
+                else if (sender.Equals(genreSearchToolStripMenuItem))
+                {
+                    newMDIChild = new net.Common.MovieAPI.Forms.BrowseMoviesForm(_userSettings);
+                }
+                else if (sender.Equals(iMDbDataFilesToolStripMenuItem))
+                {
+                    newMDIChild = new IMDbDataFilesForm(_userSettings);
+                }
+                else if (sender.Equals(testCircusToolStripMenuItem))
+                {
+                    newMDIChild = new TestCircusForm();
+                }
 
-            newMDIChild.MdiParent = this;
-            newMDIChild.Show();
+                newMDIChild.MdiParent = this;
+                newMDIChild.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
         }
         private void finnDuplikaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -294,6 +309,7 @@ namespace Kolibri.SilverScreen.Forms
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
-        }
+        } 
+       
     }
 }

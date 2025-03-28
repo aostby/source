@@ -1,7 +1,11 @@
-﻿using Kolibri.net.Common.Dal.Entities;
+﻿using com.sun.tools.corba.se.idl;
+using com.sun.xml.@internal.bind.v2.model.core;
+using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
 using OMDbApiNet.Model;
+using System.Collections;
+using System.Security.Policy;
 using TMDbLib.Objects.TvShows;
 using Season = OMDbApiNet.Model.Season;
 
@@ -15,34 +19,25 @@ namespace Kolibri.net.Common.Dal.Controller
 
         private LiteDatabase _liteDB;
         public ConnectionString ConnectionString;
+        internal Hashtable _ht = new Hashtable();
 
-        public LiteDBController(FileInfo dbPath, bool exclusiveAccess = false, bool readOnly = true)
+        public LiteDBController(FileInfo dbPath, bool exclusiveAccess = false, bool readOnly = false, bool upgrade=true)
         {
 
             ExclusiveConnection = exclusiveAccess;
-          //  readOnly = false;
+            //  readOnly = false;
             ConnectionString = new ConnectionString()
             {
                 Connection = ExclusiveConnection ? ConnectionType.Direct : ConnectionType.Shared,
                 ReadOnly = readOnly,
-                Upgrade = false,
+                Upgrade = upgrade,
                 Password = null,
                 Filename = dbPath.FullName
+
             };
             _liteDB = new LiteDatabase(ConnectionString);
         }
-        //public void LiteDBController_old(bool exclusiveAccess = false)
-        //{
-        //    #region dette veriker
-
-        //    if (exclusiveAccess)
-        //        _liteOMDB = new LiteDatabase(DefaultFilePath);
-        //    else
-        //        _liteOMDB = new LiteDatabase(new ConnectionString(DefaultFilePath) { Connection = ConnectionType.Shared });
-        //    return;
-
-        //    #endregion
-        //}
+ 
         public void Dispose()
         {
 
@@ -84,8 +79,13 @@ namespace Kolibri.net.Common.Dal.Controller
                 return null;
             }
         }
-        public Item FindItemByTitle(string title, int year)
+        public Item FindItemByTitle(string title, int year, string type = null)
         {
+            if (type != null)
+            {
+                var list = FindAllItems(type).GetAwaiter().GetResult().ToList();
+                return list.FindAll(x => x.Title == title.Trim() && x.Year == year.ToString()).FirstOrDefault();
+            }
             if (year < 1800)
             {
                 return FindItemByTitle(title).First();
@@ -424,19 +424,112 @@ namespace Kolibri.net.Common.Dal.Controller
         }
         #endregion
 
-        #region SeasonEpisode - OMDB
-        public SeasonEpisode FindSeasonEpisode(string imdbId)
+        #region KolibriSeason - OMDB
+        public KolibriSeason FindSeason(string seriesImdbId, int seasonNumber)
         {
             try
             {
-                return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
-                            .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+                string id = $"{seriesImdbId}_{seasonNumber}";
+
+                var collection = _liteDB.GetCollection<KolibriSeason>("KolibriSeason");
+                //rs = collection.FindOne(Query.EQ("_id", id));
+                return  collection.FindById(id);
+
+                //   return _liteDB.GetCollection<KolibriSeason>("KolibriSeason")
+                //.Find(x => x.SeriesId.Equals(seriesImdbId)&&x.SeasonNumber == seasonNumber.ToString()).FirstOrDefault();
+
             }
             catch (Exception ex)
             {
                 return null;
             }
         }
+        public bool Update(KolibriSeason season)
+        {
+            string id = $"{season.SeriesId}_{season.SeasonNumber}";
+            return _liteDB.GetCollection<KolibriSeason>("KolibriSeason")
+                .Update(id, season);
+        }
+        public bool Insert(KolibriSeason season)
+        {
+            string id = $"{season.SeriesId}_{season.SeasonNumber}";
+            _liteDB.GetCollection<KolibriSeason>("KolibriSeason")
+                .Insert(id, season);
+            return true;
+        }
+        public bool Upsert(KolibriSeason season)
+        {
+            if (season == null) return false;
+            try
+            {
+                if (!Insert(season))
+                    Update(season);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Update(season);
+                }
+                catch (Exception exu)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public int Delete(KolibriSeason season )
+        {
+            string id = $"{season.SeriesId}_{season.SeasonNumber}";
+            try
+            {
+                var col = _liteDB.GetCollection<KolibriSeason>();
+                //col.DeleteMany("1=1");
+                var ret= col.Delete(id);
+                return Convert.ToInt32(ret);
+
+           
+            }
+            catch (Exception)
+            {
+
+                return -1;
+            }
+
+
+        }
+
+        #endregion
+
+
+        #region SeasonEpisode - OMDB
+        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
+        public SeasonEpisode FindSeasonEpisode(string imdbId)
+        {if (string.IsNullOrWhiteSpace(imdbId)) return null;
+            try
+            {
+                int hash = imdbId.GetHashCode();
+                if (_ht.ContainsKey(hash)) { return  (SeasonEpisode)_ht[hash]; }
+
+                string id = $"{imdbId}";
+
+                var collection = _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode");
+                //rs = collection.FindOne(Query.EQ("_id", id));
+                var ret = collection.FindById(id);
+                if (ret != null) { _ht.Add(hash, ret); }
+                return ret;
+
+
+                //return _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode")
+                //            .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
         public List<SeasonEpisode> FindAllSeasonEpisodes()
         {
             try
@@ -449,6 +542,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return null;
             }
         }
+        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
         public SeasonEpisode FindSeasonEpisode(string seriesName, string season, string episode)
         {
             
@@ -481,6 +575,7 @@ namespace Kolibri.net.Common.Dal.Controller
             }
 
         }
+        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
         public bool Insert(SeasonEpisode ep)
         {
             try
@@ -494,6 +589,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
+        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
         public bool Update(SeasonEpisode ep)
         {
             try
@@ -507,6 +603,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
+        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
         public bool Upsert(SeasonEpisode ep)
         {
             bool ret = false;
@@ -531,8 +628,17 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             try
             {
-                var ret = _liteDB.GetCollection<Episode>("Episode")
-                                  .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+                //var ret = _liteDB.GetCollection<Episode>("Episode")
+                //                  .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+
+                var collection = _liteDB.GetCollection<Episode>("Episode");
+                //rs = collection.FindOne(Query.EQ("_id", id));
+                var ret = collection.FindById(imdbId);
+                if (ret != null) { _ht.Add(_ht, ret); }
+                return ret;
+
+
+
                 return ret;
             }
             catch (Exception ex)
@@ -610,7 +716,7 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 var movie = FindFile(item.ImdbId);
                 if (movie != null)
-                    ret.Add(movie);
+                    ret.Add(movie.Result);
             };
             return ret;
         }
@@ -630,7 +736,7 @@ namespace Kolibri.net.Common.Dal.Controller
             ret = col.Find(Query.StartsWith("FullName", dirInfo.FullName)).ToList();
             return ret;
         }
-        public FileItem FindFile(string imdbId)
+        public async Task<FileItem> FindFile(string imdbId)
         {
             FileItem ret;
 
@@ -846,17 +952,16 @@ switch (searchCriteria)
         #endregion
 
         #region wishlist
-        public bool WishListAdd(WatchList movie)
-        {
-            try
-            {
-                try
-                {
-
+        public async void WishListAdd(WatchList movie)
+        {   try
+            { 
                     if (string.IsNullOrEmpty(movie.FilePath))
                     {
 
-                        var path = FindFile(movie.ImdbId).FullName;
+                        var t = await FindFile(movie.ImdbId);
+                        var path = t.FullName;
+
+
 
                         if (File.Exists(path))
                         {
@@ -868,23 +973,19 @@ switch (searchCriteria)
                     {
 
                         movie.FilePath = null;
-                    }
-                }
-                catch (Exception)
-                { }
-
-
+                    } 
 
                 _liteDB.GetCollection<WatchList>("WatchList")
                     .Insert(movie.ImdbId, movie);
-                return true;
+                //   return true;
             }
             catch (Exception ex)
             {
-                return false;
+                MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+        
         }
-        public bool WishListUpsert(WatchList movie)
+        public async Task< bool> WishListUpsert(WatchList movie)
         {
             try
             {
@@ -892,8 +993,8 @@ switch (searchCriteria)
                 if (string.IsNullOrEmpty(movie.FilePath))
                 {
 
-                    var path = FindFile(movie.ImdbId).FullName;
-
+                    var t = await FindFile(movie.ImdbId);
+                    var path = t.FullName;
                     if (File.Exists(path))
                     {
                         movie.FilePath = new FileInfo(path).Directory.FullName;

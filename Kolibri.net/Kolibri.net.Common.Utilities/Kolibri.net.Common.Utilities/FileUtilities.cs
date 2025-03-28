@@ -5,6 +5,7 @@ using Ookii.Dialogs.WinForms;
 using System.Collections;
 using System.Data;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -659,6 +660,58 @@ namespace Kolibri.net.Common.Utilities
             { }
             return File.Exists(path);
         }
+        public static bool DownloadFile(Uri url, FileInfo destination) {
+            bool ret = false;
+            // Try downloading file
+            try
+            {
+
+                using (System.Net.Http.HttpClient client = new System.Net.Http.HttpClient())
+                {
+
+                    // Add bearer token token to request header
+                //    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + in_AccessToken);
+
+                    // Send the HTTP GET request
+                    System.Net.Http.HttpResponseMessage response = client.GetAsync(url).Result;
+
+                    // Check if response was successful
+                    if (response.IsSuccessStatusCode)
+                    {
+
+                        // Get the response content
+                        byte[] content = response.Content.ReadAsByteArrayAsync().Result;
+
+                        // Save the content to a file
+                        System.IO.File.WriteAllBytes(destination.FullName, content);
+                        ret = File.Exists(destination.FullName);
+
+                    }
+
+                    // Throw an exception if the response was not successful
+                    else
+                    {
+
+                        throw new Exception(string.Format("{0} (Status code: {1})", response.RequestMessage, response.StatusCode));
+
+                    }
+
+                }
+
+
+            }
+
+            // Catch any exception and rethrow
+            catch (Exception ex)
+            {
+
+                //   throw new Exception("Download of file failed: " + ex.Message);
+                ret = false;
+
+            }
+            return ret;
+        }
+   
 
         public static string DownloadUrlToString(string url, Encoding enc)
         {
@@ -1101,6 +1154,26 @@ namespace Kolibri.net.Common.Utilities
             catch (UnauthorizedAccessException) { }
         }
 
+
+        public static void DeleteDirectory(string target_dir)
+        {
+            string[] files = Directory.GetFiles(target_dir);
+            string[] dirs = Directory.GetDirectories(target_dir);
+
+            foreach (string file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            foreach (string dir in dirs)
+            {
+                DeleteDirectory(dir);
+            }
+
+            Directory.Delete(target_dir, false);
+        }
+
         public static FileInfo GetFile(string title, DirectoryInfo dir, string filter)
         {
             FileInfo ret = null;
@@ -1367,7 +1440,50 @@ namespace Kolibri.net.Common.Utilities
             return dynamic;
         }
 
+        /// <summary>
+        /// Uses GZIP compression
+        /// </summary>
+        /// <param name="fileToCompress">File To Compress</param>
+        public static void Compress(FileInfo fileToCompress)
+        {
+            using (FileStream originalFileStream = fileToCompress.OpenRead())
+            {
+                if ((File.GetAttributes(fileToCompress.FullName) & FileAttributes.Hidden) != FileAttributes.Hidden & fileToCompress.Extension != ".gz")
+                {
+                    using (FileStream compressedFileStream = File.Create(fileToCompress.FullName + ".gz"))
+                    {
+                        using (GZipStream compressionStream = new GZipStream(compressedFileStream, CompressionMode.Compress))
+                        {
+                            originalFileStream.CopyTo(compressionStream);
+                            Console.WriteLine("Compressed {0} from {1} to {2} bytes.",
+                                fileToCompress.Name, fileToCompress.Length.ToString(), compressedFileStream.Length.ToString());
+                        }
+                    }
+                }
+            }
+        }
 
+        /// <summary>
+        /// Uses GZIP decompression
+        /// </summary>
+        /// <param name="fileToDecompress">File To Decompress</param>
+        public static void Decompress(FileInfo fileToDecompress)
+        {
+            using (FileStream originalFileStream = fileToDecompress.OpenRead())
+            {
+                string currentFileName = fileToDecompress.FullName;
+                string newFileName = currentFileName.Remove(currentFileName.Length - fileToDecompress.Extension.Length);
+
+                using (FileStream decompressedFileStream = File.Create(newFileName))
+                {
+                    using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                    {
+                        decompressionStream.CopyTo(decompressedFileStream);
+                        Console.WriteLine("Decompressed: {0}", fileToDecompress.Name);
+                    }
+                }
+            }
+        }
         #endregion
 
         public static string ExportToFormats(object data)

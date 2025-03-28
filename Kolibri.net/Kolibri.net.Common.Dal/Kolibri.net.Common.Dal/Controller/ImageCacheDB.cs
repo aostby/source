@@ -4,6 +4,8 @@ using Kolibri.net.Common.Utilities;
 using LiteDB;
 using OMDbApiNet.Model;
 using sun.security.util;
+using sun.util.resources.cldr.zh;
+using System.Collections;
 using System.Data;
 using System.Reflection;
 using System.Runtime.Caching;
@@ -15,24 +17,23 @@ namespace Kolibri.net.Common.Dal.Controller
     public class ImageCacheDB
     {
       internal  ImagePosterDBController _ImageDB;
-        LiteDBController _LiteDB;
+        LiteDBController _liteDB;
+
+   
 
         private int _max = 2000;
 
       //  private MemoryCache _cache = MemoryCache.Default;
-        private readonly UserSettings _userSettings;
+        //private readonly UserSettings _userSettings;
 
         //private Dictionary<string, byte[]> _imageCache;
         public string ApplicationName { get; private set; }
 
-        public ImageCacheDB(UserSettings userSettings)
+        public ImageCacheDB(LiteDBController liteDB)
         {
-            _userSettings = userSettings;
-            if (userSettings != null)
-            {
-                _LiteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
-            }
 
+            _liteDB = liteDB;
+            
             Init();
         }
 
@@ -101,16 +102,17 @@ namespace Kolibri.net.Common.Dal.Controller
             //}
             //catch (Exception ex) { }
 
-            if (_LiteDB != null)
+            if (_liteDB != null)
             {
-                Task.Run(async () => await InitImagesAsync(_LiteDB));
+                Task.Run(async () => await InitImagesAsync(_liteDB));
             }
 
         }
 
         public FileInfo DefaultDBPath()
         {
-            FileInfo ret = new FileInfo(Path.ChangeExtension(_userSettings.LiteDBFileInfo.FullName, ".imgdb"));
+            string path = Path.ChangeExtension(_liteDB.ConnectionString.Filename, ".imgdb");
+            FileInfo ret = new FileInfo(path);
             return ret;
         }
         //Store Stuff in the cache  
@@ -495,6 +497,7 @@ namespace Kolibri.net.Common.Dal.Controller
 
     internal class ImagePosterDBController
     {
+        internal Hashtable _ht = new Hashtable();
         internal bool ExclusiveConnection { get; set; }
 
         internal LiteDatabase _litePosterDB;
@@ -538,9 +541,10 @@ namespace Kolibri.net.Common.Dal.Controller
 
         #region ImagePoster
         internal async Task<bool> ImageExists(string ImdbId)
-        {
+        {int hash = ImdbId.GetHashCode();
             bool ret = false;
             
+           if( _ht.ContainsKey(hash))return true;
             try
             {
                 //  var count =   _litePosterDB.GetCollection<ImageBase>("ImageBase").Count(Query.EQ("_id", ImdbId));
@@ -552,7 +556,8 @@ namespace Kolibri.net.Common.Dal.Controller
             }
             catch (Exception ex)
             { ret = false; }
-            return ret;
+            if (ret) { _ht.Add(hash, ImdbId); }
+              return ret;
         }
 
         internal async Task<bool> InsertImage(ImagePoster imagePoster)

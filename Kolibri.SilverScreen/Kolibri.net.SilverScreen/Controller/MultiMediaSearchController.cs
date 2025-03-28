@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms.DataVisualization.Charting;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
@@ -365,17 +366,31 @@ namespace Kolibri.net.SilverScreen.Controller
                 {
 
 
-                    Season ses = _OMDB.SeasonByImdbId(item.ImdbId, (i + 1).ToString());
-                    if (ses != null)
+               
+                    var kses = _liteDB.FindSeason(item.ImdbId, i+1);
+                    if (kses ==null){
+                        try
+                        {
+                        Season ses = _OMDB.SeasonByImdbId(item.ImdbId, (i + 1).ToString());
+                            kses = JsonConvert.DeserializeObject<KolibriSeason>(ses.JsonSerializeObject());
+                            kses.Title = item.Title;
+                            kses.SeriesId = item.ImdbId;
+                            _liteDB.Upsert(kses);
+                        }
+                        catch (Exception)
+                        { }
+                        
+                    }
+                    if (kses != null)
                     {
-                        KolibriSeason kses = JsonConvert.DeserializeObject<KolibriSeason>(ses.JsonSerializeObject());
-                        kses.Title = item.Title;
-                        kses.SeriesImdbId = item.ImdbId;
                         seasonList.Add(kses);
 
                         var table = DataSetUtilities.AutoGenererDataSet<SeasonEpisode>(kses.Episodes.ToList()).Tables[0];
                         System.Data.DataColumn newColumn = new System.Data.DataColumn("Season", typeof(System.String));
                         newColumn.DefaultValue = i.ToString();
+                        table.Columns.Add(newColumn);
+                        newColumn = new System.Data.DataColumn("SeriesId", typeof(System.String));
+                        newColumn.DefaultValue = kses.SeriesId;
                         table.Columns.Add(newColumn);
 
                         var epTable = SeriesUtilities.SortAndFormatSeriesTable(table);
@@ -455,7 +470,7 @@ namespace Kolibri.net.SilverScreen.Controller
             return showDic.Values.ToList();
         }
 
-        private DataTable SearchForSeriesEpisodes(List<string> titleList)
+        private async Task<DataTable> SearchForSeriesEpisodes(List<string> titleList)
         {
             string currentItem = "Uten navn";
             var totEpisodes = new List<Episode>();
@@ -466,7 +481,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 try
                 {
 
-                    var item = GetItem(currentItem).GetAwaiter().GetResult();
+                    var item = await  GetItem(currentItem) ;
                     if (item != null)
                     {
                         currentItem = item.Title;
@@ -492,6 +507,9 @@ namespace Kolibri.net.SilverScreen.Controller
 
                                 var season = _liteDB.FindSeason(item.Title, s.SeasonNumber.ToString()) ?? _OMDB.SeriesBySeason(item.Title, s.SeasonNumber.ToString());
                                 _liteDB.Upsert(season);
+                                KolibriSeason kSeason = season.DeepCopy<KolibriSeason>();
+                                kSeason.SeriesId = imdbId;
+                                _liteDB.Upsert(kSeason);
                                 foreach (var se in season.Episodes)
                                 {
                                     var episode = _liteDB.GetEpisode(se.ImdbId);
@@ -528,7 +546,7 @@ namespace Kolibri.net.SilverScreen.Controller
             return ret;
         }
 
-        public DataTable SearchForSeriesEpisodes(DirectoryInfo dir)
+        public async Task<DataTable> SearchForSeriesEpisodes(DirectoryInfo dir)
         {
             SetStatusLabelText($"Init {dir.FullName}.", "INFO");
             var showList = new List<TvShow>();
@@ -543,7 +561,7 @@ namespace Kolibri.net.SilverScreen.Controller
             .ToList();
 
             var titleList = table.AsEnumerable().Select(dr => dr.Field<string>(serCol)).Distinct().ToList().OrderBy(n => n).ToList();
-            return SearchForSeriesEpisodes(titleList);
+            return await SearchForSeriesEpisodes(titleList);
         }
    
         private async Task<Item> GetItem(string seriesName)

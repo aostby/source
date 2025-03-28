@@ -59,47 +59,17 @@ namespace MoviesFromImdb.Controller
 
         public   bool AddMovie( WatchList entity)
         {
-            if (_liteDB == null)
-                _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
-            return _liteDB.WishListAdd(entity);
-
-
-
-            //string connectionString = ConfigurationManager.ConnectionStrings["DB"].ConnectionString;
-            //using (SqlConnection conn = new SqlConnection(connectionString))
-            //{
-            //    using (SqlCommand cmd = new SqlCommand("AddNewMovie", conn))
-            //    {
-            //        conn.Open();
-
-            //        cmd.CommandType = CommandType.StoredProcedure;
-            //        cmd.Parameters.AddWithValue("@Title", item.Title);
-            //        cmd.Parameters.AddWithValue("@Year", item.Year);
-            //        cmd.Parameters.AddWithValue("@imdbRating", item.Rated);
-            //        cmd.Parameters.AddWithValue("@Runtime", item.Runtime);
-            //        cmd.Parameters.AddWithValue("@Genre", item.Genre);
-            //        cmd.Parameters.AddWithValue("@Actors", item.Actors);
-            //        cmd.Parameters.AddWithValue("@Plot", item.Plot);
-            //        cmd.Parameters.AddWithValue("@Metascore", item.Metascore);
-            //        cmd.Parameters.AddWithValue("@Poster", item.Poster);
-            //        cmd.Parameters.AddWithValue("@Image", item.Picture);
-            //        cmd.Parameters.AddWithValue("@Trailer", item.Trailer);
-
-            //        var i = cmd.ExecuteNonQuery();
-
-            //        if (i >= 1)
-            //        {
-            //            MessageBox.Show("Movie is added to watch list!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //        }
-            //        else
-            //        {
-            //            MessageBox.Show("Movie already exist in your watchlist!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //        }
-
-
-            // }
-            //  }
-
+            try
+            {
+                if (_liteDB == null)
+                    _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
+                _liteDB.WishListAdd(entity);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            } 
         }
 
         public   bool ChangeMovieStatus(string movieId, string watched = "Y")
@@ -109,7 +79,7 @@ namespace MoviesFromImdb.Controller
             entity.Watched = watched;
 
 
-            if (_liteDB.WishListUpsert(entity))
+            if (_liteDB.WishListUpsert(entity).GetAwaiter().GetResult())
             {
                 MessageBox.Show("Movie status changed from not watched to watched!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;

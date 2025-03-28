@@ -215,7 +215,16 @@ namespace Kolibri.net.Common.Utilities.Extensions
 
             return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source), deserializeSettings);
         }
+        public static T DeepCopy<T>(this object obj)
+        {
+            // Serialize the object to JSON
+            string json = JsonConvert.SerializeObject(obj);
 
+            var deserializeSettings = new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
+
+            // Deserialize it back into the target type
+            return JsonConvert.DeserializeObject<T>(json, deserializeSettings);
+        }
 
 
     }

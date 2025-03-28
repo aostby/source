@@ -27,20 +27,20 @@ namespace Kolibri.net.SilverScreen.Forms
         internal SubDLSubtitleController _subDL;
         internal ImageCacheDB _imageCache;
 
-        private UserSettings _userSettings; 
+        //private UserSettings _userSettings; 
         public KolibriTVShow _ktv { get; } 
 
         [Obsolete("Designer only", true)] public DetailsFormSeries() { InitializeComponent(); }
 
-        public DetailsFormSeries(KolibriTVShow kTV, UserSettings settings)
+        public DetailsFormSeries(KolibriTVShow kTV,LiteDBController liteDb )
         {
             
             InitializeComponent();
-            _liteDB = null;
+            _liteDB = liteDb;
             _ktv = kTV;
             var item = _ktv.Item;
-            _userSettings = settings;
-            _imageCache = new ImageCacheDB(_userSettings);
+          //  _userSettings = settings;
+            _imageCache = new ImageCacheDB(liteDb);
             if (_ktv != null && _ktv.Item != null)
             {
                 this.Text += $" - {kTV.Item.Title}";
@@ -56,7 +56,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 TabPage tabPage = new TabPage(s.SeasonNumber.PadLeft(2, '0'));
                 //SeriesUtilities.SortAndFormatSeriesTable()
-                DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false));
+                DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, _liteDB);
                 dgvtrls.CurrentItemChanged += HandleCurrentItemChanged;
 
                 var table = DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
@@ -264,7 +264,7 @@ namespace Kolibri.net.SilverScreen.Forms
             //_LITEDB.AddToWishList(obj);
         }
 
-        private void link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private async void link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             try
             {
@@ -283,8 +283,10 @@ namespace Kolibri.net.SilverScreen.Forms
                 {
                     string path = string.Empty;
 
-                    if (_seasonEpisode != null) { path = _liteDB.FindFile(_seasonEpisode.ImdbId).FullName; }
-                    else { path = _userSettings.UserFilePaths.SeriesSourcePath; }
+                    if (_seasonEpisode != null) {
+                        var t = await _liteDB.FindFile(_seasonEpisode.ImdbId);
+                        path = t.FullName; }
+                    else { path =_liteDB.GetUserSettings().UserFilePaths.SeriesSourcePath; }
 
                         if (File.Exists(path))
                     {

@@ -1,4 +1,7 @@
-﻿using System.IO.Compression;
+﻿using com.sun.xml.@internal.fastinfoset.util;
+using java.text;
+using System.Globalization;
+using System.IO.Compression;
 using System.Text;
 
 namespace Kolibri.net.Common.Utilities
@@ -104,12 +107,48 @@ namespace Kolibri.net.Common.Utilities
                 }
                 return ret;
             }
-            /// <summary>
-            /// Gets the number of bytes converted to it's closest textual representation
-            /// </summary>
-            /// <param name="byteCount">bytes to convert</param>
-            /// <returns>string representation of the number of bytes</returns>
-            public static string GetByteSize(long byteCount)
+        /// <summary>
+        /// Gets the number of bytes converted to it's closest textual representation
+        /// </summary>
+        /// <param name="byteCount">bytes to convert</param>
+        /// <returns>string representation of the number of bytes</returns>
+        public static string GetByteSize(long value) { 
+  string suffix;
+        double readable;
+    switch (Math.Abs(value))
+    {
+        case >= 0x1000000000000000:
+            suffix = "EiB";
+            readable = value >> 50;
+            break;
+        case >= 0x4000000000000:
+            suffix = "PiB";
+            readable = value >> 40;
+            break;
+        case >= 0x10000000000:
+            suffix = "TiB";
+            readable = value >> 30;
+            break;
+        case >= 0x40000000:
+            suffix = "GiB";
+            readable = value >> 20;
+            break;
+        case >= 0x100000:
+            suffix = "MiB";
+            readable = value >> 10;
+            break;
+        case >= 0x400:
+            suffix = "KiB";
+            readable = value;
+            break;
+        default:
+            return value.ToString("0 B");
+    }
+
+    return (readable / 1024).ToString("0.## ", CultureInfo.InvariantCulture) + suffix;
+}
+
+public static string GetByteSize_old(long byteCount)
             { //http://stackoverflow.com/questions/281640/how-do-i-get-a-human-readable-file-size-in-bytes-abbreviation-using-net
 
                 try
@@ -120,7 +159,7 @@ namespace Kolibri.net.Common.Utilities
                     long bytes = Math.Abs(byteCount);
                     int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
                     double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-                    return (Math.Sign(byteCount) * num).ToString() + suf[place];
+                    return (Math.Sign(byteCount) * num).ToString() +$" {suf[place]}";
                 }
                 catch (Exception)
                 {

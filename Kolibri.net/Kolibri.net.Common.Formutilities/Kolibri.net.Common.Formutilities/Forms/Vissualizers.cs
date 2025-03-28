@@ -1,21 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Data;
- 
-
-using System.Xml;
 using FastColoredTextBoxNS;
-
-using System.Data.SqlClient;
- 
-
-using Kolibri.net.Common.Utilities;
-
 using Kolibri.net.Common.FormUtilities.Forms;
- 
+using Kolibri.net.Common.Utilities;
+using System.Data;
+using System.Data.SqlClient;
+using System.Text;
+using System.Xml;
 
 namespace Kolibri.net.Common.FormUtilities
 {

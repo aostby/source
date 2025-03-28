@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Kolibri.net.Common.Formutilities {
+namespace Kolibri.net.Common.FormUtilities {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

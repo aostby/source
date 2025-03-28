@@ -293,7 +293,7 @@ img:hover{{transform: scale(1.5)}}
 
                                 if (movie != null)
                                 {
-                                    var file = _LITEDB.FindFile(movie.ImdbId);
+                                    var file = _LITEDB.FindFile(movie.ImdbId).GetAwaiter().GetResult();
                                     if (file != null)
                                     {
                                         info = new FileInfo(file.FullName);

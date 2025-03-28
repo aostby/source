@@ -39,17 +39,20 @@
             flyttFilmerToolStripMenuItem = new ToolStripMenuItem();
             bakgrunnOppdateringToolStripMenuItem = new ToolStripMenuItem();
             filmerToolStripMenuItem = new ToolStripMenuItem();
+            iMDbDataFilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            testCircusToolStripMenuItem = new ToolStripMenuItem();
             multiMediaToolStripMenuItem = new ToolStripMenuItem();
             movieslocalToolStripMenuItem = new ToolStripMenuItem();
             serieslocalToolStripMenuItem = new ToolStripMenuItem();
             searchToolStripMenuItem = new ToolStripMenuItem();
             genreSearchToolStripMenuItem = new ToolStripMenuItem();
             windowsToolStripMenuItem = new ToolStripMenuItem();
-            closeAllToolStripMenuItem = new ToolStripMenuItem();
             cascadeWindowsToolStripMenuItem = new ToolStripMenuItem();
             tileVerticalToolStripMenuItem = new ToolStripMenuItem();
             tileHorizontalToolStripMenuItem = new ToolStripMenuItem();
             arrangeIconsToolStripMenuItem = new ToolStripMenuItem();
+            closeAllToolStripMenuItem = new ToolStripMenuItem();
             grusToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
@@ -99,7 +102,7 @@
             // 
             // verktøyToolStripMenuItem
             // 
-            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem, flyttMapperToolStripMenuItem, bakgrunnOppdateringToolStripMenuItem });
+            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem, flyttMapperToolStripMenuItem, bakgrunnOppdateringToolStripMenuItem, toolStripSeparator1, testCircusToolStripMenuItem });
             verktøyToolStripMenuItem.Name = "verktøyToolStripMenuItem";
             verktøyToolStripMenuItem.Size = new Size(58, 20);
             verktøyToolStripMenuItem.Text = "Verktøy";
@@ -127,7 +130,7 @@
             // 
             // bakgrunnOppdateringToolStripMenuItem
             // 
-            bakgrunnOppdateringToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filmerToolStripMenuItem });
+            bakgrunnOppdateringToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filmerToolStripMenuItem, iMDbDataFilesToolStripMenuItem });
             bakgrunnOppdateringToolStripMenuItem.Name = "bakgrunnOppdateringToolStripMenuItem";
             bakgrunnOppdateringToolStripMenuItem.Size = new Size(193, 22);
             bakgrunnOppdateringToolStripMenuItem.Text = "Bakgrunn oppdatering";
@@ -135,9 +138,28 @@
             // filmerToolStripMenuItem
             // 
             filmerToolStripMenuItem.Name = "filmerToolStripMenuItem";
-            filmerToolStripMenuItem.Size = new Size(107, 22);
+            filmerToolStripMenuItem.Size = new Size(150, 22);
             filmerToolStripMenuItem.Text = "Filmer";
             filmerToolStripMenuItem.Click += filmerToolStripMenuItem_Click;
+            // 
+            // iMDbDataFilesToolStripMenuItem
+            // 
+            iMDbDataFilesToolStripMenuItem.Name = "iMDbDataFilesToolStripMenuItem";
+            iMDbDataFilesToolStripMenuItem.Size = new Size(150, 22);
+            iMDbDataFilesToolStripMenuItem.Text = "IMDbDataFiles";
+            iMDbDataFilesToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(190, 6);
+            // 
+            // testCircusToolStripMenuItem
+            // 
+            testCircusToolStripMenuItem.Name = "testCircusToolStripMenuItem";
+            testCircusToolStripMenuItem.Size = new Size(193, 22);
+            testCircusToolStripMenuItem.Text = "Test Circus";
+            testCircusToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // multiMediaToolStripMenuItem
             // 
@@ -182,40 +204,40 @@
             windowsToolStripMenuItem.Size = new Size(63, 20);
             windowsToolStripMenuItem.Text = "&Window";
             // 
-            // closeAllToolStripMenuItem
-            // 
-            closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
-            closeAllToolStripMenuItem.Size = new Size(180, 22);
-            closeAllToolStripMenuItem.Text = "Close All";
-            closeAllToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
-            // 
             // cascadeWindowsToolStripMenuItem
             // 
             cascadeWindowsToolStripMenuItem.Name = "cascadeWindowsToolStripMenuItem";
-            cascadeWindowsToolStripMenuItem.Size = new Size(180, 22);
+            cascadeWindowsToolStripMenuItem.Size = new Size(168, 22);
             cascadeWindowsToolStripMenuItem.Text = "Cascade windows";
             cascadeWindowsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // tileVerticalToolStripMenuItem
             // 
             tileVerticalToolStripMenuItem.Name = "tileVerticalToolStripMenuItem";
-            tileVerticalToolStripMenuItem.Size = new Size(180, 22);
+            tileVerticalToolStripMenuItem.Size = new Size(168, 22);
             tileVerticalToolStripMenuItem.Text = "Tile Vertical";
             tileVerticalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // tileHorizontalToolStripMenuItem
             // 
             tileHorizontalToolStripMenuItem.Name = "tileHorizontalToolStripMenuItem";
-            tileHorizontalToolStripMenuItem.Size = new Size(180, 22);
+            tileHorizontalToolStripMenuItem.Size = new Size(168, 22);
             tileHorizontalToolStripMenuItem.Text = "Tile Horizontal";
             tileHorizontalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // arrangeIconsToolStripMenuItem
             // 
             arrangeIconsToolStripMenuItem.Name = "arrangeIconsToolStripMenuItem";
-            arrangeIconsToolStripMenuItem.Size = new Size(180, 22);
+            arrangeIconsToolStripMenuItem.Size = new Size(168, 22);
             arrangeIconsToolStripMenuItem.Text = "Arrange Icons";
             arrangeIconsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
+            // 
+            // closeAllToolStripMenuItem
+            // 
+            closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
+            closeAllToolStripMenuItem.Size = new Size(168, 22);
+            closeAllToolStripMenuItem.Text = "Close All";
+            closeAllToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // grusToolStripMenuItem
             // 
@@ -286,5 +308,8 @@
         private ToolStripMenuItem tileVerticalToolStripMenuItem;
         private ToolStripMenuItem tileHorizontalToolStripMenuItem;
         private ToolStripMenuItem arrangeIconsToolStripMenuItem;
+        private ToolStripMenuItem iMDbDataFilesToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem testCircusToolStripMenuItem;
     }
 }

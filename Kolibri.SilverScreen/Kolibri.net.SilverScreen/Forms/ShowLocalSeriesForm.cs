@@ -11,6 +11,7 @@ using sun.java2d.pipe;
 using System.Collections;
 using System.Data;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Kolibri.Common.VisualizeOMDbItem
 {
@@ -66,7 +67,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             detailsViewBtn_Click(null, null);
             //resultsToGet.SelectedIndex = 1;
             //searchBtn_Click(null, null);
-            _imgCache = new ImageCacheDB(_userSettings);
+            _imgCache = new ImageCacheDB(_liteDB);
 
             this.Text = $"Series list count: {_serieItems.Count()}";
         }
@@ -192,6 +193,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.Year);
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(TYPE_TRANSLATION[movie.Type]);
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.ImdbRating);
+                    movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.ImdbId);
 
                     //Legg til elementer over, den siste i listen må være poster pga display - movieList_ItemSelectionChanged
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.Poster);
@@ -258,7 +260,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
 
                 pictureBox.Image = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
                 titleContentLabel.Text = result.Title;
-                productionContentLabel.Text = result.Production;
+                imdbContentLabel.Text = result.ImdbId;
                 directorContentLabel.Text = result.Director;
                 countryContentLabel.Text = result.Country;
                 ratingContentLabel.Text = result.ImdbRating;
@@ -291,7 +293,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 pictureBox.Tag = result.ImdbId;
             }
             titleContentLabel.Text = result.Title;
-            productionContentLabel.Text = result.Production;
+            imdbContentLabel.Text = result.ImdbId;
             directorContentLabel.Text = result.Director;
             countryContentLabel.Text = result.Country;
             ratingContentLabel.Text = result.ImdbRating;
@@ -302,11 +304,19 @@ namespace Kolibri.Common.VisualizeOMDbItem
             plotContentLabel.Text = result.Plot;
             try
             {
-                if (_liteDB.FindFile(result.ImdbId) == null)
+                var path = await _liteDB.FindFile(result.ImdbId);
+
+                if (path == null)
                 {
                     movieList.Items[e.ItemIndex].BackColor = Color.LightSalmon;
                 }
-                else movieList.Items[e.ItemIndex].BackColor = Color.Wheat;
+                else
+                {
+                    if (Path.Exists(path.FullName))
+                        movieList.Items[e.ItemIndex].BackColor = Color.LimeGreen;
+                    else
+                        movieList.Items[e.ItemIndex].BackColor = Color.Wheat;
+                }
             }
             catch (Exception ex) { }
 
@@ -316,7 +326,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         {
             try
             {
-                var imdbid = ((sender as PictureBox)).Tag.ToString();
+                var imdbid = pictureBox.Tag.ToString();
                 Uri uri = new Uri($"https://www.imdb.com/title/{imdbid}/");
                 HTMLUtilities.OpenURLInBrowser(uri);
 
@@ -388,7 +398,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             try
             {
@@ -399,7 +409,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     {
 
                         item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
-                        var file = tmp.FindFile(item.ImdbId);
+                        var file = await  tmp.FindFile(item.ImdbId);
                         if (file != null)
                         {
                             if (file.ItemFileInfo.Exists)
@@ -575,16 +585,17 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
         }
 
-        private void movieList_DoubleClick(object sender, EventArgs e)
+        private async  void movieList_DoubleClick(object sender, EventArgs e)
         {
+            await Task.Delay(4);
             Item item = null;
             try
             {
-                item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
+                item = await getMovieDetails(pictureBox.Tag.ToString());
                 SetStatusLabelText($"{item.Title} - searching for {item.TotalSeasons} seasons.");
                 MultiMediaSearchController mmc = new MultiMediaSearchController(_userSettings, _liteDB, updateTriState: false);
                 var show = mmc.GetShowById(item.ImdbId);
-                Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _userSettings);
+                Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _liteDB);
                 form.ShowDialog();
             }
             catch (Exception ex)
@@ -593,6 +604,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 if (item != null)
                 {
                     SetStatusLabelText($"{item.Title} - {ex.Message}");
+                    item.Error = ex.Message;
                     OutputDialogs.ShowRichTextBoxDialog($"{item.GetType().Name} - Total seasons set to: {item.TotalSeasons} - {ex.Message} - {item.Title}", item.JsonSerializeObject(), this.Size);
 
                     var link = new Uri($"https://www.imdb.com/title/{item.ImdbId}/");
@@ -601,17 +613,70 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
         }
 
-        private void toolStripMenuItemDelete_Click(object sender, EventArgs e)
+        private void contextMenu_Click(object sender, EventArgs e)
         {
             try
             {
                 Item item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
-                if (_liteDB.Delete(item))
-                {
-                    SetStatusLabelText($"{item.Title} deleted. Please refresh");
-                    _serieItems.Remove(item);
-                }
+                if (item == null) { throw new Exception("Fant ikkje na der serien"); }
 
+                if (sender.Equals(toolStripMenuItemDelete))
+                {
+                    if (_liteDB.Delete(item))
+                    {
+                        SetStatusLabelText($"{item.Title} deleted. Please refresh");
+                        _serieItems.Remove(item);
+                    }
+                }
+                else if (sender.Equals(toolStripMenuItemSetIMDBTagOnFolder))
+                {
+                    if (Path.Exists(item.TomatoUrl) && !item.TomatoUrl.Contains(item.ImdbId))
+                    {
+                        var res = MessageBox.Show($"{item.Title}", "Endre navnet på filsti?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (res == DialogResult.Yes)
+                        {
+                            try
+                            {
+                                var destination = item.TomatoUrl + $" {{tmdb-{item.ImdbId}}}";
+                                Directory.Move(item.TomatoUrl, destination);
+                                item.TomatoUrl = destination;
+                                _liteDB.Upsert(item);
+                                _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                            }
+                            catch (Exception ex)
+                            {
+
+                                SetStatusLabelText($"Error: {ex.Message}");
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (!Path.Exists(item.TomatoUrl))
+                        {
+                            MessageBox.Show($"{item.TomatoUrl} ({item.Title})", "Sorry, the filepath does not exist");
+                            var res = MessageBox.Show($"Wanna look up this folder?", "Wanna fix it?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            if (res == DialogResult.Yes)
+                            {
+                                var resultSearch = FolderUtilities.LetOppMappe(item.TomatoUrl, $"Finn hovedmappe for {item.Title}");
+                                if (resultSearch != null)
+                                {
+                                    item.TomatoUrl = resultSearch.FullName;
+                                    contextMenu_Click(toolStripMenuItemSetIMDBTagOnFolder, null);
+
+                                }
+                            }
+
+
+                        }
+                        else
+                        {
+
+                            SetStatusLabelText($"{item.TomatoUrl} is allready set to a tt id.");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {

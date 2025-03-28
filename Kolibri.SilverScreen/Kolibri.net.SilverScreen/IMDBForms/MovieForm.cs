@@ -151,7 +151,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         pbPoster.ImageLocation = sItem.Poster;
                         labelImdbId.Text = sItem.ImdbId;
                         labelImdbRating.Text = sItem.ImdbRating;
-                        var file= _liteDB.FindFile(labelImdbId.Text);
+                        var f= _liteDB.FindFile(labelImdbId.Text);
+                        FileItem file = f.Result;
+
                         linkLabelOpenFilePath.BackColor = file==null ?Color.Yellow:( (file!=null&&file.ItemFileInfo.Exists)? Control.DefaultBackColor:Color.LightSalmon);
                     
                         try
@@ -331,7 +333,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             try
             {
                 var url = _liteDB.FindFile(labelImdbId.Text);
-                FileUtilities.OpenFolderHighlightFile(url.ItemFileInfo);
+                FileUtilities.OpenFolderHighlightFile(url.GetAwaiter().GetResult().ItemFileInfo);
             }
             catch (Exception ex)
             {

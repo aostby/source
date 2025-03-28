@@ -1,30 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-  using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Windows.Forms;
-    using System.Data;
-
-    using System.Drawing;
-    using System.Xml;
-    using FastColoredTextBoxNS;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Data.SqlClient;
-
-    using System.Reflection;
-    using System.Xml.Linq;
-    using System.Net;
-  
-    using global::Kolibri.net.Common.Utilities;
-    using javax.swing.text;
+﻿using FastColoredTextBoxNS;
+using global::Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.FormUtilities.Controller;
-using com.sun.tools.javac.tree;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 
 
 namespace Kolibri.net.Common.FormUtilities.Forms
@@ -59,7 +41,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             {
                 return ShowRichTextBoxDialog(title, text, (FastColoredTextBoxNS.Language)language, size);
             }
-
             /// <summary>
             /// 
             /// </summary>
@@ -74,8 +55,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                 Enum.TryParse(language, out lang);
                 return ShowRichTextBoxDialog(title, text, lang, size);
             }
-
-
             /// <summary>
             /// 
             /// </summary>
@@ -106,7 +85,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             }
 
 
-
             public static DialogResult ShowDataTableDialog(string title, DataTable table, System.Drawing.Size size)
             {
                 Form form = new Form();
@@ -126,7 +104,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
                 return form.DialogResult;
             }
-
             public static DialogResult ShowDataTableDialog(string title, DataTable table, DataColumn presentInDetail, System.Drawing.Size size)
             {
                 Form form = new Form();
@@ -252,7 +229,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
                 }
             }
-
             internal static void ShowDataTableDialog_KeyDown(object sender, KeyEventArgs e)
             {
                 DataTable table = null;
@@ -308,7 +284,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                 e.Handled = true;
             }
 
-
             private static void VisualizeTextFiles_SelectionChanged(object sender, EventArgs e)
             {
                 ComboBox box = sender as ComboBox;
@@ -325,7 +300,6 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                 output.KeyDown += FCTB_KeyDown;
                 splitC.Panel2.Controls.Add(output);
             }
-
             internal static void FCTB_KeyDown(object sender, KeyEventArgs e)
             {
                 FastColoredTextBox textBoxQuery = sender as FastColoredTextBox;
