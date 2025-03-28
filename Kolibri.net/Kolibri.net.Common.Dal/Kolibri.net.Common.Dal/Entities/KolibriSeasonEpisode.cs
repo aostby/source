@@ -11,9 +11,10 @@ namespace Kolibri.net.Common.Dal.Entities
     /// <summary>
     /// OMDB har ikke lenke til serie i Season, så denne klassen brukes istedet.
     /// </summary>
-    public class KolibriSeason : Season
+    public class KolibriSeasonEpisode : SeasonEpisode
     {
         public string SeriesId { get; set; }
+        public string Season { get; set; }
     }
 
 

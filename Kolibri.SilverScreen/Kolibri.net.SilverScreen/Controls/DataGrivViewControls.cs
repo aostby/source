@@ -4,6 +4,7 @@ using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using OMDbApiNet.Model;
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Windows.Forms;
@@ -15,6 +16,9 @@ namespace Kolibri.net.SilverScreen.Controls
     {
 
         public event EventHandler CurrentItemChanged;
+
+
+        public static Hashtable _ht = new Hashtable();
 
         protected virtual void OnCurrentItemChanged(EventArgs e)
         {
@@ -51,7 +55,7 @@ namespace Kolibri.net.SilverScreen.Controls
         public Form GetMulitMediaDBDataGridViewAsForm(DataTable table) {
             return GetMulitMediaDBDataGridViewAsForm(table, _type);
         }
-        public    Form GetMulitMediaDBDataGridViewAsForm( DataTable table,MultimediaType type  )
+        public Form GetMulitMediaDBDataGridViewAsForm( DataTable table,MultimediaType type  )
         {
             DataGridView view = null;
             if (!type.Equals(MultimediaType.Series))
@@ -78,6 +82,9 @@ namespace Kolibri.net.SilverScreen.Controls
                 List<string> visibleColumns = Constants.VisibleSeasonEpisodeColumns;
 
                 DataGridView dgv = new DataGridView();
+                dgv.SuspendLayout();
+                dgv.Enabled = false;
+                
                 dgv.DataSource = tableItem;
                 refresh(dgv, tableItem);
                 dgv.Dock = DockStyle.Fill;
@@ -87,12 +94,8 @@ namespace Kolibri.net.SilverScreen.Controls
                 dgv.Columns.OfType<DataGridViewColumn>().ToList().ForEach(col => { if (visibleColumns.Contains(col.Name)) col.Visible = true; });
                 dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 dgv.AllowUserToResizeColumns = true;
-                dgv.SelectionChanged += new EventHandler(DataGridView_SelectionChanged);                
-                dgv.CellContentDoubleClick += new DataGridViewCellEventHandler(DataGridView_CellContentDoubleClick);
-                dgv.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(DataGridView_RowPrePaint);
-                dgv.KeyDown += Dgv_KeyDown;
-                dgv.CellValueChanged += Dgv_CellValueChanged;
-                dgv.RowPrePaint += Dgv_RowPrePaint;
+               
+             
                 
                 dgv.Name = tablename;
                 try
@@ -107,15 +110,25 @@ namespace Kolibri.net.SilverScreen.Controls
 
                 }
                 catch (Exception) { }
+
+                dgv.Enabled = true;
+                dgv.ResumeLayout();
                 ret = dgv;
             }
             catch (Exception)
             { }
+            // set ulike evenbt
+            ret.KeyDown += Dgv_KeyDown;
+            ret.CellValueChanged += Dgv_CellValueChanged;
+            ret.RowPrePaint += Dgv_RowPrePaint;
+            ret.SelectionChanged += new EventHandler(DataGridView_SelectionChanged);
+            ret.CellContentDoubleClick += new DataGridViewCellEventHandler(DataGridView_CellContentDoubleClick);
+            ret.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(DataGridView_RowPrePaint);
 
             return ret;
         }
 
-        private void Dgv_MouseClick(object? sender, MouseEventArgs e)
+        private async  void Dgv_MouseClick(object? sender, MouseEventArgs e)
         {
             try
             {    string val = string.Empty;
@@ -145,7 +158,7 @@ namespace Kolibri.net.SilverScreen.Controls
                         
                         var fetched = OMDB.GetItemByImdbId(val);
                         if (_LITEDB.Upsert(fetched)) {
-                            var orgfile = _LITEDB.FindFile(org);
+                            var orgfile = await _LITEDB.FindFile(org);
                             if (_LITEDB.Delete(orgfile) == 1)
                             {
                                 orgfile.ImdbId = fetched.ImdbId;
@@ -248,7 +261,7 @@ namespace Kolibri.net.SilverScreen.Controls
         }
 
 
-        private void Dgv_KeyDown(object sender, KeyEventArgs e)
+        private async void Dgv_KeyDown(object sender, KeyEventArgs e)
         {
 
             if (e.KeyCode == Keys.Delete)
@@ -269,7 +282,7 @@ namespace Kolibri.net.SilverScreen.Controls
                         string id = $"{row["ImdbId"]}";
                         if (!string.IsNullOrEmpty(id))
                         {
-                            var fileitem = _LITEDB.FindFile(id);
+                            var fileitem = await _LITEDB.FindFile(id);
                             if (fileitem != null)
                             {
                                 _LITEDB.DeleteItem(id);
@@ -325,32 +338,53 @@ namespace Kolibri.net.SilverScreen.Controls
 
         }
 
-        private void DataGridView_SelectionChanged(object sender, EventArgs e)
+        private async void DataGridView_SelectionChanged(object sender, EventArgs e)
         {
-            string title = null; int year = 0; int index = 0;
+
+            if (sender as DataGridView != null && !((sender as DataGridView).Visible)) { return; }
+
+            //why - foreløpig brukes ikke current til noe - ta det på doubleClick istedet?
+            return;
+
+
+            string title = null;string imdbid = null;  int year = 0; int index = 0;
             try
             {
                 DataGridView DataGridView1 = sender as DataGridView;
+                  imdbid = DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString();
 
                 if (DataGridView1.SelectedRows.Count > 0)
-                    index = DataGridView1.SelectedRows[0].Index;
+                { index = DataGridView1.SelectedRows[0].Index;
+                    imdbid = DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString();
+                
+            }
                 else
                     try
                     {
                         index = DataGridView1.CurrentRow.Index;
-
+                        imdbid = DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString();
                     }
                     catch (Exception) { index = 0; DataGridView1.ClearSelection(); }
-                CurrentItem = _LITEDB.FindItem(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
-                if (CurrentItem != null)
+
+                int hash = imdbid.GetHashCode();
+                if (_ht.ContainsKey(hash))
                 {
-                     OnCurrentItemChanged(EventArgs.Empty); 
+                    CurrentItem = _ht[hash] as Item;
+                    OnCurrentItemChanged(EventArgs.Empty);
                     return;
                 }
-                CurrentSeasonEpisode = _LITEDB.FindSeasonEpisode(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
+
+                CurrentItem = _LITEDB.FindItem(imdbid);
+                if (CurrentItem != null)
+                {
+                    _ht.Add(hash, CurrentItem);
+                    OnCurrentItemChanged(EventArgs.Empty); 
+                    return;
+                }
+                CurrentSeasonEpisode = _LITEDB.FindSeasonEpisode(imdbid);
                 if (CurrentSeasonEpisode != null && CurrentSeasonEpisode.ImdbId != null) {
                     using (OMDBController omdb = new OMDBController( _LITEDB.GetUserSettings().OMDBkey, _LITEDB)) {
-                        CurrentItem = omdb.GetItemByImdbId(DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString());
+                        CurrentItem = omdb.GetItemByImdbId(imdbid);
                         if (CurrentItem != null) { _LITEDB.Upsert(CurrentItem); }
                     }
                     if (CurrentItem != null)
@@ -363,6 +397,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 if (DataGridView1.Rows[index].Cells["Title"].Value
                           != null)
                 {
+                    
                     if (DataGridView1.Rows[index].
                         Cells["Title"].Value.ToString().Length != 0)
                     {
@@ -373,16 +408,25 @@ namespace Kolibri.net.SilverScreen.Controls
                         }
                         else
                         {
-                            year = int.Parse(DataGridView1.Rows[index].Cells["Released"].Value.ToString().Substring(0, 4));
+                            try
+                            {
+          year = int.Parse(DataGridView1.Rows[index].Cells["Released"].Value.ToString().Substring(0, 4));
+                            }
+                            catch (Exception)
+                            {                            }
+                  
                         }
-
-                        CurrentItem = _LITEDB.FindItemByTitle(title, year);
+                        if(year>1900)
+                            CurrentItem = _LITEDB.FindItemByTitle(title, year);
                     }
                 }
 
                 if (CurrentItem == null)
                 {
                     CurrentItem = new OMDbApiNet.Model.Item() { Title = title, Year = $"{year}", ImdbRating = "unknown" };
+                    if (imdbid != null) { 
+                        _ht.Add(hash, CurrentItem);   
+                    }
                     OnCurrentItemChanged(EventArgs.Empty);
                 }
            
@@ -390,7 +434,7 @@ namespace Kolibri.net.SilverScreen.Controls
             catch (Exception ex) { }
         }
 
-        private void DataGridView_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
+        private async void DataGridView_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
 
             if (e.State != DataGridViewElementStates.Visible) return;
@@ -409,7 +453,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 }
                 else
                 {
-                    var info = _LITEDB.FindFile(imdbid);
+                    var info = await _LITEDB.FindFile(imdbid);
                     if (info != null)
                     {
                         string ext = Path.GetExtension(info.FullName).ToLower();
@@ -467,7 +511,7 @@ namespace Kolibri.net.SilverScreen.Controls
             { }
         }
 
-        private void DataGridView_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private async void DataGridView_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
 
             try
@@ -479,7 +523,7 @@ namespace Kolibri.net.SilverScreen.Controls
 
                 if (!string.IsNullOrEmpty(imdbid))
                 {
-                    var info = _LITEDB.FindFile(imdbid);
+                    var info = await _LITEDB.FindFile(imdbid);
                     if (info != null)
                     {
                         FileInfo file = new FileInfo(info.FullName);

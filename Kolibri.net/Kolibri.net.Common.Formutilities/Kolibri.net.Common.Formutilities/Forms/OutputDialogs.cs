@@ -1,30 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-  using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Windows.Forms;
-    using System.Data;
-
-    using System.Drawing;
-    using System.Xml;
-    using FastColoredTextBoxNS;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Data.SqlClient;
-
-    using System.Reflection;
-    using System.Xml.Linq;
-    using System.Net;
-  
-    using global::Kolibri.net.Common.Utilities;
-    using javax.swing.text;
+﻿using FastColoredTextBoxNS;
+using global::Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.FormUtilities.Controller;
-using com.sun.tools.javac.tree;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 
 
 namespace Kolibri.net.Common.FormUtilities.Forms

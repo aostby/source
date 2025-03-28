@@ -130,7 +130,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             { }
         }
 
-        private void buttonSearch_Click(object sender, EventArgs e)
+        private async  void buttonSearch_Click(object sender, EventArgs e)
         {
             this.Cursor = Cursors.WaitCursor;
             _contr = new MultiMediaSearchController(_settings);
@@ -157,7 +157,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         table = DataSetUtilities.AutoGenererDataSet<Episode>(epList).Tables[0];
                         table = SeriesUtilities.SortAndFormatSeriesTable(table);
                     }
-                    else { table = _contr.SearchForSeriesEpisodes(Source); }
+                    else { table = await _contr.SearchForSeriesEpisodes(Source); }
                     table.TableName = DataSetUtilities.LegalSheetName(Source.Name);
                     list.Add(table);
                 }

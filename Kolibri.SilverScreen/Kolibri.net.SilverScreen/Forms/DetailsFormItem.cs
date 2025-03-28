@@ -7,6 +7,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
 using System.Data;
 using TMDbLib.Objects.Movies;
+using TMDbLib.Objects.Search;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -77,7 +78,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (_OMDB == null) { try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
                 if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { } }
                 if (_subDL == null) { try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { } }
-                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } };
+                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(_liteDB); } catch (Exception ex) { } };
             }
             catch (Exception ex)
             {
@@ -92,7 +93,10 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                string path = _liteDB.FindFile(_item.ImdbId).FullName;
+                string path;
+                var t = await _liteDB.FindFile(_item.ImdbId);
+                path = t.FullName;
+
                 toolTipDetail.SetToolTip(linkLabelOpenFilepath, path);
                 FileInfo info = new FileInfo(path);
                 _itemPath = new FileItem(_item.ImdbId, info.FullName);
@@ -204,7 +208,7 @@ namespace Kolibri.net.SilverScreen.Forms
             //_LITEDB.AddToWishList(obj);
         }
 
-        private void link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private async void link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             try
             {
@@ -216,8 +220,8 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 else if (sender.Equals(linkLabelOpenFilepath))
                 {
-                    string path = _liteDB.FindFile(_item.ImdbId).FullName;
-
+                    var t = await _liteDB.FindFile(_item.ImdbId);
+                    var path = t.FullName;
                     if (File.Exists(path))
                     {
                         FileUtilities.OpenFolderHighlightFile(new FileInfo(path));

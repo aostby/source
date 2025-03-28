@@ -11,6 +11,7 @@ using sun.java2d.pipe;
 using System.Collections;
 using System.Data;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Kolibri.Common.VisualizeOMDbItem
 {
@@ -66,7 +67,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             detailsViewBtn_Click(null, null);
             //resultsToGet.SelectedIndex = 1;
             //searchBtn_Click(null, null);
-            _imgCache = new ImageCacheDB(_userSettings);
+            _imgCache = new ImageCacheDB(_liteDB);
 
             this.Text = $"Series list count: {_serieItems.Count()}";
         }
@@ -303,7 +304,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             plotContentLabel.Text = result.Plot;
             try
             {
-                var path = _liteDB.FindFile(result.ImdbId);
+                var path = await _liteDB.FindFile(result.ImdbId);
 
                 if (path == null)
                 {
@@ -397,7 +398,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             try
             {
@@ -408,7 +409,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     {
 
                         item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
-                        var file = tmp.FindFile(item.ImdbId);
+                        var file = await  tmp.FindFile(item.ImdbId);
                         if (file != null)
                         {
                             if (file.ItemFileInfo.Exists)
@@ -584,16 +585,17 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
         }
 
-        private void movieList_DoubleClick(object sender, EventArgs e)
+        private async  void movieList_DoubleClick(object sender, EventArgs e)
         {
+            await Task.Delay(4);
             Item item = null;
             try
             {
-                item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
+                item = await getMovieDetails(pictureBox.Tag.ToString());
                 SetStatusLabelText($"{item.Title} - searching for {item.TotalSeasons} seasons.");
                 MultiMediaSearchController mmc = new MultiMediaSearchController(_userSettings, _liteDB, updateTriState: false);
                 var show = mmc.GetShowById(item.ImdbId);
-                Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _userSettings);
+                Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _liteDB);
                 form.ShowDialog();
             }
             catch (Exception ex)
@@ -602,6 +604,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 if (item != null)
                 {
                     SetStatusLabelText($"{item.Title} - {ex.Message}");
+                    item.Error = ex.Message;
                     OutputDialogs.ShowRichTextBoxDialog($"{item.GetType().Name} - Total seasons set to: {item.TotalSeasons} - {ex.Message} - {item.Title}", item.JsonSerializeObject(), this.Size);
 
                     var link = new Uri($"https://www.imdb.com/title/{item.ImdbId}/");

@@ -40,6 +40,8 @@
             bakgrunnOppdateringToolStripMenuItem = new ToolStripMenuItem();
             filmerToolStripMenuItem = new ToolStripMenuItem();
             iMDbDataFilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            testCircusToolStripMenuItem = new ToolStripMenuItem();
             multiMediaToolStripMenuItem = new ToolStripMenuItem();
             movieslocalToolStripMenuItem = new ToolStripMenuItem();
             serieslocalToolStripMenuItem = new ToolStripMenuItem();
@@ -100,7 +102,7 @@
             // 
             // verktøyToolStripMenuItem
             // 
-            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem, flyttMapperToolStripMenuItem, bakgrunnOppdateringToolStripMenuItem });
+            verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { finnDuplikaterToolStripMenuItem, flyttMapperToolStripMenuItem, bakgrunnOppdateringToolStripMenuItem, toolStripSeparator1, testCircusToolStripMenuItem });
             verktøyToolStripMenuItem.Name = "verktøyToolStripMenuItem";
             verktøyToolStripMenuItem.Size = new Size(58, 20);
             verktøyToolStripMenuItem.Text = "Verktøy";
@@ -122,7 +124,7 @@
             // flyttFilmerToolStripMenuItem
             // 
             flyttFilmerToolStripMenuItem.Name = "flyttFilmerToolStripMenuItem";
-            flyttFilmerToolStripMenuItem.Size = new Size(180, 22);
+            flyttFilmerToolStripMenuItem.Size = new Size(131, 22);
             flyttFilmerToolStripMenuItem.Text = "Flytt filmer";
             flyttFilmerToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
@@ -136,16 +138,28 @@
             // filmerToolStripMenuItem
             // 
             filmerToolStripMenuItem.Name = "filmerToolStripMenuItem";
-            filmerToolStripMenuItem.Size = new Size(180, 22);
+            filmerToolStripMenuItem.Size = new Size(150, 22);
             filmerToolStripMenuItem.Text = "Filmer";
             filmerToolStripMenuItem.Click += filmerToolStripMenuItem_Click;
             // 
             // iMDbDataFilesToolStripMenuItem
             // 
             iMDbDataFilesToolStripMenuItem.Name = "iMDbDataFilesToolStripMenuItem";
-            iMDbDataFilesToolStripMenuItem.Size = new Size(180, 22);
+            iMDbDataFilesToolStripMenuItem.Size = new Size(150, 22);
             iMDbDataFilesToolStripMenuItem.Text = "IMDbDataFiles";
             iMDbDataFilesToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(190, 6);
+            // 
+            // testCircusToolStripMenuItem
+            // 
+            testCircusToolStripMenuItem.Name = "testCircusToolStripMenuItem";
+            testCircusToolStripMenuItem.Size = new Size(193, 22);
+            testCircusToolStripMenuItem.Text = "Test Circus";
+            testCircusToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // multiMediaToolStripMenuItem
             // 
@@ -295,5 +309,7 @@
         private ToolStripMenuItem tileHorizontalToolStripMenuItem;
         private ToolStripMenuItem arrangeIconsToolStripMenuItem;
         private ToolStripMenuItem iMDbDataFilesToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem testCircusToolStripMenuItem;
     }
 }

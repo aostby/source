@@ -123,6 +123,10 @@ namespace Kolibri.SilverScreen.Forms
                 {
                     newMDIChild = new IMDbDataFilesForm(_userSettings);
                 }
+                else if (sender.Equals(testCircusToolStripMenuItem))
+                {
+                    newMDIChild = new TestCircusForm();
+                }
 
                 newMDIChild.MdiParent = this;
                 newMDIChild.Show();
@@ -305,6 +309,7 @@ namespace Kolibri.SilverScreen.Forms
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
-        }
+        } 
+       
     }
 }

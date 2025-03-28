@@ -62,9 +62,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             if (!string.IsNullOrWhiteSpace(imdbId))
             { 
                var tmp =  _liteDB.FindFile(imdbId);
-                if (tmp != null) { linkLabelOpenFilePath.Tag = tmp.FullName; linkLabelOpenFilePath.Visible = true;
+                if (tmp != null) { linkLabelOpenFilePath.Tag = tmp.GetAwaiter().GetResult().FullName; linkLabelOpenFilePath.Visible = true;
 
-                    this.Text = $"{this.Text} - {Path.GetFileNameWithoutExtension(tmp.FullName)}";
+                    this.Text = $"{this.Text} - {Path.GetFileNameWithoutExtension(tmp.GetAwaiter().GetResult().FullName)}";
                 }
                 else {
                    var tmpM=  _liteDB.FindItem(imdbId);

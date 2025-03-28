@@ -56,6 +56,10 @@ namespace Kolibri.net.Common.Dal.Entities
         [DisplayName(nameof(IMDbDataFiles))]
         public string IMDbDataFiles { get; set; } = "https://datasets.imdbws.com/";
 
+        [BrowsableAttribute(true)]
+        [Description(nameof(DefaultConnection))]
+        [DisplayName(nameof(DefaultConnection))]
+        public string DefaultConnection { get; set; } = "Server=SERVERNAME;Database=DATABASENAME;User Id = USERID; Password=PASSWORD;";
 
         [BrowsableAttribute(true)]
         [Description(nameof(UserFilePaths))]

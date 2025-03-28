@@ -44,7 +44,7 @@ namespace Kolibri.net.SilverScreen.Forms
             GetPathSearchFiles();
             _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false);
 
-            _imageCache = new ImageCacheDB(_settings);
+            _imageCache = new ImageCacheDB(_liteDB);
             buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
             try
             {
