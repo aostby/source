@@ -16,97 +16,31 @@ namespace Kolibri.net.Common.Dal.Controller
 {
     public class ImageCacheDB
     {
-      internal  ImagePosterDBController _ImageDB;
+      
+        internal  ImagePosterDBController _ImageDB;
+
         LiteDBController _liteDB;
+        private Hashtable _ht = new Hashtable(); 
 
-   
-
-        private int _max = 2000;
-
-      //  private MemoryCache _cache = MemoryCache.Default;
-        //private readonly UserSettings _userSettings;
-
-        //private Dictionary<string, byte[]> _imageCache;
+        private int _max = 2000; 
+    
         public string ApplicationName { get; private set; }
 
         public ImageCacheDB(LiteDBController liteDB)
         {
-
             _liteDB = liteDB;
-            
             Init();
-        }
-
-        //internal string CachePath
-        //{
-        //    get
-        //    {
-
-        //        FileInfo ret = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName, "images.xml"));
-        //        if (!ret.Directory.Exists) ret.Directory.Create();
-        //        return ret.FullName;
-        //    }
-        //}
-
-        //public int CacheNumElementsInCache
-        //{
-        //    get
-        //    {
-        //        int ret = 0;
-        //        try
-        //        {
-        //            ret = _cache.Where(o => true).Select(o => o.Key).Count();
-
-        //        }
-        //        catch (Exception)
-        //        { }
-        //        return ret;
-
-        //    }
-        //}
-
+        } 
 
         private void Init()
         {
             ApplicationName = Assembly.GetExecutingAssembly().GetName().Name;
-            _ImageDB = new ImagePosterDBController(DefaultDBPath(), false, false);
-
-            //try
-            //{
-            //    if (File.Exists(CachePath))
-            //    {
-            //        using (XmlReader reader = XmlReader.Create(new StreamReader(CachePath)))
-            //        {
-            //            reader.ReadToFollowing("Images");
-            //            do
-            //            {
-            //                try
-            //                {
-            //                    string key, b64;
-            //                    reader.ReadToFollowing("Key");
-            //                    key = reader.ReadElementContentAsString();
-            //                    if (!_cache.Contains(key))
-            //                    {
-            //                        reader.ReadToFollowing("Value");
-            //                        b64 = reader.ReadElementContentAsString();
-
-            //                        StoreItemsInCache(key, Convert.FromBase64String(b64));
-            //                    }
-            //                }
-            //                catch (Exception ex)
-            //                { }
-
-            //            } while (reader.ReadToFollowing("Images"));
-            //        }
-            //    }
-            //}
-            //catch (Exception ex) { }
+            _ImageDB = new ImagePosterDBController(DefaultDBPath(), false, false); 
 
             if (_liteDB != null)
             {
                 Task.Run(async () => await InitImagesAsync(_liteDB));
-            }
-
+            } 
         }
 
         public FileInfo DefaultDBPath()
@@ -115,48 +49,13 @@ namespace Kolibri.net.Common.Dal.Controller
             FileInfo ret = new FileInfo(path);
             return ret;
         }
-        //Store Stuff in the cache  
-        //public void CasheImage(string key, byte[] arr)
-        //{
-        //    //Do what you need to do here. Database Interaction, Serialization,etc.
-        //    var cacheItemPolicy = new CacheItemPolicy()
-        //    {
-        //        //Set your Cache expiration.
-        //        AbsoluteExpiration = DateTime.Now.AddDays(1)
-        //    };
-        //    //remember to use the above created object as third parameter.
-        //    _cache.Add(key, arr, cacheItemPolicy);
-        //}
-
-        //Get stuff from the cache
-        //public byte[] CasheGetItemFromCache(string key)
-        //{
-        //    if (!_cache.Contains(key))
-        //    {
-        //        return null;
-        //    }
-        //    return _cache.Get(key) as byte[];
-        //}
-
-        //Remove stuff from the cache. If no key supplied, all data will be erased.
-        //public void CasheRemoveItemsFromCache(string key)
-        //{
-        //    if (string.IsNullOrEmpty(key))
-        //    {
-        //        _cache.Dispose();
-        //    }
-        //    else
-        //    {
-        //        _cache.Remove(key);
-        //    }
-        //}
 
         public async Task<bool> InsertImageAsync(string key, Bitmap bitmap)
         {
             bool ret = false;
-            
+
             var db = await _ImageDB.ImageExists(key);
-            bool insert =  !db;
+            bool insert = !db;
             try
             {
                 if (insert)
@@ -172,16 +71,13 @@ namespace Kolibri.net.Common.Dal.Controller
                     }
                 }
                 else
-                {
-
-                }
+                { }
             }
             catch (Exception ex)
             { }
             return ret;
         }
 
-  
         public async Task<ImagePoster> FindImageAsync(string key)
         {
             var ret = await RetrieveImageAsync(key);
@@ -190,7 +86,10 @@ namespace Kolibri.net.Common.Dal.Controller
             { return null; }
             else
             {
-                return new ImagePoster(key, ret);
+                var hash = key.GetHashCode();
+                var imgPoster = new ImagePoster(key, ret);
+                _ht[hash] = imgPoster;
+                return imgPoster;
             }
         }
         public async Task<Bitmap> RetrieveImageAsync(string key)
@@ -198,6 +97,10 @@ namespace Kolibri.net.Common.Dal.Controller
             Bitmap ret = null;
             try
             {
+                var hash = key.GetHashCode();
+                if (_ht.ContainsKey(hash))
+                    return ((ImagePoster)_ht[hash]).Image;
+
                 if (await _ImageDB.ImageExists(key))
                 {
                     var imagePoster = await _ImageDB.FindImage(key);
@@ -205,32 +108,21 @@ namespace Kolibri.net.Common.Dal.Controller
                     else
                     {
                         imagePoster.Image.Tag = key;
+
+                        _ht.Add(hash, imagePoster);
                         return imagePoster.Image;
                     }
                 }
-                else {
-               ret = await  Task.FromResult((Bitmap)  ImageUtilities.GetImageFromUrl(key));
-
+                else
+                {
+                    ret = await Task.FromResult((Bitmap)ImageUtilities.GetImageFromUrl(key));
                     _ImageDB.InsertImage(new ImagePoster(key, ret));
                 }
             }
-            catch (Exception ex) { ret = (Bitmap)ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());   }
-            
+            catch (Exception ex) { ret = (Bitmap)ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage()); }
+
             return ret;
-        }
-
-        //public bool CacheImageExists(string key)
-        //{
-        //    try
-        //    {
-        //        return _cache.Contains(key);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //}
-
+        } 
         #region from DB
 
         public async Task<bool> InitImagesAsync(LiteDBController LITEDB)
@@ -407,80 +299,7 @@ namespace Kolibri.net.Common.Dal.Controller
 
         #endregion
 
-
-        //public bool Save()
-        //{
-        //   FileUtilities.MoveCopy(new FileInfo(CachePath), new FileInfo(CachePath));
-        //    try
-        //    {    SaveAsync();
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return false;
-        //    }
-        //}
-
-        //private void SaveAsync()
-        //{
-        //    string errors = string.Empty;
-        //    string SigBase64 = null;
-        //    Dictionary<string, string> dic = new Dictionary<string, string>();
-        //    try
-        //    {
-        //        List<string> list= new List<string>();
-        //        SigBase64 = null;
-        //        var keys = _cache.Where(o => true).Select(o => o.Key);
-        //        foreach (var key in keys)
-        //        {
-        //            list.Add(key);
-        //        } 
-
-        //        using (XmlWriter writer = XmlWriter.Create(CachePath))
-        //        {
-        //            writer.WriteStartElement("Saratustra");
-        //            // Code to do the write here
-
-        //            foreach (var item in list)
-        //            {
-        //                try
-        //                {
-        //                    byte[] byteImage = GetItemsFromCache(item);
-        //                    {
-        //                        if (byteImage != null && byteImage.Length > 0)
-        //                        {
-        //                            try
-        //                            {
-        //                                SigBase64 = Convert.ToBase64String(byteImage); // Get Base64
-        //                                writer.WriteStartElement("Images");
-
-        //                                writer.WriteStartElement("Key");
-        //                                writer.WriteValue(item);
-        //                                writer.WriteEndElement();
-
-        //                                writer.WriteStartElement("Value");
-        //                                writer.WriteValue(SigBase64);
-        //                                writer.WriteEndElement();
-
-        //                                writer.WriteEndElement();  // end Images
-        //                            }
-        //                            catch (Exception ex) { }
-        //                        }
-        //                    }
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    errors += ex.Message;
-        //                }
-        //            }  
-        //            writer.WriteEndElement();  // end Saratustra
-        //        } 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        errors += ex.Message;
-        //    }
-        //}
+         
 
         public void Dispose()
         {
@@ -511,9 +330,7 @@ namespace Kolibri.net.Common.Dal.Controller
             if (!pahtToImageDB.Exists)
                 pahtToImageDB.Create();
 
-            ExclusiveConnection = exclusiveAccess;
-
-
+            ExclusiveConnection = exclusiveAccess; 
 
             ConnectionString = new ConnectionString()
             {
@@ -541,7 +358,8 @@ namespace Kolibri.net.Common.Dal.Controller
 
         #region ImagePoster
         internal async Task<bool> ImageExists(string ImdbId)
-        {int hash = ImdbId.GetHashCode();
+        {
+            int hash = ImdbId.GetHashCode();
             bool ret = false;
             
            if( _ht.ContainsKey(hash))return true;

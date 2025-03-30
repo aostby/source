@@ -32,14 +32,16 @@ namespace Kolibri.net.SilverScreen.Forms
 
         [Obsolete("Designer only", true)] public DetailsFormSeries() { InitializeComponent(); }
 
-        public DetailsFormSeries(KolibriTVShow kTV,LiteDBController liteDb )
+        public DetailsFormSeries(KolibriTVShow kTV,LiteDBController liteDb, ImageCacheDB imageCache =null)
         {
             
             InitializeComponent();
             _liteDB = liteDb;
             _ktv = kTV;
             var item = _ktv.Item;
-          //  _userSettings = settings;
+            //  _userSettings = settings;
+
+            _imageCache = imageCache;
             _imageCache = new ImageCacheDB(liteDb);
             if (_ktv != null && _ktv.Item != null)
             {
@@ -51,6 +53,15 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private void Init()
         {
+
+            //List < DataTable > datatableList = new List<DataTable>();
+            //foreach (var season in tv.SeasonList)
+            //{
+            //    datatableList.Add( DataGrivViewControls.EpisodeToDataTable(season));
+            //} 
+            //var eplist = DataSetUtilities.ConvertToList<Episode>(DataSetUtilities.MergeListOfSimilarTables(datatableList));
+
+
             tabControlSeasons.TabPages.Clear();
             foreach (var s in _ktv.SeasonList)
             {
@@ -59,10 +70,13 @@ namespace Kolibri.net.SilverScreen.Forms
                 DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, _liteDB);
                 dgvtrls.CurrentItemChanged += HandleCurrentItemChanged;
 
-                var table = DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
-                System.Data.DataColumn newColumn = new System.Data.DataColumn("Season", typeof(System.String));
-                newColumn.DefaultValue = s.SeasonNumber;
-                table.Columns.Add(newColumn);
+                var table = (DataGrivViewControls.EpisodeToDataTable(s) );// DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
+                if (!table.Columns.Contains("Season"))
+                {
+                    System.Data.DataColumn newColumn = new System.Data.DataColumn("Season", typeof(System.String));
+                    newColumn.DefaultValue = s.SeasonNumber;
+                    table.Columns.Add(newColumn);
+                }
 
                 var form = dgvtrls.GetMulitMediaDBDataGridViewAsForm(SeriesUtilities.SortAndFormatSeriesTable(table));
                 
@@ -124,7 +138,8 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 try
                 {
-                    pbPoster.Image =   _imageCache.FindImageAsync(item.Poster).GetAwaiter().GetResult().Image;
+                    var task = await _imageCache.FindImageAsync(item.Poster);
+                    pbPoster.Image = task.Image;
                 }
                 catch (Exception)
                 {
@@ -282,11 +297,15 @@ namespace Kolibri.net.SilverScreen.Forms
                 else if (sender.Equals(linkLabelOpenFilepath))
                 {
                     string path = string.Empty;
-
-                    if (_seasonEpisode != null) {
+                    if (_ktv != null && _ktv.Item!=null &&!string.IsNullOrEmpty(_ktv.Item.TomatoUrl)) {
+                        path = _ktv.Item.TomatoUrl;
+                    }
+                    else if (_seasonEpisode != null)
+                    {
                         var t = await _liteDB.FindFile(_seasonEpisode.ImdbId);
-                        path = t.FullName; }
-                    else { path =_liteDB.GetUserSettings().UserFilePaths.SeriesSourcePath; }
+                        path = t.FullName;
+                    }
+                    else { path = _liteDB.GetUserSettings().UserFilePaths.SeriesSourcePath; }
 
                         if (File.Exists(path))
                     {

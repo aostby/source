@@ -145,7 +145,8 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
                 try
                 {
-                    List<Episode> epList = new List<Episode>();
+                    //List<Episode> epList = new List<Episode>();
+                    List<KolibriSeasonEpisode> epList = new List<KolibriSeasonEpisode>();
                     DataTable table = null;
 
 
@@ -154,7 +155,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     {
                         var test = _contr.SearchForSeriesAsync(Source);
                         epList = test.Result.SelectMany(x => x.EpisodeList).OrderBy(x => x.Title).ToList();
-                        table = DataSetUtilities.AutoGenererDataSet<Episode>(epList).Tables[0];
+                        table = DataSetUtilities.AutoGenererDataSet<KolibriSeasonEpisode>(epList).Tables[0];
                         table = SeriesUtilities.SortAndFormatSeriesTable(table);
                     }
                     else { table = await _contr.SearchForSeriesEpisodes(Source); }
