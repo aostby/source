@@ -20,7 +20,7 @@ namespace Kolibri.net.SilverScreen.Forms
         ImageCacheDB _imageCache;
 
         MultimediaType _type;
-        private readonly UserSettings _settings;
+        private readonly UserSettings _userSettings;
         private IEnumerable<FileItem> _fileItems;
         private List<string> _searchFiles;
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
@@ -29,7 +29,7 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             InitializeComponent();
             _type = type;
-            this._settings = settings;
+            this._userSettings = settings;
             this.Text = $"{_type.ToString()}";
 
             StartUp();
@@ -40,18 +40,18 @@ namespace Kolibri.net.SilverScreen.Forms
         private async void StartUp()
         {
             _searchFiles = new List<string>();
-            this.Text = $"{_type.ToString()} - {_settings.LiteDBFilePath}";
+            this.Text = $"{_type.ToString()} - {_userSettings.LiteDBFilePath}";
             GetPathSearchFiles();
-            _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false);
+            _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
 
-            _imageCache = new ImageCacheDB(_liteDB);
+            _imageCache = new ImageCacheDB(_userSettings);
             buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
             try
             {
                 if (_type.Equals(MultimediaType.movie) || _type.Equals(MultimediaType.Movies))
                 {
-                    if (_TMDB == null && !string.IsNullOrEmpty(_settings.OMDBkey))
-                        _TMDB = new TMDBController(_liteDB, _settings.OMDBkey);
+                    if (_TMDB == null && !string.IsNullOrEmpty(_userSettings.OMDBkey))
+                        _TMDB = new TMDBController(_liteDB, _userSettings.OMDBkey);
                 }
             }
             catch (Exception)
@@ -70,9 +70,9 @@ namespace Kolibri.net.SilverScreen.Forms
             //var masks = common.Select(r => string.Concat('*', r)).ToArray();
             //var searchStr = "*" + string.Join("|*", common);
 
-            if (!checkBoxSimple.Checked && _settings != null)
+            if (!checkBoxSimple.Checked && _userSettings != null)
             {
-                if (string.IsNullOrEmpty(_settings.TMDBkey))
+                if (string.IsNullOrEmpty(_userSettings.TMDBkey))
                     checkBoxSimple.Checked = true;
             }
             if (_type.Equals(MultimediaType.Series))
@@ -364,8 +364,8 @@ namespace Kolibri.net.SilverScreen.Forms
             string ret = string.Empty;
             switch (_type)
             {
-                case MultimediaType.Movies: ret = _settings.UserFilePaths.MoviesSourcePath; break;
-                case MultimediaType.Series: ret = _settings.UserFilePaths.SeriesSourcePath; break;
+                case MultimediaType.Movies: ret = _userSettings.UserFilePaths.MoviesSourcePath; break;
+                case MultimediaType.Series: ret = _userSettings.UserFilePaths.SeriesSourcePath; break;
                 case MultimediaType.Audio:
                     break;
                 case MultimediaType.Pictures:
@@ -384,14 +384,14 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         private async void SetCurrentPath(DirectoryInfo dInfo, bool init = true)
         {
-            if ((dInfo.FullName != _settings.UserFilePaths.MoviesSourcePath) || _searchFiles.Count <= 0) { GetPathSearchFiles(dInfo.FullName); }
+            if ((dInfo.FullName != _userSettings.UserFilePaths.MoviesSourcePath) || _searchFiles.Count <= 0) { GetPathSearchFiles(dInfo.FullName); }
             switch (_type)
             {
                 case MultimediaType.Movies:
-                    _settings.UserFilePaths.MoviesSourcePath = dInfo.FullName;
+                    _userSettings.UserFilePaths.MoviesSourcePath = dInfo.FullName;
                     break;
                 case MultimediaType.Series:
-                    _settings.UserFilePaths.SeriesSourcePath = dInfo.FullName;
+                    _userSettings.UserFilePaths.SeriesSourcePath = dInfo.FullName;
 
                     break;
                 case MultimediaType.Audio:
@@ -408,7 +408,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (init)
             {
-                _liteDB.Upsert(_settings);
+                _liteDB.Upsert(_userSettings);
                 textBoxSource.Text = dInfo.FullName;
                 SetLabelText($"{_type} - set to {dInfo.FullName}");
 
@@ -418,7 +418,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (radioButtonUpdateAll.Checked)
                     tristate = true;
 
-                MultiMediaSearchController searchController = new MultiMediaSearchController(_settings, updateTriState: tristate);
+                MultiMediaSearchController searchController = new MultiMediaSearchController(_userSettings, updateTriState: tristate);
                 if (_type.Equals(Constants.MultimediaType.movie) || _type.Equals(Constants.MultimediaType.Movies))
                 {
                     Task.Run(async () => searchController.SearchForMovies(dInfo));
@@ -487,9 +487,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private void DataGridView_LocalSelectionChanged(object sender, EventArgs e)
         {
             try
-            {
-
-
+            { 
                 SetForm(_dgvController.CurrentItem, splitContainer2.Panel2);
             }
             catch (Exception ex)
@@ -520,7 +518,7 @@ namespace Kolibri.net.SilverScreen.Forms
             else
             {
                 if (checkBoxSimple.Checked) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(mm as Item, _liteDB, tmdb: _TMDB, imagecache: _imageCache); }
-                else { form = new MovieForm(_settings, mm as Item); }
+                else { form = new MovieForm(_userSettings, mm as Item); }
             }
             SetForm(form, panel);
         }
@@ -598,7 +596,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         var ant = matches.Count();
                         if (matches != null && matches.Count() < 1)
                         {
-                            IMDBForms.MovieForm form = new MovieForm(_settings, new FileInfo(srch));
+                            IMDBForms.MovieForm form = new MovieForm(_userSettings, new FileInfo(srch));
                             form.MdiParent = this.MdiParent;
                             form.Show();
                         }

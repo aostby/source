@@ -23,25 +23,25 @@ namespace Kolibri.net.Common.Dal.Controller
         ///  Insert your api key here. You can get one on http://www.omdbapi.com/
         /// </summary>
         /// <param name="apikey">omdbapi key</param>
-        public OMDBController(string apikey, LiteDBController contr = null)
+        public OMDBController(string apikey, LiteDBController contr = null, bool rottenTomatoRatings = false)
         {
             if (string.IsNullOrEmpty(apikey))
                 throw new Exception("API key for OMDB is null. This is not allowed. Please obtain an API key from OMDb API at omdbapi.com");
             _apikey = apikey;
             //_type = OMDbApiNet.OmdbType.Movie;
 
-            _client = new OMDbApiNet.OmdbClient(apikey);
+            _client = new OMDbApiNet.OmdbClient(apikey,rottenTomatoRatings );
             _liteDB = contr;
 
         }
 
-        public Item GetMovieByIMDBTitle(string title, int year )
+        public Item GetMovieByIMDBTitle(string title, int year, bool fullplot=false )
         {
             Item ret = null;
             try
             {
-                var query = OMDbApiNet.Utilities.QueryBuilder.GetItemByTitleQuery(title, OmdbType.Movie, year, false);
-                ret = _client.GetItemByTitle(title, year, false);
+                var query = OMDbApiNet.Utilities.QueryBuilder.GetItemByTitleQuery(title, OmdbType.Movie, year, fullplot);
+                ret = _client.GetItemByTitle(title, year, fullplot);
             }
             catch (Exception ex)
             {
@@ -51,13 +51,13 @@ namespace Kolibri.net.Common.Dal.Controller
             return ret;
         }
 
-        public Item GetSeriesByTitle(string title, int? year)
+        public Item GetSeriesByTitle(string title, int? year, bool fullPlot=false)
         {
             Item ret = null;
             try
             {
-                var query = OMDbApiNet.Utilities.QueryBuilder.GetItemByTitleQuery(title, OmdbType.Series,year, false);
-                ret = _client.GetItemByTitle(title, year, false);
+                var query = OMDbApiNet.Utilities.QueryBuilder.GetItemByTitleQuery(title, OmdbType.Series,year, fullPlot);
+                ret = _client.GetItemByTitle(title, year, fullPlot);
             }
             catch (Exception ex)
             {
@@ -160,12 +160,7 @@ namespace Kolibri.net.Common.Dal.Controller
             { }
             return ret;
         }
-
-        public Item GetItemById(int id, bool fullplot = false)
-        {
-
-            return _client.GetItemById(id.ToString(), fullplot);
-        }
+ 
 
 
         /// <summary>

@@ -884,13 +884,14 @@ namespace Kolibri.net.Common.Utilities
         }
 
 
-        public static void OpenFolderHighlightFile(FileInfo info)
+        public static bool OpenFolderHighlightFile(FileInfo info)
         {
+            var ret = false;
             // suppose that we have a test.txt at E:\
             string filePath = info.FullName;
             if (!File.Exists(filePath))
             {
-                return;
+                return ret;
             }
 
             // combine the arguments together
@@ -898,8 +899,9 @@ namespace Kolibri.net.Common.Utilities
             string argument = "/select, \"" + filePath + "\"";
 
             System.Diagnostics.Process.Start("explorer.exe", argument);
+            ret = true;
 
-
+            return ret; 
         }
 
 

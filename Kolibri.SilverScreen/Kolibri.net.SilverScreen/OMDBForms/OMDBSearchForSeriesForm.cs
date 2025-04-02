@@ -240,7 +240,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             try
             {
                 Item item = null;
-                using (OMDBController omdbC = new OMDBController(_settings.OMDBkey))
+                using (OMDBController omdbC = new OMDBController(_settings.OMDBkey,rottenTomatoRatings:true))
                 {
                     // item = _liteDB.FindItem(textBoxManual.Text); //Ikke hent lokal kopi, poenget med manuelt søk er å hente ny versjon fra OMDB
                     if (item == null) item = omdbC.GetItemByImdbId(textBoxSearchValue.Text);

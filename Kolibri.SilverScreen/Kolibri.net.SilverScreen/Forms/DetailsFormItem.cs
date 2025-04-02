@@ -78,7 +78,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (_OMDB == null) { try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
                 if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { } }
                 if (_subDL == null) { try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { } }
-                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(_liteDB); } catch (Exception ex) { } };
+                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } };
             }
             catch (Exception ex)
             {

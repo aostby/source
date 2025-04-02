@@ -66,7 +66,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             detailsViewBtn_Click(null, null);
             //resultsToGet.SelectedIndex = 1;
             //searchBtn_Click(null, null);
-            _imgCache = new ImageCacheDB(_liteDB);
+            _imgCache = new ImageCacheDB(_userSettings);
 
             this.Text = $"Series list count: {_serieItems.Count()}";
 

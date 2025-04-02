@@ -16,10 +16,7 @@ namespace Kolibri.net.SilverScreen.Controls
     public class DataGrivViewControls
     {
 
-        public event EventHandler CurrentItemChanged;
-
-
-        public static Hashtable _ht = new Hashtable();
+        public event EventHandler CurrentItemChanged; 
 
         protected virtual void OnCurrentItemChanged(EventArgs e)
         {
@@ -30,23 +27,15 @@ namespace Kolibri.net.SilverScreen.Controls
             }
         }
 
-
-
         private LiteDBController _LITEDB;
         private MultimediaType _type;
 
-        public Item CurrentItem { get;   set; }
+        public Item CurrentItem { get;   set; } //blir konstruert for andre typer som SeasonEpisode etc
+        
 
         private SeasonEpisode CurrentSeasonEpisode { get;   set; }
 
-        public object Current
-        {
-            get
-            {
-                if (_type.Equals(MultimediaType.Series)) { return CurrentSeasonEpisode; }
-                else return CurrentItem;
-            }
-        }
+  
         public DataGrivViewControls(MultimediaType type, LiteDBController contr)
         {
             _type = type;
@@ -56,13 +45,16 @@ namespace Kolibri.net.SilverScreen.Controls
         public Form GetMulitMediaDBDataGridViewAsForm(DataTable table) {
             return GetMulitMediaDBDataGridViewAsForm(table, _type);
         }
-        public Form GetMulitMediaDBDataGridViewAsForm( DataTable table,MultimediaType type  )
+        public Form GetMulitMediaDBDataGridViewAsForm(DataTable table, MultimediaType type)
         {
             DataGridView view = null;
             if (!type.Equals(MultimediaType.Series))
-                view = GetMovieItemDataGridView(table);
+            { view = GetMovieItemDataGridView(table); }
             else
+            {
                 view = GetSeasonEpisodeDataGridView(table);
+                view.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            }
             Form form = new Form();
             form.Text = view.Name;
             form.TopLevel = false;
@@ -157,7 +149,12 @@ namespace Kolibri.net.SilverScreen.Controls
                     dgv.Columns["Title"].Width = 150;
                     dgv.Columns["ImdbRating"].DisplayIndex = 1; // or 1, 2, 3 etc
 
-                    dgv.Sort(dgv.Columns["ImdbRating"], ListSortDirection.Descending);
+                    if (dgv.Columns.Contains("Released"))
+                    { dgv.Sort(dgv.Columns["Released"], ListSortDirection.Ascending); }
+                    else
+                    {
+                        dgv.Sort(dgv.Columns["ImdbRating"], ListSortDirection.Descending);
+                    }
                     DataGridViewColumn lastVisibleColumn = dgv.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None);
                     lastVisibleColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
@@ -431,20 +428,13 @@ namespace Kolibri.net.SilverScreen.Controls
                         index = DataGridView1.CurrentRow.Index;
                         imdbid = DataGridView1.Rows[index].Cells["ImdbId"].Value.ToString();
                     }
-                    catch (Exception) { index = 0; DataGridView1.ClearSelection(); }
-
-                int hash = imdbid.GetHashCode();
-                if (_ht.ContainsKey(hash))
-                {
-                    CurrentItem = _ht[hash] as Item;
-                    OnCurrentItemChanged(EventArgs.Empty);
-                    return;
-                }
+                    catch (Exception) { index = 0; DataGridView1.ClearSelection(); } 
+             
 
                 CurrentItem = _LITEDB.FindItem(imdbid);
                 if (CurrentItem != null)
                 {
-                    _ht.Add(hash, CurrentItem);
+                    
                     OnCurrentItemChanged(EventArgs.Empty); 
                     return;
                 }
@@ -490,10 +480,8 @@ namespace Kolibri.net.SilverScreen.Controls
 
                 if (CurrentItem == null)
                 {
-                    CurrentItem = new OMDbApiNet.Model.Item() { Title = title, Year = $"{year}", ImdbRating = "unknown" };
-                    if (imdbid != null) { 
-                        _ht.Add(hash, CurrentItem);   
-                    }
+                    CurrentItem = new OMDbApiNet.Model.Item() { Title = title, Year = $"{year}", ImdbRating = "unknown" , ImdbId = imdbid };
+                  
                     OnCurrentItemChanged(EventArgs.Empty);
                 }
            
@@ -602,7 +590,8 @@ namespace Kolibri.net.SilverScreen.Controls
                     }
                     else
                     {
-                        FileUtilities.Start(new Uri($"https://www.imdb.com/title/{imdbid}"));
+                        Uri url = new Uri($"https://www.imdb.com/title/{imdbid}");
+                        FileUtilities.Start(url); 
                     }
                 }
                 else

@@ -1,4 +1,5 @@
 ﻿using com.sun.org.apache.xpath.@internal.functions;
+using com.sun.tools.corba.se.idl;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images;
@@ -42,7 +43,7 @@ namespace Kolibri.net.SilverScreen.Forms
             //  _userSettings = settings;
 
             _imageCache = imageCache;
-            _imageCache = new ImageCacheDB(liteDb);
+            _imageCache = new ImageCacheDB(liteDb.GetUserSettings());
             if (_ktv != null && _ktv.Item != null)
             {
                 this.Text += $" - {kTV.Item.Title}";
@@ -68,7 +69,9 @@ namespace Kolibri.net.SilverScreen.Forms
                 TabPage tabPage = new TabPage(s.SeasonNumber.PadLeft(2, '0'));
                 //SeriesUtilities.SortAndFormatSeriesTable()
                 DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, _liteDB);
+                
                 dgvtrls.CurrentItemChanged += HandleCurrentItemChanged;
+              
 
                 var table = (DataGrivViewControls.EpisodeToDataTable(s) );// DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
                 if (!table.Columns.Contains("Season"))
@@ -85,6 +88,23 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
+        private void HandleCurrentUrlChanged(object? sender, EventArgs e)
+        {
+            //string url = string.Empty;
+            try
+            {
+                var contr = (sender as DataGrivViewControls);
+               var item = contr.CurrentItem; //imdb
+                Uri url = new Uri($"https://www.imdb.com/title/{item.ImdbId}"); //imdb
+               // string temp = $"https://www.themoviedb.org/tv/{}/season/6/episode/1" //tmdb
+                webView21.Source = url;
+              
+            }
+            catch (Exception)
+            {   
+            }
+        }
+
         private void HandleCurrentItemChanged(object? sender, EventArgs e)
         {
             try
@@ -95,6 +115,9 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 var img=  _imageCache.FindImageAsync(poster).GetAwaiter().GetResult();
                 this.pbPoster.Image = img.Image;
+
+                HandleCurrentUrlChanged(sender, e);
+
             }
             catch (Exception ex)
             {
@@ -305,17 +328,14 @@ namespace Kolibri.net.SilverScreen.Forms
                         var t = await _liteDB.FindFile(_seasonEpisode.ImdbId);
                         path = t.FullName;
                     }
-                    else { path = _liteDB.GetUserSettings().UserFilePaths.SeriesSourcePath; }
-
-                        if (File.Exists(path))
+                
+                    if (Path.Exists(path))
                     {
-                        FileUtilities.OpenFolderHighlightFile(new FileInfo(path));
+                        if (!FileUtilities.OpenFolderHighlightFile(new FileInfo(path)))
+                        {
+                            FileUtilities.Start(new DirectoryInfo(path));
+                        }
                     }
-                    else if (Directory.Exists(path))
-                    {// System.Diagnostics.Process.Start(path);
-                        FileUtilities.Start(new DirectoryInfo(path));
-                    }
-
                 }
             }
             catch (Exception ex)

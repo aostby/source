@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Dal.Entities;
+﻿using com.sun.xml.@internal.bind.v2.model.core;
+using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using LiteDB;
@@ -19,16 +20,18 @@ namespace Kolibri.net.Common.Dal.Controller
       
         internal  ImagePosterDBController _ImageDB;
 
-        LiteDBController _liteDB;
+        //LiteDBController _liteDB;
         private Hashtable _ht = new Hashtable(); 
 
-        private int _max = 2000; 
-    
+        private int _max = 2000;
+        private UserSettings _userSettings;
+
         public string ApplicationName { get; private set; }
 
-        public ImageCacheDB(LiteDBController liteDB)
+        public ImageCacheDB(UserSettings userSettings)
         {
-            _liteDB = liteDB;
+          //  _liteDB = liteDB;
+          _userSettings = userSettings;
             Init();
         } 
 
@@ -37,15 +40,12 @@ namespace Kolibri.net.Common.Dal.Controller
             ApplicationName = Assembly.GetExecutingAssembly().GetName().Name;
             _ImageDB = new ImagePosterDBController(DefaultDBPath(), false, false); 
 
-            if (_liteDB != null)
-            {
-                Task.Run(async () => await InitImagesAsync(_liteDB));
-            } 
+            
         }
 
         public FileInfo DefaultDBPath()
         {
-            string path = Path.ChangeExtension(_liteDB.ConnectionString.Filename, ".imgdb");
+            string path = Path.ChangeExtension(_userSettings.LiteDBFilePath, ".imgdb");
             FileInfo ret = new FileInfo(path);
             return ret;
         }
@@ -316,7 +316,7 @@ namespace Kolibri.net.Common.Dal.Controller
 
     internal class ImagePosterDBController
     {
-        internal Hashtable _ht = new Hashtable();
+      
         internal bool ExclusiveConnection { get; set; }
 
         internal LiteDatabase _litePosterDB;
@@ -360,21 +360,20 @@ namespace Kolibri.net.Common.Dal.Controller
         internal async Task<bool> ImageExists(string ImdbId)
         {
             int hash = ImdbId.GetHashCode();
-            bool ret = false;
-            
-           if( _ht.ContainsKey(hash))return true;
+            bool ret = false; 
             try
             {
                 //  var count =   _litePosterDB.GetCollection<ImageBase>("ImageBase").Count(Query.EQ("_id", ImdbId));
-                var count = _litePosterDB.GetCollection<ImageBase>("ImageBase").Count(x => x.ImdbId == ImdbId);
-                ret = count > 0;
+                var collection = _litePosterDB.GetCollection<ImageBase>("ImageBase");//.Count(x => x.ImdbId == ImdbId);
+                  ret = collection.FindById(hash)!=null;
+               
             }
             catch (AggregateException ex) {
                 throw new Exception(ex.Message, ex.InnerException);
             }
             catch (Exception ex)
             { ret = false; }
-            if (ret) { _ht.Add(hash, ImdbId); }
+           
               return ret;
         }
 
@@ -400,7 +399,7 @@ namespace Kolibri.net.Common.Dal.Controller
                     }
                 }
                 _litePosterDB.GetCollection<ImageBase>("ImageBase")
-                    .Insert(imagePoster.ImdbId, imgbase);
+                    .Insert(imagePoster.ImdbId.GetHashCode(), imgbase);
                 return true;
             }
             catch (Exception ex)
@@ -416,7 +415,7 @@ namespace Kolibri.net.Common.Dal.Controller
             try
             {
                 var imgbase = _litePosterDB.GetCollection<ImageBase>("ImageBase")
-                    .FindById(imdbId);
+                    .FindById(imdbId.GetHashCode());
                 //     .Find(x => x.ImdbId == imdbId).FirstOrDefault();
 
                 if (imgbase != null)

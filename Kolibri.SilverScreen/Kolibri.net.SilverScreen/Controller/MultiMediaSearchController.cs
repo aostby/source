@@ -342,15 +342,20 @@ namespace Kolibri.net.SilverScreen.Controller
             return movie;
         }
         #endregion
-        public async Task<List<KolibriTVShow>> SearchForSeriesAsync(DirectoryInfo dir)
+        public async Task<List<KolibriTVShow>> SearchForSeriesAsync(DirectoryInfo source)
         {
             CurrentLog = new StringBuilder();
-
-            var fList = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(dir, MovieUtilites.MoviesCommonFileExt(true), SearchOption.AllDirectories);
-            if (fList.Count() < 1) { SetStatusLabelText($"Fant ingen filer i {dir.FullName}.", "NOTFOUND"); return new List<KolibriTVShow>(); }
-            var dt = SeriesUtilities.SeriesEpisode(fList);
-            List<Episode> epList = DataSetUtilities.ConvertToList<Episode>(dt);
-            return GetKolibriTVShows(epList);
+            List<KolibriTVShow> list = new List<KolibriTVShow>();    
+            foreach (DirectoryInfo dir in source.GetDirectories("*.*", SearchOption.AllDirectories))
+            {
+                var fList = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(dir, MovieUtilites.MoviesCommonFileExt(true), SearchOption.TopDirectoryOnly);
+                if (fList.Count() < 1) { continue; } //SetStatusLabelText($"Fant ingen filer i {dir.FullName}.", "NOTFOUND"); return new List<KolibriTVShow>(); }
+                var dt = SeriesUtilities.SeriesEpisode(fList);
+                List<Episode> epList = DataSetUtilities.ConvertToList<Episode>(dt);
+                var tmp =   GetKolibriTVShows(epList, MovieUtilites.GetMovieTitle(dir.FullName));
+                if (tmp.FirstOrDefault() != null) { list.Add(tmp.FirstOrDefault()); }
+            }
+            return list;
         }
 
         public KolibriTVShow GetShowById(string imdbid)
@@ -405,6 +410,7 @@ namespace Kolibri.net.SilverScreen.Controller
             
             return tv;
         }
+        /*
         public KolibriTVShow GetShowById_old(string imdbid)
         {
             if (imdbid.IsNumeric()) throw new Exception("Probably not an ImdbId, they start with tt: " + imdbid);
@@ -460,7 +466,7 @@ namespace Kolibri.net.SilverScreen.Controller
             ret.Item = item;
             return ret;
         }
-
+        */
         private List<KolibriTVShow> GetKolibriTVShows(List<Episode> epList, string showName=null)
         {
             Dictionary<string, KolibriTVShow> showDic = new Dictionary<string, KolibriTVShow>();
