@@ -110,14 +110,21 @@ namespace Kolibri.net.Common.Utilities
         /// </summary>
         /// <param name="formatTable"></param>
         /// <returns></returns>
-        public static  DataTable SortAndFormatSeriesTable(DataTable? formatTable)
-        { string sortString = string.Empty;
+        public static DataTable SortAndFormatSeriesTable(DataTable? formatTable)
+        {
+            string sortString = string.Empty;
             string name = formatTable.Columns.Contains("Name") ? "name" : "Title";
             string season = formatTable.Columns.Contains("Season") ? "Season" : "SeasonNumber";
             string episode = formatTable.Columns.Contains("Episode") ? "Episode" : "EpisodeNumber";
 
-           sortString    = $"{season} ASC, {episode} ASC, {name} ASC";
-
+            if (formatTable.Columns.Contains("Released"))
+            {
+                sortString = $"Released ASC";
+            }
+            else
+            {
+                sortString = $"{season} ASC, {episode} ASC, {name} ASC";
+            }
             DataTable resultTable = new DataView(formatTable, "", sortString, DataViewRowState.CurrentRows).ToTable();
 
             List<string> columns = new List<string>() { "Name", "Title", "ImdbRating", "Year", "Rated", "Runtime", "Genre", "Plot" };
@@ -139,6 +146,5 @@ namespace Kolibri.net.Common.Utilities
 
             return resultTable;
         }
-
     }
 }

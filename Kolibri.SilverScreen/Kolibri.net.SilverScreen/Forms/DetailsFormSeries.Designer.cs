@@ -61,8 +61,15 @@ namespace Kolibri.net.SilverScreen.Forms
             tabControlSeasons = new TabControl();
             tabPage1 = new TabPage();
             tabPage2 = new TabPage();
+            splitContainer1 = new SplitContainer();
+            webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
             tabControlSeasons.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
             SuspendLayout();
             // 
             // label8
@@ -345,10 +352,11 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             tabControlSeasons.Controls.Add(tabPage1);
             tabControlSeasons.Controls.Add(tabPage2);
-            tabControlSeasons.Location = new Point(513, 12);
+            tabControlSeasons.Dock = DockStyle.Fill;
+            tabControlSeasons.Location = new Point(0, 0);
             tabControlSeasons.Name = "tabControlSeasons";
             tabControlSeasons.SelectedIndex = 0;
-            tabControlSeasons.Size = new Size(822, 730);
+            tabControlSeasons.Size = new Size(284, 702);
             tabControlSeasons.TabIndex = 52;
             // 
             // tabPage1
@@ -356,7 +364,7 @@ namespace Kolibri.net.SilverScreen.Forms
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(814, 702);
+            tabPage1.Size = new Size(276, 674);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "tabPage1";
             tabPage1.UseVisualStyleBackColor = true;
@@ -366,17 +374,46 @@ namespace Kolibri.net.SilverScreen.Forms
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(814, 702);
+            tabPage2.Size = new Size(276, 674);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "tabPage2";
             tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // splitContainer1
+            // 
+            splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            splitContainer1.Location = new Point(504, 12);
+            splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(tabControlSeasons);
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(webView21);
+            splitContainer1.Size = new Size(854, 702);
+            splitContainer1.SplitterDistance = 284;
+            splitContainer1.TabIndex = 53;
+            // 
+            // webView21
+            // 
+            webView21.AllowExternalDrop = true;
+            webView21.CreationProperties = null;
+            webView21.DefaultBackgroundColor = Color.White;
+            webView21.Dock = DockStyle.Fill;
+            webView21.Location = new Point(0, 0);
+            webView21.Name = "webView21";
+            webView21.Size = new Size(566, 702);
+            webView21.TabIndex = 0;
+            webView21.ZoomFactor = 1D;
             // 
             // DetailsFormSeries
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1347, 754);
-            Controls.Add(tabControlSeasons);
+            Controls.Add(splitContainer1);
             Controls.Add(labelTotalSeasons);
             Controls.Add(textBoxTotalSeasons);
             Controls.Add(buttonSubtitleSearch);
@@ -412,6 +449,11 @@ namespace Kolibri.net.SilverScreen.Forms
             KeyDown += MovieDetailsForm_KeyDown;
             ((System.ComponentModel.ISupportInitialize)pbPoster).EndInit();
             tabControlSeasons.ResumeLayout(false);
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -448,5 +490,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private TabControl tabControlSeasons;
         private TabPage tabPage1;
         private TabPage tabPage2;
+        private SplitContainer splitContainer1;
+        private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
     }
 }

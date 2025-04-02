@@ -3,12 +3,14 @@ using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
+using Kolibri.net.SilverScreen.Controls;
 using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms.DataVisualization.Charting;
+using TMDbLib.Objects.Exceptions;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
 using TMDbLib.Objects.TvShows;
@@ -340,18 +342,76 @@ namespace Kolibri.net.SilverScreen.Controller
             return movie;
         }
         #endregion
-        public async Task<List<KolibriTVShow>> SearchForSeriesAsync(DirectoryInfo dir)
+        public async Task<List<KolibriTVShow>> SearchForSeriesAsync(DirectoryInfo source)
         {
             CurrentLog = new StringBuilder();
-
-            var fList = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(dir, MovieUtilites.MoviesCommonFileExt(true), SearchOption.AllDirectories);
-            if (fList.Count() < 1) { SetStatusLabelText($"Fant ingen filer i {dir.FullName}.", "NOTFOUND"); return new List<KolibriTVShow>(); }
-            var dt = SeriesUtilities.SeriesEpisode(fList);
-            List<Episode> epList = DataSetUtilities.ConvertToList<Episode>(dt);
-            return GetKolibriTVShows(epList);
+            List<KolibriTVShow> list = new List<KolibriTVShow>();    
+            foreach (DirectoryInfo dir in source.GetDirectories("*.*", SearchOption.AllDirectories))
+            {
+                var fList = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(dir, MovieUtilites.MoviesCommonFileExt(true), SearchOption.TopDirectoryOnly);
+                if (fList.Count() < 1) { continue; } //SetStatusLabelText($"Fant ingen filer i {dir.FullName}.", "NOTFOUND"); return new List<KolibriTVShow>(); }
+                var dt = SeriesUtilities.SeriesEpisode(fList);
+                List<Episode> epList = DataSetUtilities.ConvertToList<Episode>(dt);
+                var tmp =   GetKolibriTVShows(epList, MovieUtilites.GetMovieTitle(dir.FullName));
+                if (tmp.FirstOrDefault() != null) { list.Add(tmp.FirstOrDefault()); }
+            }
+            return list;
         }
 
         public KolibriTVShow GetShowById(string imdbid)
+        {
+            if (imdbid.IsNumeric()) throw new Exception("Probably not an ImdbId, they start with tt: " + imdbid);
+            Item item = _liteDB.FindItem(imdbid);
+            if (item == null) throw new NotFoundException(new TMDbStatusMessage() { StatusCode = 401, StatusMessage = $"Item {imdbid} not found in local database" });
+
+            KolibriTVShow tv = new KolibriTVShow();
+            tv.SeasonList = new List<KolibriSeason>(); 
+            tv.Item = item;
+
+            for (int i = 0; i < item.TotalSeasons.ToInt32(); i++)
+            {
+                try
+                {
+                    var kses = _liteDB.FindSeason(item.ImdbId, i + 1);
+                    if (kses == null)
+                    {
+                        try
+                        {
+                            Season ses = _OMDB.SeasonByImdbId(item.ImdbId, (i + 1).ToString());
+                            kses = JsonConvert.DeserializeObject<KolibriSeason>(ses.JsonSerializeObject());
+                            kses.Title = item.Title;
+                            kses.SeriesId = item.ImdbId;
+                            _liteDB.Upsert(kses);
+                        }
+                        catch (Exception)
+                        { }
+
+                    }
+                    if (kses != null)
+                    {
+                        tv.SeasonList.Add(kses);
+
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    var jaa = i;
+                }
+            }
+            //List < DataTable > datatableList = new List<DataTable>();
+            //foreach (var season in tv.SeasonList)
+            //{
+            //    datatableList.Add( DataGrivViewControls.EpisodeToDataTable(season));
+            //} 
+            //var eplist = DataSetUtilities.ConvertToList<Episode>(DataSetUtilities.MergeListOfSimilarTables(datatableList));
+            //var ret = GetKolibriTVShows(eplist, item?.Title).FirstOrDefault();
+           
+            
+            return tv;
+        }
+        /*
+        public KolibriTVShow GetShowById_old(string imdbid)
         {
             if (imdbid.IsNumeric()) throw new Exception("Probably not an ImdbId, they start with tt: " + imdbid);
             Item item = _liteDB.FindItem(imdbid);
@@ -363,17 +423,14 @@ namespace Kolibri.net.SilverScreen.Controller
             for (int i = 0; i < item.TotalSeasons.ToInt32(); i++)
             {
                 try
-                {
-
-
-               
+                { 
                     var kses = _liteDB.FindSeason(item.ImdbId, i+1);
                     if (kses ==null){
                         try
                         {
-                        Season ses = _OMDB.SeasonByImdbId(item.ImdbId, (i + 1).ToString());
+                            Season ses = _OMDB.SeasonByImdbId(item.ImdbId, (i + 1).ToString());
                             kses = JsonConvert.DeserializeObject<KolibriSeason>(ses.JsonSerializeObject());
-                            kses.Title = item.Title;
+                             kses.Title = item.Title;
                             kses.SeriesId = item.ImdbId;
                             _liteDB.Upsert(kses);
                         }
@@ -409,7 +466,7 @@ namespace Kolibri.net.SilverScreen.Controller
             ret.Item = item;
             return ret;
         }
-
+        */
         private List<KolibriTVShow> GetKolibriTVShows(List<Episode> epList, string showName=null)
         {
             Dictionary<string, KolibriTVShow> showDic = new Dictionary<string, KolibriTVShow>();
@@ -438,9 +495,12 @@ namespace Kolibri.net.SilverScreen.Controller
                     SeasonEpisode sep = _liteDB.FindSeasonEpisode(showName, omdbEpisode.SeasonNumber.ToInt32().ToString(), omdbEpisode.EpisodeNumber.ToInt32().ToString());
                     if (sep == null && show.TvShow != null)
                     {
-                   var tempEp = show.EpisodeList.FirstOrDefault(x => x.SeasonNumber.Equals(omdbEpisode.SeasonNumber) && x.EpisodeNumber.Equals(omdbEpisode.EpisodeNumber));
-                        if(tempEp!=null)
-                        { ep = tempEp; }
+                        //var tempEp = show.EpisodeList.FirstOrDefault(x => x.SeasonNumber.Equals(omdbEpisode.SeasonNumber) && x.EpisodeNumber.Equals(omdbEpisode.EpisodeNumber));
+                        var tempEp = show.EpisodeList.FirstOrDefault(x => x.Season.Equals(omdbEpisode.SeasonNumber) && x.Episode.Equals(omdbEpisode.EpisodeNumber));
+                        if (tempEp!=null)
+                        { ep = tempEp.DeepCopy<Episode>();
+                            ep.SeriesId = show.Item.ImdbId;
+                        }
                     }
                     if (sep != null)
                     {
@@ -453,7 +513,13 @@ namespace Kolibri.net.SilverScreen.Controller
                     }
 
                     if (!string.IsNullOrEmpty(ep.ImdbId)) { if (upsert) _liteDB.Upsert(ep); }
-                    show.EpisodeList.Add(ep);
+                    {
+                        var tmp = ep.DeepCopy<KolibriSeasonEpisode>();
+                        tmp.SeriesId = show.Item.ImdbId;
+                        if(_liteDB.Upsert(ep))
+                            show.EpisodeList.Add(tmp); 
+                    
+                    }
                     showDic[show.Title] = show;
                 }
                 catch (AggregateException aex)

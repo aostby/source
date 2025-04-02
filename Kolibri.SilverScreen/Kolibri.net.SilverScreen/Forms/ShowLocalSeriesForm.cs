@@ -29,8 +29,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private UserSettings _userSettings;
         private ImageCacheDB _imgCache;
 
-        private LiteDBController _liteDB;
-
+        private LiteDBController _liteDB; 
 
         public ShowLocalSeriesForm(UserSettings userSettings)
         {
@@ -49,7 +48,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
 
         }
 
-        private void Init(string defaultSeach = null)
+        private async Task Init(string defaultSeach = null)
         {
 
             pictureBox.Image = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
@@ -67,9 +66,15 @@ namespace Kolibri.Common.VisualizeOMDbItem
             detailsViewBtn_Click(null, null);
             //resultsToGet.SelectedIndex = 1;
             //searchBtn_Click(null, null);
-            _imgCache = new ImageCacheDB(_liteDB);
+            _imgCache = new ImageCacheDB(_userSettings);
 
             this.Text = $"Series list count: {_serieItems.Count()}";
+
+
+            foreach (var item in _serieItems)
+            {
+                await _imgCache.FindImageAsync(item.ImdbId);
+            }
         }
 
 
@@ -171,10 +176,11 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 SetStatusLabelText($"Image Cache saved to {_imgCache.DefaultDBPath()}");
             }
             enableSearch();
-            refreshMovieList();
+      await      refreshMovieList();
         }
-        private async void refreshMovieList()
+        private async Task<bool> refreshMovieList()
         {
+            bool ret = true;
             try
             {
                 movieList.Items.Clear();
@@ -185,8 +191,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     if (jall == null)
                     {
                         var img = await getImage(movie.Poster);
-                        movieImageList.Images.Add(movie.ImdbId, img);
-                        await _imgCache.InsertImageAsync(movie.ImdbId, (Bitmap)img);
+                        movieImageList.Images.Add(movie.ImdbId, img);  
                     }
                     else { movieImageList.Images.Add(movie.ImdbId, (Image)jall.Image); }
                     movieList.Items.Add(movie.Title, movie.ImdbId);
@@ -208,9 +213,10 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
             catch (Exception ex)
             {
+                ret = false;
                 SetStatusLabelText($"Error occured: {ex.Message}");
             }
-
+            return ret;
         }
 
         private void tileViewBtn_Click(object sender, EventArgs e)
@@ -595,7 +601,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 SetStatusLabelText($"{item.Title} - searching for {item.TotalSeasons} seasons.");
                 MultiMediaSearchController mmc = new MultiMediaSearchController(_userSettings, _liteDB, updateTriState: false);
                 var show = mmc.GetShowById(item.ImdbId);
-                Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _liteDB);
+                Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _liteDB, _imgCache);
                 form.ShowDialog();
             }
             catch (Exception ex)
