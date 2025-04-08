@@ -196,7 +196,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     else { movieImageList.Images.Add(movie.ImdbId, (Image)jall.Image); }
                     movieList.Items.Add(movie.Title, movie.ImdbId);
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.Year);
-                    movieList.Items[movieList.Items.Count - 1].SubItems.Add(TYPE_TRANSLATION[movie.Type]);
+                    movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.TotalSeasons);//TYPE_TRANSLATION[movie.Type]);
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.ImdbRating);
                     movieList.Items[movieList.Items.Count - 1].SubItems.Add(movie.ImdbId);
 
@@ -352,7 +352,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 {
                     _userSettings.UserFilePaths.SeriesSourcePath = folder.FullName;
                     _userSettings.Save();
-                    Form form = new Kolibri.net.SilverScreen.OMDBForms.OMDBSearchForSeriesForm(folder, _userSettings);
+                    Form form = new Kolibri.net.SilverScreen.OMDBForms.OMDBSearchForSeriesForm(folder, _userSettings, _liteDB);
                     form.ShowDialog();
 
                 }
@@ -599,8 +599,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
             {
                 item = await getMovieDetails(pictureBox.Tag.ToString());
                 SetStatusLabelText($"{item.Title} - searching for {item.TotalSeasons} seasons.");
-                MultiMediaSearchController mmc = new MultiMediaSearchController(_userSettings, _liteDB, updateTriState: false);
-                var show = mmc.GetShowById(item.ImdbId);
+                KolibriTVShowSearchController mmc = new KolibriTVShowSearchController(_userSettings, _liteDB);
+                var show = await mmc.GetShowByIdAsync(item.ImdbId);
                 Form form = new Kolibri.net.SilverScreen.Forms.DetailsFormSeries(show, _liteDB, _imgCache);
                 form.ShowDialog();
             }
@@ -643,7 +643,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         {
                             try
                             {
-                                var destination = item.TomatoUrl + $" {{tmdb-{item.ImdbId}}}";
+                                var destination = item.TomatoUrl + $" {{imdb-{item.ImdbId}}}";
                                 Directory.Move(item.TomatoUrl, destination);
                                 item.TomatoUrl = destination;
                                 _liteDB.Upsert(item);
@@ -662,10 +662,10 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         if (!Path.Exists(item.TomatoUrl))
                         {
                             MessageBox.Show($"{item.TomatoUrl} ({item.Title})", "Sorry, the filepath does not exist");
-                            var res = MessageBox.Show($"Wanna look up this folder?", "Wanna fix it?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            var res = MessageBox.Show($"Wanna look up this folder?", "Wanna fix it? ({item.Title})", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                             if (res == DialogResult.Yes)
                             {
-                                var resultSearch = FolderUtilities.LetOppMappe(item.TomatoUrl, $"Finn hovedmappe for {item.Title}");
+                                                        var resultSearch = FolderUtilities.LetOppMappe(item.TomatoUrl, $"Finn hovedmappe for {item.Title}");
                                 if (resultSearch != null)
                                 {
                                     item.TomatoUrl = resultSearch.FullName;
@@ -678,8 +678,10 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         }
                         else
                         {
-
-                            SetStatusLabelText($"{item.TomatoUrl} is allready set to a tt id.");
+                            if (_liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl)))
+                            {
+                                SetStatusLabelText($"{item.TomatoUrl} is allready set to a tt id.");
+                            }
                         }
                     }
                 }

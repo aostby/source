@@ -418,15 +418,15 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (radioButtonUpdateAll.Checked)
                     tristate = true;
 
-                MultiMediaSearchController searchController = new MultiMediaSearchController(_userSettings, updateTriState: tristate);
+               
                 if (_type.Equals(Constants.MultimediaType.movie) || _type.Equals(Constants.MultimediaType.Movies))
-                {
+                { MoviesSearchController searchController = new MoviesSearchController(_userSettings, updateTriState: tristate);
                     Task.Run(async () => searchController.SearchForMovies(dInfo));
                 }
                 else if (_type.Equals(Constants.MultimediaType.Series))
                 {
-
-                    Task.Run(async () => searchController.SearchForSeriesEpisodes(dInfo));
+                    KolibriTVShowSearchController kTVsearch = new KolibriTVShowSearchController(_userSettings, _liteDB);
+                    Task.Run(async () => kTVsearch.SearchForSeriesEpisodes(dInfo));
                 }
                 Init();
             }

@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using OMDbApiNet.Model;
+using Sylvan.Data.Csv;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
- 
-using com.sun.tools.@internal.ws.wsdl.document.mime;
-using OMDbApiNet.Model;
-
-            using Sylvan.Data.Csv;
-            using System.Data;
+using System.Text.RegularExpressions;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -25,8 +14,7 @@ namespace Kolibri.net.SilverScreen.Forms
         }
 
         private async void button1_Click(object sender, EventArgs e)
-        {
-            
+        { 
             int numberOfThreads = Environment.ProcessorCount;
             string filePath = @"C:\Users\asoes\source\repos\Kolibri.SilverScreen\Kolibri.SilverScreen\bin\Debug\net8.0-windows\IMDbDataFiles\title.episode.tsv"; 
 

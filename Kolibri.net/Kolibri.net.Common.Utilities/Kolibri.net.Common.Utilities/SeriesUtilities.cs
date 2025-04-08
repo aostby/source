@@ -1,4 +1,5 @@
 ﻿using Kolibri.net.Common.Utilities.Extensions;
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,8 +13,8 @@ namespace Kolibri.net.Common.Utilities
         /// <summary>
         /// Based on a list of filenames, for each file find the name of the series, the season, episodenumber, and include the full file name in the search in a table
         /// </summary>
-        /// <param name="infos"></param>
-        /// <returns></returns>
+        /// <param name="infos">List of full path for filenames</param>
+        /// <returns>Dataset of episodes for serie</returns>
         public static DataTable SeriesEpisode(List<string> infos, bool useTitle=true)
         {
             DataTable table = DataSetUtilities.ColumnNamesToDataTable((useTitle?"Title":"Name"), "Season", "Episode", "FullName").Tables[0];
@@ -145,6 +146,18 @@ namespace Kolibri.net.Common.Utilities
             }
 
             return resultTable;
+        }
+        
+        /// <summary>
+        /// Siden serier som oftest er mapper, lager vi litt andre regler enn for filmer 
+        /// </summary>
+        /// <param name="item">Mappenavn</param>
+        /// <returns>navnet på serien</returns>
+        public static string GetSeriesTitle(string item)
+        {
+            // TODO: sjekk om det er en fil, og om den har ekstensjon som om det var en film type fil
+
+            return MovieUtilites.GetMovieTitle($"{item.Split('{').FirstOrDefault().Replace(".", " ")}");
         }
     }
 }

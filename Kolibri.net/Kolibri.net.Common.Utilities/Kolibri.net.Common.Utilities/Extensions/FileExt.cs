@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Kolibri.net.Common.Utilities.Extensions
 {
@@ -94,6 +95,30 @@ namespace Kolibri.net.Common.Utilities.Extensions
             return hashtable;
         }
 
+        /// <summary>
+        /// Plukk en imdb id fra navnet til en directory
+        /// </summary>
+        /// <param name="path">full filsti for en directory</param>
+        /// <returns>imdbid hvis funnet, null ellers</returns>
+        public static string ImdbIdFromDirectoryName(this string path) 
+        {
+            string ret = null;
+            try
+            {
+                string pattern = @"{(.*?)}";
+                Regex rex = new Regex(pattern);
+                var t = rex.Match(path);
+                if (t.Success && t.Value.Contains("imdb-"))
+                    ret= t.Value.Split("-").Last().TrimEnd('}');  
+
+            }
+            catch (Exception)
+            {
+                ret = null;    
+            }
+
+            return ret;
+        }
 
     }
 }

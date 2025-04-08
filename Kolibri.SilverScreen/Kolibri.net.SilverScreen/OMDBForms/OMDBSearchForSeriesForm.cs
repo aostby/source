@@ -1,4 +1,6 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using com.sun.org.apache.bcel.@internal.generic;
+using javax.print.attribute.standard;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
@@ -16,7 +18,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
         public DirectoryInfo Source { get; private set; }
         private UserSettings _settings;
         private LiteDBController _liteDB;
-        private MultiMediaSearchController _contr;
+        private KolibriTVShowSearchController _contr;
         private List<string> _sourceSeriesFiles = new List<string>();
         private List<string> _sourceSeriesFolders = new List<string>();
 
@@ -24,13 +26,18 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
         //private DirectoryInfo[] _directoryInfos;
 
-        public OMDBSearchForSeriesForm(DirectoryInfo source, UserSettings settings)
+        public OMDBSearchForSeriesForm(DirectoryInfo source, UserSettings settings, LiteDBController liteDB)
         {
             InitializeComponent();
             Application.DoEvents();
 
             _settings = settings;
-            _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false);
+            _liteDB = liteDB;
+            if (_liteDB == null)
+            {
+                _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false);
+            }
+            if (_contr == null) _contr = new KolibriTVShowSearchController(_settings, _liteDB);
 
             Source = source;
             Init();
@@ -40,6 +47,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
         private void Init()
         {
+            
             this.Cursor = Cursors.WaitCursor;
             Application.DoEvents();
 
@@ -54,7 +62,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 this.Text = $"Search for Series - {Source.FullName} - [{_sourceSeriesFiles.Count} files in path]";
                 Application.DoEvents();
                 var path = _sourceSeriesFiles.FirstOrDefault();
-                string title = $"{MovieUtilites.GetMovieTitle(path)}".FirstToUpper();
+                string title = $"{SeriesUtilities.GetSeriesTitle(path)}".FirstToUpper();
                 string year = $"{MovieUtilites.GetYear(Source.Name)}".Trim();
                 textBoxSearchValue.Text = $"{title}".Trim();
 
@@ -66,17 +74,30 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
                 _sourceSeriesFolders = queryGroupByExt.Select(x => x.Key).ToList();
 
+                var queryGroupByName = from dir
+                                       in _sourceSeriesFolders
+                                       group Name by  Path.GetDirectoryName(dir)  into folderGroup
+                                      orderby folderGroup.Count(), folderGroup.Key
+                                      select folderGroup;
 
+              var  firstLevel = queryGroupByName.Select(x => x.Key).ToList();
 
                 DataTable resultTable = DataSetUtilities.ColumnNamesToDataTable("Folders", "Title", "ImdbId").Tables[0];
                 resultTable.TableName = "Init";
-                foreach (var item in _sourceSeriesFolders)
+                foreach (var item in firstLevel)
                 {
-                    var ser = _liteDB.FindItemByTitle(MovieUtilites.GetMovieTitle($"{item}")).FirstOrDefault();
+                    string tit = SeriesUtilities.GetSeriesTitle(item);
+                    Item omdb = null;
+                    if (item.Contains("{"))
+                        omdb = _liteDB.FindItem(item.ImdbIdFromDirectoryName());
+                    if( omdb==null){omdb = _liteDB.FindItemByTitle(tit).FirstOrDefault(); }
+                
+                        
+
                     resultTable.Rows.Add(
                               $"{item}",
-                              $"{(ser == null ? "" : ser.Title)}",
-                              $"{(ser == null ? "" : ser.ImdbId)}");
+                              $"{(omdb == null ? tit : omdb.Title)}",
+                              $"{(omdb == null ? "" : omdb.ImdbId)}");
                 }
                 dataGridView1.DataSource = resultTable;
                 dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -133,7 +154,13 @@ namespace Kolibri.net.SilverScreen.OMDBForms
         private async  void buttonSearch_Click(object sender, EventArgs e)
         {
             this.Cursor = Cursors.WaitCursor;
-            _contr = new MultiMediaSearchController(_settings);
+             ProcessThisFolder(Source);
+            this.Cursor = Cursors.Default;
+        }
+
+        private async void ProcessThisFolder(DirectoryInfo source)
+        {
+            if (_contr == null) _contr = new KolibriTVShowSearchController(_settings);
             _contr.ProgressUpdated += OnProgressUpdated;
 
             StringBuilder Log = new StringBuilder();
@@ -141,30 +168,29 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             {
                 List<DataTable> list = new List<DataTable>();
 
-                SetStatusLabelText($"{Source.Name} - Searching for details (Start: {DateTime.Now.ToShortTimeString()})");
+                SetStatusLabelText($"{source.Name} - Searching for details (Start: {DateTime.Now.ToShortTimeString()})");
 
                 try
                 {
                     //List<Episode> epList = new List<Episode>();
-                    List<KolibriSeasonEpisode> epList = new List<KolibriSeasonEpisode>();
+                    List<Episode> epList = new List<Episode>();
                     DataTable table = null;
-
-
 
                     if (radioButtonLocal.Checked)
                     {
-                        var test = _contr.SearchForSeriesAsync(Source);
-                        epList = test.Result.SelectMany(x => x.EpisodeList).OrderBy(x => x.Title).ToList();
-                        table = DataSetUtilities.AutoGenererDataSet<KolibriSeasonEpisode>(epList).Tables[0];
+                        var test = await _contr.SearchForSeriesAsync(source);
+                        epList = test.SelectMany(x => x.EpisodeList).OrderBy(x => x.Title).ToList();
+                        table = DataSetUtilities.AutoGenererDataSet<Episode>(epList).Tables[0];
                         table = SeriesUtilities.SortAndFormatSeriesTable(table);
                     }
-                    else { table = await _contr.SearchForSeriesEpisodes(Source); }
-                    table.TableName = DataSetUtilities.LegalSheetName(Source.Name);
+                    else {
+                        table = await _contr.SearchForSeriesEpisodes(source); }
+                    table.TableName = DataSetUtilities.LegalSheetName(source.Name);
                     list.Add(table);
                 }
                 catch (Exception ex)
                 {
-                    string error = $"{Source.Name} - {ex.Message}";
+                    string error = $"{source.Name} - {ex.Message}";
                     Log.AppendLine($"{error}{Environment.NewLine}{"*".PadRight(72, '*')}");
                     SetStatusLabelText(error);
 
@@ -194,7 +220,6 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
-            this.Cursor = Cursors.Default;
         }
 
         private void buttonManual_Click(object sender, EventArgs e)
@@ -361,8 +386,8 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             }
         }
 
-        private void ContextMenuEvent_Click(object sender, EventArgs e)
-        {  
+        private async void ContextMenuEvent_Click(object sender, EventArgs e)
+        {
             try
             {
                 textBoxYearValue.Text = string.Empty;
@@ -376,11 +401,62 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         if (item.Year.Length > 4)
                             textBoxYearValue.Text = item.Year.Substring(0, 4);
                     }
-                    else {
-                        textBoxSearchValue.Text = MovieUtilites.GetMovieTitle(dataGridView1.SelectedRows[0].Cells[0].Value.ToString());
+                    else
+                    {
+                        textBoxSearchValue.Text = SeriesUtilities. GetSeriesTitle (dataGridView1.SelectedRows[0].Cells[0].Value.ToString());
                     }
                 }
+                if (sender.Equals(toolStripMenuItemImdbId))
+                {
+                    string ret = string.Empty;
+                    bool ok = InputDialogs.InputBox("Sett en IMDB id for denne mappen.", "Please submit folder IMDBId", ref ret) == DialogResult.OK;
+                    if (ok)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ret))
+                        {
+                            DirectoryInfo dirInfo = new DirectoryInfo(dataGridView1.SelectedRows[0].Cells["Folders"].Value.ToString());
+                            if (dirInfo.Exists)
+                            {
+                                if (!dirInfo.FullName.Contains(ret))
+                                {
 
+
+                                    var destination = dirInfo.FullName + $" {{imdb-{ret}}}";
+                                    Directory.Move(dirInfo.FullName, destination);
+                                    string tit = dataGridView1.SelectedRows[0].Cells["Title"].Value.ToString();
+                                    var item = _liteDB.FindItem(tit);
+                                    if (item != null)
+                                    { item.TomatoUrl = destination;
+                                           _liteDB.Upsert(item);
+                                            _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                                    } }
+
+                            }
+                        }
+                        Init();
+                    }
+                }
+                if (sender.Equals(toolStripMenuItemSearchThisFolder))
+                {
+                    DirectoryInfo dirInfo = new DirectoryInfo(dataGridView1.SelectedRows[0].Cells["Folders"].Value.ToString());
+
+                    var test = await _contr.SearchForSeriesAsync(dirInfo);
+                    if (test.Count() == 1)
+                    {
+                        var ktv = test[0];
+                        ktv.Item.TomatoUrl = dirInfo.FullName;
+                        _liteDB.Upsert(ktv.Item);
+                        _liteDB.Upsert(new FileItem(ktv.Item.ImdbId, ktv.Item.TomatoUrl));
+
+                    }
+                    else
+                    {
+                        radioButtonCombo.Checked = string.IsNullOrEmpty(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
+                        ProcessThisFolder(dirInfo);
+                    }
+                    await Task.Delay(7000);
+                    Init();
+                }
             }
             catch (Exception ex)
             {
