@@ -19,7 +19,7 @@ namespace Kolibri.net.Common.Dal.Controller
 
         private LiteDatabase _liteDB;
         public ConnectionString ConnectionString;
-        internal Hashtable _ht = new Hashtable();
+        //internal Hashtable _ht = new Hashtable();
 
         public LiteDBController(FileInfo dbPath, bool exclusiveAccess = false, bool readOnly = false, bool upgrade=true)
         {
@@ -84,7 +84,7 @@ namespace Kolibri.net.Common.Dal.Controller
             if (type != null)
             {
                 var list = FindAllItems(type).GetAwaiter().GetResult().ToList();
-                return list.FindAll(x => x.Title == title.Trim() && x.Year == year.ToString()).FirstOrDefault();
+                return list.FindAll(x => x.Title == title.Trim() && x.Year.StartsWith(year.ToString())).FirstOrDefault();
             }
             if (year < 1800)
             {
@@ -504,20 +504,20 @@ namespace Kolibri.net.Common.Dal.Controller
 
 
         #region SeasonEpisode - OMDB
-        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
+        [Obsolete($"Benytt {nameof(Episode)} istedet")]
         public SeasonEpisode FindSeasonEpisode(string imdbId)
         {if (string.IsNullOrWhiteSpace(imdbId)) return null;
             try
             {
                 int hash = imdbId.GetHashCode();
-                if (_ht.ContainsKey(hash)) { return  (SeasonEpisode)_ht[hash]; }
+                
 
                 string id = $"{imdbId}";
 
                 var collection = _liteDB.GetCollection<SeasonEpisode>("SeasonEpisode");
                 //rs = collection.FindOne(Query.EQ("_id", id));
                 var ret = collection.FindById(id);
-                if (ret != null) { _ht.Add(hash, ret); }
+              
                 return ret;
 
 
@@ -529,7 +529,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return null;
             }
         }
-        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
+        [Obsolete($"Benytt {nameof(Episode)} istedet")]
         public List<SeasonEpisode> FindAllSeasonEpisodes()
         {
             try
@@ -542,7 +542,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return null;
             }
         }
-        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
+        [Obsolete($"Benytt {nameof(Episode)} istedet")]
         public SeasonEpisode FindSeasonEpisode(string seriesName, string season, string episode)
         {
             
@@ -575,7 +575,7 @@ namespace Kolibri.net.Common.Dal.Controller
             }
 
         }
-        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
+        [Obsolete($"Benytt {nameof(Episode)} istedet")]
         public bool Insert(SeasonEpisode ep)
         {
             try
@@ -589,7 +589,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
-        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
+        [Obsolete($"Benytt {nameof(Episode)} istedet")]
         public bool Update(SeasonEpisode ep)
         {
             try
@@ -603,7 +603,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 return false;
             }
         }
-        [Obsolete($"Benytt {nameof(KolibriSeasonEpisode)} istedet")]
+        [Obsolete($"Benytt {nameof(Episode)} istedet")]
         public bool Upsert(SeasonEpisode ep)
         {
             bool ret = false;
@@ -634,7 +634,7 @@ namespace Kolibri.net.Common.Dal.Controller
                 var collection = _liteDB.GetCollection<Episode>("Episode");
                 //rs = collection.FindOne(Query.EQ("_id", id));
                 var ret = collection.FindById(imdbId);
-                if (ret != null) { _ht.Add(_ht, ret); }
+             
                 return ret;
 
 

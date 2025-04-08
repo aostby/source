@@ -239,7 +239,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // 
             // columnHeader3
             // 
-            columnHeader3.Text = "Type";
+            columnHeader3.Text = "Seasons";
             columnHeader3.Width = 80;
             // 
             // columnHeader4

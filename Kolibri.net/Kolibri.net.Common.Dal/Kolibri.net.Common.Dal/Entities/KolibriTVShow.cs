@@ -12,11 +12,12 @@ namespace Kolibri.net.Common.Dal.Entities;
 
 public class KolibriTVShow : Interfaces.KolibriMedia
 {
-    private string _title;
+    private Item _item;
 
     [BsonIgnoreAttribute]
-    public string Title { get => _title; set => _title = value; }
-    
+    public string Title { get; private set; }
+    [BsonIgnoreAttribute]
+    public string Year { get; private set; }
     [BsonIgnoreAttribute]
     public string Path { get
         {
@@ -35,14 +36,18 @@ public class KolibriTVShow : Interfaces.KolibriMedia
             return ret;
         }    
     }
-
+    [Obsolete("Do not use this field")]
     public TvShow TvShow { get; set; }
-    public Item Item { get; set; }
-    public List<KolibriSeasonEpisode> EpisodeList { get; set; } = new List<KolibriSeasonEpisode>();
+    public Item Item
+    {
+        get { return _item; }
+        set { _item = value; try { Title = _item.Title; Year = Item.Year; } catch (Exception) { } }
+    }
+    public List<Episode> EpisodeList { get; set; } = new List<Episode>();
     public List<KolibriSeason> SeasonList { get; set; } = new List<KolibriSeason>();
     
     [BsonIgnoreAttribute]
-    public List<KolibriSeasonEpisode> GetEpisodes()
+    public List<Episode> GetEpisodes()
     {
 
         if (EpisodeList.Count <= 0)
@@ -52,7 +57,7 @@ public class KolibriTVShow : Interfaces.KolibriMedia
             {
                 if (ep != null)
                 {
-                    KolibriSeasonEpisode episode = ep.DeepCopy<KolibriSeasonEpisode>();
+                    Episode episode = ep.DeepCopy<Episode>();
                     if (string.IsNullOrWhiteSpace(episode.SeriesId)) { episode.SeriesId = Item.ImdbId; }
                     EpisodeList.Add(episode);
                 }
@@ -61,4 +66,5 @@ public class KolibriTVShow : Interfaces.KolibriMedia
         }
         return EpisodeList.OrderBy(x=>x.Released).ToList(); 
     }
+    public void SetSeasonRelated<T>(T obj) { throw new NotImplementedException("Sesongrelatert.... Finn ut hvordan først"); }
 }

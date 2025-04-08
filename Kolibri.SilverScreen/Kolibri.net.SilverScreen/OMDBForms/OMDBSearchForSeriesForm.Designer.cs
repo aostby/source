@@ -49,6 +49,8 @@
             dataGridView1 = new DataGridView();
             contextMenuStrip1 = new ContextMenuStrip(components);
             toolStripMenuItemNavn = new ToolStripMenuItem();
+            toolStripMenuItemImdbId = new ToolStripMenuItem();
+            toolStripMenuItemSearchThisFolder = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -255,16 +257,30 @@
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItemNavn });
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItemNavn, toolStripMenuItemImdbId, toolStripMenuItemSearchThisFolder });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(181, 48);
+            contextMenuStrip1.Size = new Size(204, 92);
             // 
             // toolStripMenuItemNavn
             // 
             toolStripMenuItemNavn.Name = "toolStripMenuItemNavn";
-            toolStripMenuItemNavn.Size = new Size(180, 22);
+            toolStripMenuItemNavn.Size = new Size(203, 22);
             toolStripMenuItemNavn.Text = "Let opp Navn";
             toolStripMenuItemNavn.Click += ContextMenuEvent_Click;
+            // 
+            // toolStripMenuItemImdbId
+            // 
+            toolStripMenuItemImdbId.Name = "toolStripMenuItemImdbId";
+            toolStripMenuItemImdbId.Size = new Size(203, 22);
+            toolStripMenuItemImdbId.Text = "Sett ImdbId";
+            toolStripMenuItemImdbId.Click += ContextMenuEvent_Click;
+            // 
+            // toolStripMenuItemSearchThisFolder
+            // 
+            toolStripMenuItemSearchThisFolder.Name = "toolStripMenuItemSearchThisFolder";
+            toolStripMenuItemSearchThisFolder.Size = new Size(203, 22);
+            toolStripMenuItemSearchThisFolder.Text = "Søk etter denne mappen";
+            toolStripMenuItemSearchThisFolder.Click += ContextMenuEvent_Click;
             // 
             // OMDBSearchForSeriesForm
             // 
@@ -314,5 +330,7 @@
         private PictureBox pictureBoxCurrent;
         private TextBox textBoxYearValue;
         private ToolStripMenuItem toolStripMenuItemNavn;
+        private ToolStripMenuItem toolStripMenuItemImdbId;
+        private ToolStripMenuItem toolStripMenuItemSearchThisFolder;
     }
 }
