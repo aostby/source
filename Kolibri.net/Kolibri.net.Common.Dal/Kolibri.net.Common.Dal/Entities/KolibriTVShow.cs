@@ -36,7 +36,7 @@ public class KolibriTVShow : Interfaces.KolibriMedia
             return ret;
         }    
     }
-    [Obsolete("Do not use this field")]
+    [Obsolete("Do not use this field", true)]
     public TvShow TvShow { get; set; }
     public Item Item
     {

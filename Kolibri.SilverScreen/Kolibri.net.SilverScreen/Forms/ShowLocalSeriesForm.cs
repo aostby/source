@@ -37,10 +37,11 @@ namespace Kolibri.Common.VisualizeOMDbItem
             this._userSettings = userSettings;
 
             _liteDB = new(new FileInfo(_userSettings.LiteDBFilePath), false, false);
-
-            var seriesList = _liteDB.GetAllItemsByType("Series");
-
-            _serieItems = seriesList.OrderByDescending(x => x.ImdbRating).ToList();
+            Task.Run(() =>
+            {
+                var seriesList = _liteDB.GetAllItemsByType("Series");
+                _serieItems = seriesList.OrderByDescending(x => x.ImdbRating).ToList();
+            });
 
             lvwColumnSorter = new ListViewColumnSorter();
             this.movieList.ListViewItemSorter = lvwColumnSorter;
