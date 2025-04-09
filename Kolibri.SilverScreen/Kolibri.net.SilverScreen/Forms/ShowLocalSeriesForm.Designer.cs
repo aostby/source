@@ -710,7 +710,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             button1.TabIndex = 22;
             button1.Text = "Finn";
             button1.UseVisualStyleBackColor = false;
-            button1.Click += button1_Click;
+            button1.Click += buttonFinn_Click;
             // 
             // statusStrip
             // 

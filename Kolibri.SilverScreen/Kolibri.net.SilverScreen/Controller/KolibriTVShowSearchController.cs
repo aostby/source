@@ -1,20 +1,15 @@
-﻿using jdk.nashorn.@internal.ir;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
-using Kolibri.net.SilverScreen.Controls;
 using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms.DataVisualization.Charting;
 using TMDbLib.Objects.Exceptions;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
 using TMDbLib.Objects.TvShows;
-using static com.sun.tools.javac.util.Name;
 
 namespace Kolibri.net.SilverScreen.Controller
 {

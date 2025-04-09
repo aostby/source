@@ -29,7 +29,11 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private UserSettings _userSettings;
         private ImageCacheDB _imgCache;
 
-        private LiteDBController _liteDB; 
+        private LiteDBController _liteDB;
+
+        private Item _currentItem;
+        private TableLayoutPanel _default;
+
 
         public ShowLocalSeriesForm(UserSettings userSettings)
         {
@@ -51,6 +55,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
 
         private async Task Init(string defaultSeach = null)
         {
+            if (_default == null) _default = rightLayout;
 
             pictureBox.Image = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
             searchBtn.BackgroundImage = ImageUtilities.Base64ToImage(ImageUtilities.SearchGlassImage());
@@ -285,55 +290,75 @@ namespace Kolibri.Common.VisualizeOMDbItem
         }
         private async void movieList_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
+            
+
             if (!e.IsSelected)
                 return;
-            //pictureBox.Image = getImage(e.Item.SubItems[3].Text);
-            pictureBox.Image = await getImage(e.Item.SubItems[e.Item.SubItems.Count - 1].Text);
-            Item result = await getMovieDetails(e.Item.ImageKey);
-            if (result == null)
-            {
-                SetNotFoundProperties();
-                return;
-            }
-            else
-            {
-                pictureBox.Tag = result.ImdbId;
-            }
-            titleContentLabel.Text = result.Title;
-            imdbContentLabel.Text = result.ImdbId;
-            directorContentLabel.Text = result.Director;
-            countryContentLabel.Text = result.Country;
-            ratingContentLabel.Text = result.ImdbRating;
-            yearContentLabel.Text = result.Year;
-            totalContentLabel.Text = result.TotalSeasons;
-            typeContentLabel.Text = result.Genre;//  result.Type;
-            runtimeContentLabel.Text = result.Runtime;
-            plotContentLabel.Text = result.Plot;
+
+
             try
-            {
-                var path = await _liteDB.FindFile(result.ImdbId);
-
-                if (path == null)
+            { Item item;// = _liteDB.FindItem( e.Item.SubItems[e.Item.SubItems.Count - 2].Text);
+                
+                if (true)
                 {
-                    movieList.Items[e.ItemIndex].BackColor = Color.LightSalmon;
-                }
-                else
-                {
-                    if (Path.Exists(path.FullName))
-                        movieList.Items[e.ItemIndex].BackColor = Color.LimeGreen;
+                    #region tableLayoutPanel
+                    pictureBox.Image = await getImage(e.Item.SubItems[e.Item.SubItems.Count - 1].Text);
+                    Item result = await getMovieDetails(e.Item.ImageKey);
+                    if (result == null)
+                    {
+                        SetNotFoundProperties();
+                        return;
+                    }
                     else
-                        movieList.Items[e.ItemIndex].BackColor = Color.Wheat;
-                }
-            }
-            catch (Exception ex) { }
+                    {
+                        //pictureBox.Tag = result.ImdbId;
+                        _currentItem = result;
+                    }
+                    titleContentLabel.Text = result.Title;
+                    imdbContentLabel.Text = result.ImdbId;
+                    directorContentLabel.Text = result.Director;
+                    countryContentLabel.Text = result.Country;
+                    ratingContentLabel.Text = result.ImdbRating;
+                    yearContentLabel.Text = result.Year;
+                    totalContentLabel.Text = result.TotalSeasons;
+                    typeContentLabel.Text = result.Genre;//  result.Type;
+                    runtimeContentLabel.Text = result.Runtime;
+                    plotContentLabel.Text = result.Plot;
+                    try
+                    {
+                        var path = await _liteDB.FindFile(result.ImdbId);
 
+                        if (path == null)
+                        {
+                            movieList.Items[e.ItemIndex].BackColor = Color.LightSalmon;
+                        }
+                        else
+                        {
+                            if (Path.Exists(path.FullName))
+                                movieList.Items[e.ItemIndex].BackColor = Color.LightGreen;
+                            else
+                                movieList.Items[e.ItemIndex].BackColor = Color.Wheat;
+                        }
+                    }
+                    catch (Exception tblLayoutex) { }
+
+                    #endregion
+                }
+             
+            
+            }
+            catch (Exception ex)
+            {   
+             
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
         }
 
         private void pictureBox_Click(object sender, EventArgs e)
         {
             try
             {
-                var imdbid = pictureBox.Tag.ToString();
+                var imdbid = _currentItem.ImdbId; // pictureBox.Tag.ToString();
                 Uri uri = new Uri($"https://www.imdb.com/title/{imdbid}/");
                 HTMLUtilities.OpenURLInBrowser(uri);
 
@@ -389,7 +414,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     string val = ratingContentLabel.Text;
                     if (InputDialogs.InputBox("Sett verdi", "Oppdater verdien", ref val) == DialogResult.OK && val.IsNumeric())
                     {
-                        Item result = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
+                        Item result = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
                         result.ImdbRating = val.Replace(',', '.');
                         using (LiteDBController tmp = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
                         {
@@ -405,7 +430,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private async void buttonFinn_Click(object sender, EventArgs e)
         {
             try
             {
@@ -414,8 +439,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 {
                     try
                     {
-
-                        item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
+                            
+                        item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
                         var file = await  tmp.FindFile(item.ImdbId);
                         if (file != null)
                         {
@@ -503,7 +528,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             {
                 using (LiteDBController _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false))
                 {
-                    Item item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult(); ;
+                    Item item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult(); ;
 
                     Form form = new Form();
                     form.Size = new Size(500, 500);
@@ -598,7 +623,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             Item item = null;
             try
             {
-                item = await getMovieDetails(pictureBox.Tag.ToString());
+                item = await getMovieDetails(_currentItem.ImdbId);
                 SetStatusLabelText($"{item.Title} - searching for {item.TotalSeasons} seasons.");
                 KolibriTVShowSearchController mmc = new KolibriTVShowSearchController(_userSettings, _liteDB);
                 var show = await mmc.GetShowByIdAsync(item.ImdbId);
@@ -624,7 +649,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         {
             try
             {
-                Item item = getMovieDetails(pictureBox.Tag.ToString()).GetAwaiter().GetResult();
+                Item item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
                 if (item == null) { throw new Exception("Fant ikkje na der serien"); }
 
                 if (sender.Equals(toolStripMenuItemDelete))

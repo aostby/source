@@ -48,6 +48,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 List<string> year = MovieUtilites.YearList.ToList();
                 if (!year.Contains(DateTime.Now.Year.ToString()))
                     year.Insert(0, DateTime.Now.Year.ToString());
+                year.Insert(0, "All");
 
                 comboBoxYear.Items.AddRange(year.ToArray());
                 comboBoxGenre.SelectedIndex = 0;
@@ -230,14 +231,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                     dt.Columns.Add("Image", typeof(Bitmap));
                     dt.Columns["Image"].SetOrdinal(0);
                 }
-
+                string htmltitle = $"{title} ({liste.Count} items)";
                 var files = items;
                 html.Append($@"<html>
 <head>
     <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"" />
-    <title>{title}</title>
+    <title>{htmltitle}</title>
 </head>
-<body><h2>{title}</h2>
+<body><h2>{htmltitle}</h2>
 <style>
   table {{table-layout: fixed; }}
     .Plot {{width: 30%; }}
