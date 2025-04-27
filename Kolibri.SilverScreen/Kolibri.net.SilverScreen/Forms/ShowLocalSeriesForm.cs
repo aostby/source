@@ -1,4 +1,5 @@
 ﻿
+using IKVM.ByteCode.Decoding;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
@@ -336,11 +337,27 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         {
                             if (Path.Exists(path.FullName))
                                 movieList.Items[e.ItemIndex].BackColor = Color.LightGreen;
+                            else {
+
+                                if(path.Equals!=null&& path.ItemFileInfo.Directory.Parent.GetFiles($"*{result.ImdbId}*").Count() == 1)
+                                {
+                                    var folder = path.ItemFileInfo.Directory.Parent.GetDirectories($"*{result.ImdbId}*").FirstOrDefault();
+                                    if (folder != null && folder.Exists)
+                                    {
+                                        result.TomatoUrl = folder.FullName;
+                                        _liteDB.Update(result);
+                                        _liteDB.Update(new FileItem(result.ImdbId, folder.FullName));
+                                        movieList.Items[e.ItemIndex].BackColor = Color.LightGreen;
+                                    }
+                                }
                             else
-                                movieList.Items[e.ItemIndex].BackColor = Color.Wheat;
+                                    movieList.Items[e.ItemIndex].BackColor = Color.Wheat; 
+                            }
                         }
                     }
-                    catch (Exception tblLayoutex) { }
+                    catch (Exception tblLayoutex) { SetStatusLabelText(tblLayoutex.Message);
+                        movieList.Items[e.ItemIndex].BackColor = Color.IndianRed;
+                    }
 
                     #endregion
                 }

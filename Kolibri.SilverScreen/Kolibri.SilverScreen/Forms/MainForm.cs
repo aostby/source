@@ -15,6 +15,7 @@ using java.nio.file;
 using com.sun.org.apache.bcel.@internal;
 using Kolibri.net.SilverScreen.Controller;
 using Microsoft.VisualBasic;
+using System;
 
 namespace Kolibri.SilverScreen.Forms
 {
@@ -125,7 +126,7 @@ namespace Kolibri.SilverScreen.Forms
                 }
                 else if (sender.Equals(testCircusToolStripMenuItem))
                 {
-                    newMDIChild = new TestCircusForm();
+                    newMDIChild = new TestCircusForm(_userSettings);
                 }
 
                 newMDIChild.MdiParent = this;
@@ -144,6 +145,7 @@ namespace Kolibri.SilverScreen.Forms
 
                 if (ex != null)
                 {
+                    SetStatusLabel("Searching for dupes.... please wait");
                     SameFileController contr = new SameFileController(ex);
                     var list = contr.GetDupes();
                     var ds = DataSetUtilities.AutoGenererDataSet(list);
@@ -172,7 +174,9 @@ namespace Kolibri.SilverScreen.Forms
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().FullName);
+                SetStatusLabel(ex.Message);
             }
+            SetStatusLabel("Dupe search completed.");
         }
 
         private void liteDBFilepathToolStripMenuItem_Click(object sender, EventArgs e)
@@ -270,7 +274,7 @@ namespace Kolibri.SilverScreen.Forms
             ((sender as Button).Parent as Form).Close();
         }
 
-        private void filmerToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void filmerToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
             var dInfo = FileUtilities.LetOppMappe(_userSettings.UserFilePaths.MoviesSourcePath, $"Let opp mappe ({Kolibri.net.SilverScreen.Controls.Constants.MultimediaType.Movies})");
@@ -278,10 +282,24 @@ namespace Kolibri.SilverScreen.Forms
             {
                 MoviesSearchController searchController = new MoviesSearchController(_userSettings, updateTriState: false);
                 searchController.ProgressUpdated += OnProgressUpdated;
-
+                try
                 {
-                    Task.Run(async () => searchController.SearchForMovies(dInfo));
+
+                    var t = await searchController.SearchForMovies(dInfo);
+
+                    Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Async search for movies", searchController.CurrentLog.ToString(), this.Size);
                 }
+                catch (AggregateException aex)
+                {
+                    string agg = aex.Message;
+                    foreach (var innerEx in aex.InnerExceptions)
+                    {
+                        agg += innerEx.Message;
+                    }
+                    MessageBox.Show(agg, aex.GetType().FullName);
+                }
+                catch (Exception ex)
+                { MessageBox.Show(ex.Message, ex.GetType().FullName); }
             }
         }
         private void OnProgressUpdated(object sender, string progress)

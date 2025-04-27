@@ -1,22 +1,24 @@
 ﻿using OMDbApiNet.Model;
 using Sylvan.Data.Csv;
 using System.Data;
-using System.Text.RegularExpressions;
-
+using Kolibri.net.Common.Dal.Entities;
+ 
 namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class TestCircusForm : Form
     {
-  
-        public TestCircusForm()
+       private UserSettings _userSettings;
+
+        public TestCircusForm(UserSettings userSettings=null)
         {
             InitializeComponent();
+            _userSettings = userSettings;
         }
 
         private async void button1_Click(object sender, EventArgs e)
-        { 
+        {
             int numberOfThreads = Environment.ProcessorCount;
-            string filePath = @"C:\Users\asoes\source\repos\Kolibri.SilverScreen\Kolibri.SilverScreen\bin\Debug\net8.0-windows\IMDbDataFiles\title.episode.tsv"; 
+            string filePath = @"C:\Users\asoes\source\repos\Kolibri.SilverScreen\Kolibri.SilverScreen\bin\Debug\net8.0-windows\IMDbDataFiles\title.episode.tsv";
 
             var options = new CsvDataReaderOptions
             {
@@ -31,16 +33,29 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 var episode = new Episode
                 {
-               //     Id = record.GetString(0),
+                    //     Id = record.GetString(0),
                     Title = record.GetString(1),
-                 //   Season = record.IsDBNull(2) ? (int?)null : record.GetInt32(2),
+                    //   Season = record.IsDBNull(2) ? (int?)null : record.GetInt32(2),
                     EpisodeNumber = record.GetString(3) //record.IsDBNull(3) ? (int?)null : record.GetInt32(3)
                 };
 
                 // Process each episode
                 Console.WriteLine($"Read Episode: {episode.Title}");
-                
+
             });
+        }
+
+        private async void button2_Click(object sender, EventArgs e)
+        {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback +=      (sender, cert, chain, sslPolicyErrors) => true;
+
+            //var sdk = new PlexAPI(ip: "192.168.1.2",accessToken:_userSettings.XPlexToken);
+            //var res = await sdk.Server.GetServerCapabilitiesAsync();
+             
+
+
+
+         //   MessageBox.Show(res.ToString());
         }
     }
 }

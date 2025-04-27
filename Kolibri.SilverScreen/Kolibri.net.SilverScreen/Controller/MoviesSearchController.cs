@@ -80,9 +80,10 @@ namespace Kolibri.net.SilverScreen.Controller
         }
 
         #region Movie Item
-        public async void SearchForMovies(DirectoryInfo dir)
+        public async Task <bool> SearchForMovies(DirectoryInfo dir)
         {
-            if (_TMDB == null || _OMDB == null) { SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR"); return; }
+            bool complete = false;
+            if (_TMDB == null || _OMDB == null) { SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR"); return complete; }
 
             List<Item> _currentList = new List<Item>();
             DataTable resultTable = null;
@@ -125,7 +126,7 @@ namespace Kolibri.net.SilverScreen.Controller
                             if (movie != null)
                             {
                                 _currentList.Add(movie);
-                                SetStatusLabelText($"Legger til {movie.Title} i listen.", "ADDED");
+                               // SetStatusLabelText($"Legger til {movie.Title} i listen.", "ADDED");
                             }
                             else
                             {
@@ -146,14 +147,14 @@ namespace Kolibri.net.SilverScreen.Controller
 
                                     }
                                     FileUtilities.DeleteEmptyDirs(file.Directory);
-                                    SetStatusLabelText($"Søket fullført, siste var {file.Directory}.", "'FINISHED");
+                                    SetStatusLabelText($"Søket fullført, siste var {file.Directory}.", "FINISHED");
                                 }
                             }
                             catch (Exception ex)
                             { }
 
                         };
-                        SetStatusLabelText($"Søket fullført.", "'FINISHED");
+                     
                     }
                 }
 
@@ -174,6 +175,9 @@ namespace Kolibri.net.SilverScreen.Controller
                 {
                 }
             }
+            SetStatusLabelText($"Søket fullført.", "FINISHED");
+            complete = true;
+            return complete;
         }
         private async Task<Item> GetItem(FileInfo file, int year, string title)
         {
@@ -202,7 +206,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         movie.TomatoUrl = file.FullName;
                         _liteDB.Update(movie);
                         _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                        SetStatusLabelText($"Lokal eksisterende {movie.Title}.", "EXISTS");
+                        SetStatusLabelText($"{movie.ImdbId} Lokal eksisterende {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
                         return movie;
                     }
                 }
@@ -230,6 +234,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                         movie.TomatoUrl = file.FullName;
                                         _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
                                         _liteDB.Upsert(movie);
+                                        SetStatusLabelText($"{movie.ImdbId} Fant via TMDB {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
                                         return movie;
                                     }
                                 }

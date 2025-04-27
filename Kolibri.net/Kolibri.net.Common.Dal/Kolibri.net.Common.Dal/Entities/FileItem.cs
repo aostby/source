@@ -2,7 +2,9 @@
 
 namespace Kolibri.net.Common.Dal.Entities
 {   public class FileItem
-    { 
+    {
+        [Obsolete("Constructor only, do not use")]
+        public FileItem() { }
         public FileItem(string imdbid, string fullFileName)
         {
             ImdbId = imdbid;
