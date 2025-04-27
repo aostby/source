@@ -2,14 +2,17 @@
 using Sylvan.Data.Csv;
 using System.Data;
 using Kolibri.net.Common.Dal.Entities;
- 
+using Kolibri.net.Common.Dal.Controller;
+using System.Text;
+
+
 namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class TestCircusForm : Form
     {
-       private UserSettings _userSettings;
+        private UserSettings _userSettings;
 
-        public TestCircusForm(UserSettings userSettings=null)
+        public TestCircusForm(UserSettings userSettings = null)
         {
             InitializeComponent();
             _userSettings = userSettings;
@@ -47,15 +50,44 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private async void button2_Click(object sender, EventArgs e)
         {
-            System.Net.ServicePointManager.ServerCertificateValidationCallback +=      (sender, cert, chain, sslPolicyErrors) => true;
+            System.Net.ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
             //var sdk = new PlexAPI(ip: "192.168.1.2",accessToken:_userSettings.XPlexToken);
             //var res = await sdk.Server.GetServerCapabilitiesAsync();
-             
 
 
 
-         //   MessageBox.Show(res.ToString());
+
+            //   MessageBox.Show(res.ToString());
+        }
+
+        private void buttonExecuteChange_Click(object sender, EventArgs e)
+        {
+            StringBuilder builder = new StringBuilder();
+            try
+            {
+                if (string.IsNullOrEmpty(textBox1.Text)) throw new Exception("Cannot change from nothing");
+
+                using (LiteDBController controller = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
+                {
+                    var list = controller.FindAllFileItems();
+                    foreach (var fItem in list)
+                    {
+                        if (fItem.FullName.Contains(textBox1.Text, StringComparison.OrdinalIgnoreCase))
+                        {
+                            fItem.FullName = fItem.FullName.Replace(textBox1.Text, textBox2.Text);
+                            controller.Upsert(fItem);
+                        }
+                        var txt = $"{fItem.ItemFileInfo.Exists} - {fItem.FullName}";
+                        builder.AppendLine(txt);
+                    }
+                }
+                Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Report filepaths",builder.ToString(), this.Size);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
         }
     }
 }
