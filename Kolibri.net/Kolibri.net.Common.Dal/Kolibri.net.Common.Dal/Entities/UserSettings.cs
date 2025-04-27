@@ -47,9 +47,15 @@ namespace Kolibri.net.Common.Dal.Entities
         public string TMDBkey { get; set; } = "c6b31d1cdad6a56a23f0c913e2482a31";
 
         [BrowsableAttribute(true)]
+        [Description(nameof(XPlexToken))]
+        [DisplayName(nameof(XPlexToken))]
+        public string XPlexToken { get; set; } = null;
+        
+        [BrowsableAttribute(true)]
         [Description(nameof(SUBDLkey))]
         [DisplayName(nameof(SUBDLkey))]
         public string SUBDLkey { get; set; } = null;
+
 
         [BrowsableAttribute(true)]
         [Description(nameof(IMDbDataFiles))]

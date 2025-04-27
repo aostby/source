@@ -23,7 +23,12 @@ namespace Kolibri.net.SilverScreen.Forms
         private readonly UserSettings _userSettings;
         private IEnumerable<FileItem> _fileItems;
         private List<string> _searchFiles;
+        private List<string> _currentSearch = new List<string>();
+
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
+
+
+        
 
         public ShowLocalMoviesForm(MultimediaType type, UserSettings settings)
         {
@@ -216,24 +221,27 @@ namespace Kolibri.net.SilverScreen.Forms
         /// <returns></returns>
         private async void GetPathSearchFiles(string dInfo = null)
         {
-            List<string> ret = new List<string>();
+      
             if (dInfo == null)
                 dInfo = GetCurentPath();
             try
-            {
-                ret = Directory.EnumerateFiles(dInfo, "*.*", SearchOption.AllDirectories)
+            {if (_currentSearch == null || _currentSearch.Count < 1||!_currentSearch.FirstOrDefault().Contains(dInfo))
+                {
+                    _currentSearch = Directory.EnumerateFiles(dInfo, "*.*", SearchOption.AllDirectories)
                                   .Where(file => MovieUtilites.MoviesCommonFileExt(true).ToArray()
                                    .Contains(Path.GetExtension(file))).ToList();
-                //Filter
-                ret = ret.Where(cdr => !cdr?.Contains("@__thumb") == true).ToList();
+
+                    //Filter
+                    _currentSearch = _currentSearch.Where(cdr => !cdr?.Contains("@__thumb") == true).ToList();
+                }
             }
             catch (Exception)
             {
-                ret = new List<string>();
+                _currentSearch = new List<string>();
 
             }
 
-            _searchFiles = ret;
+            _searchFiles = _currentSearch;
         }
 
 

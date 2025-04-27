@@ -51,7 +51,7 @@ namespace Kolibri.net.SilverScreen.Controller
             catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
             try
             {
-                if (omdb != null) { _OMDB = omdb; } else { _OMDB = new OMDBController(_settings.OMDBkey, liteDB); }
+                if (omdb != null) { _OMDB = omdb; } else { _OMDB = new OMDBController(_settings.OMDBkey, liteDB, true); }
             }
             catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
         }
