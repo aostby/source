@@ -280,7 +280,7 @@ namespace Kolibri.SilverScreen.Forms
             var dInfo = FileUtilities.LetOppMappe(_userSettings.UserFilePaths.MoviesSourcePath, $"Let opp mappe ({Kolibri.net.SilverScreen.Controls.Constants.MultimediaType.Movies})");
             if (dInfo != null && dInfo.Exists)
             {
-                MoviesSearchController searchController = new MoviesSearchController(_userSettings, updateTriState: false);
+                MoviesSearchController searchController = new MoviesSearchController(_userSettings);
                 searchController.ProgressUpdated += OnProgressUpdated;
                 try
                 {

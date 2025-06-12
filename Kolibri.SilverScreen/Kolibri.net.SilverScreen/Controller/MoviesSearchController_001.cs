@@ -1,5 +1,4 @@
-﻿using java.time;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
@@ -14,16 +13,14 @@ using TMDbLib.Objects.TvShows;
 
 namespace Kolibri.net.SilverScreen.Controller
 {
-    public class MoviesSearchController
+    public class MoviesSearchController_001
     {
         public event EventHandler<string> ProgressUpdated;
         public StringBuilder CurrentLog { get; set; }
         private LiteDBController _liteDB;
         private TMDBController _TMDB;
         private OMDBController _OMDB;
-
-        private DirectoryInfo _currentDirectory = null;
-        //private List<FileInfo> _currentMediaList = new List<FileInfo>();
+        //private SeriesCache _seriesCache;
 
         /// <summary>
         /// Oppdatering: 
@@ -31,11 +28,9 @@ namespace Kolibri.net.SilverScreen.Controller
         /// true =Alt 
         /// false = Kun filinformasjon
         /// </summary>
-        private   bool? _updateTriState;
+        private readonly bool? _updateTriState;
 
         private UserSettings _settings { get; }
-        public List<FileInfo> CurrentMediaList { get ; private set ; }
-
         /// <summary>
         /// Oppdaterer utifra oppgitte parameter
         /// </summary>
@@ -44,11 +39,11 @@ namespace Kolibri.net.SilverScreen.Controller
         /// <param name="tmdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="omdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="updateTriState">null = Ingenting, true=alt, false= kun filinfromasjon</param>
-        public MoviesSearchController(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null)
+        public MoviesSearchController_001(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, bool? updateTriState = null)
         {
             CurrentLog = new StringBuilder();
             _settings = userSettings;
-            _updateTriState = null;
+            _updateTriState = updateTriState;
             try
             {
                 if (liteDB != null) { _liteDB = liteDB; } else { _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false); }
@@ -63,7 +58,7 @@ namespace Kolibri.net.SilverScreen.Controller
             catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
             try
             {
-                if (omdb != null) { _OMDB = omdb; } else { _OMDB = new OMDBController(_settings.OMDBkey, _liteDB); }
+                if (omdb != null) { _OMDB = omdb; } else { _OMDB = new OMDBController(_settings.OMDBkey, liteDB); }
             }
             catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
         }
@@ -85,18 +80,17 @@ namespace Kolibri.net.SilverScreen.Controller
         }
 
         #region Movie Item
-        public async Task <bool> SearchForMovies(DirectoryInfo dir, bool? updateTriState=null)
+        public async Task <bool> SearchForMovies(DirectoryInfo dir)
         {
             bool complete = false;
-            if(!Init(dir, updateTriState))return false;
+            if (_TMDB == null || _OMDB == null) { SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR"); return complete; }
 
-            var currentItemList = new List<Item>();   
-
+            List<Item> _currentList = new List<Item>();
+            DataTable resultTable = null;
 
             List<string> common = MovieUtilites.MoviesCommonFileExt(true);
             var masks = common.Select(r => string.Concat('*', r)).ToArray();
             var searchStr = "*." + string.Join("|*.", common);
-
             if (_updateTriState == true)
             {
                 //Slett items
@@ -111,37 +105,34 @@ namespace Kolibri.net.SilverScreen.Controller
                 }
                 catch (Exception) { }
             }
-
             foreach (var filter in masks)
             {
                 try
                 {
+
                     using (var e = await Task.Run(() => Directory.EnumerateFiles(dir.FullName, filter, new EnumerationOptions() { RecurseSubdirectories = true }).GetEnumerator()))
                     {
                         while (await Task.Run(() => e.MoveNext()))
                         {
-                            int year; string title;
                             FileInfo file = new FileInfo(e.Current);
-                            CurrentMediaList.Add(file);
 
-                            var movFile = MovieUtilites.DetectMovieFile(file);
-                            if (movFile != null)
+                            int year = MovieUtilites.GetYear(file.Directory.Name);
+                            if (year.Equals(0) || year.Equals(1))
+                                year = MovieUtilites.GetYear(file.Name);
+
+                            string title = MovieUtilites.GetMovieTitle(Path.GetFileNameWithoutExtension(file.Name));
+
+                            Item movie = await GetItem(file, year, title);
+                            if (movie != null)
                             {
-                                year = movFile.Year.ToInt().GetValueOrDefault();
-                                title = movFile.Title;
-                                title = MovieUtilites.GetMovieTitle(file.Name);
+                                _currentList.Add(movie);
+                               // SetStatusLabelText($"Legger til {movie.Title} i listen.", "ADDED");
                             }
                             else
                             {
-                                year = MovieUtilites.GetYear(file.Directory.Name);
-                                if (year.Equals(0) || year.Equals(1))
-                                    year = MovieUtilites.GetYear(file.Name);
-                                title = MovieUtilites.GetMovieTitle(Path.GetFileNameWithoutExtension(file.Name));
+
                             }
 
-                           await GetItem(file, year, title); 
-
-                            #region CleanUnwantedExtraFiles
                             try
                             {
                                 var remove = FileUtilities.GetFileDialogFilter(new List<string>() { "nfo", "txt", "jpg" }.ToArray());
@@ -161,38 +152,33 @@ namespace Kolibri.net.SilverScreen.Controller
                             }
                             catch (Exception ex)
                             { }
-                            #endregion
 
-                        }
+                        };
+                     
                     }
+                }
+
+                catch (Exception ex)
+                {
+                }
+
+            }
+
+            foreach (var item in _currentList)
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(item.ImdbId) && File.Exists(item.TomatoUrl))
+                        _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
                 }
                 catch (Exception ex)
                 {
                 }
-            } 
-
+            }
             SetStatusLabelText($"Søket fullført.", "FINISHED");
             complete = true;
             return complete;
         }
-
-        private bool Init(DirectoryInfo dir, bool? updateTriState)
-        {
-            if (_TMDB == null || _OMDB == null) { SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR"); 
-                return false; }
-            
-            _currentDirectory = dir;
-            CurrentMediaList = new List<FileInfo>();
-            _updateTriState = updateTriState;
-            return true;    
-        }
-        /// <summary>
-        /// Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="year"></param>
-        /// <param name="title"></param>
-        /// <returns></returns>
         private async Task<Item> GetItem(FileInfo file, int year, string title)
         {
             Item movie = null;
@@ -212,7 +198,7 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
                 var test = _liteDB.FindByFileName(file);
-                if (test != null && _updateTriState == null || _updateTriState == false)
+                if (test != null && _updateTriState == null||_updateTriState==false)
                 {
                     movie = _liteDB.FindItem(test.ImdbId);
                     if (movie != null)
@@ -351,6 +337,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     catch (Exception)
                     { }
                 }
+
             }
             return movie;
         }

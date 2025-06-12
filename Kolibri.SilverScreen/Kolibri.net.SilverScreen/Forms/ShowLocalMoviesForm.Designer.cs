@@ -46,11 +46,7 @@
             splitContainer2 = new SplitContainer();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
-            backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
-            backgroundWorker3 = new System.ComponentModel.BackgroundWorker();
-            backgroundWorker4 = new System.ComponentModel.BackgroundWorker();
-            toolTip1 = new ToolTip(components);
+            toolTipLocalMovies = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -199,7 +195,7 @@
             radioButtonUpdateAll.Size = new Size(45, 19);
             radioButtonUpdateAll.TabIndex = 0;
             radioButtonUpdateAll.Text = "Alle";
-            toolTip1.SetToolTip(radioButtonUpdateAll, "Sletter alle Items og FileItems før søk (beholder filen på disk)");
+            toolTipLocalMovies.SetToolTip(radioButtonUpdateAll, "Sletter alle Items og FileItems før søk (beholder filen på disk)");
             radioButtonUpdateAll.UseVisualStyleBackColor = true;
             // 
             // labelNumItemsDB
@@ -300,14 +296,10 @@
         private RadioButton radioButtonUpdateAll;
         private CheckBox checkBoxSimple;
         private GroupBox groupBoxFilter;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.ComponentModel.BackgroundWorker backgroundWorker2;
-        private System.ComponentModel.BackgroundWorker backgroundWorker3;
-        private System.ComponentModel.BackgroundWorker backgroundWorker4;
         private RadioButton radioButtonFilterNoneExistant;
         private RadioButton radioButtonFilterAlle;
         private RadioButton radioButtonFilterNotMatched;
-        private ToolTip toolTip1;
+        private ToolTip toolTipLocalMovies;
         private Button buttonMissing;
     }
 }

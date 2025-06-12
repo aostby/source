@@ -2,26 +2,15 @@
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
-using Microsoft.VisualBasic;
+using Kolibri.net.Common.Utilities.Extensions;
 using Microsoft.VisualBasic.FileIO;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
-    public partial class SortMultimediaDesktopForm 
+    public partial class SortMultimediaDesktopForm
     {
         MultimediaType _type;
         UserSettings _settings;
@@ -37,8 +26,8 @@ namespace Kolibri.net.SilverScreen.Forms
             InitializeComponent();
             Init();
         }
-   
-      
+
+
         internal void Init(string formType = null)
         {
             string sourcePath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
@@ -47,7 +36,7 @@ namespace Kolibri.net.SilverScreen.Forms
             toolStripStatusLabelFilnavn.Text = string.Empty;
             switch (_type)
             {
-                case MultimediaType.movie:                    
+                case MultimediaType.movie:
                 case MultimediaType.Movies:
                     sourcePath = _settings.UserFilePaths.MoviesSourcePath;
                     destPath = _settings.UserFilePaths.MoviesDestinationPath;
@@ -200,8 +189,12 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             SetLabelText($"Moving operation is completed, number of accumilated errors: {numerrors} ");
         }
-
-        private void MoveFiles(FileInfo[] collection, DirectoryInfo destinationPath)
+        /// <summary>
+        /// Moves films to yearbased folders. Use destination if more files and folders, else null if just a bunch of films/movies/series in same folder
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="destinationPath"></param>
+        private void MoveFiles(FileInfo[] collection, DirectoryInfo destinationPath=null)
         {
 
             var numerrors = 0;
@@ -211,9 +204,21 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 if (file.Exists && file.Directory.Exists)
                 {
-                    int year = Kolibri.net.Common.Utilities.MovieUtilites.GetYear(file.DirectoryName);
-                 
-                    var destination = new DirectoryInfo(Path.Combine(destinationPath.FullName, year.ToString(), file.Directory.Name));
+                    int year = 1;
+                    DirectoryInfo destination = null;
+                    if (destinationPath == null)
+                    { var moviefile = MovieUtilites.DetectMovieFile(file);
+                        year = moviefile.Year.ToInt().GetValueOrDefault();
+                        destination = new DirectoryInfo(Path.Combine(file.Directory.FullName+"_moved", year.ToString(),Path.GetFileNameWithoutExtension(file.FullName)));
+                        if (!destination.Exists) destination.Create();
+                        System.IO.File.Move(file.FullName, Path.Combine(destination.FullName, file.Name));
+                        continue;
+                    }
+                    else
+                    {
+                        year = Kolibri.net.Common.Utilities.MovieUtilites.GetYear(file.DirectoryName);
+                        destination = new DirectoryInfo(Path.Combine(destinationPath.FullName, year.ToString(), file.Directory.Name));
+                    }
 
                     try
                     {
@@ -224,15 +229,18 @@ namespace Kolibri.net.SilverScreen.Forms
 
                         try
                         {
-                            foreach (var source in file.Directory.GetFiles("*.*", System.IO.SearchOption.AllDirectories))
+                            if (destinationPath != null)
                             {
-                                FileInfo infoTest = (destination.GetFiles(source.Name, System.IO.SearchOption.AllDirectories)).FirstOrDefault();
-
-                                if (infoTest.Exists)
+                                foreach (var source in file.Directory.GetFiles("*.*", System.IO.SearchOption.AllDirectories))
                                 {
-                                    Thread.Sleep(10);
-                                    source.Delete();
-                                    SetLabelText($"File moved {info}");
+                                    FileInfo infoTest = (destination.GetFiles(source.Name, System.IO.SearchOption.AllDirectories)).FirstOrDefault();
+
+                                    if (infoTest.Exists)
+                                    {
+                                        Thread.Sleep(10);
+                                        source.Delete();
+                                        SetLabelText($"File moved {info}");
+                                    }
                                 }
                             }
                         }
@@ -253,7 +261,10 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 try
                 {
-                    Kolibri.net.Common.Utilities.FileUtilities.DeleteEmptyDirs(file.Directory.Parent);
+                    if (destinationPath != null)
+                    {
+                        Kolibri.net.Common.Utilities.FileUtilities.DeleteEmptyDirs(file.Directory.Parent);
+                    }
                 }
                 catch (Exception)
                 { }
@@ -261,8 +272,8 @@ namespace Kolibri.net.SilverScreen.Forms
             SetLabelText($"Moving operation is completed, number of accumilated errors: {numerrors} ");
         }
         #region Fast? finn ut
-        
-        
+
+
 
         #endregion
 
@@ -297,25 +308,25 @@ namespace Kolibri.net.SilverScreen.Forms
                                 {
                                     try
                                     {
-                                        if(!list.Contains(file.Directory.FullName)) 
+                                        if (!list.Contains(file.Directory.FullName))
                                             list.Add(file.Directory.Parent.FullName);
 
-        Thread.Sleep(100) ;
+                                        Thread.Sleep(100);
 
                                         if (source.Exists)
                                         {
                                             File.SetAttributes(source.FullName, FileAttributes.Normal);
                                             File.Delete(source.FullName);
                                         }
- 
-                                    SetLabelText($"File moved {info}");
+
+                                        SetLabelText($"File moved {info}");
                                     }
                                     catch (Exception)
-                                    { 
+                                    {
                                     }
-                            
+
                                 }
-                            } 
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -339,7 +350,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 {
                     Kolibri.net.Common.Utilities.FileUtilities.DeleteEmptyDirs(new DirectoryInfo(item));
                 }
-                
+
             }
             catch (Exception)
             { }
@@ -356,7 +367,7 @@ namespace Kolibri.net.SilverScreen.Forms
             else
                 text = textBoxDestination.Text;
 
-            DirectoryInfo folder = null; 
+            DirectoryInfo folder = null;
 
 
             folder = FileUtilities.LetOppMappe(text);////.Replace(@"\\", @"\"));
@@ -443,7 +454,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 textBoxDestination.Text = destPath;
 
-                if (_type.Equals(MultimediaType.movie)||_type.Equals(MultimediaType.Movies))
+                if (_type.Equals(MultimediaType.movie) || _type.Equals(MultimediaType.Movies))
                     _settings.UserFilePaths.MoviesDestinationPath = destPath;
                 else if (_type.Equals(MultimediaType.Pictures))
                     _settings.UserFilePaths.PicturesDestination = destPath;
@@ -452,16 +463,57 @@ namespace Kolibri.net.SilverScreen.Forms
                 _settings.Save();
             }
         }
-        private   void  SetLabelText(string s) {
+        private void SetLabelText(string s)
+        {
             try
             {
-               toolStripStatusLabel1.Text = s;
+                toolStripStatusLabel1.Text = s;
             }
             catch (Exception ex)
             {
             }
 
-        
+
+        }
+
+        private void buttonMovieFolder_Click(object sender, EventArgs e)
+        {
+            DirectoryInfo folder = FileUtilities.LetOppMappe(_settings.UserFilePaths.MoviesSourcePath, "Let opp mappen med filmer som skal få nye mapper basert på filnavn");////.Replace(@"\\", @"\"));
+            if (folder != null && folder.Exists)
+            {
+                linkLabelMovieFolder.Text = folder.FullName;
+                linkLabelMovieFolder.Tag = folder;
+                SetLabelText($"Valgt folder: {folder.FullName}");
+            }
+        }
+
+        private void linkLabelMovieFolder_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                var path = (sender as LinkLabel).Tag as DirectoryInfo;
+                FileUtilities.Start(path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+        private void buttonMovieFolderMoveFiles_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+                var path = (linkLabelMovieFolder as LinkLabel).Tag as DirectoryInfo;
+              var  fList =  FileUtilities.GetFiles(path, MovieUtilites.MoviesCommonFileExt(true), System.IO.SearchOption.AllDirectories);
+                var fiList = fList.Select(x => new FileInfo(x)).ToArray();
+                MoveFiles(fiList);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
         }
     }
 }

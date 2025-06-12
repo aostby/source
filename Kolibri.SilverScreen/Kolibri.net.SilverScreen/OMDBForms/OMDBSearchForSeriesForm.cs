@@ -8,6 +8,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
 using OMDbApiNet.Model;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
  
 
@@ -47,7 +48,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
         private void Init()
         {
-            
+
             this.Cursor = Cursors.WaitCursor;
             Application.DoEvents();
 
@@ -76,11 +77,11 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
                 var queryGroupByName = from dir
                                        in _sourceSeriesFolders
-                                       group Name by  Path.GetDirectoryName(dir)  into folderGroup
-                                      orderby folderGroup.Count(), folderGroup.Key
-                                      select folderGroup;
+                                       group Name by Path.GetDirectoryName(dir) into folderGroup
+                                       orderby folderGroup.Count(), folderGroup.Key
+                                       select folderGroup;
 
-              var  firstLevel = queryGroupByName.Select(x => x.Key).ToList();
+                var firstLevel = queryGroupByName.Select(x => x.Key).ToList();
 
                 DataTable resultTable = DataSetUtilities.ColumnNamesToDataTable("Folders", "Title", "ImdbId").Tables[0];
                 resultTable.TableName = "Init";
@@ -90,9 +91,9 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     Item omdb = null;
                     if (item.Contains("{"))
                         omdb = _liteDB.FindItem(item.ImdbIdFromDirectoryName());
-                    if( omdb==null){omdb = _liteDB.FindItemByTitle(tit).FirstOrDefault(); }
-                
-                        
+                    if (omdb == null) { omdb = _liteDB.FindItemByTitle(tit).FirstOrDefault(); }
+
+
 
                     resultTable.Rows.Add(
                               $"{item}",
@@ -151,10 +152,10 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             { }
         }
 
-        private async  void buttonSearch_Click(object sender, EventArgs e)
+        private async void buttonSearch_Click(object sender, EventArgs e)
         {
             this.Cursor = Cursors.WaitCursor;
-             ProcessThisFolder(Source);
+            ProcessThisFolder(Source);
             this.Cursor = Cursors.Default;
         }
 
@@ -183,8 +184,10 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         table = DataSetUtilities.AutoGenererDataSet<Episode>(epList).Tables[0];
                         table = SeriesUtilities.SortAndFormatSeriesTable(table);
                     }
-                    else {
-                        table = await _contr.SearchForSeriesEpisodes(source); }
+                    else
+                    {
+                        table = await _contr.SearchForSeriesEpisodes(source);
+                    }
                     table.TableName = DataSetUtilities.LegalSheetName(source.Name);
                     list.Add(table);
                 }
@@ -229,7 +232,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             {
                 var yearItem = _liteDB.FindItem(textBoxSearchValue.Text);
                 string year = "";
-                if (!string.IsNullOrWhiteSpace(textBoxYearValue.Text)){ year = textBoxYearValue.Text; }
+                if (!string.IsNullOrWhiteSpace(textBoxYearValue.Text)) { year = textBoxYearValue.Text; }
                 IMDBForms.MovieForm form = new IMDBForms.MovieForm(_settings, new FileInfo(textBoxSearchValue.Text), year);
                 form.ShowDialog();
             }
@@ -265,7 +268,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             try
             {
                 Item item = null;
-                using (OMDBController omdbC = new OMDBController(_settings.OMDBkey,rottenTomatoRatings:true))
+                using (OMDBController omdbC = new OMDBController(_settings.OMDBkey, rottenTomatoRatings: true))
                 {
                     // item = _liteDB.FindItem(textBoxManual.Text); //Ikke hent lokal kopi, poenget med manuelt søk er å hente ny versjon fra OMDB
                     if (item == null) item = omdbC.GetItemByImdbId(textBoxSearchValue.Text);
@@ -368,12 +371,14 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
         {
+            labelPath.Text = "Path: ";
             try
             {
                 if (dataGridView1.Focused)
                 {
                     var item = _liteDB.FindItem(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
                     pictureBoxCurrent.Image = (Bitmap)ImageUtilities.GetImageFromUrl(item.Poster);
+                    labelPath.Text = item.TomatoUrl.ToString();
                 }
                 else
                 {
@@ -403,7 +408,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     }
                     else
                     {
-                        textBoxSearchValue.Text = SeriesUtilities. GetSeriesTitle (dataGridView1.SelectedRows[0].Cells[0].Value.ToString());
+                        textBoxSearchValue.Text = SeriesUtilities.GetSeriesTitle(dataGridView1.SelectedRows[0].Cells[0].Value.ToString());
                     }
                 }
                 if (sender.Equals(toolStripMenuItemImdbId))
@@ -426,10 +431,12 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                                     string tit = dataGridView1.SelectedRows[0].Cells["Title"].Value.ToString();
                                     var item = _liteDB.FindItem(tit);
                                     if (item != null)
-                                    { item.TomatoUrl = destination;
-                                           _liteDB.Upsert(item);
-                                            _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
-                                    } }
+                                    {
+                                        item.TomatoUrl = destination;
+                                        _liteDB.Upsert(item);
+                                        _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                                    }
+                                }
 
                             }
                         }
@@ -463,6 +470,109 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
 
+        }
+
+        private void buttonExecuteChange_Click(object sender, EventArgs e)
+        {
+            StringBuilder builder = new StringBuilder();
+            try
+            {
+                if (string.IsNullOrEmpty(textBox1.Text)) throw new Exception("Cannot change from nothing");
+
+
+                var list = _liteDB.FindAllFileItems();
+                foreach (var fItem in list)
+                {
+                    if (fItem.FullName.Contains(textBox1.Text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        fItem.FullName = fItem.FullName.Replace(textBox1.Text, textBox2.Text);
+                        fItem.ItemFileInfo.Refresh();
+                        _liteDB.Upsert(fItem);
+                        if (Directory.Exists(fItem.FullName))
+                        {
+                            Item item = _liteDB.FindItem(fItem.ImdbId);
+                            if (item != null && item.Type == "series")
+                            {
+                                SetStatusLabelText($"Updating path for {fItem.FullName}");
+
+                                item.TomatoUrl = fItem.ItemFileInfo.FullName;
+                                _liteDB.Upsert(item);
+                            }
+                        }
+
+                    }
+                    var txt = $"{fItem.ItemFileInfo.Exists} - {fItem.FullName}";
+                    builder.AppendLine(txt);
+                }
+
+                Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Report filepaths", builder.ToString(), this.Size);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+        private void labelPath_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Windows.Forms.Clipboard.SetText(labelPath.Text);
+                SetStatusLabelText($"{labelPath.Text} - copied to clipboard");
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabelText($"{ex.Message} - {ex.GetType().Name}");
+            }
+        }
+
+        private void buttonFindAndUpdateByIMDBID_Click(object sender, EventArgs e)
+        {
+            string whatsup = string.Empty;
+            StringBuilder builder = new StringBuilder();
+            try
+            {
+                if (_sourceSeriesFolders.Count==0) throw new Exception("Cannot change - no folders found!!!"); 
+                
+                foreach (var folder in _sourceSeriesFolders)
+                {
+                    whatsup = string.Empty;
+                    if (folder.Contains($"-tt")&&folder.Contains("{"))
+                    {
+                        whatsup = folder;
+
+                        if (folder.Contains("Game")) {
+                            string watch = "out";
+                        }
+
+                        string imdbid = folder.Substring(0,folder.IndexOf("}")).Split("-").LastOrDefault();
+                        
+                       FileItem fItem = new FileItem(imdbid,  folder.Substring(0, folder.LastIndexOf("}")+1));   
+                        
+                       
+                        if (Directory.Exists(fItem.FullName))
+                        { _liteDB.Upsert(fItem);
+                            Item item = _liteDB.FindItem(imdbid);
+                            if (item != null && item.Type == "series")
+                            {
+                                SetStatusLabelText($"Updating path for {fItem.FullName}");
+
+                                item.TomatoUrl =fItem.FullName;
+                                _liteDB.Upsert(item);
+                            }
+                        }
+                        var txt = $"{Directory.Exists( folder)} - {fItem.FullName}";
+                        builder.AppendLine(txt);
+                    }
+                  
+                }
+
+                Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Report filepaths", builder.ToString(), this.Size);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(whatsup +" :"+ ex.Message, ex.GetType().Name);
+            }
         }
     }
 }

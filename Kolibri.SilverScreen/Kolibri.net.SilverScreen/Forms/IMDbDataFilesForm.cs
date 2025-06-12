@@ -1,25 +1,18 @@
-﻿using Kolibri.net.Common.Dal.Controller;
-using Kolibri.net.SilverScreen.DapperImdbData.Service;
+﻿using DapperGenericRepository.Controller;
+using Kolibri.net.Common.Dal.Controller;
+using Kolibri.net.Common.Dal.DapperGenericRepository.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
-using OMDbApiNet.Model;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Kolibri.net.Common.Dal.DapperGenericRepository.Controller;
-using System.Windows.Forms;
+using Kolibri.net.SilverScreen.DapperImdbData.Service;
 using MySql.Data.MySqlClient;
-using TMDbLib.Objects.TvShows;
-using DapperGenericRepository.Controller;
-using System.Diagnostics;
-using percentCalc = Kolibri.net.Common.FormUtilities.Tools.ProgressBarHelper;
-using DapperGenericRepository.Service;
+using OMDbApiNet.Model;
 using Sylvan.Data.Csv;
 using System.Data;
-using System.Data.SqlClient;
-using TMDbLib.Objects.Movies;
+using System.Diagnostics;
+using percentCalc = Kolibri.net.Common.FormUtilities.Tools.ProgressBarHelper;
+
+
 namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class IMDbDataFilesForm : Form
@@ -118,6 +111,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+            TestConnection(true);
         }
 
         #region local helper methods
@@ -688,8 +682,13 @@ END{commentLine}";
                 {
                     MySqlConnection conn = new MySqlConnection(_userSettings.DefaultConnection);
                     string text = $"Successfully connected to {conn.Database} - {_userSettings.DefaultConnection}";
-                    if (verbose) MessageBox.Show(text, $"Success");
-                    SetStatusLabelText($"[SUCCESS] {text}");
+                    if (verbose)
+                    {
+                        //MessageBox.Show(text, $"Success");
+                        SetStatusLabelText($"[SUCCESS] {text}");
+
+                        Kolibri.net.Common.FormUtilities.Forms.SplashScreen.Splash(text, 2000, Common.FormUtilities.Forms.TypeOfMessage.Success);
+                    }
                     ret = true;
                 }
             }
@@ -736,18 +735,26 @@ END{commentLine}";
                 int counter = 0;
                 ItemService itemservice = new ItemService(_userSettings.DefaultConnection);
                 DapperBulkInsertController episodeController = new DapperBulkInsertController(_userSettings.DefaultConnection);
-                var list = await _liteDB.FindAllItems();
+                List<Item> list = _liteDB.FindAllItems().GetAwaiter().GetResult().ToList();  
                 foreach (var item in list)
                 {
-                    counter++;
-                    item.Ratings = null;
-                    if (_cancel) return;
-                    string cat = "[INSERT]";
-                    if (!itemservice.Add(item)) { cat = "[ERROR]"; }
+                    try
+                    {
+                        counter++;
+                        item.Ratings = null;
+                        if (_cancel) return;
+                        string cat = "[INSERT]";
+                        if (!itemservice.Add(item)) { cat = "[ERROR]"; }
 
-                    SetStatusLabelText($"{cat} Inserting {nameof(Item)} {item.ImdbId} - {item.Title} ({item.Type})");
-                    await Task.Delay(4);
-                    process.Report(percentCalc.CalculatePercent(counter, list.Count()));
+                        SetStatusLabelText($"{cat} Inserting {nameof(Item)} {item.ImdbId} - {item.Title} ({item.Type})");
+                        await Task.Delay(4);
+                        process.Report(percentCalc.CalculatePercent(counter, list.Count()));
+                    }
+                    catch (Exception ex)
+                    {
+                        SetStatusLabelText($"Inserting {nameof(Item)} complete, counted {counter} - {ex.GetType().Name} -  {ex.Message}");
+                    }
+                
                 }
 
                 // var res=          await episodeController.BulkInsert(list.ToList());

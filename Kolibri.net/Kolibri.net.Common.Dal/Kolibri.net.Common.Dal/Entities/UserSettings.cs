@@ -65,7 +65,7 @@ namespace Kolibri.net.Common.Dal.Entities
         [BrowsableAttribute(true)]
         [Description(nameof(DefaultConnection))]
         [DisplayName(nameof(DefaultConnection))]
-        public string DefaultConnection { get; set; } = "Server=SERVERNAME;Database=DATABASENAME;User Id = USERID; Password=PASSWORD;";
+        public string DefaultConnection { get; set; } = "Server=localhost;Database=lmdb;User Id = SA; Password=PASSWORD;";
 
         [BrowsableAttribute(true)]
         [Description(nameof(UserFilePaths))]
