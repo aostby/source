@@ -73,6 +73,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             toolTip1 = new ToolTip(components);
             labelOmdbId = new Label();
             checkBoxLookUp = new CheckBox();
+            labelLine = new Label();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
@@ -83,15 +84,15 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             tbSearch.Location = new Point(154, 15);
             tbSearch.Margin = new Padding(4);
             tbSearch.Name = "tbSearch";
-            tbSearch.Size = new Size(392, 23);
+            tbSearch.Size = new Size(443, 23);
             tbSearch.TabIndex = 1;
             // 
             // btnSearch
             // 
-            btnSearch.Location = new Point(362, 46);
+            btnSearch.Location = new Point(278, 42);
             btnSearch.Margin = new Padding(4);
             btnSearch.Name = "btnSearch";
-            btnSearch.Size = new Size(184, 26);
+            btnSearch.Size = new Size(210, 26);
             btnSearch.TabIndex = 3;
             btnSearch.Text = "Search";
             btnSearch.UseVisualStyleBackColor = true;
@@ -308,6 +309,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             groupBox1.Controls.Add(btnSearch);
             groupBox1.Controls.Add(btnWatchList);
             groupBox1.Controls.Add(btnAddToWatchlist);
+            groupBox1.Controls.Add(labelLine);
             groupBox1.Location = new Point(14, 6);
             groupBox1.Margin = new Padding(4);
             groupBox1.Name = "groupBox1";
@@ -318,20 +320,19 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             // 
             // buttonUpdate
             // 
-            buttonUpdate.Location = new Point(551, 46);
+            buttonUpdate.Location = new Point(501, 42);
             buttonUpdate.Name = "buttonUpdate";
-            buttonUpdate.Size = new Size(47, 26);
+            buttonUpdate.Size = new Size(97, 26);
             buttonUpdate.TabIndex = 25;
             buttonUpdate.Text = "Update local";
             buttonUpdate.UseVisualStyleBackColor = true;
-            buttonUpdate.Visible = false;
             buttonUpdate.Click += buttonUpdate_Click;
             // 
             // buttonNewList
             // 
             buttonNewList.Location = new Point(501, 82);
             buttonNewList.Name = "buttonNewList";
-            buttonNewList.Size = new Size(45, 26);
+            buttonNewList.Size = new Size(96, 26);
             buttonNewList.TabIndex = 24;
             buttonNewList.Text = "New List";
             toolTip1.SetToolTip(buttonNewList, "Create new WatchList");
@@ -482,6 +483,15 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             checkBoxLookUp.Text = "LookUp missing";
             checkBoxLookUp.UseVisualStyleBackColor = true;
             // 
+            // labelLine
+            // 
+            labelLine.AutoSize = true;
+            labelLine.Location = new Point(147, 66);
+            labelLine.Name = "labelLine";
+            labelLine.Size = new Size(457, 15);
+            labelLine.TabIndex = 26;
+            labelLine.Text = "------------------------------------------------------------------------------------------";
+            // 
             // MovieForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -570,6 +580,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private Button buttonUpdate;
         private Label labelOmdbId;
         private CheckBox checkBoxLookUp;
+        private Label labelLine;
     }
 }
 

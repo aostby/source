@@ -27,9 +27,6 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
 
-
-        
-
         public ShowLocalMoviesForm(MultimediaType type, UserSettings settings)
         {
             InitializeComponent();
@@ -158,7 +155,6 @@ namespace Kolibri.net.SilverScreen.Forms
                             }
                         }
                         SetLabelText($"Num files in dir: {_searchFiles.Count} - ({_fileItems.Count()} - {teller})");
-
                     }
                 }
                 else
@@ -181,9 +177,6 @@ namespace Kolibri.net.SilverScreen.Forms
                     list = GetItems(_fileItems);
                     count = list.Count;
                     ShowGridForDBItems(list);
-
-
-
                     break;
                 case MultimediaType.Series:
 
@@ -428,8 +421,8 @@ namespace Kolibri.net.SilverScreen.Forms
 
                
                 if (_type.Equals(Constants.MultimediaType.movie) || _type.Equals(Constants.MultimediaType.Movies))
-                { MoviesSearchController searchController = new MoviesSearchController(_userSettings, updateTriState: tristate);
-                    Task.Run(async () => searchController.SearchForMovies(dInfo));
+                { MoviesSearchController searchController = new MoviesSearchController(_userSettings );
+                    Task.Run(async () => searchController.SearchForMovies(dInfo, tristate));
                 }
                 else if (_type.Equals(Constants.MultimediaType.Series))
                 {

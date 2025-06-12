@@ -171,6 +171,24 @@ namespace Kolibri.net.Common.Utilities
             return ret;
         }
 
+        public static MovieFile DetectMovieFile(FileInfo filePath)
+        {
+            Init();
+            MovieFile ret = null;
+            try
+            {
+                // Call GetInfo to process the filename.
+                MovieFileLibrary.MovieFile movieFile = movieDetector.GetInfo(filePath.FullName);
+                if (movieFile.IsSuccess)
+                    ret = movieFile;
+                
+            }
+            catch (Exception)
+            { ret = null; }
+            return ret;
+        }
+
+
         /// <summary>
         /// https://github.com/mebjas/movie-name-extractor
         /// </summary>

@@ -50,9 +50,9 @@
             panelInfo = new Panel();
             richTextBox1 = new RichTextBox();
             groupBox1 = new GroupBox();
+            buttonInsertFromLiteDBToMySQLDB = new Button();
             buttonCreateDapperClasses = new Button();
             buttonTestConnection = new Button();
-            button1 = new Button();
             toolStrip1.SuspendLayout();
             groupBoxGZ.SuspendLayout();
             groupBoxDataFiles.SuspendLayout();
@@ -269,7 +269,7 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(button1);
+            groupBox1.Controls.Add(buttonInsertFromLiteDBToMySQLDB);
             groupBox1.Controls.Add(buttonCreateDapperClasses);
             groupBox1.Controls.Add(buttonTestConnection);
             groupBox1.Controls.Add(buttonCreateSchemas);
@@ -279,6 +279,16 @@
             groupBox1.TabIndex = 10;
             groupBox1.TabStop = false;
             groupBox1.Text = "MySQL database";
+            // 
+            // buttonInsertFromLiteDBToMySQLDB
+            // 
+            buttonInsertFromLiteDBToMySQLDB.Location = new Point(238, 22);
+            buttonInsertFromLiteDBToMySQLDB.Name = "buttonInsertFromLiteDBToMySQLDB";
+            buttonInsertFromLiteDBToMySQLDB.Size = new Size(215, 23);
+            buttonInsertFromLiteDBToMySQLDB.TabIndex = 7;
+            buttonInsertFromLiteDBToMySQLDB.Text = "Insert From LiteDB To MySQL DB";
+            buttonInsertFromLiteDBToMySQLDB.UseVisualStyleBackColor = true;
+            buttonInsertFromLiteDBToMySQLDB.Click += buttonInsertFromLiteDBToMySQLDB_Click;
             // 
             // buttonCreateDapperClasses
             // 
@@ -299,16 +309,6 @@
             buttonTestConnection.Text = "Test connection";
             buttonTestConnection.UseVisualStyleBackColor = true;
             buttonTestConnection.Click += buttonTestConnection_Click;
-            // 
-            // button1
-            // 
-            button1.Location = new Point(238, 22);
-            button1.Name = "button1";
-            button1.Size = new Size(215, 23);
-            button1.TabIndex = 7;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += buttonInsertFromLiteDBToMySQLDB_Click;
             // 
             // IMDbDataFilesForm
             // 
@@ -365,6 +365,6 @@
         private GroupBox groupBox1;
         private Button buttonTestConnection;
         private Button buttonCreateDapperClasses;
-        private Button button1;
+        private Button buttonInsertFromLiteDBToMySQLDB;
     }
 }

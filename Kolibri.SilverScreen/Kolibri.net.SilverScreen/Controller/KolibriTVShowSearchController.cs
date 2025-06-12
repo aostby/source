@@ -2,6 +2,7 @@
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
+using MovieFileLibrary;
 using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
@@ -85,6 +86,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 }
                 else
                 {
+                    
                     seriesTitle = MovieUtilites.GetMovieTitle(dir.FullName);
                     int year = MovieUtilites.GetYear(dir.FullName);  
                       item = await GetItemByIdOrNameAsync(seriesTitle, year);
