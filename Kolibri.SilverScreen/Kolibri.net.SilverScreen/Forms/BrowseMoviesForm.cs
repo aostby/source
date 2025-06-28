@@ -1,7 +1,4 @@
-﻿
-
-//using EO.WebBrowser;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
@@ -10,9 +7,7 @@ using OMDbApiNet.Model;
 using System.Collections;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Text;
-using TMDbLib.Objects.Reviews;
 
 namespace Kolibri.net.Common.MovieAPI.Forms
 {
@@ -104,7 +99,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                     try
                     {
 
-                        if (!string.IsNullOrEmpty(year) && ret != null && ret.Count() > 0)
+                        if (!string.IsNullOrEmpty(year) && ret != null && ret.Count() > 0&&year!="All")
                         {
                             int min = year.Split('-').FirstOrDefault().Trim().ToInt().GetValueOrDefault();
                             int max = year.Split('-').LastOrDefault().Trim().ToInt().GetValueOrDefault();
@@ -216,7 +211,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             //_imageCache.InitImages(_LITEDB);
 
             if (cols == null)
-                cols = new List<string>() { "Title", "ImdbRating", "Year", "Rated", "Runtime", "Genre", "Plot", "ImdbId" };
+                cols = new List<string>() { "Title", "ImdbRating", "Year", "Type", "Runtime", "Genre", "Plot", "ImdbId", "Rated" };
 
             StringBuilder html = new StringBuilder();
             try
@@ -237,8 +232,22 @@ namespace Kolibri.net.Common.MovieAPI.Forms
 <head>
     <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"" />
     <title>{htmltitle}</title>
+<script>
+    function toggle_visibility(id) 
+    {{ 
+        var e = document.getElementById(id);
+        e.style.display = ((e.style.display!='none') ? 'none' : 'block');
+    }} 
+  </script>
+
 </head>
 <body><h2>{htmltitle}</h2>
+  </p>  
+    Vis eller skjul filer:
+    <a href=""#"" onclick=""toggle_visibility('movie')"">movie</a>
+     <a href=""#"" onclick=""toggle_visibility('episode')"">episode</a>
+     <a href=""#"" onclick=""toggle_visibility('series')"">series</a>
+  </p>
 <style>
   table {{table-layout: fixed; }}
     .Plot {{width: 30%; }}
@@ -276,14 +285,18 @@ img:hover{{transform: scale(1.5)}}
                 //Building the Data rows.
                 foreach (DataRow row in dt.Rows)
                 {
+                    html.Append($@"<div id=""{row["Type"]}"" style=""display:block"">");
                     Item movie = _LITEDB.FindItemByTitle($"{row["Title"]}", $"{row["Year"]}".ToInt().GetValueOrDefault());
-                    html.Append("<tr>");
-
+                  
+                    html.Append($"<tr>");
                     foreach (DataColumn item in row.Table.Columns)
                     {
 
                         byte[] arr = null;
-                        html.Append("<td>");
+
+
+                     
+                        html.Append($"<td>");
 
                         if (item.ColumnName != "Image")
                         {
@@ -334,8 +347,11 @@ img:hover{{transform: scale(1.5)}}
                             { }
                         }
                         html.Append("</td>");
+                       
                     }
-                    html.Append("</tr>");
+                    html.Append(" </tr>");
+
+                    html.Append("</div>");
                     movie = null;
                 }
 
