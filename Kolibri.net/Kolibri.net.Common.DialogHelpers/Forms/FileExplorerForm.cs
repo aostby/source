@@ -15,10 +15,10 @@ namespace Kolibri.net.Common.DialogHelpers.Forms
     {
         public DirectoryInfo CurrentDir { get; set; }
 
-        public FileExplorerForm()
-        {
-            InitializeComponent();
-            this.gridView1.OptionsSelection.EnableAppearanceHotTrackedRow = DevExpress.Utils.DefaultBoolean.False;
-        }
+        //public FileExplorerForm()
+        //{
+        //    InitializeComponent();
+        //    this.gridView1.OptionsSelection.EnableAppearanceHotTrackedRow = DevExpress.Utils.DefaultBoolean.False;
+        //}
     }
 }

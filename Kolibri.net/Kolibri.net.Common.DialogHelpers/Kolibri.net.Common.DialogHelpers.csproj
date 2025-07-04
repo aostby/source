@@ -7,10 +7,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="DevExpress.Win" Version="23.2.12" />
-    <PackageReference Include="DevExpress.Win.Dialogs" Version="23.2.12" />
-  </ItemGroup>
+ 
 
 </Project>

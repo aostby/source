@@ -47,7 +47,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy unrestricted -file C:\Users\asoes\source\repos\zipargs.ps1 -rootpath $(SolutionDir) -zippath &quot;E:\DEV\2025\Backup\$(TargetName)_$([System.DateTime]::Now.ToString(yyyy-MM-dd_HHmmss)).zip&quot;" />
+    <Exec Command="&quot;c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy unrestricted -file E:\DEV\GitHub\source\zipargs.ps1 -rootpath $(SolutionDir) -zippath &quot;E:\DEV\2025\Backup\$(TargetName)_$([System.DateTime]::Now.ToString(yyyy-MM-dd_HHmmss)).zip&quot;" />
   </Target>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="RMDIR &quot;\\Uranusshare\dev\RELEASE\SilverScreen\publish&quot; /S /Q" />

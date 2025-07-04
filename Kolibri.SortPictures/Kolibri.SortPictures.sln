@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.SortPictures", "Kol
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReferencedProjects", "ReferencedProjects", "{040D505C-95DD-491F-811E-D5314C0589FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.Common.Utilities", "..\Kolibri.Common\Kolibri.Common.Utilities\Kolibri.Common.Utilities.csproj", "{5558C85F-475D-42C3-825A-76275F36E046}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.Common.Utilities", "..\Kolibri.Common\Kolibri.Common.Utilities\Kolibri.Common.Utilities.csproj", "{A4787206-1045-4E79-B88C-7852F81CC298}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,20 +25,20 @@ Global
 		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Release|x64.ActiveCfg = Release|Any CPU
 		{A3FF5A20-90FA-4ECC-AD26-B08C8F8783F8}.Release|x64.Build.0 = Release|Any CPU
-		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|x64.ActiveCfg = Debug|x64
-		{5558C85F-475D-42C3-825A-76275F36E046}.Debug|x64.Build.0 = Debug|x64
-		{5558C85F-475D-42C3-825A-76275F36E046}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5558C85F-475D-42C3-825A-76275F36E046}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5558C85F-475D-42C3-825A-76275F36E046}.Release|x64.ActiveCfg = Release|x64
-		{5558C85F-475D-42C3-825A-76275F36E046}.Release|x64.Build.0 = Release|x64
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Debug|x64.ActiveCfg = Debug|x64
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Debug|x64.Build.0 = Debug|x64
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Release|x64.ActiveCfg = Release|x64
+		{A4787206-1045-4E79-B88C-7852F81CC298}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{5558C85F-475D-42C3-825A-76275F36E046} = {040D505C-95DD-491F-811E-D5314C0589FD}
+		{A4787206-1045-4E79-B88C-7852F81CC298} = {040D505C-95DD-491F-811E-D5314C0589FD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B05D307B-09E6-433D-82A7-ECB759D4C2D9}
