@@ -52,7 +52,7 @@ namespace DapperGenericRepository.Repository
                 string tableName = GetTableName();
                 string columns = GetColumns(excludeKey: true);
                 string properties = GetPropertyNames(excludeKey: true);
-                string query = $"INSERT IGNORE INTO {tableName} ({columns}) VALUES ({properties})";
+                string query = $"INSERT ignore  INTO {tableName} ({columns}) VALUES ({properties})";
 
                 rowsEffected = _connection.Execute(query, entity);
             }
@@ -93,7 +93,7 @@ namespace DapperGenericRepository.Repository
             return result;
         }
 
-        public T GetById(int Id)
+        public T GetById(string Id)
         {
             IEnumerable<T> result = null;
             try

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Text;
@@ -798,6 +799,21 @@ namespace Kolibri.net.Common.Utilities
                 }
             }
             return string.Join(string.Empty, words);
+        }
+
+
+        public static string FormatBigNumbers(object any) {
+            int number =Int32.Parse(any.ToString());
+           NumberFormatInfo nfi = new CultureInfo("en-US", false).NumberFormat;
+            nfi.NumberGroupSeparator = "."; // Set the group separator to a period
+
+            string formattedNumber = number.ToString("N0", nfi); // Output: 1.234.567
+            Console.WriteLine(formattedNumber);
+
+            nfi.NumberGroupSeparator = " "; // Change to space for a different separator
+            formattedNumber = number.ToString("N0", nfi); // Output: 1 234 567
+
+            return (formattedNumber);
         }
     }
 }

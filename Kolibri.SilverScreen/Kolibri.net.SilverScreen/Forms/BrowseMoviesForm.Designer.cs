@@ -41,7 +41,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             linkLabelYear = new LinkLabel();
             radioButtonYear = new RadioButton();
             linkLabelGenre = new LinkLabel();
-            textBox1 = new TextBox();
+            tbSearch = new TextBox();
             comboBoxYear = new ComboBox();
             comboBoxGenre = new ComboBox();
             labelInfo = new Label();
@@ -113,7 +113,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             groupBoxSearch.Controls.Add(linkLabelYear);
             groupBoxSearch.Controls.Add(radioButtonYear);
             groupBoxSearch.Controls.Add(linkLabelGenre);
-            groupBoxSearch.Controls.Add(textBox1);
+            groupBoxSearch.Controls.Add(tbSearch);
             groupBoxSearch.Controls.Add(comboBoxYear);
             groupBoxSearch.Controls.Add(comboBoxGenre);
             groupBoxSearch.Location = new Point(8, 8);
@@ -207,13 +207,13 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             linkLabelGenre.TabStop = true;
             linkLabelGenre.Text = "Genre";
             // 
-            // textBox1
+            // tbSearch
             // 
-            textBox1.Location = new Point(31, 20);
-            textBox1.Margin = new Padding(4, 3, 4, 3);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(247, 23);
-            textBox1.TabIndex = 1;
+            tbSearch.Location = new Point(31, 20);
+            tbSearch.Margin = new Padding(4, 3, 4, 3);
+            tbSearch.Name = "tbSearch";
+            tbSearch.Size = new Size(247, 23);
+            tbSearch.TabIndex = 1;
             // 
             // comboBoxYear
             // 
@@ -268,7 +268,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
 
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.ComboBox comboBoxGenre;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox tbSearch;
         private System.Windows.Forms.Button buttonSearch;
         private System.Windows.Forms.RadioButton radioButtonYear;
         private System.Windows.Forms.RadioButton radioButtonRating;

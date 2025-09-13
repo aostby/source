@@ -1,5 +1,6 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.SilverScreen.Controller;
@@ -421,7 +422,9 @@ namespace Kolibri.net.SilverScreen.Forms
 
                
                 if (_type.Equals(Constants.MultimediaType.movie) || _type.Equals(Constants.MultimediaType.Movies))
-                { MoviesSearchController searchController = new MoviesSearchController(_userSettings );
+                {
+                   var progress= ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
+                    MoviesSearchController searchController = new MoviesSearchController(_userSettings, progress:progress );
                     Task.Run(async () => searchController.SearchForMovies(dInfo, tristate));
                 }
                 else if (_type.Equals(Constants.MultimediaType.Series))

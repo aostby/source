@@ -105,6 +105,11 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
+        public static string GetSeasonFromFilename(string filename) {
+            var tmp = GetEpisodeFromFilename(filename);
+            return tmp.Substring(1, 2);
+        
+        }
 
         /// <summary>
         /// usual columnnames =  "Name", "Title", "ImdbRating", "Year", "Rated", "Runtime", "Genre", "Plot" 

@@ -34,7 +34,7 @@ namespace DapperGenericRepository.Service
             return examples;
         }
 
-        public Example Get(int Id)
+        public Example Get(string Id)
         {
             Example example = new Example();
             try

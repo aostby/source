@@ -1,8 +1,10 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.Formutilities.Controller;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controls;
+//using Microsoft.Office.Interop.Excel;
 using OMDbApiNet.Model;
 using System.Collections;
 using System.ComponentModel;
@@ -50,6 +52,17 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 comboBoxYear.SelectedIndex = 0;
                 comboBoxYear.SelectedIndex = comboBoxYear.FindStringExact(DateTime.Now.Year.ToString());
 
+
+                tbSearch.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                tbSearch.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                try
+                { 
+                    tbSearch.AutoCompleteCustomSource = AutoCompleteController.ToAutoCompleteStringCollection
+                                (_LITEDB.FindAllItems().GetAwaiter().GetResult().Select(s => s.Title).ToList());
+                }
+                catch (Exception ex)
+                { }
+
             }
             catch (Exception ex)
             {
@@ -77,7 +90,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             {
                 List<Item> ret = null;
 
-                string searhText = textBox1.Text;
+                string searhText = tbSearch.Text;
                 string genre = comboBoxGenre.Text;
                 string year = comboBoxYear.Text;
 

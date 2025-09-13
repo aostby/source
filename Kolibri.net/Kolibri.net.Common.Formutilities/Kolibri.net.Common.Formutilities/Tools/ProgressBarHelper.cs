@@ -15,8 +15,10 @@ namespace Kolibri.net.Common.FormUtilities.Tools
 
                 if (pb.Value.Equals(value)) { return; }
 
-                if (value <= 100)
-                    pb.Value = value;
+                if (value <= 100 && value >=0)
+                {
+                    pb.Value = Math.Abs(value);
+                }
 
                 else pb.Value = 100;
                 if (!pb.Visible) pb.Visible = true;
@@ -47,6 +49,8 @@ namespace Kolibri.net.Common.FormUtilities.Tools
 
         public static int CalculatePercent(long currentLength, long totalLength)
         {
+            if (totalLength < 0) return 0;
+
             int percentage = (int)((currentLength / (double)totalLength) * 100.0);
             if (percentage >= 100) percentage = 100;      
             return percentage;

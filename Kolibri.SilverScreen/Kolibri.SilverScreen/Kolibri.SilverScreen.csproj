@@ -8,9 +8,10 @@
     <PackageIcon>greysortpictures.jpg</PackageIcon>
 
     <Version Condition="'$(RELEASE_VERSION)' != ''">$(RELEASE_VERSION)</Version>
-    <VersionPrefix Condition="'$(RELEASE_VERSION)' == ''">1.0.0</VersionPrefix>
+    <VersionPrefix Condition="'$(RELEASE_VERSION)' == ''">1.0.1</VersionPrefix>
     <VersionSuffix Condition="'$(RELEASE_VERSION)' == ''">$([System.DateTime]::UtcNow.ToString(`yyyyMMdd-HHmm`))</VersionSuffix>
     <ApplicationIcon>greysortpictures.ico</ApplicationIcon>
+    <AssemblyName>$(MSBuildProjectName)-$(VersionPrefix)</AssemblyName>
     
   </PropertyGroup>
   <ItemGroup>
@@ -41,10 +42,20 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="IMDbDataFiles\" />
-    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="&quot;c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy unrestricted -file E:\DEV\GitHub\source\zipargs.ps1 -rootpath $(SolutionDir) -zippath &quot;E:\DEV\2025\Backup\$(TargetName)_$([System.DateTime]::Now.ToString(yyyy-MM-dd_HHmmss)).zip&quot;" />

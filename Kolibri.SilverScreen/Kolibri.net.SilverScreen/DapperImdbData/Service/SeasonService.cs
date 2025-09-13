@@ -38,7 +38,7 @@ namespace Kolibri.net.SilverScreen.DapperImdbData.Service
             return Seasons;
         }
 
-        public Season Get(int Id)
+        public Season Get(string Id)
         {
             Season Season = new Season();
             try

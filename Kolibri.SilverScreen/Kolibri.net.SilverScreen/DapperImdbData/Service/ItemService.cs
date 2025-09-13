@@ -63,7 +63,7 @@ namespace Kolibri.net.SilverScreen.DapperImdbData.Service
             return Items;
         }
 
-        public Item Get(int Id)
+        public Item Get(string Id)
         {
             Item Item = new Item();
             try
@@ -73,6 +73,7 @@ namespace Kolibri.net.SilverScreen.DapperImdbData.Service
             }
             catch (Exception ex)
             {
+                Item = null;
             }
 
             return Item;

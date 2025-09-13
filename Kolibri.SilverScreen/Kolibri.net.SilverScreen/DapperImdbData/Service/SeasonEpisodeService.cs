@@ -52,7 +52,7 @@ namespace Kolibri.net.SilverScreen.DapperImdbData.Service
             return SeasonEpisodes;
         }
 
-        public SeasonEpisode Get(int Id)
+        public SeasonEpisode Get(string Id)
         {
             SeasonEpisode SeasonEpisode = new SeasonEpisode();
             try
