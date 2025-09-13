@@ -1,6 +1,8 @@
 ﻿using java.time;
+using javax.swing.text;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
@@ -35,6 +37,7 @@ namespace Kolibri.net.SilverScreen.Controller
 
         private UserSettings _settings { get; }
         public List<FileInfo> CurrentMediaList { get ; private set ; }
+        IProgress<int> _progress;
 
         /// <summary>
         /// Oppdaterer utifra oppgitte parameter
@@ -44,16 +47,19 @@ namespace Kolibri.net.SilverScreen.Controller
         /// <param name="tmdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="omdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="updateTriState">null = Ingenting, true=alt, false= kun filinfromasjon</param>
-        public MoviesSearchController(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null)
+        public MoviesSearchController(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, IProgress<int> progress = null)
         {
             CurrentLog = new StringBuilder();
             _settings = userSettings;
             _updateTriState = null;
-            try
-            {
-                if (liteDB != null) { _liteDB = liteDB; } else { _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false); }
-            }
-            catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
+            if( progress==null ) _progress = new Progress<int>();
+            else _progress = progress;
+
+                try
+                {
+                    if (liteDB != null) { _liteDB = liteDB; } else { _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false); }
+                }
+                catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
             try
             {
                 if (tmdb != null) { _TMDB = tmdb; } else { _TMDB = new TMDBController(_liteDB, _settings.TMDBkey); }
@@ -87,12 +93,12 @@ namespace Kolibri.net.SilverScreen.Controller
         #region Movie Item
         public async Task <bool> SearchForMovies(DirectoryInfo dir, bool? updateTriState=null)
         {
+            _progress.Report(0);
             bool complete = false;
             if(!Init(dir, updateTriState))return false;
 
-            var currentItemList = new List<Item>();   
-
-
+            var currentItemList = new List<Item>();
+           
             List<string> common = MovieUtilites.MoviesCommonFileExt(true);
             var masks = common.Select(r => string.Concat('*', r)).ToArray();
             var searchStr = "*." + string.Join("|*.", common);
@@ -113,13 +119,16 @@ namespace Kolibri.net.SilverScreen.Controller
             }
 
             foreach (var filter in masks)
-            {
+            {int count = 0;_progress.Report(count);
                 try
-                {
-                    using (var e = await Task.Run(() => Directory.EnumerateFiles(dir.FullName, filter, new EnumerationOptions() { RecurseSubdirectories = true }).GetEnumerator()))
+                { var total = Directory.EnumerateFiles(dir.FullName, filter, new EnumerationOptions() { RecurseSubdirectories = true }).GetEnumerator();
+                    using (var e = await Task.Run(() => total))
                     {
                         while (await Task.Run(() => e.MoveNext()))
                         {
+                            count=count++;
+                            
+                            _progress.Report(ProgressBarHelper.CalculatePercent(count, count*2));
                             int year; string title;
                             FileInfo file = new FileInfo(e.Current);
                             CurrentMediaList.Add(file);
@@ -139,7 +148,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                 title = MovieUtilites.GetMovieTitle(Path.GetFileNameWithoutExtension(file.Name));
                             }
 
-                           await GetItem(file, year, title); 
+                            await GetItem(file, year, title);
 
                             #region CleanUnwantedExtraFiles
                             try

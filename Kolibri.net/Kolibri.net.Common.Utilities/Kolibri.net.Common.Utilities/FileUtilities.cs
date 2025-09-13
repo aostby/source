@@ -372,6 +372,20 @@ namespace Kolibri.net.Common.Utilities
             return ByteUtilities.GetByteSize(info.Length);
         }
 
+        
+            /// <summary>
+            /// Counts the number of lines in a text file efficiently.
+            /// </summary>
+            /// <param name="filePath">The path to the text file.</param>
+            /// <returns>The total number of lines in the file.</returns>
+            public static long GetLineCountInHugeFile(string filePath)
+            {
+                // File.ReadLines returns an IEnumerable<string> which allows lazy enumeration.
+                // Enumerable.LongCount() counts the elements without loading them all into memory.
+                return File.ReadLines(filePath).LongCount();
+            }
+        
+
 
         private static void DeleteFiles(FileInfo[] fileInfoListe)
         {

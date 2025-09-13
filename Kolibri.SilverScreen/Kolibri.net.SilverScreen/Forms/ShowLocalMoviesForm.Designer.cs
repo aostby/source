@@ -47,6 +47,7 @@
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
             toolTipLocalMovies = new ToolTip(components);
+            toolStripProgressBar1 = new ToolStripProgressBar();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -241,7 +242,7 @@
             // 
             // statusStrip1
             // 
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus, toolStripProgressBar1 });
             statusStrip1.Location = new Point(0, 626);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(390, 22);
@@ -251,9 +252,14 @@
             // toolStripStatusLabelStatus
             // 
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
-            toolStripStatusLabelStatus.Size = new Size(375, 17);
+            toolStripStatusLabelStatus.Size = new Size(273, 17);
             toolStripStatusLabelStatus.Spring = true;
             toolStripStatusLabelStatus.Text = "Status";
+            // 
+            // toolStripProgressBar1
+            // 
+            toolStripProgressBar1.Name = "toolStripProgressBar1";
+            toolStripProgressBar1.Size = new Size(100, 16);
             // 
             // ShowLocalMoviesForm
             // 
@@ -301,5 +307,6 @@
         private RadioButton radioButtonFilterNotMatched;
         private ToolTip toolTipLocalMovies;
         private Button buttonMissing;
+        private ToolStripProgressBar toolStripProgressBar1;
     }
 }

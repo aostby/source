@@ -57,9 +57,16 @@ namespace Kolibri.net.Common.Dal.Controller
 
             if (!string.IsNullOrEmpty(type))
             {
-                if (type.Equals("movies", StringComparison.OrdinalIgnoreCase)) { type = "movie"; }
-                items =   _liteDB.GetCollection<Item>("Item").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)).OrderBy(x=>x.Title);
+                if (type.Equals("movies", StringComparison.OrdinalIgnoreCase))
+                {
+                    type = "movie";
 
+                    items = _liteDB.GetCollection<Item>("Item").Find(x => x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x.Title);
+                }
+                else
+                {
+                    items = _liteDB.GetCollection<Item>("Item").FindAll();
+                }
             }
             else {
                 items=  _liteDB.GetCollection<Item>("Item").FindAll();

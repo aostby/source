@@ -2,6 +2,7 @@
 using javax.xml.crypto;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.Formutilities.Controller;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using MoviesFromImdb.Controller;
@@ -86,7 +87,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             tbSearch.AutoCompleteSource = AutoCompleteSource.CustomSource;
             try
             {
-                tbSearch.AutoCompleteCustomSource = ToAutoCompleteStringCollection
+                tbSearch.AutoCompleteCustomSource = AutoCompleteController.ToAutoCompleteStringCollection
                             (_liteDB.FindAllItems().GetAwaiter().GetResult().Select(s => s.Title).ToList());
             }
             catch (Exception ex)
@@ -374,13 +375,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
-        private AutoCompleteStringCollection ToAutoCompleteStringCollection(IEnumerable<string> enumerable)
-        {
-            if (enumerable == null) throw new ArgumentNullException("enumerable");
-            var autoComplete = new AutoCompleteStringCollection();
-            foreach (var item in enumerable) autoComplete.Add(item);
-            return autoComplete;
-        }
+  
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {

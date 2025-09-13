@@ -77,7 +77,10 @@ namespace Kolibri.net.SilverScreen.Controller
                 Item item = null;
                 string imdbid = fList.FirstOrDefault().ImdbIdFromDirectoryName();
                 if (imdbid != null) { item = _liteDB.FindItem(imdbid); }
-                if(item==null&&imdbid!=null) {item= _OMDB.GetItemByImdbId(imdbid);_liteDB.Upsert(item); item = _liteDB.FindItem(item.ImdbId); }
+                if (item == null && imdbid != null) { item = _OMDB.GetItemByImdbId(imdbid);
+                    
+
+                    if (item != null) { _liteDB.Upsert(item); item = _liteDB.FindItem(item.ImdbId); } }
                 if (item != null)
                 {
                     var show = await GetShowByIdAsync(imdbid);
@@ -90,7 +93,28 @@ namespace Kolibri.net.SilverScreen.Controller
                     seriesTitle = MovieUtilites.GetMovieTitle(dir.FullName);
                     int year = MovieUtilites.GetYear(dir.FullName);  
                       item = await GetItemByIdOrNameAsync(seriesTitle, year);
-                    if (item == null) item = await GetItemAsync(new FileInfo(fList.FirstOrDefault()), MovieUtilites.GetYear(dir.FullName), seriesTitle);
+                    if (item == null) {
+                        item = await GetItemAsync(new FileInfo(fList.FirstOrDefault()), MovieUtilites.GetYear(dir.FullName), seriesTitle);
+                        if (item == null && imdbid != null)
+                        {
+                            try
+                            {
+    var whatNow = await _TMDB.FindById(imdbid);
+                            if (whatNow.TvResults.Count >= 1)
+                            { string sn = SeriesUtilities.GetSeasonFromFilename(fList.FirstOrDefault());
+                                
+                                var jall = await _TMDB.FindByImdbId(imdbid,sn.ToInt32());
+                            }
+                            }
+                            catch (Exception ex)
+                            {
+                                var jall = ex.Message;
+                            }
+                        
+
+                        }
+                    
+                    }
                     if (item != null)
                     {
                         var show = await GetShowByIdAsync(item.ImdbId);

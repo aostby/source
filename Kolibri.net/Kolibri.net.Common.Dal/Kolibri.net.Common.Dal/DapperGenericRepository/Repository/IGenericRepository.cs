@@ -9,7 +9,7 @@ namespace DapperGenericRepository.Repository
 {
     interface IGenericRepository<T>
     {
-        T GetById(int id);
+        T GetById(string id);
         IEnumerable<T> GetAll();
         bool Insert(T entity);
         bool Update(T entity);

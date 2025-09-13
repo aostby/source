@@ -197,8 +197,15 @@ namespace Kolibri.net.SilverScreen.Controls
 
                         }
                         catch (Exception) { index = 0; dgv.ClearSelection(); }
+                    try
+                    {
+ val = dgv.SelectedRows[0].Cells["ImdbId"].Value.ToString();
+                    }
+                    catch (Exception ex)
+                    {
 
-                    val = dgv.SelectedRows[index].Cells["ImdbId"].Value.ToString();
+                    }
+                   
                     var org = val;
 
                     var res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.InputBox("Set imdbid for this title", "set value", ref val);

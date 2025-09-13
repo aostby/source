@@ -8,6 +8,7 @@ using OMDbApiNet.Model;
 using System.Data;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
+using static sun.awt.geom.AreaOp;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -31,6 +32,33 @@ namespace Kolibri.net.SilverScreen.Forms
         //    this.FormBorderStyle = FormBorderStyle.None;
         //    Init(_item);
         //}
+
+        public DetailsFormItem(string imdbId,  LiteDBController contr,OMDBController omdb = null
+            , TMDBController tmdb = null
+            , SubDLSubtitleController subDL = null
+            , ImageCacheDB imagecache = null
+            )
+        {
+            InitializeComponent();
+            _liteDB = contr;
+            _item = GetItemFromDB(imdbId);
+            this.FormBorderStyle = FormBorderStyle.None;
+            _OMDB = omdb;
+            _TMDB = tmdb;
+            _subDL = subDL;
+            _imageCache = imagecache;
+            Init(_item);
+        }
+
+        private Item? GetItemFromDB(string imdbId)
+        {
+            var ret = new Item();
+            
+            MySQLController.GetData(_liteDB.ConnectionString.ToString(), imdbId);
+            return ret;
+
+        }
+
         public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr
             , OMDBController omdb=null
             , TMDBController tmdb = null

@@ -39,7 +39,7 @@ namespace Kolibri.net.SilverScreen.DapperImdbData.Service
             return Episodes;
         }
 
-        public Episode Get(int Id)
+        public Episode Get(string Id)
         {
             Episode Episode = new Episode();
             try

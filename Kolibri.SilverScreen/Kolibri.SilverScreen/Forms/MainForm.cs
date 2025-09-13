@@ -39,7 +39,7 @@ namespace Kolibri.SilverScreen.Forms
 
         private void InitUserSettings(FileInfo liteDBPath = null)
         {
-            string dbPath = @"C:\TEMP\SilverScreen\SilverScreen.db";
+            string dbPath =  string.Empty;
             if (liteDBPath != null)
             {
                 dbPath = liteDBPath.FullName;
@@ -48,11 +48,15 @@ namespace Kolibri.SilverScreen.Forms
             {
                 try
                 {
-                    IConfiguration configuration = new ConfigurationBuilder()
-                            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                            .Build();
-                    dbPath = configuration["LiteDBPath"].ToString();
+                    dbPath= Properties.Settings.Default.LiteDBPath;
+                    if (string.IsNullOrEmpty(dbPath))
+                    {
 
+                        IConfiguration configuration = new ConfigurationBuilder()
+                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                                .Build();
+                        dbPath = configuration["LiteDBPath"].ToString();
+                    }
                     FileInfo info = new FileInfo(dbPath);
                     if (!Directory.Exists(info.DirectoryName))
                     {
@@ -71,9 +75,7 @@ namespace Kolibri.SilverScreen.Forms
                     var dbSettings = tmp.GetUserSettings();
                     if (dbSettings != null)
                     {
-
                         _userSettings = dbSettings;
-
                     }
                     else
                     {
@@ -83,6 +85,8 @@ namespace Kolibri.SilverScreen.Forms
                     { _userSettings.LiteDBFilePath = new FileInfo(dbPath).FullName; }
 
                     tmp.Upsert(_userSettings);
+                    Properties.Settings.Default.LiteDBPath = _userSettings.LiteDBFilePath;
+                    Properties.Settings.Default.Save(); 
                 }
             }
             catch (Exception ex) { }
