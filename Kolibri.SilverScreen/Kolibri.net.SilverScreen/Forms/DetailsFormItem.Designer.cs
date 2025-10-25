@@ -126,7 +126,7 @@ namespace Kolibri.net.SilverScreen.Forms
             label1.Location = new Point(12, 428);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(29, 15);
+            label1.Size = new Size(30, 15);
             label1.TabIndex = 29;
             label1.Text = "Title";
             // 
@@ -266,7 +266,7 @@ namespace Kolibri.net.SilverScreen.Forms
             labelFileExists.Location = new Point(100, 424);
             labelFileExists.Margin = new Padding(4, 0, 4, 0);
             labelFileExists.Name = "labelFileExists";
-            labelFileExists.Size = new Size(36, 15);
+            labelFileExists.Size = new Size(35, 15);
             labelFileExists.TabIndex = 44;
             labelFileExists.Text = "Exists";
             toolTipDetail.SetToolTip(labelFileExists, "Finnes filen på disk");
@@ -291,6 +291,7 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonSearch.TabIndex = 46;
             buttonSearch.Text = "Search";
             buttonSearch.TextAlign = ContentAlignment.MiddleRight;
+            toolTipDetail.SetToolTip(buttonSearch, "Se etter lignende filmer");
             buttonSearch.UseVisualStyleBackColor = true;
             buttonSearch.Click += buttonSearch_Click;
             // 

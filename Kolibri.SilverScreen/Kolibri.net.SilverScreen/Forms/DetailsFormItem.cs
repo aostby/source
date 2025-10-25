@@ -194,6 +194,12 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else buttonSubtitleSearch.BackColor = Control.DefaultBackColor;
                 }
+                else {
+                    if (srtInfo.Length > 1000)
+                    {
+                        buttonSubtitleSearch.BackColor = Color.LightGreen;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -386,14 +392,44 @@ namespace Kolibri.net.SilverScreen.Forms
             try
             {
                 var t = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
-                var theList = t.Cast.ToList();
+                var theList = t.Cast.ToList().Take(10);
 
                 var ds = DataSetUtilities.AutoGenererDataSet(theList.ToList<Cast>());
 
                 DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(false);
                 dt.TableName = DataSetUtilities.LegalTableName("Actors");
 
-                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_item.Title, dt.DataSet, this.Size);
+                if (dt.DataSet == null) {
+                    DataSet tmp = new DataSet();
+                    tmp.Tables.Add(dt);
+                }
+
+                DataColumn imageColumn = new DataColumn("Image");
+                imageColumn.DataType = typeof(Image); // or System.Type.GetType("System.Byte[]");
+                imageColumn.AllowDBNull = true; // Set to false if an image is always required
+                imageColumn.Caption = "Image"; // Optional: A user-friendly caption
+                dt.Columns.Add(imageColumn);
+                imageColumn.SetOrdinal(0);
+                foreach (DataRow row in dt.Rows)
+                {
+                    try
+                    {
+ row["Image"] = ImageUtilities.GetImageFromUrl($"https://image.tmdb.org/t/p/w200{($"{row["ProfilePath"]}")}");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        row["Image"] = DBNull.Value;
+                    }
+                   
+
+                }
+
+
+
+                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_item.Title, dt.DataSet, this.Parent.Size);
+
+                
 
 
             }
@@ -457,10 +493,10 @@ namespace Kolibri.net.SilverScreen.Forms
                     throw new NoNullAllowedException($"SubDL krever en API Key, og din er tom. Vennligst legg inn en nøkkel for å kunne søke etter undertekster");
 
 
-                FileInfo info = _itemPath.ItemFileInfo;
-
+                FileInfo info = _itemPath.ItemFileInfo; 
 
                 FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
+                if (srtInfo.Exists) return;
                 bool dirExists = Directory.Exists(Path.Combine(info.Directory.FullName, "Subs"));
                 var mmi = _OMDB.GetItemByImdbId(_item.ImdbId);
                 dirExists = dirExists && mmi.Type == "movie";
@@ -469,22 +505,38 @@ namespace Kolibri.net.SilverScreen.Forms
                     var jall = _subDL.SearchByIMDBid(_item.ImdbId);
                     if (jall.status == true && jall.subtitles != null && jall.subtitles.Count >= 1)
                     {
-                        foreach (var sub in jall.subtitles)
+                        var matchFiles = jall.subtitles.Find(x => x.release_name.Equals(info.Name));
+                        if (matchFiles != null) { /*TODO*/}
+                        else
                         {
-                            try
+                            foreach (var sub in jall.subtitles)
                             {
-                                string url = $"https://dl.subdl.com{sub.url}";
+                                try
+                                {
+                                    string url = $"https://dl.subdl.com{sub.url}";
 
-                                FileInfo subInfo = new FileInfo(Path.Combine(info.Directory.FullName, "Subs", FileUtilities.SafeFileName($"{sub.language}_{sub.release_name}.zip")));
+                                    FileInfo subInfo = new FileInfo(Path.Combine(info.Directory.FullName, "Subs", FileUtilities.SafeFileName($"{sub.language}_{sub.release_name}.zip")));
 
-                                var exist = Kolibri.net.Common.Utilities.FileUtilities.DownloadFile(url, subInfo.FullName);
+                                    var exist = Kolibri.net.Common.Utilities.FileUtilities.DownloadFile(url, subInfo.FullName);
 
-                                if (!exist) throw new FileNotFoundException(subInfo.FullName);
+                                    if (!exist) throw new FileNotFoundException(subInfo.FullName);
+                                    else
+                                    {
+                                        try
+                                        {
+                                            FileUtilities.UnZipFiles(subInfo.FullName, subInfo.Directory.FullName, null);
+                                            Thread.Sleep(5);
+                                            subInfo.Delete();//fjern zip filen
+                                        }
+                                        catch (Exception ex)
+                                        { }
+                                    }
 
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.Logg(Logger.LoggType.Feil, ex.Message);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Logg(Logger.LoggType.Feil, ex.Message);
+                                }
                             }
                         }
                     }

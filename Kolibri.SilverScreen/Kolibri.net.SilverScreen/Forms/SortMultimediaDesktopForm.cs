@@ -6,6 +6,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Microsoft.VisualBasic.FileIO;
 using System.Data;
 using System.Diagnostics;
+using System.Windows.Forms;
 using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Forms
@@ -272,7 +273,56 @@ namespace Kolibri.net.SilverScreen.Forms
             SetLabelText($"Moving operation is completed, number of accumilated errors: {numerrors} ");
         }
         #region Fast? finn ut
+        private void MoveFoldersToMovieYear(FileInfo[] movieFiles, DirectoryInfo destinationPath)
+        {
+            foreach (FileInfo file in movieFiles)
+            {
+                try
+                {
+                    int year = Kolibri.net.Common.Utilities.MovieUtilites.GetYear(file.DirectoryName);
+                    var destination = new DirectoryInfo(Path.Combine(destinationPath.FullName, year.ToString(), file.Directory.Name));
+                    string sourceDirectory = file.Directory.FullName;// Replace with your source folder path
+                    DirectoryInfo destinationDirectory = new DirectoryInfo( destination.FullName); // Replace with your destination folder path
+                    if (!destinationDirectory.Parent.Exists) destinationDirectory.Parent.Create();
+               
 
+                    try
+                    {
+                        // Check if the source directory exists
+                        if (Directory.Exists(sourceDirectory))
+                        {
+                            // Move the directory and its contents
+                            Directory.Move(sourceDirectory, destinationDirectory.FullName);
+                            
+                            SetLabelText($"Folder '{sourceDirectory}' and its contents moved to '{destinationDirectory}'.");
+                        }
+                        else
+                        {
+                            SetLabelText($"Source directory '{sourceDirectory}' does not exist.");
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        SetLabelText($"An error occurred during the move operation: {ex.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        SetLabelText($"An unexpected error occurred: {ex.Message}");
+                    }
+
+                }
+                catch (Exception ex) { }
+            }
+            try
+            {
+                FileUtilities.DeleteEmptyDirs(destinationPath.Parent.Parent);
+            }
+            catch (Exception ex)
+            {
+                SetLabelText(ex.Message);
+            }
+            
+        }
 
 
         #endregion
@@ -463,24 +513,48 @@ namespace Kolibri.net.SilverScreen.Forms
                 _settings.Save();
             }
         }
-        private void SetLabelText(string s)
+        private void SetLabelText(string message)
         {
+            //try
+            //{
+            //    toolStripStatusLabel1.Text = s;
+            //}
+            //catch (Exception ex)
+            //{
+            //}
             try
             {
-                toolStripStatusLabel1.Text = s;
+                Task.Delay(1).GetAwaiter().GetResult();
+                if (InvokeRequired)
+                    Invoke(new MethodInvoker(
+                        delegate { SetLabelText(message); }
+                    ));
+                else
+                {
+
+                    toolStripStatusLabel1.Text = message;
+                    Thread.Sleep(3);
+             
+                }
             }
             catch (Exception ex)
-            {
-            }
-
-
+            { }
         }
+
+
+
 
         private void buttonMovieFolder_Click(object sender, EventArgs e)
         {
-            DirectoryInfo folder = FileUtilities.LetOppMappe(_settings.UserFilePaths.MoviesSourcePath, "Let opp mappen med filmer som skal få nye mapper basert på filnavn");////.Replace(@"\\", @"\"));
+            string source = textBoxSource.Text;
+            if (!Directory.Exists(source)) {
+                source = _settings.UserFilePaths.MoviesSourcePath;
+                
+            }
+            DirectoryInfo folder = FileUtilities.LetOppMappe(source, "Let opp mappen med filmer som skal få nye mapper basert på filnavn");////.Replace(@"\\", @"\"));
             if (folder != null && folder.Exists)
             {
+                SetSource(folder.FullName);
                 linkLabelMovieFolder.Text = folder.FullName;
                 linkLabelMovieFolder.Tag = folder;
                 SetLabelText($"Valgt folder: {folder.FullName}");
@@ -508,7 +582,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 var path = (linkLabelMovieFolder as LinkLabel).Tag as DirectoryInfo;
               var  fList =  FileUtilities.GetFiles(path, MovieUtilites.MoviesCommonFileExt(true), System.IO.SearchOption.AllDirectories);
                 var fiList = fList.Select(x => new FileInfo(x)).ToArray();
-                MoveFiles(fiList);
+                MoveFoldersToMovieYear(fiList, new DirectoryInfo(Path.Combine(path.FullName, "_byYear")));
             }
             catch (Exception ex)
             {

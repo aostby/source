@@ -62,6 +62,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             comboBox1 = new ComboBox();
             tbYearParameter = new TextBox();
             label10 = new Label();
+            labelLine = new Label();
             btnTop100 = new Button();
             btnRecommend = new Button();
             pictureBox1 = new PictureBox();
@@ -73,7 +74,6 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             toolTip1 = new ToolTip(components);
             labelOmdbId = new Label();
             checkBoxLookUp = new CheckBox();
-            labelLine = new Label();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
@@ -177,7 +177,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             label1.Location = new Point(11, 133);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(29, 15);
+            label1.Size = new Size(30, 15);
             label1.TabIndex = 12;
             label1.Text = "Title";
             // 
@@ -376,6 +376,15 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             label10.TabIndex = 21;
             label10.Text = "Year :";
             // 
+            // labelLine
+            // 
+            labelLine.AutoSize = true;
+            labelLine.Location = new Point(147, 66);
+            labelLine.Name = "labelLine";
+            labelLine.Size = new Size(457, 15);
+            labelLine.TabIndex = 26;
+            labelLine.Text = "------------------------------------------------------------------------------------------";
+            // 
             // btnTop100
             // 
             btnTop100.Location = new Point(654, 536);
@@ -482,15 +491,6 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             checkBoxLookUp.TabIndex = 34;
             checkBoxLookUp.Text = "LookUp missing";
             checkBoxLookUp.UseVisualStyleBackColor = true;
-            // 
-            // labelLine
-            // 
-            labelLine.AutoSize = true;
-            labelLine.Location = new Point(147, 66);
-            labelLine.Name = "labelLine";
-            labelLine.Size = new Size(457, 15);
-            labelLine.TabIndex = 26;
-            labelLine.Text = "------------------------------------------------------------------------------------------";
             // 
             // MovieForm
             // 

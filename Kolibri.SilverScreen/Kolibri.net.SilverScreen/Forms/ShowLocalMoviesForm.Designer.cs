@@ -30,6 +30,7 @@
         {
             components = new System.ComponentModel.Container();
             splitContainer1 = new SplitContainer();
+            buttonManual = new Button();
             groupBoxFilter = new GroupBox();
             buttonMissing = new Button();
             radioButtonFilterNotMatched = new RadioButton();
@@ -46,8 +47,8 @@
             splitContainer2 = new SplitContainer();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
-            toolTipLocalMovies = new ToolTip(components);
             toolStripProgressBar1 = new ToolStripProgressBar();
+            toolTipLocalMovies = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -69,6 +70,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(buttonManual);
             splitContainer1.Panel1.Controls.Add(groupBoxFilter);
             splitContainer1.Panel1.Controls.Add(checkBoxSimple);
             splitContainer1.Panel1.Controls.Add(groupBoxFileSearch);
@@ -82,6 +84,18 @@
             splitContainer1.Size = new Size(1266, 731);
             splitContainer1.SplitterDistance = 79;
             splitContainer1.TabIndex = 0;
+            // 
+            // buttonManual
+            // 
+            buttonManual.ImageAlign = ContentAlignment.MiddleLeft;
+            buttonManual.Location = new Point(722, 50);
+            buttonManual.Name = "buttonManual";
+            buttonManual.Size = new Size(252, 23);
+            buttonManual.TabIndex = 7;
+            buttonManual.Text = "Let opp og finn film manuelt";
+            buttonManual.TextAlign = ContentAlignment.MiddleRight;
+            buttonManual.UseVisualStyleBackColor = true;
+            buttonManual.Click += buttonManual_Click;
             // 
             // groupBoxFilter
             // 
@@ -161,7 +175,7 @@
             groupBoxFileSearch.Controls.Add(radioButtonUpdateAll);
             groupBoxFileSearch.Location = new Point(803, 10);
             groupBoxFileSearch.Name = "groupBoxFileSearch";
-            groupBoxFileSearch.Size = new Size(302, 39);
+            groupBoxFileSearch.Size = new Size(171, 39);
             groupBoxFileSearch.TabIndex = 4;
             groupBoxFileSearch.TabStop = false;
             groupBoxFileSearch.Text = "Oppdater";
@@ -308,5 +322,6 @@
         private ToolTip toolTipLocalMovies;
         private Button buttonMissing;
         private ToolStripProgressBar toolStripProgressBar1;
+        private Button buttonManual;
     }
 }

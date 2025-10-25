@@ -9,6 +9,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
 using OMDbApiNet.Model;
 using sun.java2d.pipe;
+using System.CodeDom.Compiler;
 using System.Collections;
 using System.Data;
 using System.Net;
@@ -475,7 +476,18 @@ namespace Kolibri.Common.VisualizeOMDbItem
                                     FolderUtilities.OpenFolderInExplorer(path.Exists ? path.FullName : file.FullName);
                                 }
                             }
-                            else { throw new FileNotFoundException($"{item.Title} - location not found"); }
+                            else if (!string.IsNullOrEmpty(_userSettings.UserFilePaths.SeriesSourcePath) && Path.Exists(_userSettings.UserFilePaths.SeriesSourcePath))
+                            {
+                                var path = new DirectoryInfo(_userSettings.UserFilePaths.SeriesSourcePath).GetDirectories($"*{_currentItem.ImdbId}*", SearchOption.AllDirectories).FirstOrDefault();
+                                if (path != null)
+                                {
+                                    FolderUtilities.OpenFolderInExplorer(path.FullName);
+                                    item.TomatoUrl = path.FullName;
+                                    tmp.Upsert(item);
+                                }
+                                else { throw new FileNotFoundException($"{item.Title} - location not found"); }
+                            }
+
                         }
                         else
                         {
@@ -492,15 +504,16 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     }
                     catch (Exception ex)
                     {
+                        SetStatusLabelText($"{ex.GetType().ToString()} {ex.Message}");
                         //MessageBox.Show(ex.Message, ex.GetType().Name);
 
-                        var folder = FolderUtilities.LetOppMappe(_userSettings.UserFilePaths.SeriesSourcePath, $"{ex.Message}");
-                        if (folder != null && folder.Exists && item != null)
-                        {
-                            item.TomatoUrl = folder.FullName;
-                            tmp.Update(item);
-                            tmp.Update(new FileItem(item.ImdbId, folder.FullName));
-                        }
+                        //        var folder = FolderUtilities.LetOppMappe(_userSettings.UserFilePaths.SeriesSourcePath, $"{ex.Message}");
+                        //if (folder != null && folder.Exists && item != null)
+                        //{
+                        //    item.TomatoUrl = folder.FullName;
+                        //    tmp.Update(item);
+                        //    tmp.Update(new FileItem(item.ImdbId, folder.FullName));
+                        //}
 
                     }
                     tmp.Dispose();
@@ -708,7 +721,18 @@ namespace Kolibri.Common.VisualizeOMDbItem
                             var res = MessageBox.Show($"Wanna look up this folder?", "Wanna fix it? ({item.Title})", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                             if (res == DialogResult.Yes)
                             {
-                                                        var resultSearch = FolderUtilities.LetOppMappe(item.TomatoUrl, $"Finn hovedmappe for {item.Title}");
+
+                                var path = item.TomatoUrl;
+                                try
+                                {
+                                    if (string.IsNullOrEmpty(path)||path.Equals("N/A")) {
+                                        path = new DirectoryInfo(_userSettings.UserFilePaths.SeriesSourcePath).Parent.FullName;
+                                        path= new DirectoryInfo(path).GetDirectories($"*{_currentItem.ImdbId}*", SearchOption.AllDirectories).FirstOrDefault().FullName;
+                                    }
+                                }
+                                catch (Exception) { }
+                               
+                                                                        var resultSearch = FolderUtilities.LetOppMappe(path, $"Finn hovedmappe for {item.Title}");
                                 if (resultSearch != null)
                                 {
                                     item.TomatoUrl = resultSearch.FullName;

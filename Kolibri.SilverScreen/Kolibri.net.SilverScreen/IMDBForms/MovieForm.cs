@@ -155,7 +155,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         var f= _liteDB.FindFile(labelImdbId.Text);
                         FileItem file = f.Result;
 
-                        linkLabelOpenFilePath.BackColor = file==null ?Color.Yellow:( (file!=null&&file.ItemFileInfo.Exists)? Control.DefaultBackColor:Color.LightSalmon);
+                        linkLabelOpenFilePath.BackColor = file==null ? Color.IndianRed :  (file!=null&&file.ItemFileInfo.Exists? Control.DefaultBackColor:Color.Yellow );
                     
                         try
                         {
@@ -236,8 +236,16 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private void btnWatchList_Click(object sender, EventArgs e)
         {
-            WatchlistForm frm = new WatchlistForm(_liteDB, comboBox1.SelectedValue.ToString());
+            try
+            {
+        WatchlistForm frm = new WatchlistForm(_liteDB, comboBox1.SelectedValue.ToString());
             frm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+
         }
 
         private void brnRefresh_Click(object sender, EventArgs e)

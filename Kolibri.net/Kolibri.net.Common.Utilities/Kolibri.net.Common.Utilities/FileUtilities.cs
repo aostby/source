@@ -1598,7 +1598,7 @@ All files (*.*)|*.*";
 
                 switch (sfd.FilterIndex)
                 {
-                    case 1: result = DataSetUtilities.DataTableTojson(table); break;
+                    case 1: result = DataSetUtilities.ConvertDataSetToJson(table.DataSet); break;
                     case 2: result = DataSetUtilities.CreateJsonParameters(table); break;
                     case 3: result = DataSetUtilities.DataSetToXML(ds).OuterXml; break;
                     case 4: result = XDocument.Parse(data.ToString()).ToString(); break;
@@ -1663,6 +1663,8 @@ All files (*.*)|*.*";
             }
             return sfd.FileName;
         }
+
+       
     }
 }    
 

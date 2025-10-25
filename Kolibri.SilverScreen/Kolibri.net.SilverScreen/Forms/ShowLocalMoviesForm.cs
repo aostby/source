@@ -1,5 +1,6 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
@@ -49,6 +50,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             _imageCache = new ImageCacheDB(_userSettings);
             buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
+            buttonManual.Image = Icons.IconFromExtensionShell("avi", Icons.SystemIconSize.Small).ToBitmap();
             try
             {
                 if (_type.Equals(MultimediaType.movie) || _type.Equals(MultimediaType.Movies))
@@ -215,11 +217,12 @@ namespace Kolibri.net.SilverScreen.Forms
         /// <returns></returns>
         private async void GetPathSearchFiles(string dInfo = null)
         {
-      
+
             if (dInfo == null)
                 dInfo = GetCurentPath();
             try
-            {if (_currentSearch == null || _currentSearch.Count < 1||!_currentSearch.FirstOrDefault().Contains(dInfo))
+            {
+                if (_currentSearch == null || _currentSearch.Count < 1 || !_currentSearch.FirstOrDefault().Contains(dInfo))
                 {
                     _currentSearch = Directory.EnumerateFiles(dInfo, "*.*", SearchOption.AllDirectories)
                                   .Where(file => MovieUtilites.MoviesCommonFileExt(true).ToArray()
@@ -420,12 +423,15 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (radioButtonUpdateAll.Checked)
                     tristate = true;
 
-               
+
                 if (_type.Equals(Constants.MultimediaType.movie) || _type.Equals(Constants.MultimediaType.Movies))
                 {
-                   var progress= ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
-                    MoviesSearchController searchController = new MoviesSearchController(_userSettings, progress:progress );
-                    Task.Run(async () => searchController.SearchForMovies(dInfo, tristate));
+                    var progress = ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
+                    MoviesSearchController searchController = new MoviesSearchController(_userSettings, progress: progress);
+                   await searchController.SearchForMovies(dInfo, tristate);
+                    if (!string.IsNullOrWhiteSpace(searchController.CurrentLog.ToString())) {
+                        OutputDialogs.ShowRichTextBox($"CurrentLog", searchController.CurrentLog.ToString(),this.Size);
+                    }
                 }
                 else if (_type.Equals(Constants.MultimediaType.Series))
                 {
@@ -491,7 +497,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private void DataGridView_LocalSelectionChanged(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 SetForm(_dgvController.CurrentItem, splitContainer2.Panel2);
             }
             catch (Exception ex)
@@ -613,6 +619,22 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception ex)
             { MessageBox.Show(ex.Message, ex.GetType().Name); }
+        }
+
+        private void buttonManual_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var info = FileUtilities.LetOppFil(new DirectoryInfo( GetCurentPath()));
+                if (info.Exists) {
+              Form      form = new MovieForm(_userSettings,info,$"{MovieUtilites.GetYear(info.Directory.FullName)}");
+                    SetForm(form);
+                }
+
+            }
+            catch (Exception ex)
+            { MessageBox.Show(ex.Message, ex.GetType().Name); }
+
         }
     }
 }

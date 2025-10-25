@@ -1,6 +1,10 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using com.sun.org.apache.bcel.@internal.generic;
+using java.time;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Formutilities.Controller;
+using Kolibri.net.Common.FormUtilities.Forms;
+using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controls;
@@ -10,6 +14,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Text;
+using TMDbLib.Objects.General;
 
 namespace Kolibri.net.Common.MovieAPI.Forms
 {
@@ -18,6 +23,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private LiteDBController _LITEDB;
         //private ImageCache _imageCache;
         private UserSettings _userSettings;
+        private string _lastPath;
 
         FileInfo _htmlFile = new FileInfo(@"c:\temp\preview\html.html");
         public BrowseMoviesForm(UserSettings userSettings)
@@ -29,6 +35,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
 
         private void Init()
         {
+            buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
+            _lastPath = _userSettings.UserFilePaths.MoviesSourcePath;
             buttonVisualize.Enabled = false;
 
             splitContainer1.FixedPanel = FixedPanel.Panel1;
@@ -56,7 +64,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 tbSearch.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                 tbSearch.AutoCompleteSource = AutoCompleteSource.CustomSource;
                 try
-                { 
+                {
                     tbSearch.AutoCompleteCustomSource = AutoCompleteController.ToAutoCompleteStringCollection
                                 (_LITEDB.FindAllItems().GetAwaiter().GetResult().Select(s => s.Title).ToList());
                 }
@@ -74,7 +82,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             try
 
             {
-              //  this.Text = this.Text + $"({_imageCache.NumElements})";
+                //  this.Text = this.Text + $"({_imageCache.NumElements})";
                 labelInfo.Text = $"Intializing images. Please search for items in movies and series collection saved in \r\n {_LITEDB.ConnectionString}";
             }
             catch (Exception ex)
@@ -93,13 +101,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 string searhText = tbSearch.Text;
                 string genre = comboBoxGenre.Text;
                 string year = comboBoxYear.Text;
+                if(year=="All")year = string.Empty;
 
                 if (string.IsNullOrWhiteSpace(searhText + genre + year))
                 {
                     labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - No items found for this search. Check your parameters";
                     return;
                 }
-
+              
                 if (!string.IsNullOrEmpty(genre))
                 {
                     ret = _LITEDB.FindItemByGenreNew(genre).ToList();
@@ -112,7 +121,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                     try
                     {
 
-                        if (!string.IsNullOrEmpty(year) && ret != null && ret.Count() > 0&&year!="All")
+                        if (!string.IsNullOrEmpty(year) && ret != null && ret.Count() > 0 && year != "All")
                         {
                             int min = year.Split('-').FirstOrDefault().Trim().ToInt().GetValueOrDefault();
                             int max = year.Split('-').LastOrDefault().Trim().ToInt().GetValueOrDefault();
@@ -149,7 +158,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
 
                     if (!string.IsNullOrEmpty(searhText) && ret != null && ret.Count() > 0)
                     {
-                        ret = ret.Where(a => a.Title.ToUpper().Contains(searhText.ToUpper())).ToList();
+                        ret = ret.FindAll(a => a.Title.ToUpper().Contains(searhText.ToUpper())).ToList();
                     }
 
 
@@ -159,8 +168,9 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 {
                     ret = _LITEDB.FindItemByTitle(searhText).ToList();
                 }
+                
 
-                var gen = (ret != null) ? ret.ToList() : null;
+                    var gen = (ret != null) ? ret.ToList() : null;
 
                 if (ret != null && ret.Count() > 0)
                 {
@@ -195,11 +205,16 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 if (!_htmlFile.Directory.Exists) _htmlFile.Directory.Create();
 
                 try
-                {   var html = CreateHTML(liste, null, title);
-                FileUtilities.WriteStringToFile(html, _htmlFile.FullName, Encoding.UTF8);
-                splitContainer1.Panel2.Controls.Clear();
+                {
+                    List<string> cols = null;
+                    if (checkBoxPrintable.Checked)
+                    { cols = new List<string>() { "Title", "ImdbRating", "Year","Type", "Runtime", "Plot", "ImdbId" }; } 
 
-                     WebBrowser browser = new WebBrowser();  
+                    var html = CreateHTML(liste, cols, title);
+                    FileUtilities.WriteStringToFile(html, _htmlFile.FullName, Encoding.UTF8);
+                    splitContainer1.Panel2.Controls.Clear();
+
+                    WebBrowser browser = new WebBrowser();
 
                     browser.Navigate(_htmlFile.FullName);
 
@@ -263,7 +278,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
   </p>
 <style>
   table {{table-layout: fixed; }}
-    .Plot {{width: 30%; }}
+    .Plot {{width: 50%; }}
  
 img{{width:75px;
   height: 100px;
@@ -300,7 +315,7 @@ img:hover{{transform: scale(1.5)}}
                 {
                     html.Append($@"<div id=""{row["Type"]}"" style=""display:block"">");
                     Item movie = _LITEDB.FindItemByTitle($"{row["Title"]}", $"{row["Year"]}".ToInt().GetValueOrDefault());
-                  
+
                     html.Append($"<tr>");
                     foreach (DataColumn item in row.Table.Columns)
                     {
@@ -308,7 +323,7 @@ img:hover{{transform: scale(1.5)}}
                         byte[] arr = null;
 
 
-                     
+
                         html.Append($"<td>");
 
                         if (item.ColumnName != "Image")
@@ -360,7 +375,7 @@ img:hover{{transform: scale(1.5)}}
                             { }
                         }
                         html.Append("</td>");
-                       
+
                     }
                     html.Append(" </tr>");
 
@@ -435,6 +450,43 @@ img:hover{{transform: scale(1.5)}}
                 splitContainer1.Panel2.Controls.Add(form);
 
                 form.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+        private void buttonOpenFolder_Click(object sender, EventArgs e)
+        {
+            try
+            {
+           DirectoryInfo dirInfo=     FolderUtilities.LetOppMappe(_lastPath);
+                if (dirInfo == null || !dirInfo.Exists)
+                { return; };
+                _lastPath = dirInfo.FullName;   
+
+            var     ret = _LITEDB.FindAllItems().Result.ToList();
+
+                ret = ret.Where(d => d.TomatoUrl.StartsWith(dirInfo.FullName, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (ret != null && ret.Count() > 0)
+                {
+                    if (radioButtonRating.Checked)
+                        ret = checkBoxDecending.Checked ? ret.OrderByDescending(s => s.ImdbRating).ToList() : ret.OrderBy(s => s.ImdbRating).ToList();
+                    else if (radioButtonYear.Checked)
+                        ret = checkBoxDecending.Checked ? ret.OrderByDescending(s => s.Year).ToList() : ret.OrderBy(s => s.Year).ToList();
+                    labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - Items found for this search: {dirInfo.Name}";
+                    DisplayHtml(ret, $"{labelInfo.Text}");
+                    buttonVisualize.Tag = ret;
+                    buttonVisualize.Enabled = buttonVisualize.Tag != null && ret.Count() > 0;
+                }
+
+                else
+                {
+                    MessageBox.Show("No movies found!", "{searhText} + {genre} + {year}");
+                    labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - No items found for this search. Check your parameters searhText: {dirInfo.FullName}";
+                }
+
             }
             catch (Exception ex)
             {

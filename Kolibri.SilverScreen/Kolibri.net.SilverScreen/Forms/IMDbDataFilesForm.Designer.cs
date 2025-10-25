@@ -38,18 +38,14 @@
             flowLayoutPanelUpdate = new FlowLayoutPanel();
             linkLabelIMDBdb = new LinkLabel();
             groupBoxGZ = new GroupBox();
-            buttonClearAll = new Button();
-            buttonClearDB = new Button();
             buttonCreateSchemas = new Button();
             groupBoxDataFiles = new GroupBox();
             groupBoxUpdate = new GroupBox();
-            checkBoxSilent = new CheckBox();
-            radioButtonYear = new RadioButton();
-            radioButtonList = new RadioButton();
             buttonCancel = new Button();
             panelInfo = new Panel();
             richTextBox1 = new RichTextBox();
             groupBox1 = new GroupBox();
+            buttonPrimaryKeys = new Button();
             buttonInsertFromLiteDBToMySQLDB = new Button();
             buttonCreateDapperClasses = new Button();
             buttonTestConnection = new Button();
@@ -142,39 +138,17 @@
             // 
             // groupBoxGZ
             // 
-            groupBoxGZ.Controls.Add(buttonClearAll);
-            groupBoxGZ.Controls.Add(buttonClearDB);
             groupBoxGZ.Controls.Add(flowLayoutPanelGZ);
             groupBoxGZ.Location = new Point(23, 71);
             groupBoxGZ.Name = "groupBoxGZ";
-            groupBoxGZ.Size = new Size(221, 357);
+            groupBoxGZ.Size = new Size(221, 309);
             groupBoxGZ.TabIndex = 6;
             groupBoxGZ.TabStop = false;
             groupBoxGZ.Text = "IMDB datafiles GZ";
             // 
-            // buttonClearAll
-            // 
-            buttonClearAll.Location = new Point(7, 318);
-            buttonClearAll.Name = "buttonClearAll";
-            buttonClearAll.Size = new Size(204, 23);
-            buttonClearAll.TabIndex = 3;
-            buttonClearAll.Text = "Clear ALL";
-            buttonClearAll.UseVisualStyleBackColor = true;
-            buttonClearAll.Click += buttonClearAll_Click;
-            // 
-            // buttonClearDB
-            // 
-            buttonClearDB.Location = new Point(7, 289);
-            buttonClearDB.Name = "buttonClearDB";
-            buttonClearDB.Size = new Size(204, 23);
-            buttonClearDB.TabIndex = 2;
-            buttonClearDB.Text = "Clear TEMP DB";
-            buttonClearDB.UseVisualStyleBackColor = true;
-            buttonClearDB.Click += buttonClearDB_Click;
-            // 
             // buttonCreateSchemas
             // 
-            buttonCreateSchemas.Location = new Point(6, 22);
+            buttonCreateSchemas.Location = new Point(238, 16);
             buttonCreateSchemas.Name = "buttonCreateSchemas";
             buttonCreateSchemas.Size = new Size(202, 23);
             buttonCreateSchemas.TabIndex = 4;
@@ -187,60 +161,24 @@
             groupBoxDataFiles.Controls.Add(flowLayoutPanelDataFiles);
             groupBoxDataFiles.Location = new Point(261, 71);
             groupBoxDataFiles.Name = "groupBoxDataFiles";
-            groupBoxDataFiles.Size = new Size(221, 357);
+            groupBoxDataFiles.Size = new Size(221, 309);
             groupBoxDataFiles.TabIndex = 7;
             groupBoxDataFiles.TabStop = false;
             groupBoxDataFiles.Text = "IMDB Unzipped DataFiles";
             // 
             // groupBoxUpdate
             // 
-            groupBoxUpdate.Controls.Add(checkBoxSilent);
-            groupBoxUpdate.Controls.Add(radioButtonYear);
-            groupBoxUpdate.Controls.Add(radioButtonList);
-            groupBoxUpdate.Controls.Add(buttonCancel);
             groupBoxUpdate.Controls.Add(flowLayoutPanelUpdate);
             groupBoxUpdate.Location = new Point(499, 71);
             groupBoxUpdate.Name = "groupBoxUpdate";
-            groupBoxUpdate.Size = new Size(221, 468);
+            groupBoxUpdate.Size = new Size(221, 309);
             groupBoxUpdate.TabIndex = 8;
             groupBoxUpdate.TabStop = false;
             groupBoxUpdate.Text = "Update Local Temp Database";
             // 
-            // checkBoxSilent
-            // 
-            checkBoxSilent.AutoSize = true;
-            checkBoxSilent.Location = new Point(9, 441);
-            checkBoxSilent.Name = "checkBoxSilent";
-            checkBoxSilent.Size = new Size(108, 19);
-            checkBoxSilent.TabIndex = 8;
-            checkBoxSilent.Text = "Stille, bakgrunn";
-            checkBoxSilent.UseVisualStyleBackColor = true;
-            // 
-            // radioButtonYear
-            // 
-            radioButtonYear.AutoSize = true;
-            radioButtonYear.Location = new Point(10, 419);
-            radioButtonYear.Name = "radioButtonYear";
-            radioButtonYear.Size = new Size(37, 19);
-            radioButtonYear.TabIndex = 7;
-            radioButtonYear.Text = "År";
-            radioButtonYear.UseVisualStyleBackColor = true;
-            // 
-            // radioButtonList
-            // 
-            radioButtonList.AutoSize = true;
-            radioButtonList.Checked = true;
-            radioButtonList.Location = new Point(10, 400);
-            radioButtonList.Name = "radioButtonList";
-            radioButtonList.Size = new Size(77, 19);
-            radioButtonList.TabIndex = 6;
-            radioButtonList.TabStop = true;
-            radioButtonList.Text = "Lokal liste";
-            radioButtonList.UseVisualStyleBackColor = true;
-            // 
             // buttonCancel
             // 
-            buttonCancel.Location = new Point(157, 416);
+            buttonCancel.Location = new Point(73, 69);
             buttonCancel.Name = "buttonCancel";
             buttonCancel.Size = new Size(58, 21);
             buttonCancel.TabIndex = 4;
@@ -269,20 +207,32 @@
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(buttonCancel);
+            groupBox1.Controls.Add(buttonPrimaryKeys);
             groupBox1.Controls.Add(buttonInsertFromLiteDBToMySQLDB);
             groupBox1.Controls.Add(buttonCreateDapperClasses);
             groupBox1.Controls.Add(buttonTestConnection);
             groupBox1.Controls.Add(buttonCreateSchemas);
-            groupBox1.Location = new Point(23, 434);
+            groupBox1.Location = new Point(23, 386);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(459, 97);
             groupBox1.TabIndex = 10;
             groupBox1.TabStop = false;
             groupBox1.Text = "MySQL database";
             // 
+            // buttonPrimaryKeys
+            // 
+            buttonPrimaryKeys.Location = new Point(9, 40);
+            buttonPrimaryKeys.Name = "buttonPrimaryKeys";
+            buttonPrimaryKeys.Size = new Size(202, 23);
+            buttonPrimaryKeys.TabIndex = 8;
+            buttonPrimaryKeys.Text = "Ensure Primary Keys";
+            buttonPrimaryKeys.UseVisualStyleBackColor = true;
+            buttonPrimaryKeys.Click += buttonPrimaryKeys_Click;
+            // 
             // buttonInsertFromLiteDBToMySQLDB
             // 
-            buttonInsertFromLiteDBToMySQLDB.Location = new Point(238, 22);
+            buttonInsertFromLiteDBToMySQLDB.Location = new Point(238, 74);
             buttonInsertFromLiteDBToMySQLDB.Name = "buttonInsertFromLiteDBToMySQLDB";
             buttonInsertFromLiteDBToMySQLDB.Size = new Size(215, 23);
             buttonInsertFromLiteDBToMySQLDB.TabIndex = 7;
@@ -292,7 +242,7 @@
             // 
             // buttonCreateDapperClasses
             // 
-            buttonCreateDapperClasses.Location = new Point(7, 75);
+            buttonCreateDapperClasses.Location = new Point(238, 40);
             buttonCreateDapperClasses.Name = "buttonCreateDapperClasses";
             buttonCreateDapperClasses.Size = new Size(202, 23);
             buttonCreateDapperClasses.TabIndex = 6;
@@ -302,7 +252,7 @@
             // 
             // buttonTestConnection
             // 
-            buttonTestConnection.Location = new Point(7, 48);
+            buttonTestConnection.Location = new Point(9, 16);
             buttonTestConnection.Name = "buttonTestConnection";
             buttonTestConnection.Size = new Size(202, 23);
             buttonTestConnection.TabIndex = 5;
@@ -331,7 +281,6 @@
             groupBoxGZ.ResumeLayout(false);
             groupBoxDataFiles.ResumeLayout(false);
             groupBoxUpdate.ResumeLayout(false);
-            groupBoxUpdate.PerformLayout();
             panelInfo.ResumeLayout(false);
             groupBox1.ResumeLayout(false);
             ResumeLayout(false);
@@ -355,16 +304,12 @@
         private GroupBox groupBoxUpdate;
         private Panel panelInfo;
         private Button buttonCancel;
-        private Button buttonClearDB;
-        private RadioButton radioButtonYear;
-        private RadioButton radioButtonList;
         private RichTextBox richTextBox1;
-        private Button buttonClearAll;
-        private CheckBox checkBoxSilent;
         private Button buttonCreateSchemas;
         private GroupBox groupBox1;
         private Button buttonTestConnection;
         private Button buttonCreateDapperClasses;
         private Button buttonInsertFromLiteDBToMySQLDB;
+        private Button buttonPrimaryKeys;
     }
 }

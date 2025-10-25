@@ -1,19 +1,16 @@
-﻿using com.sun.rowset.@internal;
-using Kolibri.net.Common.Utilities.Extensions;
-using Microsoft.CSharp;
+﻿using Microsoft.CSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Reflection;
-using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+
 namespace Kolibri.net.Common.Utilities
 {
 
@@ -21,6 +18,21 @@ namespace Kolibri.net.Common.Utilities
     {
 
         #region datatabeller til entiteter
+        public static string ConvertDataSetToJson(DataSet dataSet)
+        {
+            if (dataSet == null)
+            {
+                return string.Empty;
+            }
+
+            // Serialize the DataSet to a JSON string
+            string json = JsonConvert.SerializeObject(dataSet, Newtonsoft.Json.Formatting.Indented);
+            // Formatting.Indented makes the JSON output readable with indentation
+
+            return json;
+        }
+
+
         /// <summary>
         /// Konverterer en liste til DataTable. Forutsetter Public Properties
         /// </summary>
