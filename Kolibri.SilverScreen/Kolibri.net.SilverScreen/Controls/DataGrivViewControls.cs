@@ -55,6 +55,9 @@ namespace Kolibri.net.SilverScreen.Controls
                 view = GetSeasonEpisodeDataGridView(table);
                 view.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             }
+            view.Name = "filter";
+            view.KeyDown += OutputDialogs.ShowDataTableDialog_KeyDown;
+
             Form form = new Form();
             form.Text = view.Name;
             form.TopLevel = false;
@@ -334,8 +337,16 @@ namespace Kolibri.net.SilverScreen.Controls
 
         private async void Dgv_KeyDown(object sender, KeyEventArgs e)
         {
+            // Check if both the Control key and the 'S' key are pressed
+            if (e.KeyCode == Keys.S && e.Control)
+            {   // Your code to handle Ctrl+S goes here
+          //      MessageBox.Show("Ctrl+S pressed! Saving...");
 
-            if (e.KeyCode == Keys.Delete)
+                // Optionally, prevent the event from being passed to other controls
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+            else if (e.KeyCode == Keys.Delete)
             {
                 try
                 {
@@ -395,7 +406,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 }
 
             }
-
+           
         }
 
         private void DataGridView_KeyPress(object sender, KeyPressEventArgs e)

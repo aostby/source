@@ -104,13 +104,13 @@ namespace Kolibri.net.Common.Dal.Controller
                 return ret;
             }
         }
-        public IEnumerable<Item> FindItemByTitle(string searchTerm)
+        public IEnumerable<Item> FindItemByTitle(string searchTerm )
         {
             StringComparison comp = StringComparison.Ordinal;
-
+         
             var ret = _liteDB.GetCollection<Item>("Item")
                .Find(x => x.Title.ToUpper().Equals(searchTerm.ToUpper()));
-            if (ret != null)
+            if (ret != null&&ret.Count()>=1)
                 return ret;
             //if not found, return the most likely one
             ret = _liteDB.GetCollection<Item>("Item")

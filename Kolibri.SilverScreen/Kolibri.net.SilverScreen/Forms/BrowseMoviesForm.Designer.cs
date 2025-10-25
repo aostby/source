@@ -30,8 +30,11 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private void InitializeComponent()
         {
             splitContainer1 = new SplitContainer();
+            groupBoxSearcByFolder = new GroupBox();
+            checkBoxPrintable = new CheckBox();
+            buttonOpenFolder = new Button();
             panelFound = new Panel();
-            Visualize = new GroupBox();
+            groupBoxVisualize = new GroupBox();
             buttonVisualize = new Button();
             groupBoxSearch = new GroupBox();
             buttonSearch = new Button();
@@ -48,7 +51,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.SuspendLayout();
-            Visualize.SuspendLayout();
+            groupBoxSearcByFolder.SuspendLayout();
+            groupBoxVisualize.SuspendLayout();
             groupBoxSearch.SuspendLayout();
             SuspendLayout();
             // 
@@ -63,14 +67,51 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(groupBoxSearcByFolder);
             splitContainer1.Panel1.Controls.Add(panelFound);
-            splitContainer1.Panel1.Controls.Add(Visualize);
+            splitContainer1.Panel1.Controls.Add(groupBoxVisualize);
             splitContainer1.Panel1.Controls.Add(groupBoxSearch);
             splitContainer1.Panel1.Controls.Add(labelInfo);
             splitContainer1.Size = new Size(1211, 674);
             splitContainer1.SplitterDistance = 161;
             splitContainer1.SplitterWidth = 5;
             splitContainer1.TabIndex = 0;
+            // 
+            // groupBoxSearcByFolder
+            // 
+            groupBoxSearcByFolder.Controls.Add(checkBoxPrintable);
+            groupBoxSearcByFolder.Controls.Add(buttonOpenFolder);
+            groupBoxSearcByFolder.Location = new Point(430, 16);
+            groupBoxSearcByFolder.Name = "groupBoxSearcByFolder";
+            groupBoxSearcByFolder.Size = new Size(233, 66);
+            groupBoxSearcByFolder.TabIndex = 14;
+            groupBoxSearcByFolder.TabStop = false;
+            groupBoxSearcByFolder.Text = "Search by folder";
+            // 
+            // checkBoxPrintable
+            // 
+            checkBoxPrintable.AutoSize = true;
+            checkBoxPrintable.BackColor = SystemColors.ButtonHighlight;
+            checkBoxPrintable.Checked = true;
+            checkBoxPrintable.CheckState = CheckState.Checked;
+            checkBoxPrintable.Location = new Point(54, 28);
+            checkBoxPrintable.Name = "checkBoxPrintable";
+            checkBoxPrintable.Size = new Size(73, 19);
+            checkBoxPrintable.TabIndex = 2;
+            checkBoxPrintable.Text = "Printable";
+            checkBoxPrintable.UseVisualStyleBackColor = false;
+            // 
+            // buttonOpenFolder
+            // 
+            buttonOpenFolder.ImageAlign = ContentAlignment.MiddleLeft;
+            buttonOpenFolder.Location = new Point(8, 22);
+            buttonOpenFolder.Name = "buttonOpenFolder";
+            buttonOpenFolder.Size = new Size(218, 29);
+            buttonOpenFolder.TabIndex = 1;
+            buttonOpenFolder.Text = "Let opp mappe";
+            buttonOpenFolder.TextAlign = ContentAlignment.MiddleRight;
+            buttonOpenFolder.UseVisualStyleBackColor = true;
+            buttonOpenFolder.Click += buttonOpenFolder_Click;
             // 
             // panelFound
             // 
@@ -81,17 +122,17 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             panelFound.Size = new Size(518, 90);
             panelFound.TabIndex = 13;
             // 
-            // Visualize
+            // groupBoxVisualize
             // 
-            Visualize.Controls.Add(buttonVisualize);
-            Visualize.Location = new Point(430, 15);
-            Visualize.Margin = new Padding(4, 3, 4, 3);
-            Visualize.Name = "Visualize";
-            Visualize.Padding = new Padding(4, 3, 4, 3);
-            Visualize.Size = new Size(233, 133);
-            Visualize.TabIndex = 12;
-            Visualize.TabStop = false;
-            Visualize.Text = "Visualize";
+            groupBoxVisualize.Controls.Add(buttonVisualize);
+            groupBoxVisualize.Location = new Point(430, 83);
+            groupBoxVisualize.Margin = new Padding(4, 3, 4, 3);
+            groupBoxVisualize.Name = "groupBoxVisualize";
+            groupBoxVisualize.Padding = new Padding(4, 3, 4, 3);
+            groupBoxVisualize.Size = new Size(233, 65);
+            groupBoxVisualize.TabIndex = 12;
+            groupBoxVisualize.TabStop = false;
+            groupBoxVisualize.Text = "Visualize";
             // 
             // buttonVisualize
             // 
@@ -258,7 +299,9 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             splitContainer1.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
-            Visualize.ResumeLayout(false);
+            groupBoxSearcByFolder.ResumeLayout(false);
+            groupBoxSearcByFolder.PerformLayout();
+            groupBoxVisualize.ResumeLayout(false);
             groupBoxSearch.ResumeLayout(false);
             groupBoxSearch.PerformLayout();
             ResumeLayout(false);
@@ -278,9 +321,12 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private System.Windows.Forms.ComboBox comboBoxYear;
         private System.Windows.Forms.LinkLabel linkLabelOpenInBrowser;
         private System.Windows.Forms.Label labelInfo;
-        private System.Windows.Forms.GroupBox Visualize;
+        private System.Windows.Forms.GroupBox groupBoxVisualize;
         private System.Windows.Forms.Button buttonVisualize;
         private System.Windows.Forms.GroupBox groupBoxSearch;
         private Panel panelFound;
+        private GroupBox groupBoxSearcByFolder;
+        private Button buttonOpenFolder;
+        private CheckBox checkBoxPrintable;
     }
 }

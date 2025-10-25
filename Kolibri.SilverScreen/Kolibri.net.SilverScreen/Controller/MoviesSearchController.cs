@@ -2,6 +2,7 @@
 using javax.swing.text;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
@@ -126,9 +127,9 @@ namespace Kolibri.net.SilverScreen.Controller
                     {
                         while (await Task.Run(() => e.MoveNext()))
                         {
-                            count=count++;
-                            
-                            _progress.Report(ProgressBarHelper.CalculatePercent(count, count*2));
+                            count = count++;
+
+                            _progress.Report(ProgressBarHelper.CalculatePercent(count, count * 2));
                             int year; string title;
                             FileInfo file = new FileInfo(e.Current);
                             CurrentMediaList.Add(file);
@@ -160,6 +161,16 @@ namespace Kolibri.net.SilverScreen.Controller
                                 {
                                     foreach (var item in removeFiles)
                                     {
+
+                                        try
+                                        {
+                                            File.SetAttributes(item.FullName, FileAttributes.Normal); //sett attributter i tilfelle de er read only
+                                        }
+                                        catch (Exception)
+                                        {
+                                            SetStatusLabelText($"Filatrtibutter kan ikke endres {item.Name} fra {file.Directory.Name}.", "ATTRIBUTES");
+                                        }
+
                                         item.Delete();
                                         SetStatusLabelText($"Slettet {item.Name} fra {file.Directory.Name}.", "DELETE");
 
@@ -169,9 +180,8 @@ namespace Kolibri.net.SilverScreen.Controller
                                 }
                             }
                             catch (Exception ex)
-                            { }
+                            { SetStatusLabelText(ex.Message); }
                             #endregion
-
                         }
                     }
                 }

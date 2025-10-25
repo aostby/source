@@ -815,5 +815,17 @@ namespace Kolibri.net.Common.Utilities
 
             return (formattedNumber);
         }
+        public static string FormatMinutesAsHoursAndMinutes(int totalMinutes)
+        {
+            if (totalMinutes < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(totalMinutes), "Total minutes cannot be negative.");
+            }
+
+            TimeSpan duration = TimeSpan.FromMinutes(totalMinutes);
+            return  string.Format("{0:%d} days, {0:%h} hours, {0:%m} minutes", duration);
+
+        }
+
     }
 }

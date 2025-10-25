@@ -1,9 +1,11 @@
+using com.sun.corba.se.spi.ior;
 using FastColoredTextBoxNS;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace Kolibri.net.Common.FormUtilities
@@ -352,6 +354,8 @@ return dataTable
             dgv.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
+        
+
             dgv.Dock = DockStyle.Fill;
             split.Panel2.Controls.Add(dgv);
 
@@ -362,7 +366,13 @@ return dataTable
             dgv.SelectionChanged += ShowDataTableDialog_SelectionChanged;
             box.SelectedValueChanged += VisualizeDataSet_SelectionChanged;
 
+            if (ds.Tables[0].Columns.Contains("Image"))
+            {
+               dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+                //dgv.RowTemplate.Height = 350;
+                dgv.Columns["Image"].Width = 200;
 
+            }
             form.DialogResult = DialogResult.OK;
             return form.DialogResult;
         }

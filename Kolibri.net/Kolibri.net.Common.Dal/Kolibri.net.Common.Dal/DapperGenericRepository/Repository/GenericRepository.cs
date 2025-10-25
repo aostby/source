@@ -53,7 +53,8 @@ namespace DapperGenericRepository.Repository
                 string columns = GetColumns(excludeKey: true);
                 string properties = GetPropertyNames(excludeKey: true);
                 string query = $"INSERT ignore  INTO {tableName} ({columns}) VALUES ({properties})";
-
+                //    string query = $"INSERT replace   INTO {tableName} ({columns}) VALUES ({properties})"; //ignore
+                  query = $"Replace INTO {tableName} ({columns}) VALUES ({properties})";
                 rowsEffected = _connection.Execute(query, entity);
             }
             catch (Exception ex) { }

@@ -229,7 +229,7 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
                 }
             }
-            internal static void ShowDataTableDialog_KeyDown(object sender, KeyEventArgs e)
+            public static void ShowDataTableDialog_KeyDown(object sender, KeyEventArgs e)
             {
                 DataTable table = null;
                 try
@@ -242,6 +242,9 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                         {
                             if (view.DataSource.GetType().Equals(typeof(DataTable))) ;
                             table = view.DataSource as DataTable;
+                        if (view.Name.Equals("filter", StringComparison.OrdinalIgnoreCase)) {
+                            table = new DataView(table).ToTable(false, "title", "ImdbRating","Year", "Released", "Genre", "Runtime");
+                        }
 
 
                             if (table == null)
@@ -265,15 +268,9 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
                     if (table != null)
                     {
-                        SaveFileDialog saveFileDialog = new SaveFileDialog();
-                        saveFileDialog.FileName = table.TableName + ".xml";
-                        if (saveFileDialog.ShowDialog() == DialogResult.OK && saveFileDialog.FileName != "")
-                        {
-                            table.DataSet.WriteXml(saveFileDialog.FileName);
-                            FileUtilities.OpenFolderHighlightFile(new FileInfo(saveFileDialog.FileName));
-                        }
-
-                        // Utilities.FileUtilities.ExportToFormats(textBoxQuery.Text);
+                        
+                    string filter =  FileUtilities.ExportToFormats(table); 
+                     
                     }
                 }
                 catch (Exception ex)

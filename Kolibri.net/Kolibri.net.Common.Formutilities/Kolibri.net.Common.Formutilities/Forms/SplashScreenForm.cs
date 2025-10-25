@@ -111,6 +111,7 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             {
                 label1.Text = Text;
                 label1.BringToFront();
+                Thread.Sleep(3);
                 label1.Refresh();
             }
         }

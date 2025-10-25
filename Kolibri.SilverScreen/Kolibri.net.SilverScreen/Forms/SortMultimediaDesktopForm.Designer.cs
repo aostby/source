@@ -79,7 +79,7 @@
             groupBox1.Controls.Add(buttonOpenDirD);
             groupBox1.Controls.Add(buttonDestination);
             groupBox1.Controls.Add(buttonSource);
-            groupBox1.Location = new Point(12, 12);
+            groupBox1.Location = new Point(12, 108);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(832, 140);
             groupBox1.TabIndex = 9;
@@ -167,12 +167,12 @@
             groupBox2.Controls.Add(linkLabelMovieFolder);
             groupBox2.Controls.Add(buttonMovieFolderMoveFiles);
             groupBox2.Controls.Add(buttonMovieFolder);
-            groupBox2.Location = new Point(12, 167);
+            groupBox2.Location = new Point(12, 12);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(832, 79);
             groupBox2.TabIndex = 10;
             groupBox2.TabStop = false;
-            groupBox2.Text = "Large movefolder with many moviefiles - create folders and move single files";
+            groupBox2.Text = "Large movefolder with many moviefiles - create folders and move Directories based on movie year (from foldername)";
             // 
             // linkLabelMovieFolder
             // 

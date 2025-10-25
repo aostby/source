@@ -1,6 +1,6 @@
-﻿using com.sun.org.apache.xpath.@internal.objects;
-using com.sun.tools.corba.se.idl.constExpr;
-using DapperGenericRepository.Controller;
+﻿using DapperGenericRepository.Controller;
+using javax.swing.plaf;
+using javax.swing.text;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.DapperGenericRepository.Controller;
 using Kolibri.net.Common.Dal.Entities;
@@ -8,18 +8,15 @@ using Kolibri.net.Common.FormUtilities;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
+using Kolibri.net.SilverScreen.Controller;
 using Kolibri.net.SilverScreen.DapperImdbData.Service;
 using Kolibri.net.SilverScreen.Entities;
-using Microsoft.Extensions.Primitives;
 using MySql.Data.MySqlClient;
 using OMDbApiNet.Model;
 using Sylvan.Data.Csv;
-using System;
 using System.Data;
 using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms.DataVisualization.Charting;
 using percentCalc = Kolibri.net.Common.FormUtilities.Tools.ProgressBarHelper;
 
 namespace Kolibri.net.SilverScreen.Forms
@@ -31,8 +28,9 @@ namespace Kolibri.net.SilverScreen.Forms
         private UserSettings _userSettings;
         private ToolTip _toolTip;
         private DirectoryInfo _destinationDir;
-        private LiteDBController _contr;
-        private LiteDBController _liteDB;
+     private LiteDBController _contr;
+        //private LiteDBController _liteDB;
+        private MySqlTableOperationsController _mySqlTableOperationsController;
 
         private Dictionary<string, List<string>> _lineDic = new Dictionary<string, List<string>>();
         // private Dictionary<string, object> _lineDic = new Dictionary<string, object>();
@@ -41,23 +39,29 @@ namespace Kolibri.net.SilverScreen.Forms
         private List<string> _gzFiles = new List<string>() { "title.basics.tsv.gz", "title.episode.tsv.gz", "title.crew.tsv.gz", "title.ratings.tsv.gz", "name.basics.tsv.gz", "title.akas.tsv.gz", "title.principals.tsv.gz" };
 
         private List<string> _files;
+        private FileInfo _currentFileInfo;
 
         public IMDbDataFilesForm(UserSettings settings)
         {
             InitializeComponent();
             _userSettings = settings;
             _files = _gzFiles.Select(s => s.Replace(".gz", string.Empty)).ToList();
+
+            if (_mySqlTableOperationsController == null)
+            { _mySqlTableOperationsController = new MySqlTableOperationsController(_userSettings.DefaultConnection); }
+
             Init();
         }
 
 
-        private async Task Init()
+        private async Task<bool> Init()
         {
+            bool ret = true;
             _toolTip = new ToolTip();
-            if (_liteDB == null) _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
+            if (_contr == null) _contr = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
 
             toolStripProgressBar1.Visible = false;
-            _localImdbIds = _liteDB.FindAllItems().GetAwaiter().GetResult().Select(s => s.ImdbId).ToList();
+            _localImdbIds = _contr.FindAllItems().GetAwaiter().GetResult().Select(s => s.ImdbId).ToList();
             SetStatusLabelText($"[INIT] All buttons {DateTime.Now.ToShortTimeString()}. Total of {_localImdbIds.Count} items found in local repository.");
             var list = this.Controls.OfType<GroupBox>().ToList();
             foreach (var item in list)
@@ -72,7 +76,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             _destinationDir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, nameof(_userSettings.IMDbDataFiles)));
             if ((!_destinationDir.Exists)) _destinationDir.Create();
-            _contr = new LiteDBController(new FileInfo(Path.Combine(_destinationDir.FullName, "ImdbDataFiles.db")), false, false);
+         //   _contr = new LiteDBController(new FileInfo(Path.Combine(_destinationDir.FullName, "ImdbDataFiles.db")), false, false);
 
             linkLabelOnline.Text = _userSettings.IMDbDataFiles;
             linkLabelOnline.Tag = _userSettings.IMDbDataFiles;
@@ -81,8 +85,7 @@ namespace Kolibri.net.SilverScreen.Forms
             linkLabelIMDBdb.Text = _contr.ConnectionString.Filename;
             linkLabelIMDBdb.Tag = _contr.ConnectionString.Filename;
 
-            _toolTip.SetToolTip(
-            buttonTestConnection, _userSettings.DefaultConnection);
+            _toolTip.SetToolTip(buttonTestConnection, _userSettings.DefaultConnection);
 
             try
             {
@@ -118,8 +121,11 @@ namespace Kolibri.net.SilverScreen.Forms
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
+                ret = false;
             }
-            TestConnection(true);
+            ret = ret && !(await TestConnection(true));
+
+            return ret;
         }
 
         #region local helper methods
@@ -150,41 +156,55 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         private void SetToolTipForButton(Button button, bool checkLines = false)
         {
+            #region hoverover description dictionary
             Dictionary<string, string> tDic = new Dictionary<string, string>() {
-            { "name.basics", $"{Environment.NewLine}Names of actors and other prominent persons{Environment.NewLine} nconst\tprimaryName\tbirthYear\tdeathYear\tprimaryProfession\tknownForTitles" },
-{"title.basics", $"{Environment.NewLine}Comprimented information about an imdb{Environment.NewLine} tconst\ttitleType\tprimaryTitle\toriginalTitle\tisAdult\tstartYear\tendYear\truntimeMinutes\tgenres" },
-{"title.akas", $"{Environment.NewLine}Mostly useless large file with AKA info{Environment.NewLine}titleId\tordering\ttitle\tregion\tlanguage\ttypes\tattributes\tisOriginalTitle"},
-{"title.crew", $"{Environment.NewLine}Credits writers, and points to the name file{Environment.NewLine}tconst	directors	writers"},
-{"title.episode", $"{Environment.NewLine}ShowEpisodes, points to title.basic or title.principals (all sorts of catagories){Environment.NewLine}tconst\tparentTconst\tseasonNumber\tepisodeNumber"},
-{"title.principals", $"{Environment.NewLine}All sorts of pointers, to directors, producers, writers etc. LARGE file, avoid if not important{Environment.NewLine}tconst\tordering\tnconst\tcategory\tjob\tcharacters"},
-{"title.ratings", $"{Environment.NewLine}IMDB scores for titles, and episodes.{Environment.NewLine}tconst\taverageRating\tnumVotes"}
-        };
+                { "name.basics", $"{Environment.NewLine}Names of actors and other prominent persons{Environment.NewLine} nconst\tprimaryName\tbirthYear\tdeathYear\tprimaryProfession\tknownForTitles" },
+                {"title.basics", $"{Environment.NewLine}Comprimented information about an imdb{Environment.NewLine} tconst\ttitleType\tprimaryTitle\toriginalTitle\tisAdult\tstartYear\tendYear\truntimeMinutes\tgenres" },
+                {"title.akas", $"{Environment.NewLine}Mostly useless large file with AKA info{Environment.NewLine}titleId\tordering\ttitle\tregion\tlanguage\ttypes\tattributes\tisOriginalTitle"},
+                {"title.crew", $"{Environment.NewLine}Credits directors & writers, and points to the name file{Environment.NewLine}tconst\tdirectors\twriters"},
+                {"title.episode", $"{Environment.NewLine}ShowEpisodes, points to title.basic or title.principals (all sorts of catagories){Environment.NewLine}tconst\tparentTconst\tseasonNumber\tepisodeNumber"},
+                {"title.principals", $"{Environment.NewLine}All sorts of pointers, to directors, producers, writers etc. LARGE file, avoid if not important{Environment.NewLine}tconst\tordering\tnconst\tcategory\tjob\tcharacters"},
+                {"title.ratings", $"{Environment.NewLine}IMDB scores for titles, and episodes.{Environment.NewLine}tconst\taverageRating\tnumVotes"}
+            };
+            #endregion
             try
             {
                 if (!checkLines)
                 {
+                    DateTime old = DateTime.Now.AddDays(-15);
                     FileInfo info = new FileInfo(Path.Combine(_destinationDir.FullName, button.Text));
                     var key = string.Join(".", info.Name.Split(".").Take(2));
+                    string tt = string.Empty;
                     if (info.Exists)
                     {
+                        tt = $"{button.Text} exist ({FileUtilities.GetFilesize(info.Length)}). Please hit button to download fresh version {tDic[key]}";
                         button.BackColor = Color.LimeGreen;
-                        _toolTip.SetToolTip(button, $"{button.Text} exist ({FileUtilities.GetFilesize(info.Length)}). Please hit button to download fresh version {tDic[key]}");
-                        if (info.LastWriteTime < DateTime.Now.AddDays(-15))
+                        _toolTip.SetToolTip(button, tt);
+                        if (info.LastWriteTime < old)
                         {
                             button.BackColor = Color.LightYellow;
+                            _toolTip.SetToolTip(button, $"({(old - info.LastWriteTime).Days} days old) " + tt);
+
                         }
                         if (!info.Extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) && info.Exists)
                         {
-                            button.BackColor = Color.LimeGreen;
+                            tt = $"{button.Text} is a text file ({FileUtilities.GetFilesize(info.Length)}) from {info.LastWriteTime.ToShortDateString()}. Please hit button to update {_userSettings.LiteDBFilePath} {tDic[key]}";
+                            if (info.LastWriteTime < old)
+                            { button.BackColor = Color.LightYellow; tt = $"({(old - info.LastWriteTime).Days} days old) " + tt; }
+                            else
+                            {
+                                button.BackColor = Color.LimeGreen;
+                            }
                             FileInfo dataFile = button.Tag as FileInfo;
-                            _toolTip.SetToolTip(button, $"{button.Text} is a text file ({FileUtilities.GetFilesize(info.Length)}). Please hit button to update {_userSettings.LiteDBFilePath} {tDic[key]}");
+                            _toolTip.SetToolTip(button, tt);
 
                         }
                     }
                     else
                     {
+                        tt = $"{button.Text} does not exist. Please hit button to download";
                         button.BackColor = Color.LightSalmon;
-                        _toolTip.SetToolTip(button, $"{button.Text} does not exist. Please hit button to download");
+                        _toolTip.SetToolTip(button, tt);
                     }
 
                 }
@@ -229,7 +249,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 tableName = button.Name.Replace("button", string.Empty);
             }
             else tableName = input.ToString();
-                
+
             switch (tableName)
             {
                 case "title.basics": tableName = "titles"; break;
@@ -237,7 +257,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 case "title.crew": tableName = "directors"; break;
                 case "title.ratings": tableName = "ratings"; break;
                 case "name.basics": tableName = "names"; break;
-                case "title.akas":      tableName = "titles_lang"; break;
+                case "title.akas": tableName = "titles_lang"; break;
                 case "title.principals": tableName = "principals"; break;
                 /*
                  {
@@ -253,7 +273,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     tableName = string.Empty;
                     break;
 
-              
+
             }
 
             return tableName;
@@ -268,10 +288,14 @@ namespace Kolibri.net.SilverScreen.Forms
                 switch (tableName)
                 {
                     case "titles":
-                        sql = "select t.*, r.averageRating from titles t  left JOIN ratings r on r.id = t.id WHERE t.startYear >= year(CURRENT_DATE) order by id desc;"; //$"select * from titles t   WHERE t.startYear >= year(CURRENT_DATE) order by id desc;";
+                        //   sql = $"select * from titles t  LIMIT 1000 WHERE t.startYear >= year(CURRENT_DATE) order by id desc;";
+                        //sql = "select t.*, r.averageRating from titles t limit 1000 left JOIN ratings r on r.id = t.id WHERE \r\n(t.startYear <> null and t.startYear >= year(CURRENT_DATE)) order by id desc;";
+                       sql = "WITH SELECTION AS (SELECT id FROM titles t where t.startYear IS NOT NULL and  t.startYear >= year(CURRENT_DATE) limit 100)\r\nSELECT * FROM selection a JOIN titles c ON (c.id = a.id);";
                         break;
                     case "principals":
-                        sql = $"select * from titles t LEFT JOIN principals p on p.title_id=t.id LEFT JOIN names n on n.name_id=p.name_id WHERE t.startYear >= year(CURRENT_DATE);";
+                        sql = $"select * from titles t  LIMIT 1000 LEFT JOIN principals p on p.title_id=t.id LEFT JOIN names n on n.name_id=p.name_id WHERE t.startYear >= year(CURRENT_DATE);";
+                        sql = @"WITH SELECTION AS (SELECT p.title_id  FROM principals p limit 100) 
+                                SELECT * FROM selection a JOIN principals c ON (c.title_id = a.title_id) ";
 
                         break;
                     default:
@@ -280,8 +304,13 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 }
                 DataSet ds = await GetDataSet(sql);
-                Visualizers.VisualizeDataSet(tableName, ds, this.Size);
-
+                if (ds != null)
+                {
+                    var rowCount= StringUtilities.FormatBigNumbers(await _mySqlTableOperationsController.GetRowCountFromTable(tableName));
+                    ds.Tables[0].TableName = tableName;
+                    var res = Visualizers.VisualizeDataSet($"{tableName} - Total RowCount: {rowCount} ", ds, this.Size);
+                    SetStatusLabelText($"{tableName} - {(rowCount)} ({_toolTip.GetToolTip(sender as Button)})");
+                }
             }
             catch (Exception ex)
             {
@@ -290,43 +319,43 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
-        public async void button_UpdateLinesOfData_Click_old(object? sender, EventArgs e)
-        {
-            List<Item> res = new List<Item>();
+        //public async void button_UpdateLinesOfData_Click_old(object? sender, EventArgs e)
+        //{
+        //    List<Item> res = new List<Item>();
 
-            int counter = 0;
-            bool ret = false;
-            Button button = sender as Button;
-            button.Enabled = false;
-            groupBoxDataFiles.Enabled = button.Enabled;
+        //    int counter = 0;
+        //    bool ret = false;
+        //    Button button = sender as Button;
+        //    button.Enabled = false;
+        //    groupBoxDataFiles.Enabled = button.Enabled;
 
-            try
-            {
-                var key = _lineDic.Keys.FirstOrDefault(x => x.StartsWith(button.Text));
-                var lines = _lineDic[key];
+        //    try
+        //    {
+        //        var key = _lineDic.Keys.FirstOrDefault(x => x.StartsWith(button.Text));
+        //        var lines = _lineDic[key];
 
-                FileInfo info = GetDestination(button);
-                long length = 0;
-                if (info.Exists)
-                {
-                    length = info.Length;
-                }
-                SetStatusLabelText($"{lines.Count()} files found. Enabeling buttons [{DateTime.Now.ToShortTimeString()}] {Path.GetFileNameWithoutExtension(info.Name)}: {info.Name} ({FileUtilities.GetFilesize(length)})");
-                var progress = percentCalc.InitProgressBar(toolStripProgressBar1);
-                if (checkBoxSilent.Checked) { progress = null; }
-                if (lines.Count() >= 1)
-                {
-                    res = await GetItemsFrom(key, lines, _contr, _localImdbIds, progress);
-                }
-                else { throw new NotImplementedException(key); }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, ex.GetType().Name);
-            }
-            button.Enabled = true;
-            groupBoxDataFiles.Enabled = button.Enabled;
-        }
+        //        FileInfo info = GetDestination(button);
+        //        long length = 0;
+        //        if (info.Exists)
+        //        {
+        //            length = info.Length;
+        //        }
+        //        SetStatusLabelText($"{lines.Count()} files found. Enabeling buttons [{DateTime.Now.ToShortTimeString()}] {Path.GetFileNameWithoutExtension(info.Name)}: {info.Name} ({FileUtilities.GetFilesize(length)})");
+        //        var progress = percentCalc.InitProgressBar(toolStripProgressBar1);
+        //        if (checkBoxSilent.Checked) { progress = null; }
+        //        if (lines.Count() >= 1)
+        //        {
+        //            res = await GetItemsFrom(key, lines, _contr, _localImdbIds, progress);
+        //        }
+        //        else { throw new NotImplementedException(key); }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show(ex.Message, ex.GetType().Name);
+        //    }
+        //    button.Enabled = true;
+        //    groupBoxDataFiles.Enabled = button.Enabled;
+        //}
         private async void button_BigUnpackedDataFile_Click(object? sender, EventArgs e)
         {
             groupBoxUpdate.Enabled = false;
@@ -338,7 +367,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 button.Enabled = false;
                 FileInfo info = GetDestination(button);
                 toolStripProgressBar1.Visible = true;
-                var result = await ReadIMDBData(button, progress);
+                var result = await ReadIMDBDataFromFiles(button, progress);
                 toolStripProgressBar1.Visible = false;
                 button.Enabled = true;
                 if (!result) { throw new Exception($"Failed to read {info.Name}"); }
@@ -383,53 +412,41 @@ namespace Kolibri.net.SilverScreen.Forms
         /// <param name="button">Knappen som har sendt kommandoen</param>
         /// <param name="progress">Fremgangsindikator</param>
         /// <returns></returns>
-        private async Task<bool> ReadIMDBData(Button button, IProgress<int> progress)
+        private async Task<bool> ReadIMDBDataFromFiles(Button button, IProgress<int> progress)
         {
 
             bool ret = false;
-            FileInfo info = GetDestination(button);
-
-            SetStatusLabelText($"[INITIALIZING] [{DateTime.Now.ToShortTimeString()}] {button.Parent.Text} {Path.GetFileNameWithoutExtension(info.Name)} ({FileUtilities.GetFilesize(info.Length)}): {info.Name}");
-            var huge = FileUtilities.GetFilesize(info.Length).Contains("gib", StringComparison.OrdinalIgnoreCase);
-
-
-            if (!huge)
+            try
             {
-                var sb = await info.ReadAllLinesAsyncStringBuilder(progress);
-                _lineDic[info.Name] = new List<string>();
+                FileInfo info = GetDestination(button);
+                _currentFileInfo = info;
 
-                ret = await InsertIntoMySQL(Path.GetFileNameWithoutExtension(info.FullName), sb.ToString().Split(Environment.NewLine).ToList(), progress);
-                //await GetItemsFrom(Path.GetFileNameWithoutExtension(info.FullName), sb.ToString().Split(Environment.NewLine).ToList(), _contr, _localImdbIds, progress);
-            }
-            else
-            {
-                int counter = 0;
-                var sb = new StringBuilder();
-                
-                HugeFileCounter hfCounter = new HugeFileCounter { totalCount = FileUtilities.GetLineCountInHugeFile(info.FullName) };
-
-                foreach (string line in File.ReadLines(info.FullName))
+                var diagRes = MessageBox.Show("Are you sure you want to clear table and import file?", info.Name, MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                if (diagRes == DialogResult.OK)
                 {
-                    counter++;
-                    sb.AppendLine(line);
-                    if (counter >= 5500)
-                    {
-                        ret = await InsertIntoMySQL(Path.GetFileNameWithoutExtension(info.FullName), sb.ToString().Split(Environment.NewLine).ToList(), progress, hfCounter);
-                        sb = new StringBuilder();
-                        hfCounter.currentCount += counter;
-                        counter = 0;
-                    }
+
+                    SetStatusLabelText($"[INITIALIZING] [{DateTime.Now.ToShortTimeString()}] {button.Parent.Text} {Path.GetFileNameWithoutExtension(info.Name)} ({FileUtilities.GetFilesize(info.Length)}): {info.Name}");
+
+                    Thread newFormThread = new Thread(OpenNewFormOnNewThread);
+                    newFormThread.SetApartmentState(ApartmentState.STA); // Essential for UI threads
+                    newFormThread.Start();
+                    ret = true;
+                    button.Enabled = false;
                 }
+                else { ret = false; }
             }
-            //button.Tag = ret;
-            //      ret = sb.Length > 10;
+            catch (Exception)
+            {
+                ret = false;
+            }
             return ret;
         }
         public async Task<DataSet> GetDataSet(string query)
         {
-            DataTable dt =await GetData(query);
+            DataTable dt = await GetData(query);
             DataSet ds = dt.DataSet;
-            if (dt.DataSet == null) {
+            if (dt.DataSet == null)
+            {
                 ds = new DataSet();
                 ds.Tables.Add(dt);
             }
@@ -438,7 +455,25 @@ namespace Kolibri.net.SilverScreen.Forms
         }
         public async Task<DataTable> GetData(string query)
         {
-    return        MySQLController.GetData(_userSettings.DefaultConnection, query);
+            try
+            {
+                if (_mySqlTableOperationsController == null)
+                    return MySQLController.GetData(_userSettings.DefaultConnection, query);
+                else
+                    return await _mySqlTableOperationsController.GetData(query);
+            }
+            catch (AggregateException ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+                return null;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show( ex.Message, ex.GetType().Name);
+                return null;
+
+            }
             //using (MySqlConnection connection = new MySqlConnection(_userSettings.DefaultConnection))
             //{
             //    connection.Open();
@@ -451,775 +486,42 @@ namespace Kolibri.net.SilverScreen.Forms
             //}
         }
 
-        public async Task<bool> Execute(string sql)
+        public async Task<bool> Execute(string sql, bool verbose = false)
         {
-            bool ret = false;
-            string connectionString = _userSettings.DefaultConnection;
-
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            try
             {
-                connection.Open();
-
-
-                using (MySqlCommand command = new MySqlCommand(sql, connection))
-                {
-                    int rowsAffected = command.ExecuteNonQuery();
-                    //Console.WriteLine($"{rowsAffected} row(s) inserted.");
-                    ret = rowsAffected >= 0;
-                }
+                return await _mySqlTableOperationsController.Execute(sql);
             }
-            return ret;
+            catch (Exception ex)
+            {
+                if (verbose)
+                    MessageBox.Show(ex.Message, ex.GetType().Name);
+                return false;
+            }
+
+            /*
+
+            //bool ret = false;
+            //string connectionString = _userSettings.DefaultConnection;
+
+            //using (MySqlConnection connection = new MySqlConnection(connectionString))
+            //{
+            //    connection.Open();
+
+
+            //    using (MySqlCommand command = new MySqlCommand(sql, connection))
+            //    {
+            //        int rowsAffected = command.ExecuteNonQuery();
+            //        //Console.WriteLine($"{rowsAffected} row(s) inserted.");
+            //        ret = rowsAffected >= 0;
+            //    }
+            //}
+            //return ret;
+
+            */
         }
 
 
-        #region process data 
-        private async Task<bool> InsertIntoMySQL(string name, List<string> orglines, IProgress<int> progress, HugeFileCounter hugeFileCounter = null)
-        {
-            bool ret = false;
-            ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
-            switch (name)
-            {
-                //https://github.com/kalaspuffar/imdb2mysql/blob/main/src/main/java/org/example/TSVToSQL.java
-                case "title.basics": ret = await processTitle(3200, name, orglines, progress); break;
-                case "title.episode": ret = await processEpisodes(7500, name, orglines, progress); break;
-                    case "title.akas": ret = await processTitleLanguage(4000, name, orglines, progress, hugeFileCounter); break;
-                case "name.basics": ret = await processNames(1500, name, orglines, progress); break;
-
-                case "title.ratings": ret = await processRatings(7500, name, orglines, progress); break;
-                case "title.principals": ret = await processPrincipals(4500, name, orglines, progress); break;
-                case "title.crew": ret = await processCrew(1500, name, orglines, progress); break;
-                default:
-                    break;
-            }
-
-            return ret;
-        }
-
-        public async Task<bool> processTitle(int maxLines, string name, List<string> orglines, IProgress<int> progress = null)
-        {
-            bool ret = false;
-            StringBuilder wr = new StringBuilder();
-
-            wr.AppendLine("SET autocommit=0;");
-            wr.AppendLine("DROP TABLE IF EXISTS titles;");
-
-            wr.AppendLine(
-            "CREATE TABLE titles (id varchar(20) NOT NULL, titleType varchar(20) NOT NULL, primaryTitle text NOT NULL, " +
-                "originalTitle text, isAdult boolean, startYear int, endYear int, runtimeMinutes int, " +
-                "genres varchar(255));"
-            );
-            wr.AppendLine(Environment.NewLine);
-            wr.AppendLine("COMMIT;");
-            //   wr.AppendLine("SET autocommit=1;");
-
-            ret = await Execute(wr.ToString());
-            wr = new StringBuilder();
-            /// wr.AppendLine("SET autocommit=0;");
-
-            orglines.RemoveAt(0);
-            int totalCount = 0;
-            int counter = 0;
-            foreach (var line in orglines)
-            {
-                counter++;
-
-                String[] lineArr = line.Split("\t");
-                try
-                {
-
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine("INSERT INTO titles (id, titleType, primaryTitle, originalTitle, ");
-                    sb.AppendLine("isAdult, startYear, endYear, runtimeMinutes, genres) VALUES (");
-                    sb.AppendLine(wrapOrNull(lineArr[0]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[1]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[2]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[3]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[4].Replace("\\N", "NULL"));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[5].Replace("\\N", "NULL"));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[6].Replace("\\N", "NULL"));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[7].Replace("\\N", "NULL"));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[8]));
-                    sb.AppendLine(");");
-
-                    wr.Append(sb.ToString());
-                    wr.Append(Environment.NewLine);
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText(ex.Message);
-                }
-
-                if (counter == maxLines)//3200 går ikke
-                {
-                    wr.AppendLine("COMMIT;");
-                    ret = ret && await Execute(wr.ToString());
-                    totalCount = totalCount + counter;
-                    counter = 0;
-                    wr = new StringBuilder();
-                    if (progress != null)
-                    {
-                        var percent = percentCalc.CalculatePercent(totalCount, orglines.Count());
-                        SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(totalCount)}/{StringUtilities.FormatBigNumbers(orglines.Count())} - {percent}%) {name} , maxLines: {maxLines}");
-                        try
-                        {
-                            if (progress != null) progress.Report(percent);
-                        }
-                        catch (Exception ex)
-                        { }
-                        await Task.Delay(1);
-                    }
-                    if (!ret)
-                    {
-                        return ret;
-                    }
-                }
-
-            }
-
-            wr.AppendLine("COMMIT;");
-            wr.AppendLine("SET autocommit=1;");
-            wr.AppendLine("ALTER TABLE titles ADD PRIMARY KEY (id);");
-            ret = ret && await Execute(wr.ToString());
-            SetStatusLabelText($"[DONE] (100%) {name}");
-            return ret;
-
-
-        }
-
-        public async Task<bool> processEpisodes(int maxLines, string name, List<string> orglines, IProgress<int> progress = null)
-        {
-            string tableName = "episodes";
-            bool ret = false;
-            StringBuilder wr = new StringBuilder();
-
-            wr.AppendLine("SET autocommit=0;");
-            wr.AppendLine($"DROP TABLE IF EXISTS {tableName};");
-
-            wr.AppendLine($"CREATE TABLE {tableName} (id varchar(20) NOT NULL,   parentId int NOT NULL, seasonNumber int, episodeNumber int);");
-            wr.AppendLine(Environment.NewLine);
-
-            wr.AppendLine(Environment.NewLine);
-            wr.AppendLine("COMMIT;");
-            //   wr.AppendLine("SET autocommit=1;");
-
-            ret = await Execute(wr.ToString());
-            wr = new StringBuilder();
-            /// wr.AppendLine("SET autocommit=0;");
-
-            orglines.RemoveAt(0);
-            int totalCount = 0;
-            int counter = 0;
-            foreach (var line in orglines)
-            {
-                counter++;
-
-                String[] lineArr = line.Split("\t");
-                try
-                {
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine($"INSERT INTO {tableName} (id, parentId, seasonNumber, episodeNumber) VALUES (");
-                    sb.AppendLine(wrapOrNull(lineArr[0]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[1]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[2].Replace("\\N", "NULL"));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[3].Replace("\\N", "NULL"));
-                    sb.AppendLine(");");
-
-                    wr.Append(sb.ToString());
-                    wr.Append(Environment.NewLine);
-
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText(ex.Message);
-                }
-
-                if (counter == maxLines)
-                {
-                    wr.AppendLine("COMMIT;");
-                    ret = ret && await Execute(wr.ToString());
-                    totalCount = totalCount + counter;
-                    counter = 0;
-                    wr = new StringBuilder();
-                    if (progress != null)
-                    {
-                        var percent = percentCalc.CalculatePercent(totalCount, orglines.Count());
-                        SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(totalCount)}/{StringUtilities.FormatBigNumbers(orglines.Count())} - {percent}%) {name}, maxLines: {maxLines}");
-                        try
-                        {
-                            if (progress != null) progress.Report(percent);
-                        }
-                        catch (Exception ex)
-                        { }
-                        await Task.Delay(1);
-                    }
-                    if (!ret)
-                    {
-                        return ret;
-                    }
-                }
-
-            }
-
-            wr.AppendLine("COMMIT;");
-            wr.AppendLine("SET autocommit=1;");
-            wr.AppendLine($"ALTER TABLE {tableName} ADD PRIMARY KEY (id);");
-            ret = ret && await Execute(wr.ToString());
-            SetStatusLabelText($"[DONE] (100%) {name}");
-            return ret;
-        }
-
-        public async Task<bool> processNames(int maxLines, string name, List<string> orglines, IProgress<int> progress = null)
-        {
-            string tableName = "names";
-            bool ret = false;
-            StringBuilder wr = new StringBuilder();
-
-            wr.AppendLine("SET autocommit=0;");
-            wr.AppendLine($"DROP TABLE IF EXISTS {tableName};");
-            wr.AppendLine("DROP TABLE IF EXISTS knownfor;");
-
-            wr.AppendLine($"CREATE TABLE {tableName} (name_id varchar(20) NOT NULL, primaryName varchar(255), " +
-            "birthYear int, deathYear int, primaryProfession varchar(255));");
-            wr.AppendLine(Environment.NewLine);
-
-            wr.AppendLine($"CREATE TABLE knownfor (name_id varchar(20) NOT NULL, title_id varchar(20) NOT NULL);");
-
-            wr.AppendLine("COMMIT;");
-            //   wr.AppendLine("SET autocommit=1;");
-
-            ret = await Execute(wr.ToString());
-            wr = new StringBuilder();
-            /// wr.AppendLine("SET autocommit=0;");
-
-            orglines.RemoveAt(0);
-            int totalCount = 0;
-            int counter = 0;
-            foreach (var line in orglines)
-            {
-                counter++;
-
-                String[] lineArr = line.Split("\t");
-                try
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine("INSERT INTO names (title_id, primaryName, birthYear, deathYear, primaryProfession) VALUES (");
-                    var nameId = wrapOrNull(lineArr[0]);
-                    sb.AppendLine(nameId);
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[1]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[2].Replace("\\N", "NULL"));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[3].Replace("\\N", "NULL"));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[4]));
-                    sb.AppendLine(");");
-
-                    wr.Append(sb.ToString());
-                    wr.Append(Environment.NewLine);
-
-
-                    if (!lineArr[5].Equals("\\N"))
-                    {
-                        var s = lineArr[5].Split(',');
-                        foreach (var item in s)
-                        {
-
-                            sb = new StringBuilder();
-                            sb.AppendLine("INSERT IGNORE INTO knownfor (title_id, name_id) VALUES (");
-                            var titleId = (wrapOrNull(item));
-                            sb.AppendLine(titleId);
-                            sb.AppendLine(", ");
-                            sb.AppendLine(nameId);
-                            sb.AppendLine(");");
-                            wr.Append(sb.ToString());
-                            wr.Append(Environment.NewLine);
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText(ex.Message);
-                }
-
-                if (counter == maxLines)
-                {
-                    wr.AppendLine("COMMIT;");
-                    ret = ret && await Execute(wr.ToString());
-                    totalCount = totalCount + counter;
-                    counter = 0;
-                    wr = new StringBuilder();
-                    if (progress != null)
-                    {
-                        var percent = percentCalc.CalculatePercent(totalCount, orglines.Count());
-                        SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(totalCount)}/{StringUtilities.FormatBigNumbers(orglines.Count())} - {percent}%) {name} , maxLines: {maxLines} ");
-                        try
-                        {
-                            if (progress != null) progress.Report(percent);
-                        }
-                        catch (Exception ex)
-                        { }
-                        await Task.Delay(1);
-                    }
-                    if (!ret)
-                    {
-                        return ret;
-                    }
-                }
-
-            }
-
-            wr.AppendLine("COMMIT;");
-            wr.AppendLine("SET autocommit=1;");
-            wr.AppendLine($"ALTER TABLE {tableName} ADD PRIMARY KEY (title_id);");
-            ret = ret && await Execute(wr.ToString());
-            SetStatusLabelText($"[DONE] (100%) {name}");
-            return ret;
-
-
-        }
-        public async Task<bool> processCrew(int maxLines, string name, List<string> orglines, IProgress<int> progress = null)
-        {
-
-            bool ret = false;
-            StringBuilder wr = new StringBuilder();
-
-            wr.AppendLine("SET autocommit=0;");
-
-            orglines.RemoveAt(0);
-            wr.AppendLine($"DROP TABLE IF EXISTS {"directors"};");
-            wr.AppendLine($"DROP TABLE IF EXISTS {"writers"};");
-
-            wr.AppendLine($"CREATE TABLE {"directors"} (id varchar(20) NOT NULL,name_id varchar(20)  NOT NULL, title_id varchar(20)  NOT NULL);");
-            wr.AppendLine(Environment.NewLine);
-            wr.AppendLine("COMMIT;");
-
-            wr.AppendLine($"CREATE TABLE {"writers"} (name_id varchar(20)  NOT NULL, title_id varchar(20)  NOT NULL);");
-            wr.AppendLine("COMMIT;");
-
-            wr.AppendLine("ALTER TABLE directors ADD PRIMARY KEY (name_id, title_id);");
-            wr.AppendLine("ALTER TABLE writers ADD PRIMARY KEY (name_id, title_id);");
-            wr.AppendLine("COMMIT;");
-            ret = await Execute(wr.ToString());
-
-            wr = new StringBuilder();
-
-            int totalCount = 0;
-            int counter = 0;
-            foreach (var line in orglines)
-            {
-                StringBuilder sb = new StringBuilder();
-
-                counter++;
-
-                String[] lineArr = line.Split("\t");
-                string titleId = wrapOrNull(lineArr[0]);
-                try
-                {
-
-                    foreach (var s in lineArr[1].Split(","))
-                    {
-                        if (s.Length < 3) continue;
-                        string nameId = s;
-                        sb = new StringBuilder();
-                        sb.AppendLine("INSERT IGNORE INTO directors (title_id,name_id) VALUES (");
-                        sb.AppendLine(wrapOrNull((lineArr[0])));
-                        sb.AppendLine(", ");
-                        sb.AppendLine(wrapOrNull(nameId));
-                        sb.AppendLine(");");
-                        wr.AppendLine(sb.ToString());
-                        wr.AppendLine();
-                    }
-
-
-
-                    foreach (var s in lineArr[2].Split(","))
-                    {
-                        if (s.Length < 3) continue;
-                        sb = new StringBuilder();
-                        sb.AppendLine("INSERT IGNORE INTO writers (title_id, name_id) VALUES (");
-                        var nameId = wrapOrNull(s);
-                        sb.AppendLine(titleId);
-                        sb.AppendLine(", ");
-                        sb.AppendLine(nameId);
-                        sb.AppendLine(");");
-                        wr.AppendLine(sb.ToString());
-                        wr.AppendLine();
-                    }
-
-                    wr.Append(sb.ToString());
-                    wr.Append(Environment.NewLine);
-
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText(ex.Message);
-                }
-
-                if (counter == maxLines)
-                {
-                    wr.AppendLine("COMMIT;");
-                    ret = ret && await Execute(wr.ToString());
-                    totalCount = totalCount + counter;
-                    counter = 0;
-                    wr = new StringBuilder();
-                    if (progress != null)
-                    {
-                        var percent = percentCalc.CalculatePercent(totalCount, orglines.Count());
-                        SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(totalCount)}/{StringUtilities.FormatBigNumbers(orglines.Count())} - {percent}%) {name}");
-                        try
-                        {
-                            if (progress != null) progress.Report(percent);
-                        }
-                        catch (Exception ex)
-                        { }
-                        await Task.Delay(1);
-                    }
-                    if (!ret)
-                    {
-                        return ret;
-                    }
-                }
-
-            }
-
-            wr.AppendLine("COMMIT;");
-            wr.AppendLine("SET autocommit=1;");
-
-
-
-
-            ret = ret && await Execute(wr.ToString());
-            SetStatusLabelText($"[DONE] (100%) {name}");
-            return ret;
-
-
-        }
-
-        public async Task<bool> processPrincipals(int maxLines, string name, List<string> orglines, IProgress<int> progress = null)
-        {
-            string tableName = "principals";
-            bool ret = false;
-            StringBuilder wr = new StringBuilder();
-
-            wr.AppendLine("SET autocommit=0;");
-            if (orglines.First().Contains("tconst"))
-            {
-                orglines.RemoveAt(0);
-                wr.AppendLine($"DROP TABLE IF EXISTS {tableName};");
-
-                wr.AppendLine($"CREATE TABLE {tableName} (title_id varchar(20) NOT NULL,ordering int, name_id varchar(20) NOT NULL,  category varchar(255), job text, characters text);");
-                wr.AppendLine(Environment.NewLine);
-                wr.AppendLine("COMMIT;");
-
-                wr.AppendLine($"ALTER TABLE {tableName} ADD PRIMARY KEY (title_id, ordering);");
-                //     wr.AppendLine($"ALTER TABLE {tableName} ADD CONSTRAINT fk_principals_title_id FOREIGN KEY (title_id) REFERENCES titles(id) ON DELETE CASCADE;");
-                //     wr.AppendLine($"ALTER TABLE {tableName} ADD CONSTRAINT fk_principals_name_id FOREIGN KEY (name_id) REFERENCES names(id) ON DELETE CASCADE;");
-                wr.AppendLine("COMMIT;");
-
-                ret = await Execute(wr.ToString());
-            }
-            wr = new StringBuilder();
-            /// wr.AppendLine("SET autocommit=0;");
-
-
-            int totalCount = 0;
-            int counter = 0;
-            foreach (var line in orglines)
-            {
-                counter++;
-
-                String[] lineArr = line.Split("\t");
-                try
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine($"INSERT INTO {tableName} (title_id,  ordering, name_id, category,job, characters) VALUES (");
-                    sb.AppendLine(wrapOrNull(lineArr[0]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[1]);
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[2]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[3]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[4]));
-                    sb.AppendLine(", ");
-                    String character = lineArr[5];
-                    character = character.Replace("[", "");
-                    character = character.Replace("\\", "");
-                    character = character.Replace("\"", "");
-                    character = character.Replace("]", "");
-                    sb.AppendLine(wrapOrNull(character));
-                    sb.AppendLine(");");
-
-                    wr.Append(sb.ToString());
-                    wr.Append(Environment.NewLine);
-
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText(ex.Message);
-                }
-
-                if (counter == maxLines)
-                {
-                    wr.AppendLine("COMMIT;");
-                    ret = ret && await Execute(wr.ToString());
-                    totalCount = totalCount + counter;
-                    counter = 0;
-                    wr = new StringBuilder();
-                    if (progress != null)
-                    {
-                        var percent = percentCalc.CalculatePercent(totalCount, orglines.Count());
-                        SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(totalCount)}/{StringUtilities.FormatBigNumbers(orglines.Count())} - {percent}%) {name}");
-                        try
-                        {
-                            if (progress != null) progress.Report(percent);
-                        }
-                        catch (Exception ex)
-                        { }
-                        await Task.Delay(1);
-                    }
-                    if (!ret)
-                    {
-                        return ret;
-                    }
-                }
-
-            }
-
-            wr.AppendLine("COMMIT;");
-            wr.AppendLine("SET autocommit=1;");
-
-
-
-
-            ret = ret && await Execute(wr.ToString());
-            SetStatusLabelText($"[DONE] (100%) {name}");
-            return ret;
-
-
-        }
-
-        public async Task<bool> processTitleLanguage(int maxLines, string name, List<string> orglines, IProgress<int> progress = null, HugeFileCounter hugeFileCounter = null)
-        {
-            string tableName = "titles_lang";
-            bool ret = false;
-            StringBuilder wr = new StringBuilder();
-
-            wr.AppendLine("SET autocommit=0;");
-            if (orglines.First().Contains("titleId"))
-            {
-                orglines.RemoveAt(0);
-                wr.AppendLine($"DROP TABLE IF EXISTS {tableName};");
-
-                wr.AppendLine(@$"CREATE TABLE {tableName}   (title_id varchar(20) NOT NULL, 
-                    ordering int, title text NOT NULL, 
-                    region varchar(5), language varchar(5), 
-                    types varchar(40),  attributes varchar(255), isOriginalTitle boolean); ");
-                wr.AppendLine(Environment.NewLine);
-                wr.AppendLine("COMMIT;");
-
-                wr.AppendLine($"ALTER TABLE {tableName} ADD PRIMARY KEY (title_id, ordering);");
-                
-          //      wr.AppendLine($"ALTER TABLE {tableName} ADD CONSTRAINT fk_titles_lang_title_id FOREIGN KEY (title_id) REFERENCES titles(id) ON DELETE CASCADE;");
-                
-                wr.AppendLine("COMMIT;");
-
-                ret = await Execute(wr.ToString());
-            }
-            wr = new StringBuilder();
-            /// wr.AppendLine("SET autocommit=0;");
-
-
-            int totalCount = 0;
-            int counter = 0;
-            foreach (var line in orglines)
-            {
-                counter++;
-
-                String[] lineArr = line.Split("\t");
-                try
-                {
-                    StringBuilder sb = new StringBuilder();
-                    
-                    sb.AppendLine("INSERT IGNORE INTO titles_lang (title_id, ordering, title, region, ");
-                    sb.AppendLine("language, types, attributes, isOriginalTitle) VALUES (");
-                    sb.AppendLine(wrapOrNull(lineArr[0]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[1]);
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[2]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[3]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[4]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[5]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(wrapOrNull(lineArr[6]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[7]);
-                    sb.AppendLine(");");
-
-                    
-                    wr.Append(sb.ToString());
-                    wr.Append(Environment.NewLine);
-
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText(ex.Message);
-                }
-
-                if (counter == maxLines)
-                {
-                    wr.AppendLine("COMMIT;");
-                    ret = ret && await Execute(wr.ToString());
-                    totalCount = totalCount + counter;
-                 
-                    wr = new StringBuilder();
-                    if (progress != null)
-                    {
-                        var percent = percentCalc.CalculatePercent(hugeFileCounter.currentCount, hugeFileCounter.totalCount);
-                   //     SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(totalCount)}/{StringUtilities.FormatBigNumbers(orglines.Count())} - {percent}%) {name}");
-                        SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(hugeFileCounter.currentCount)}/{StringUtilities.FormatBigNumbers(hugeFileCounter.totalCount)} - {percent}%) {name}");
-                        try
-                        {
-                            if (progress != null) progress.Report(percent);  await Task.Delay(5); 
-                        }
-                        catch (Exception ex)
-                        { }
-                         counter = 0;
-                    }
-                    if (!ret)
-                    {
-                        return ret;
-                    }
-                }
-
-            }
-
-            wr.AppendLine("COMMIT;");
-            wr.AppendLine("SET autocommit=1;");
-
-
-
-
-            ret = ret && await Execute(wr.ToString());
-            SetStatusLabelText($"[DONE] (100%) {name}");
-            return ret;
-
-
-        }
-
-
-        public async Task<bool> processRatings(int maxLines, string name, List<string> orglines, IProgress<int> progress = null)
-        {
-            string tableName = "ratings";
-            bool ret = false;
-            StringBuilder wr = new StringBuilder();
-
-            wr.AppendLine("SET autocommit=0;");
-            wr.AppendLine($"DROP TABLE IF EXISTS {tableName};");
-            wr.AppendLine($"CREATE TABLE {tableName} (id varchar(20) NOT NULL, averageRating float NOT NULL, numVotes int);");
-            wr.AppendLine(Environment.NewLine);
-            wr.AppendLine("COMMIT;");
-
-            ret = await Execute(wr.ToString());
-            wr = new StringBuilder();
-            /// wr.AppendLine("SET autocommit=0;");
-
-            orglines.RemoveAt(0);
-            int totalCount = 0;
-            int counter = 0;
-            foreach (var line in orglines)
-            {
-                counter++;
-
-                String[] lineArr = line.Split("\t");
-                try
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine("INSERT INTO ratings (id, averageRating, numVotes) VALUES (");
-                    sb.AppendLine(wrapOrNull(lineArr[0]));
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[1]);
-                    sb.AppendLine(", ");
-                    sb.AppendLine(lineArr[2]);
-                    sb.AppendLine(");");
-
-                    wr.Append(sb.ToString());
-                    wr.Append(Environment.NewLine);
-
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText(ex.Message);
-                }
-
-                if (counter == maxLines)
-                {
-                    wr.AppendLine("COMMIT;");
-                    ret = ret && await Execute(wr.ToString());
-                    totalCount = totalCount + counter;
-                    counter = 0;
-                    wr = new StringBuilder();
-                    if (progress != null)
-                    {
-                        var percent = percentCalc.CalculatePercent(totalCount, orglines.Count());
-                        SetStatusLabelText($"[INSERT] ({StringUtilities.FormatBigNumbers(totalCount)}/{StringUtilities.FormatBigNumbers(orglines.Count())} - {percent}%) {name}");
-                        try
-                        {
-                            if (progress != null) progress.Report(percent);
-                        }
-                        catch (Exception ex)
-                        { }
-                        await Task.Delay(1);
-                    }
-                    if (!ret)
-                    {
-                        return ret;
-                    }
-                }
-
-            }
-
-            wr.AppendLine("COMMIT;");
-            wr.AppendLine("SET autocommit=1;");
-            wr.AppendLine($"ALTER TABLE {tableName} ADD PRIMARY KEY (id);");
-            ret = ret && await Execute(wr.ToString());
-            SetStatusLabelText($"[DONE] (100%) {name}");
-            return ret;
-
-
-        }
-        private static String wrapOrNull(String s)
-        {
-            if (s.Equals("\\N"))
-            {
-                return "NULL";
-            }
-            else
-            {
-                return "\"" + s.Replace("\"", "'") + "\"";
-            }
-        }
-        #endregion
 
         private async Task<List<Item>> GetItemsFrom(string name, List<string> orglines, LiteDBController contr, List<string> localImdbIds = null, IProgress<int> progress = null)
         {
@@ -1232,7 +534,7 @@ namespace Kolibri.net.SilverScreen.Forms
             List<string> lines = orglines;
             long totalLength = lines.Count();
 
-            if (!TestConnection())
+            if (!(await TestConnection()))
             {
                 SetStatusLabelText("[DBFAULT] Ingen fungerende databasekobling funnet");
                 return ret;
@@ -1330,7 +632,7 @@ namespace Kolibri.net.SilverScreen.Forms
                             lines = orglines.Take<string>(new Range(localImdbIds.Count(), orglines.Count() - localImdbIds.Count())).ToList();
 
 
-                            Item item = _liteDB.FindItem(arr[0]);
+                            Item item = _contr.FindItem(arr[0]);
                             if (item == null) { item = itemservice.Get(arr[0]); }
                             ;
                             if (item == null)
@@ -1424,7 +726,7 @@ namespace Kolibri.net.SilverScreen.Forms
             List<string> lines = orglines;
             long totalLength = lines.Count();
 
-            if (!TestConnection())
+            if (!(await TestConnection()))
             {
                 SetStatusLabelText("[DBFAULT] Ingen fungerende databasekobling funnet");
                 return ret;
@@ -1515,7 +817,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         lines = orglines.Take<string>(new Range(localImdbIds.Count(), orglines.Count() - localImdbIds.Count())).ToList();
 
 
-                        Item item = _liteDB.FindItem(arr[0]);
+                        Item item = _contr.FindItem(arr[0]);
                         if (item == null) { item = itemservice.Get(arr[0]); }
                         ;
                         if (item == null)
@@ -1602,6 +904,7 @@ namespace Kolibri.net.SilverScreen.Forms
         #region Paralell handling
         public async void ReadAndInsert(string filePath, IProgress<int> progress)
         {
+            _cancel = false;
             // Tellere
             long totalLines = File.ReadLines(filePath).LongCount(); // Get total lines
             long processedLines = 0;
@@ -1713,55 +1016,14 @@ namespace Kolibri.net.SilverScreen.Forms
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
-        {
+        { SetStatusLabelText($"{(sender as Button).Text} clicked");
             _cancel = true;
         }
-
-        private async void buttonClearDB_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                var info = new FileInfo(_contr.ConnectionString.Filename);
-                var res = MessageBox.Show($"Are you sure you want to clear out {info.Name} ( {FileUtilities.GetFilesize(info.Length)})?\r\nThis action will delete all information stored in the TEMP Database, not the data from your repository.", "Clear out data from TEMP DB", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-                if (res == DialogResult.OK)
-                {
-                    if (info.Exists)
-                    {
-                        _contr.Dispose();
-                        await Task.Delay(10);
-                        info.Delete();
-                        _contr = new LiteDBController(info, false, false);
-                        Init();
-                    }
-                }
-            }
-
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, ex.GetType().Name);
-            }
-        }
-
-        private void buttonClearAll_Click(object sender, EventArgs e)
-        {
-
-            try
-            {
-                buttonClearDB_Click(null, null);
-                FileUtilities.DeleteDirectory(_destinationDir.FullName);
-                _lineDic.Clear();
-                Init();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, ex.GetType().Name);
-                Init();
-            }
-        }
-
+         
 
         private void buttonCreateSchemas_Click(object sender, EventArgs e)
         {
+            _cancel = false;
             string commentLine = $"{Environment.NewLine}{"/".PadRight(60, '*')}{"/"}{Environment.NewLine}";
             try
             {
@@ -1801,16 +1063,16 @@ END{commentLine}";
 
         private void buttonTestConnection_Click(object sender, EventArgs e)
         {
-            TestConnection();
+            Task.Run(async () => await TestConnection(true));
         }
 
-        private bool TestConnection(bool verbose = false)
+        private async Task<bool> TestConnection(bool verbose = false)
         {
             bool ret = false;
             try
             {
                 string sql = "select 1 = 1;";
-                var table = MySQLController.GetData(_userSettings.DefaultConnection, sql);
+                var table = _mySqlTableOperationsController.GetData(sql);
                 if (table != null)
                 {
                     MySqlConnection conn = new MySqlConnection(_userSettings.DefaultConnection);
@@ -1819,7 +1081,6 @@ END{commentLine}";
                     {
                         //MessageBox.Show(text, $"Success");
                         SetStatusLabelText($"[SUCCESS] {text}");
-
                         Kolibri.net.Common.FormUtilities.Forms.SplashScreen.Splash(text, 2000, Common.FormUtilities.Forms.TypeOfMessage.Success);
                     }
                     ret = true;
@@ -1836,6 +1097,7 @@ END{commentLine}";
 
         private void buttonCreateDapperClasses_Click(object sender, EventArgs e)
         {
+            _cancel = false;
             string ns = "ImdbDataFiles";
             try
             {
@@ -1860,7 +1122,7 @@ END{commentLine}";
 
         private async void buttonInsertFromLiteDBToMySQLDB_Click(object sender, EventArgs e)
         {
-
+            _cancel = false;
             try
             {
                 IProgress<int> process = percentCalc.InitProgressBar(toolStripProgressBar1);
@@ -1868,18 +1130,19 @@ END{commentLine}";
                 int counter = 0;
                 ItemService itemservice = new ItemService(_userSettings.DefaultConnection);
                 DapperBulkInsertController episodeController = new DapperBulkInsertController(_userSettings.DefaultConnection);
-                List<Item> list = _liteDB.FindAllItems().GetAwaiter().GetResult().ToList();
+                List<Item> list = _contr.FindAllItems().GetAwaiter().GetResult().ToList();
+                richTextBox1.Focus();
                 foreach (var item in list)
                 {
                     try
                     {
                         counter++;
                         item.Ratings = null;
-                        if (_cancel) return;
+                        if (_cancel) { ProgressBarHelper.InitProgressBar(toolStripProgressBar1); ProgressBarHelper.CalculatePercent(0, 0);  break; }
                         string cat = "[INSERT]";
                         if (!itemservice.Add(item)) { cat = "[ERROR]"; }
 
-                        SetStatusLabelText($"{cat} Inserting {nameof(Item)} {item.ImdbId} - {item.Title} ({item.Type})");
+                        SetStatusLabelText($"{cat} UPserting  {counter}/{list.Count()} - ({item.Type}) {nameof(Item)} {item.ImdbId} - {item.Title} ");
                         await Task.Delay(4);
                         process.Report(percentCalc.CalculatePercent(counter, list.Count()));
                     }
@@ -1892,6 +1155,12 @@ END{commentLine}";
 
                 // var res=          await episodeController.BulkInsert(list.ToList());
                 SetStatusLabelText($"Inserting {nameof(Item)} complete, counted {counter};");
+                DataSet ds = new DataSet();
+                DataTable dt= await _mySqlTableOperationsController.GetData($"select * from  {nameof(Item)}");
+                var rowCount = await _mySqlTableOperationsController.GetRowCountFromTable(nameof(Item));
+                if (dt.DataSet == null) { dt.TableName = "FindAllItems"; ds.Tables.Add(dt); }
+
+                var res = Visualizers.VisualizeDataSet($"{nameof(Item)} {StringUtilities.FormatBigNumbers(rowCount)}", ds, this.Size);
 
             }
             catch (Exception ex)
@@ -1901,5 +1170,70 @@ END{commentLine}";
             }
         }
         #endregion
+
+        #region open subform
+        private void OpenNewFormOnNewThread()
+        {
+            Application.Run(new IMDbDataFilesSubForm(_currentFileInfo.FullName, _userSettings));
+        }
+        #endregion
+
+        private async void buttonPrimaryKeys_Click(object sender, EventArgs e)
+        {
+            _cancel = false;
+            bool ret = false;
+            if (await TestConnection(false))
+            {
+                try
+                {
+                    ret = await _mySqlTableOperationsController.PrincipalsCreateTable(false, true);
+                }
+                catch (AggregateException ex)
+                {
+                    SetStatusLabelText("PrincipalsCreateTable Private Keys failed: " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    SetStatusLabelText("PrincipalsCreateTable Private Keys failed: " + ex.Message);
+                }
+
+                try
+                {
+                    ret = await _mySqlTableOperationsController.TitleCreateTable(false, true);
+                }
+                catch ( AggregateException ex)
+                {
+                    ret = false;
+                    SetStatusLabelText("TitleCreateTable Private Keys failed: "+ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    ret = false;
+                    SetStatusLabelText("TitleCreateTable Private Keys failed: " + ex.Message);
+                }
+
+              
+
+                try
+                {
+                    ret = await _mySqlTableOperationsController.CrewCreateTable(false, true);
+                }
+                catch (AggregateException ex)
+                {
+                    SetStatusLabelText("CrewCreateTable Private Keys failed: " + ex.Message);
+                }
+                catch ( Exception ex)
+                {
+                    SetStatusLabelText("CrewCreateTable Private Keys failed: " + ex.Message);
+                }
+                SetStatusLabelText("Routine for Primary Keys finished.");
+                
+                //ret = ret && await _mySqlTableOperationsController.EpisodesCreateTable(false, true);               
+                //ret = ret && await _mySqlTableOperationsController.RatingsCreateTable(false, true);
+                //ret = ret && await _mySqlTableOperationsController.BasicsCreateTable(false, true);
+                //TitleLanguage
+
+            }
+        }
     }
 }
