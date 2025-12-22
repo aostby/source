@@ -1,4 +1,5 @@
-﻿using Kolibri.Common.Utilities;
+﻿using Kolibri.net.Common.Images;
+using Kolibri.net.Common.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11304.174
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.C64Sorter", "Kolibri.net.C64Sorter\Kolibri.net.C64Sorter.csproj", "{9E5F64EE-21FF-4183-AFFC-FC333DAA7A97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReferencedProjects", "ReferencedProjects", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.Utilities", "..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj", "{A961FE0D-835D-87A2-F09C-9B37B3F4E0CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTP Connect", "FTP Connect\FTP Connect.csproj", "{C9FC5BA8-43ED-4C43-8273-60C096470771}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.Formutilities", "..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj", "{552544FE-843C-60DA-FDAD-AEB1C04D18F7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9E5F64EE-21FF-4183-AFFC-FC333DAA7A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E5F64EE-21FF-4183-AFFC-FC333DAA7A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E5F64EE-21FF-4183-AFFC-FC333DAA7A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E5F64EE-21FF-4183-AFFC-FC333DAA7A97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A961FE0D-835D-87A2-F09C-9B37B3F4E0CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A961FE0D-835D-87A2-F09C-9B37B3F4E0CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A961FE0D-835D-87A2-F09C-9B37B3F4E0CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A961FE0D-835D-87A2-F09C-9B37B3F4E0CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FC5BA8-43ED-4C43-8273-60C096470771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FC5BA8-43ED-4C43-8273-60C096470771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FC5BA8-43ED-4C43-8273-60C096470771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FC5BA8-43ED-4C43-8273-60C096470771}.Release|Any CPU.Build.0 = Release|Any CPU
+		{552544FE-843C-60DA-FDAD-AEB1C04D18F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{552544FE-843C-60DA-FDAD-AEB1C04D18F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{552544FE-843C-60DA-FDAD-AEB1C04D18F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{552544FE-843C-60DA-FDAD-AEB1C04D18F7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A961FE0D-835D-87A2-F09C-9B37B3F4E0CB} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{552544FE-843C-60DA-FDAD-AEB1C04D18F7} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D1B1F688-7621-49DB-BB1A-4EA9175F71A1}
+	EndGlobalSection
+EndGlobal

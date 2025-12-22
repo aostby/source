@@ -1,5 +1,5 @@
 using System.Diagnostics;
-     using Kolibri.Common.Utilities;
+     using Kolibri.net.Common.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
  
 using System.Reflection;
+using Kolibri.net.Common.Images;
 namespace Kolibri.SortPictures.Forms
 {
   
@@ -222,13 +223,13 @@ namespace Kolibri.SortPictures.Forms
 
                             text = $"Kopierer filen {info.Name} fra {imgFile.DirectoryName} til {info.DirectoryName}";
                         }
-                        else if (radioButtonFlytt.Checked)
+                        else if (radioButtonFlytt.Checked )
                         {
                             try
                             {
                                 text = $"Flytter filen {info.Name} fra {imgFile.DirectoryName} til {info.DirectoryName}";
-                                if (File.Exists(info.FullName)) { File.Delete(info.FullName); }
-                                System.IO.File.Move(imgFile.FullName, info.FullName);
+                            //if (File.Exists(info.FullName)) { File.Delete(info.FullName); }
+                            System.IO.File.Move(imgFile.FullName, info.FullName, true);
 
                             }
                             catch (Exception ex)

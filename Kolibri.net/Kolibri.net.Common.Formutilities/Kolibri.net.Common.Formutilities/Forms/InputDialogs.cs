@@ -25,7 +25,7 @@ namespace Kolibri.net.Common.FormUtilities.Forms
             buttonCancel.DialogResult = DialogResult.Cancel;
             buttonOk.Click += new EventHandler(OKbuttonClick);
 
-            FastColoredTextBoxNS.FastColoredTextBox textBox = new  FastColoredTextBoxNS.FastColoredTextBox();
+            FastColoredTextBoxNS.FastColoredTextBox textBox = new FastColoredTextBoxNS.FastColoredTextBox();
             textBox.Multiline = true;
             textBox.Enabled = true;
             textBox.Text = value;
@@ -245,7 +245,7 @@ namespace Kolibri.net.Common.FormUtilities.Forms
         }
 
         public static DialogResult ChooseListBox(string title, string promptText, DataTable arr, ref object value, bool multiSelect = false, string imageLinkColumn = null)
-        { 
+        {
 
             Form form = new Form();
             System.Windows.Forms.Label label = new System.Windows.Forms.Label();
@@ -302,7 +302,7 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
             listviewArr.Items[0].Selected = true;
             listviewArr.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-            if(!string.IsNullOrEmpty(imageLinkColumn))
+            if (!string.IsNullOrEmpty(imageLinkColumn))
                 listviewArr.SelectedIndexChanged += ListviewArr_SelectedIndexChanged;
 
             form.Text = title;
@@ -364,20 +364,20 @@ namespace Kolibri.net.Common.FormUtilities.Forms
         }
 
         private static void ListviewArr_SelectedIndexChanged(object sender, EventArgs e)
-        { 
+        {
             try
             {
                 ListView view = sender as ListView;
                 if (!view.Visible) return;
                 ListViewItem value = view.SelectedItems[0];
-            
+
                 string imageUrl = $"{value.Tag}";
                 if (imageUrl != null)
                 {
                     try
                     {
                         Image img = ImageUtilities.GetImageFromUrl(imageUrl);
-                     SplashScreen.Splash(String.Empty, 1000, img);
+                        SplashScreen.Splash(String.Empty, 1000, img);
                     }
                     catch (Exception ex)
                     {
@@ -385,7 +385,7 @@ namespace Kolibri.net.Common.FormUtilities.Forms
                 }
             }
             catch (Exception ex)
-            { 
+            {
             }
         }
 

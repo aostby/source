@@ -131,7 +131,7 @@ namespace Kolibri.net.Common.FormUtilities
                     {
                         if (view.DataSource.GetType().Equals(typeof(DataTable))) ;
                         table = view.DataSource as DataTable;
-                    
+
 
                         if (table == null)
                         {
@@ -150,11 +150,11 @@ namespace Kolibri.net.Common.FormUtilities
                             ds.Tables.Add(table);
                         }
                     }
-                }
 
 
-                if (table != null)
-                {/*
+
+                    if (table != null)
+                    {/*
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     saveFileDialog.FileName = table.TableName + ".xml";
                     if (saveFileDialog.ShowDialog() == DialogResult.OK && saveFileDialog.FileName != "")
@@ -163,14 +163,17 @@ namespace Kolibri.net.Common.FormUtilities
                         Utilities.FileUtilities.OpenFolderHighlightFile(new FileInfo(saveFileDialog.FileName));
                     }
                     */
-                    FileUtilities.ExportToFormats(table);
+                        FileUtilities.ExportToFormats(table);
+                    }
+                    e.Handled = true;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
 
-            } e.Handled = true;
+            }
+            
         }
         private static void VisualizeDataSet_SelectionChanged(object sender, EventArgs e)
         {

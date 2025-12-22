@@ -267,25 +267,25 @@ namespace Kolibri.Common.Utilities
             return MyBarCode.Image.ToBitmap<Image>();
         }
 
-        public static Image GetBarcodePDF417(Uri uri, Color foreColor, Color backColor)
-        {
-            //using IronBarCode;
-            //using System.Drawing;
-            // Fluent API for Barcode Image generation.
-            /*IronBarCode.License.LicenseKey = "IRONBARCODE-MYLICENSE-KEY-1EF01";
-            IronBarCode.License.LicenseKey = "IRONBARCODE-MYLICENSE-KEY-1EF01-RENEW.SUPPORT.01.JAN.2050";*/
-            string MyValue = uri.AbsoluteUri;
-            var BarcodeBmp = IronBarCode.BarcodeWriter.CreateBarcode(MyValue, BarcodeEncoding.PDF417).ChangeBarCodeColor(foreColor).ChangeBackgroundColor(backColor).ResizeTo(500, 300).SetMargins(10).ToBitmap();
-            //return ImageUtilities. BarcodeBmp.ToBitmap<Bitmap>();
-            //return (Bitmap) BarcodeBmp.ToBitmap<Image>();
-            System.Drawing.Bitmap btm;
-            using (MemoryStream stream = BarcodeBmp.GetStream())
-            {
-                btm = (Bitmap) Image.FromStream(stream) ; 
-            }
-            return btm; 
+        //public static Image GetBarcodePDF417(Uri uri, Color foreColor, Color backColor)
+        //{
+        //    //using IronBarCode;
+        //    //using System.Drawing;
+        //    // Fluent API for Barcode Image generation.
+        //    /*IronBarCode.License.LicenseKey = "IRONBARCODE-MYLICENSE-KEY-1EF01";
+        //    IronBarCode.License.LicenseKey = "IRONBARCODE-MYLICENSE-KEY-1EF01-RENEW.SUPPORT.01.JAN.2050";*/
+        //    string MyValue = uri.AbsoluteUri;
+        //    var BarcodeBmp = IronBarCode.BarcodeWriter.CreateBarcode(MyValue, BarcodeEncoding.PDF417).ChangeBarCodeColor(foreColor).ChangeBackgroundColor(backColor).ResizeTo(500, 300).SetMargins(10).ToBitmap();
+        //    //return ImageUtilities. BarcodeBmp.ToBitmap<Bitmap>();
+        //    //return (Bitmap) BarcodeBmp.ToBitmap<Image>();
+        //    System.Drawing.Bitmap btm;
+        //    using (MemoryStream stream = BarcodeBmp.GetStream())
+        //    {
+        //        btm = (Bitmap) Image.FromStream(stream) ; 
+        //    }
+        //    return btm; 
 
-        }
+        //}
 
         public static Image GetBarcodeQR(Uri url, FileInfo bcLogo)
         {

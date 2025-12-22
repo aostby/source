@@ -10,8 +10,8 @@ namespace Kolibri.net.SilverScreen.Entities
     {
         public long totalCount { get; set; }
         public long currentCount { get; set; }
-
         public FileInfo file { get; set; }  
 
+        public string Name{ get{ return Path.GetFileNameWithoutExtension(file.FullName); } }
     }
 }

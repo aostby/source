@@ -32,7 +32,8 @@ namespace Kolibri.net.Common.Utilities
                 if (regTabell == null)
                 {
                     regTabell = FileInfoTable(fileVersion);
-                };
+                }
+                ;
 
                 regTabell.Rows.Add(FileInfoAsDataRow(info, fileVersion));
             }
@@ -202,7 +203,8 @@ namespace Kolibri.net.Common.Utilities
                 if (regTabell == null)
                 {
                     regTabell = FileInfoTable(fileVersion);
-                };
+                }
+                ;
 
                 regTabell.Rows.Add(FileInfoAsDataRow(info, fileVersion));
             }
@@ -372,19 +374,19 @@ namespace Kolibri.net.Common.Utilities
             return ByteUtilities.GetByteSize(info.Length);
         }
 
-        
-            /// <summary>
-            /// Counts the number of lines in a text file efficiently.
-            /// </summary>
-            /// <param name="filePath">The path to the text file.</param>
-            /// <returns>The total number of lines in the file.</returns>
-            public static long GetLineCountInHugeFile(string filePath)
-            {
-                // File.ReadLines returns an IEnumerable<string> which allows lazy enumeration.
-                // Enumerable.LongCount() counts the elements without loading them all into memory.
-                return File.ReadLines(filePath).LongCount();
-            }
-        
+
+        /// <summary>
+        /// Counts the number of lines in a text file efficiently.
+        /// </summary>
+        /// <param name="filePath">The path to the text file.</param>
+        /// <returns>The total number of lines in the file.</returns>
+        public static long GetLineCountInHugeFile(string filePath)
+        {
+            // File.ReadLines returns an IEnumerable<string> which allows lazy enumeration.
+            // Enumerable.LongCount() counts the elements without loading them all into memory.
+            return File.ReadLines(filePath).LongCount();
+        }
+
 
 
         private static void DeleteFiles(FileInfo[] fileInfoListe)
@@ -479,7 +481,8 @@ namespace Kolibri.net.Common.Utilities
             return safe;
         }
 
-        public static string AutomaticFilenameIfExists(string fullPath) {
+        public static string AutomaticFilenameIfExists(string fullPath)
+        {
             int count = 1;
 
             string fileNameOnly = Path.GetFileNameWithoutExtension(fullPath);
@@ -598,7 +601,8 @@ namespace Kolibri.net.Common.Utilities
             FileUtilities.StartExecuteCommandFile(batchInfo.FullName);
         }
 
-        public static void Start(Uri url) {
+        public static void Start(Uri url)
+        {
             Process.Start(new ProcessStartInfo(url.AbsoluteUri) { UseShellExecute = true });
         }
         public static void Start(FileInfo info)
@@ -674,7 +678,8 @@ namespace Kolibri.net.Common.Utilities
             { }
             return File.Exists(path);
         }
-        public static bool DownloadFile(Uri url, FileInfo destination) {
+        public static bool DownloadFile(Uri url, FileInfo destination)
+        {
             bool ret = false;
             // Try downloading file
             try
@@ -684,7 +689,7 @@ namespace Kolibri.net.Common.Utilities
                 {
 
                     // Add bearer token token to request header
-                //    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + in_AccessToken);
+                    //    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + in_AccessToken);
 
                     // Send the HTTP GET request
                     System.Net.Http.HttpResponseMessage response = client.GetAsync(url).Result;
@@ -725,7 +730,7 @@ namespace Kolibri.net.Common.Utilities
             }
             return ret;
         }
-   
+
 
         public static string DownloadUrlToString(string url, Encoding enc)
         {
@@ -791,10 +796,16 @@ namespace Kolibri.net.Common.Utilities
             return files;
         }
 
-        public static List<string> GetFiles(DirectoryInfo path, List<string > extensions, SearchOption searchOption) {
+        public static List<string> GetFiles(DirectoryInfo path, List<string> extensions, SearchOption searchOption)
+        {
+            //var searchFiles = Directory.EnumerateFiles(path.FullName, "*.*", searchOption)
+            //                         .Where(file => extensions.ToArray()
+            //                          .Contains(Path.GetExtension(file) ));
+
             var searchFiles = Directory.EnumerateFiles(path.FullName, "*.*", searchOption)
-                                     .Where(file => extensions.ToArray()
-                                      .Contains(Path.GetExtension(file)));
+    .Where(file => extensions
+        .Select(e => e.ToLowerInvariant())
+        .Contains(Path.GetExtension(file).ToLowerInvariant()));
             return searchFiles.ToList<string>();
         }
 
@@ -836,7 +847,7 @@ namespace Kolibri.net.Common.Utilities
         /// This can be used directly to the FileDialog class Filter Property.
         /// </summary>
         /// <returns>A Filter formated string to be used as filter for File dialogs (open/save) </returns>
-        public static string GetFileDialogFilter(string[] extensions, bool allFiles=false)
+        public static string GetFileDialogFilter(string[] extensions, bool allFiles = false)
         {
             Dictionary<string, string> dic = new Dictionary<string, string>();
             foreach (string item in extensions)
@@ -844,8 +855,9 @@ namespace Kolibri.net.Common.Utilities
                 dic.Add(item.ToUpper(), item.ToLower());
             }
             var ret = GetFileDialogFilter(dic);
-            if (!allFiles) {
-                ret = ret.Substring(0,ret.IndexOf("All Files") - 1);
+            if (!allFiles)
+            {
+                ret = ret.Substring(0, ret.IndexOf("All Files") - 1);
             }
             return ret;
         }
@@ -915,7 +927,7 @@ namespace Kolibri.net.Common.Utilities
             System.Diagnostics.Process.Start("explorer.exe", argument);
             ret = true;
 
-            return ret; 
+            return ret;
         }
 
 
@@ -1026,7 +1038,7 @@ namespace Kolibri.net.Common.Utilities
             ret = ds;
             return ret;
         }
-    
+
         public static List<string> PictureFileExt()
         {
 
@@ -1102,14 +1114,15 @@ namespace Kolibri.net.Common.Utilities
         /// </summary>
         /// <param name="title">give this search a title</param>
         /// <returns></returns>
-        public static FileInfo LetOppFil(DirectoryInfo initialPath=null, string title = null)
+        public static FileInfo LetOppFil(DirectoryInfo initialPath = null, string title = null)
         {
             var dialog = new VistaOpenFileDialog() { Title = string.IsNullOrEmpty(title) ? "Let opp fil" : title };
-            if (initialPath != null) { dialog.InitialDirectory = initialPath.FullName;dialog.FileName = dialog.InitialDirectory; } 
-           
-            var res= dialog.ShowDialog();
-            if (res == DialogResult.OK) { 
-            return new FileInfo(dialog.FileName);   
+            if (initialPath != null) { dialog.InitialDirectory = initialPath.FullName; dialog.FileName = dialog.InitialDirectory; }
+
+            var res = dialog.ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                return new FileInfo(dialog.FileName);
             }
             return null;
         }
@@ -1123,18 +1136,18 @@ namespace Kolibri.net.Common.Utilities
         {
             DirectoryInfo ret = null;
             var dialog = new VistaFolderBrowserDialog() { Description = "Let opp mappe" };
-            if (!string.IsNullOrEmpty(title)) { dialog.Description = title; dialog.UseDescriptionForTitle = true;   }
+            if (!string.IsNullOrEmpty(title)) { dialog.Description = title; dialog.UseDescriptionForTitle = true; }
 
             if (!string.IsNullOrWhiteSpace(initialpath) && new DirectoryInfo(initialpath).Exists)
             {
                 dialog.SelectedPath = initialpath;
 
-              //  SendKeys.Send("{TAB}{TAB}{RIGHT}");
+                //  SendKeys.Send("{TAB}{TAB}{RIGHT}");
             }
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 // SendKeys.Send("{TAB}{TAB}{RIGHT}"); 
-                ret = new DirectoryInfo(dialog.SelectedPath); 
+                ret = new DirectoryInfo(dialog.SelectedPath);
             }
             return ret;
         }
@@ -1252,21 +1265,41 @@ namespace Kolibri.net.Common.Utilities
         }
 
 
-        public static void MoveCopy(FileInfo source, FileInfo target)
-        {if (!source.Exists) return;
+        public static void Move(FileInfo source, FileInfo target, bool overWrite)
+        {
+            if (!source.Exists) return;
 
             // assuming that target directory exists
             if (!target.Directory.Exists)
                 target.Directory.Create();
 
-            if (!target.Exists&&source.Exists)
+            if (source.Exists)
+            {
+                try
+                {
+                    File.Move(source.FullName, target.FullName, overWrite);
+                }
+                catch (Exception) { }
+            }
+        }
+
+
+        public static void MoveCopy(FileInfo source, FileInfo target)
+        {
+            if (!source.Exists) return;
+
+            // assuming that target directory exists
+            if (!target.Directory.Exists)
+                target.Directory.Create();
+
+            if (!target.Exists && source.Exists)
             {
                 try
                 {
                     File.Copy(source.FullName, target.FullName);
                 }
                 catch (Exception) { }
-              
+
             }
             else
                 for (int i = 1; ; ++i)
@@ -1531,7 +1564,7 @@ All files (*.*)|*.*";
             dic.Add("xml", "xml");
             dic.Add("C# Class library (cs)", "cs");
             dic.Add("Excel", "xml");
-           
+
             if (initialFileInfo != null)
             {
                 sfd.FileName = Path.GetFileName(initialFileInfo.Name);//   Path.GetFileNameWithoutExtension(initialFileInfo.Name);
@@ -1583,7 +1616,7 @@ All files (*.*)|*.*";
                 if (sfd.FilterIndex != 4 & sfd.FilterIndex != 7 & sfd.FilterIndex != 9)
                 {
 
-               
+
                     if (ds == null)
                     {
                         ds = new DataSet();
@@ -1603,7 +1636,7 @@ All files (*.*)|*.*";
                     case 3: result = DataSetUtilities.DataSetToXML(ds).OuterXml; break;
                     case 4: result = XDocument.Parse(data.ToString()).ToString(); break;
 
-                  
+
                     case 5:
 
 
@@ -1611,7 +1644,7 @@ All files (*.*)|*.*";
                         //     ExcelUtilities.GenerateExcel2007(new FileInfo(sfd.FileName), ds);
                         throw new NotImplementedException(System.Reflection.MethodBase.GetCurrentMethod().Name);
 
-                   
+
                         break;
 
                     default:
@@ -1663,8 +1696,5 @@ All files (*.*)|*.*";
             }
             return sfd.FileName;
         }
-
-       
     }
-}    
-
+}

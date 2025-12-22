@@ -1,22 +1,20 @@
 ﻿using DapperGenericRepository.Controller;
-using javax.swing.plaf;
-using javax.swing.text;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.DapperGenericRepository.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities;
+using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
-using Kolibri.net.SilverScreen.DapperImdbData.Service;
-using Kolibri.net.SilverScreen.Entities;
+using Kolibri.net.SilverScreen.DapperImdbData.Service; 
 using MySql.Data.MySqlClient;
 using OMDbApiNet.Model;
 using Sylvan.Data.Csv;
 using System.Data;
 using System.Diagnostics;
-using System.Text;
+ 
 using percentCalc = Kolibri.net.Common.FormUtilities.Tools.ProgressBarHelper;
 
 namespace Kolibri.net.SilverScreen.Forms
@@ -28,7 +26,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private UserSettings _userSettings;
         private ToolTip _toolTip;
         private DirectoryInfo _destinationDir;
-     private LiteDBController _contr;
+        private LiteDBController _contr;
         //private LiteDBController _liteDB;
         private MySqlTableOperationsController _mySqlTableOperationsController;
 
@@ -76,7 +74,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             _destinationDir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, nameof(_userSettings.IMDbDataFiles)));
             if ((!_destinationDir.Exists)) _destinationDir.Create();
-         //   _contr = new LiteDBController(new FileInfo(Path.Combine(_destinationDir.FullName, "ImdbDataFiles.db")), false, false);
+            //   _contr = new LiteDBController(new FileInfo(Path.Combine(_destinationDir.FullName, "ImdbDataFiles.db")), false, false);
 
             linkLabelOnline.Text = _userSettings.IMDbDataFiles;
             linkLabelOnline.Tag = _userSettings.IMDbDataFiles;
@@ -177,7 +175,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     string tt = string.Empty;
                     if (info.Exists)
                     {
-                        tt = $"{button.Text} exist ({FileUtilities.GetFilesize(info.Length)}). Please hit button to download fresh version {tDic[key]}";
+                        tt = $"{button.Text} exist ({FileUtilities.GetFilesize(info.Length)} - {info.LastWriteTime.ToString("yyyy-MM-dd")}). Please hit button to download fresh version {tDic[key]}";
                         button.BackColor = Color.LimeGreen;
                         _toolTip.SetToolTip(button, tt);
                         if (info.LastWriteTime < old)
@@ -290,7 +288,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     case "titles":
                         //   sql = $"select * from titles t  LIMIT 1000 WHERE t.startYear >= year(CURRENT_DATE) order by id desc;";
                         //sql = "select t.*, r.averageRating from titles t limit 1000 left JOIN ratings r on r.id = t.id WHERE \r\n(t.startYear <> null and t.startYear >= year(CURRENT_DATE)) order by id desc;";
-                       sql = "WITH SELECTION AS (SELECT id FROM titles t where t.startYear IS NOT NULL and  t.startYear >= year(CURRENT_DATE) limit 100)\r\nSELECT * FROM selection a JOIN titles c ON (c.id = a.id);";
+                        sql = "WITH SELECTION AS (SELECT id FROM titles t where t.startYear IS NOT NULL and  t.startYear >= year(CURRENT_DATE) limit 100)\r\nSELECT * FROM selection a JOIN titles c ON (c.id = a.id);";
                         break;
                     case "principals":
                         sql = $"select * from titles t  LIMIT 1000 LEFT JOIN principals p on p.title_id=t.id LEFT JOIN names n on n.name_id=p.name_id WHERE t.startYear >= year(CURRENT_DATE);";
@@ -306,7 +304,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 DataSet ds = await GetDataSet(sql);
                 if (ds != null)
                 {
-                    var rowCount= StringUtilities.FormatBigNumbers(await _mySqlTableOperationsController.GetRowCountFromTable(tableName));
+                    var rowCount = StringUtilities.FormatBigNumbers(await _mySqlTableOperationsController.GetRowCountFromTable(tableName));
                     ds.Tables[0].TableName = tableName;
                     var res = Visualizers.VisualizeDataSet($"{tableName} - Total RowCount: {rowCount} ", ds, this.Size);
                     SetStatusLabelText($"{tableName} - {(rowCount)} ({_toolTip.GetToolTip(sender as Button)})");
@@ -470,7 +468,7 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show( ex.Message, ex.GetType().Name);
+                MessageBox.Show(ex.Message, ex.GetType().Name);
                 return null;
 
             }
@@ -1016,10 +1014,11 @@ namespace Kolibri.net.SilverScreen.Forms
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
-        { SetStatusLabelText($"{(sender as Button).Text} clicked");
+        {
+            SetStatusLabelText($"{(sender as Button).Text} clicked");
             _cancel = true;
         }
-         
+
 
         private void buttonCreateSchemas_Click(object sender, EventArgs e)
         {
@@ -1138,7 +1137,7 @@ END{commentLine}";
                     {
                         counter++;
                         item.Ratings = null;
-                        if (_cancel) { ProgressBarHelper.InitProgressBar(toolStripProgressBar1); ProgressBarHelper.CalculatePercent(0, 0);  break; }
+                        if (_cancel) { ProgressBarHelper.InitProgressBar(toolStripProgressBar1); ProgressBarHelper.CalculatePercent(0, 0); break; }
                         string cat = "[INSERT]";
                         if (!itemservice.Add(item)) { cat = "[ERROR]"; }
 
@@ -1156,7 +1155,7 @@ END{commentLine}";
                 // var res=          await episodeController.BulkInsert(list.ToList());
                 SetStatusLabelText($"Inserting {nameof(Item)} complete, counted {counter};");
                 DataSet ds = new DataSet();
-                DataTable dt= await _mySqlTableOperationsController.GetData($"select * from  {nameof(Item)}");
+                DataTable dt = await _mySqlTableOperationsController.GetData($"select * from  {nameof(Item)}");
                 var rowCount = await _mySqlTableOperationsController.GetRowCountFromTable(nameof(Item));
                 if (dt.DataSet == null) { dt.TableName = "FindAllItems"; ds.Tables.Add(dt); }
 
@@ -1182,57 +1181,57 @@ END{commentLine}";
         {
             _cancel = false;
             bool ret = false;
+            object value = null;
+
             if (await TestConnection(false))
             {
-                try
-                {
-                    ret = await _mySqlTableOperationsController.PrincipalsCreateTable(false, true);
-                }
-                catch (AggregateException ex)
-                {
-                    SetStatusLabelText("PrincipalsCreateTable Private Keys failed: " + ex.Message);
-                }
-                catch (Exception ex)
-                {
-                    SetStatusLabelText("PrincipalsCreateTable Private Keys failed: " + ex.Message);
-                }
+                string sql = $@"SELECT    CONSTRAINT_NAME,    TABLE_NAME FROM    INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE     CONSTRAINT_TYPE = 'PRIMARY KEY'    AND TABLE_SCHEMA = '{_mySqlTableOperationsController.GetDBName}'";
+                var dataTable = await _mySqlTableOperationsController.GetData(sql);
+                SetStatusLabelText($"Tables with Primary Key ({dataTable.Rows.Count}): {Environment.NewLine}" + string.Join(Environment.NewLine, dataTable.AsEnumerable()
+                                        .Select(row => row["TABLE_NAME"]?.ToString() ?? string.Empty)
+                                        .ToArray()));
+                Thread.Sleep(5);
 
-                try
-                {
-                    ret = await _mySqlTableOperationsController.TitleCreateTable(false, true);
-                }
-                catch ( AggregateException ex)
-                {
-                    ret = false;
-                    SetStatusLabelText("TitleCreateTable Private Keys failed: "+ex.Message);
-                }
-                catch (Exception ex)
-                {
-                    ret = false;
-                    SetStatusLabelText("TitleCreateTable Private Keys failed: " + ex.Message);
-                }
+                var res = InputDialogs.ChooseListBox("Run procedure to ensure Primary Keys for ", "To set primary keys for table, choose one",
+                          new List<string>() { "Principals", "Title", "Crew", "Episodes", "Titles_Lang" }
+                          , ref value, false);
 
-              
 
-                try
+                if (res == DialogResult.OK)
                 {
-                    ret = await _mySqlTableOperationsController.CrewCreateTable(false, true);
-                }
-                catch (AggregateException ex)
-                {
-                    SetStatusLabelText("CrewCreateTable Private Keys failed: " + ex.Message);
-                }
-                catch ( Exception ex)
-                {
-                    SetStatusLabelText("CrewCreateTable Private Keys failed: " + ex.Message);
-                }
-                SetStatusLabelText("Routine for Primary Keys finished.");
-                
-                //ret = ret && await _mySqlTableOperationsController.EpisodesCreateTable(false, true);               
-                //ret = ret && await _mySqlTableOperationsController.RatingsCreateTable(false, true);
-                //ret = ret && await _mySqlTableOperationsController.BasicsCreateTable(false, true);
-                //TitleLanguage
+                   
 
+                    try
+                    {
+                        value = (value as ListViewItem).Text;
+                        switch (value.ToString())
+                        {
+                            case "Principals": ret = await _mySqlTableOperationsController.PrincipalsCreateTable(false, true); break;
+                            case "Title": ret = await _mySqlTableOperationsController.TitleCreateTable(false, true); break;
+                            case "Crew": ret = await _mySqlTableOperationsController.CrewCreateTable(false, true); break;
+                            case "Episodes": ret = await _mySqlTableOperationsController.EpisodesCreateTable(false, true); break;
+                            case "Titles_Lang": ret = await _mySqlTableOperationsController.TitlesLangCreateTable(false, true); break;
+                            default:
+                                SetStatusLabelText("No table selected. No action performed.");
+                                return;
+                                break;
+                        }
+                        SetStatusLabelText($"Setting Primary Keys for {value} - Please wait.");
+
+                        //ret = ret && await _mySqlTableOperationsController.EpisodesCreateTable(false, true);               
+                        //ret = ret && await _mySqlTableOperationsController.RatingsCreateTable(false, true);
+                        //ret = ret && await _mySqlTableOperationsController.BasicsCreateTable(false, true);
+                        //TitleLanguage  
+                    }
+                    catch (AggregateException ex)
+                    {
+                        SetStatusLabelText($"Set Primary Keys for {value} failed: " + ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        SetStatusLabelText($"Set Primary Keys for {value} failed: " + ex.Message);
+                    }
+                }
             }
         }
     }

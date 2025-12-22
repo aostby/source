@@ -21,7 +21,7 @@ namespace Kolibri.net.Common.Dal.Controller
         internal  ImagePosterDBController _ImageDB;
 
         //LiteDBController _liteDB;
-        private Hashtable _ht = new Hashtable(); 
+      //  private Hashtable _ht = new Hashtable(); 
 
         private int _max = 2000;
         private UserSettings _userSettings;
@@ -82,13 +82,13 @@ namespace Kolibri.net.Common.Dal.Controller
         {
             var ret = await RetrieveImageAsync(key);
 
-            if (ret == null)
+            if (ret == null||ret.PhysicalDimension.Width<=1)
             { return null; }
             else
             {
                 var hash = key.GetHashCode();
                 var imgPoster = new ImagePoster(key, ret);
-                _ht[hash] = imgPoster;
+                //_ht[hash] = imgPoster;
                 return imgPoster;
             }
         }
@@ -98,8 +98,11 @@ namespace Kolibri.net.Common.Dal.Controller
             try
             {
                 var hash = key.GetHashCode();
-                if (_ht.ContainsKey(hash))
-                    return ((ImagePoster)_ht[hash]).Image;
+                //if (_ht.ContainsKey(hash))
+                //{
+                //    var tmp = ((ImagePoster)_ht[hash]).Image;
+                //    return tmp;
+                //}
 
                 if (await _ImageDB.ImageExists(key))
                 {
@@ -109,7 +112,7 @@ namespace Kolibri.net.Common.Dal.Controller
                     {
                         imagePoster.Image.Tag = key;
 
-                        _ht.Add(hash, imagePoster);
+                   //     _ht.Add(hash, imagePoster);
                         return imagePoster.Image;
                     }
                 }

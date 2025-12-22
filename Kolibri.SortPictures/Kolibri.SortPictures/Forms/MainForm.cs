@@ -1,5 +1,4 @@
-﻿using Kolibri.Common.Utilities;
-using Kolibri.Common.Utilities.Forms;
+﻿using Kolibri.net.Common.Utilities;
 using Kolibri.SortPictures.Properties;
 using System;
 using System.Collections.Generic;
@@ -54,7 +53,7 @@ namespace Kolibri.SortPictures.Forms
             DirectoryInfo folder = null;
             try
             {
-                var dlg1 = new Kolibri.Common.Utilities.FolderUtilities.FolderBrowserDialogEx();
+                var dlg1 = new Kolibri.net.Common.Utilities.FolderUtilities.FolderBrowserDialogEx();
                 dlg1.Description = $"Select a folder for your operattion ({(sender as ToolStripMenuItem).Text}):";
                 dlg1.ShowNewFolderButton = true;
                 dlg1.ShowEditBox = true;
@@ -74,7 +73,7 @@ namespace Kolibri.SortPictures.Forms
                     if (sender.Equals(fjernTommeMapperToolStripMenuItem))
                     {
                         DirectoryInfo dinfo = new DirectoryInfo(dlg1.SelectedPath);
-                        Kolibri.Common.Utilities.FileUtilities.DeleteEmptyDirs(dinfo);
+                        Kolibri.net.Common.Utilities.FileUtilities.DeleteEmptyDirs(dinfo);
                     }
                     else if (sender.Equals(listExtensionsToolStripMenuItem))
                     {
@@ -162,7 +161,7 @@ namespace Kolibri.SortPictures.Forms
                 {
                     fileInfo = new FileInfo(dlg1.FileName);
 
-                    Icon ico = Kolibri.Common.Utilities.Icons.IconFromImage(Image.FromFile(fileInfo.FullName));
+                    Icon ico = Kolibri.net.Common.Images.Icons.IconFromImage(Image.FromFile(fileInfo.FullName));
                     fileInfo = new FileInfo(Path.ChangeExtension(fileInfo.FullName, ".ico"));
                     using (FileStream fs = new FileStream(fileInfo.FullName, FileMode.Create))
                     {
@@ -170,7 +169,7 @@ namespace Kolibri.SortPictures.Forms
                     }
                     if (MessageBox.Show($"{fileInfo.Name} created.\r\nOpen folder to show file?", "Operation complete.", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        Kolibri.Common.Utilities.FileUtilities.OpenFolderHighlightFile(fileInfo);
+                        Kolibri.net.Common.Utilities.FileUtilities.OpenFolderHighlightFile(fileInfo);
                     }
                 }
                 else MessageBox.Show("Operation cancelled.", "No action taken");

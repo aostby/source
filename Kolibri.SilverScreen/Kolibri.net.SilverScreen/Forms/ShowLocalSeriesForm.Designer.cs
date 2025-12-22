@@ -35,6 +35,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             mainLayout = new TableLayoutPanel();
             headerLayout = new TableLayoutPanel();
             buttonLookUp = new Button();
+            buttonFindById = new Button();
             searchTxt = new TextBox();
             searchBtn = new Button();
             omdbLabel = new Label();
@@ -112,13 +113,15 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // headerLayout
             // 
             headerLayout.BackColor = Color.DarkBlue;
-            headerLayout.ColumnCount = 4;
+            headerLayout.ColumnCount = 5;
             mainLayout.SetColumnSpan(headerLayout, 2);
             headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 350F));
             headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70F));
             headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70F));
+            headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70F));
             headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
             headerLayout.Controls.Add(buttonLookUp, 2, 0);
+            headerLayout.Controls.Add(buttonFindById, 3, 0);
             headerLayout.Controls.Add(searchTxt, 0, 0);
             headerLayout.Controls.Add(searchBtn, 1, 0);
             headerLayout.Controls.Add(omdbLabel, 4, 0);
@@ -147,6 +150,23 @@ namespace Kolibri.Common.VisualizeOMDbItem
             buttonLookUp.TabIndex = 3;
             buttonLookUp.UseVisualStyleBackColor = false;
             buttonLookUp.Click += buttonLookUp_Click;
+            // 
+            // buttonFindById
+            // 
+            buttonFindById.BackColor = Color.DarkBlue;
+            buttonFindById.BackgroundImage = (Image)resources.GetObject("buttonFindById.BackgroundImage");
+            buttonFindById.BackgroundImageLayout = ImageLayout.Zoom;
+            buttonFindById.Cursor = Cursors.Hand;
+            buttonFindById.Dock = DockStyle.Fill;
+            buttonFindById.FlatStyle = FlatStyle.Flat;
+            buttonFindById.ForeColor = Color.DarkBlue;
+            buttonFindById.Location = new Point(492, 2);
+            buttonFindById.Margin = new Padding(2);
+            buttonFindById.Name = "buttonFindById";
+            buttonFindById.Size = new Size(66, 59);
+            buttonFindById.TabIndex = 4;
+            buttonFindById.UseVisualStyleBackColor = false;
+            buttonFindById.Click += buttonFindById_Click;
             // 
             // searchTxt
             // 
@@ -181,10 +201,10 @@ namespace Kolibri.Common.VisualizeOMDbItem
             omdbLabel.Dock = DockStyle.Fill;
             omdbLabel.Font = new Font("Microsoft Sans Serif", 20.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
             omdbLabel.ForeColor = Color.White;
-            omdbLabel.Location = new Point(494, 0);
+            omdbLabel.Location = new Point(564, 0);
             omdbLabel.Margin = new Padding(4, 0, 4, 0);
             omdbLabel.Name = "omdbLabel";
-            omdbLabel.Size = new Size(934, 63);
+            omdbLabel.Size = new Size(864, 63);
             omdbLabel.TabIndex = 2;
             omdbLabel.Text = "Search local series";
             omdbLabel.TextAlign = ContentAlignment.MiddleRight;
@@ -802,6 +822,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
         private System.Windows.Forms.Label plotContentLabel;
         private System.Windows.Forms.ColumnHeader columnHeader4;
         private Button buttonLookUp;
+        private Button buttonFindById;
         private Label ratingContentLabel;
         private Label labelRating;
         private Label labelOpen;

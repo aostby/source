@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Images.Entities;
@@ -7,8 +8,6 @@ using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
 using System.Data;
 using TMDbLib.Objects.Movies;
-using TMDbLib.Objects.Search;
-using static sun.awt.geom.AreaOp;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -23,15 +22,7 @@ namespace Kolibri.net.SilverScreen.Forms
         internal SubDLSubtitleController _subDL;
         internal ImageCacheDB _imageCache;
 
-        [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
-        //public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr)
-        //{ 
-        //    InitializeComponent();
-        //    _liteDB = contr;
-        //    _item = item;
-        //    this.FormBorderStyle = FormBorderStyle.None;
-        //    Init(_item);
-        //}
+        [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); } 
 
         public DetailsFormItem(string imdbId,  LiteDBController contr,OMDBController omdb = null
             , TMDBController tmdb = null
@@ -392,14 +383,15 @@ namespace Kolibri.net.SilverScreen.Forms
             try
             {
                 var t = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
-                var theList = t.Cast.ToList().Take(10);
+                var theList = t.Cast.OrderBy(x => x.Order).Take(10);
 
                 var ds = DataSetUtilities.AutoGenererDataSet(theList.ToList<Cast>());
 
-                DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(false);
+                DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(true, "Character", "Name", "Gender", "KnownForDepartment", "OriginalName", "ProfilePath");
                 dt.TableName = DataSetUtilities.LegalTableName("Actors");
 
-                if (dt.DataSet == null) {
+                if (dt.DataSet == null)
+                {
                     DataSet tmp = new DataSet();
                     tmp.Tables.Add(dt);
                 }
@@ -414,22 +406,22 @@ namespace Kolibri.net.SilverScreen.Forms
                 {
                     try
                     {
- row["Image"] = ImageUtilities.GetImageFromUrl($"https://image.tmdb.org/t/p/w200{($"{row["ProfilePath"]}")}");
+                        row["Image"] = ImageUtilities.GetImageFromUrl($"https://image.tmdb.org/t/p/w200{($"{row["ProfilePath"]}")}");
                     }
-                    catch (Exception ex)
+                    catch (Exception picex)
                     {
 
                         row["Image"] = DBNull.Value;
                     }
-                   
+
 
                 }
 
 
 
-                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet(_item.Title, dt.DataSet, this.Parent.Size);
+                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet($"{_item.Title} - {theList.Count()} first", dt.DataSet, this.Parent.Size);
 
-                
+
 
 
             }

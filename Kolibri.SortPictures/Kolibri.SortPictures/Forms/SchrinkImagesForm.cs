@@ -1,4 +1,4 @@
-﻿using Kolibri.Common.Utilities;
+﻿using Kolibri.net.Common.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
- using Kolibri.Common.Utilities;
+ using Kolibri.net.Common.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -102,14 +102,14 @@ namespace Kolibri.SortPictures.Forms
                     DirectoryInfo source = new DirectoryInfo(this.Controls.Find("textBoxSource", false).FirstOrDefault().Text);
                     DirectoryInfo dest = new DirectoryInfo(this.Controls.Find("textBoxDestination", false).FirstOrDefault().Text);
                     if (!dest.Exists) dest.Create();
-                    var collection = Kolibri.Common.Utilities.FileUtilities.HentFiler(source, _filefilter);
+                    var collection = Kolibri.net.Common.Utilities.FileUtilities.HentFiler(source, _filefilter);
                     foreach (var item in collection)
                     {
                         Image img = Image.FromFile(item.FullName);
                         int percent = Int32.Parse(this.Controls.Find("comboBoxPercent", true).FirstOrDefault().Text);
                         FileInfo destination = new FileInfo(Path.Combine(dest.FullName, item.Name));
 
-                        Kolibri.Common.Utilities.ImageUtilities.ReduceJpegSize(destination.FullName, img, percent);
+                        Kolibri.net.Common.Utilities.ImageUtilities.ReduceJpegSize(destination.FullName, img, percent);
 
                     }
                 }

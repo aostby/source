@@ -1,7 +1,10 @@
 
 
-using OMDbApiNet.Model;
+using Dapper;
 using Kolibri.net.SilverScreen.DapperImdbData.Repository;
+using LiteDB;
+using MySql.Data.MySqlClient;
+using OMDbApiNet.Model;
 
 namespace Kolibri.net.SilverScreen.DapperImdbData.Service
 {
@@ -79,7 +82,39 @@ namespace Kolibri.net.SilverScreen.DapperImdbData.Service
             return Item;
         }
 
-      
+        public Item GetItemFromMysql(string Id)
+        {
+            string sql = $@"SELECT 
+st.primarytitle as Title,
+CAST(st.startYear as int) as Year ,
+convert( st.startYear, varchar (4))+'01-01' as Released ,
+st.runtimeMinutes, 
+st.genres as Genre,
+n.primaryName as Director, 
+n.primaryName  as Writer,  
+'TV-MA' as Rated, 
+r.averageRating as ImdbRating,
+r.numVotes as ImdbVotes,
+st.id as ImdbId,
+/* st.titleType  as Type,*/
+'series' as type,
+max(e.seasonNumber) as TotalSeasons
+FROM  titles AS st
+INNER JOIN       episodes  e ON ( e.parentId  = st.id )
+LEFT  OUTER JOIN ratings   r ON ( st.id = r.id )
+LEFT  OUTER JOIN principals   p ON ( st.id = p.title_id and category = 'writer' )
+LEFT  OUTER JOIN names   n ON ( p.name_id  = n.name_id  )
+-- WHERE st.primarytitle = 'Better Off Ted'
+AND   st.titleType  = 'tvSeries'
+where st.Id = '{Id}'";
+
+            using (var connection = new MySqlConnection(dbConnectionString))
+            {
+                connection.Open();
+                var students = connection.Query<Item>(sql).ToList();
+                return students.FirstOrDefault();
+            }
+        }
 
         public bool Delete(Item Item)
         {

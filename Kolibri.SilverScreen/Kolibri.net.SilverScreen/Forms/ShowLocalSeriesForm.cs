@@ -1,4 +1,4 @@
-﻿
+﻿        
 using IKVM.ByteCode.Decoding;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
@@ -12,6 +12,7 @@ using sun.java2d.pipe;
 using System.CodeDom.Compiler;
 using System.Collections;
 using System.Data;
+using System.DirectoryServices;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -242,6 +243,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 movieList.View = View.Details;
                 detailsViewBtn.Enabled = false;
                 tileViewBtn.Enabled = true;
+                refreshMovieList();
             }
             catch (Exception ex)
             {
@@ -385,6 +387,81 @@ namespace Kolibri.Common.VisualizeOMDbItem
             {
                 SetStatusLabelText($"Error occured: {ex.Message}");
             }
+        }
+        private async void buttonFindById_Click(object sender, EventArgs e)
+        {
+            try
+            {
+            var path = _userSettings.UserFilePaths.SeriesSourcePath;
+                try
+                {
+                    if (string.IsNullOrEmpty(path) || path.Equals("N/A"))
+                    {
+                        path = new DirectoryInfo(_userSettings.UserFilePaths.SeriesSourcePath).Parent.FullName;
+                        path = new DirectoryInfo(path).GetDirectories($"*{_currentItem.ImdbId}*", SearchOption.AllDirectories).FirstOrDefault().FullName;
+                    }
+                }
+                catch (Exception) { }
+
+                                        var folder = FolderUtilities.LetOppMappe(path, $"Finn hovedmappe for ");
+                if (folder != null)
+                {
+                    string imdbid = folder.FullName.ImdbIdFromDirectoryName();
+                    if (folder.Exists)
+                    {
+                        Item item = _liteDB.FindItem(imdbid);
+                        if (item == null)
+                        {
+                            item = new OMDBController(_userSettings.OMDBkey, _liteDB).GetItemByImdbId(imdbid);
+                        }
+                        if (item == null)
+                        {
+                            try
+                            {
+                                var c = new MySqlTableOperationsController(_userSettings.DefaultConnection);
+                                item = await c.GetTVShow(imdbid);
+                                if (item.ImdbId == null) throw new KeyNotFoundException();
+                                
+                            }
+                            catch (Exception)
+                            { item = null; }
+                        }                      
+
+
+                        if (item != null && item.Type == "series")
+                        {
+                            SetStatusLabelText($"Updating path for {folder.FullName}");
+
+                            item.TomatoUrl = folder.FullName;
+                            _liteDB.Upsert(item);                            
+                            _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+
+
+                            try
+                            {
+                                using (LiteDBController tmp = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
+                                {
+                                    var seriesList = tmp.GetAllItemsByType("Series");
+
+                                    _serieItems = seriesList.OrderByDescending(x => x.ImdbRating).ToList();
+                                }
+                             //   Init(folder.Name);
+                            }
+                            catch (Exception ex)
+                            {
+                            } 
+                        }
+                        else
+                        {
+                            HTMLUtilities.OpenURLInBrowser(new Uri($@"https://www.imdb.com/find/?q={folder.Name}"));
+                            string text = $"Could not find series {folder.Name} by foldername, please search or set imdb id in foldername, ex {{imdb-tt123456}} ";
+                            SetStatusLabelText(text);
+                            throw new NotImplementedException(text);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message, ex.GetType().Name); }
         }
 
         private void buttonLookUp_Click(object sender, EventArgs e)

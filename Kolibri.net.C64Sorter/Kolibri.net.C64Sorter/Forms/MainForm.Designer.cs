@@ -1,0 +1,340 @@
+﻿
+
+namespace Kolibri.net.C64Sorter
+{
+    partial class MainForm
+    {
+        /// <summary>
+        ///  Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        ///  Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        ///  Required method for Designer support - do not modify
+        ///  the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            menuStrip1 = new MenuStrip();
+            fileToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItemHostname = new ToolStripMenuItem();
+            toolStripSeparator2 = new ToolStripSeparator();
+            toolStripMenuItemRemoveEmptyDirs = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            toolStripMenuItem1 = new ToolStripMenuItem();
+            pNGFilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator3 = new ToolStripSeparator();
+            toolStripMenuItemRun = new ToolStripMenuItem();
+            pRGToolStripMenuItem = new ToolStripMenuItem();
+            d64ToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem2 = new ToolStripMenuItem();
+            exitToolStripMenuItem = new ToolStripMenuItem();
+            organizeFilesToolStripMenuItem = new ToolStripMenuItem();
+            singleFileCategorizerToolStripMenuItem = new ToolStripMenuItem();
+            extensionOrganizerToolStripMenuItem = new ToolStripMenuItem();
+            showContentsToolStripMenuItem = new ToolStripMenuItem();
+            d64FoldersToolStripMenuItem = new ToolStripMenuItem();
+            searchToolStripMenuItem = new ToolStripMenuItem();
+            windowsToolStripMenuItem = new ToolStripMenuItem();
+            cascadeWindowsToolStripMenuItem = new ToolStripMenuItem();
+            tileVerticalToolStripMenuItem = new ToolStripMenuItem();
+            tileHorizontalToolStripMenuItem = new ToolStripMenuItem();
+            arrangeIconsToolStripMenuItem = new ToolStripMenuItem();
+            closeAllToolStripMenuItem = new ToolStripMenuItem();
+            aboutToolStripMenuItem = new ToolStripMenuItem();
+            aboutC64SorterToolStripMenuItem = new ToolStripMenuItem();
+            toolStrip1 = new ToolStrip();
+            toolStripStatusLabelStatus = new ToolStripLabel();
+            menuStrip1.SuspendLayout();
+            toolStrip1.SuspendLayout();
+            SuspendLayout();
+            // 
+            // menuStrip1
+            // 
+            menuStrip1.ImageScalingSize = new Size(20, 20);
+            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, organizeFilesToolStripMenuItem, windowsToolStripMenuItem, aboutToolStripMenuItem });
+            menuStrip1.Location = new Point(0, 0);
+            menuStrip1.MdiWindowListItem = windowsToolStripMenuItem;
+            menuStrip1.Name = "menuStrip1";
+            menuStrip1.Padding = new Padding(5, 2, 0, 2);
+            menuStrip1.Size = new Size(1032, 24);
+            menuStrip1.TabIndex = 1;
+            menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItemHostname, toolStripSeparator2, toolStripMenuItemRemoveEmptyDirs, toolStripSeparator1, toolStripMenuItem1, toolStripSeparator3, toolStripMenuItemRun, toolStripMenuItem2, exitToolStripMenuItem });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new Size(37, 20);
+            fileToolStripMenuItem.Text = "File";
+            // 
+            // toolStripMenuItemHostname
+            // 
+            toolStripMenuItemHostname.Name = "toolStripMenuItemHostname";
+            toolStripMenuItemHostname.Size = new Size(213, 22);
+            toolStripMenuItemHostname.Text = "Set C64U Hostname (IP)";
+            toolStripMenuItemHostname.Click += toolStripMenuItemHostname_Click;
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(210, 6);
+            // 
+            // toolStripMenuItemRemoveEmptyDirs
+            // 
+            toolStripMenuItemRemoveEmptyDirs.Name = "toolStripMenuItemRemoveEmptyDirs";
+            toolStripMenuItemRemoveEmptyDirs.Size = new Size(213, 22);
+            toolStripMenuItemRemoveEmptyDirs.Text = "Remove Empty Directories";
+            toolStripMenuItemRemoveEmptyDirs.Click += toolStripMenuItemRemoveEmptyDirs_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(210, 6);
+            // 
+            // toolStripMenuItem1
+            // 
+            toolStripMenuItem1.DropDownItems.AddRange(new ToolStripItem[] { pNGFilesToolStripMenuItem });
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(213, 22);
+            toolStripMenuItem1.Text = "Print...";
+            // 
+            // pNGFilesToolStripMenuItem
+            // 
+            pNGFilesToolStripMenuItem.Name = "pNGFilesToolStripMenuItem";
+            pNGFilesToolStripMenuItem.Size = new Size(122, 22);
+            pNGFilesToolStripMenuItem.Text = "PNG files";
+            pNGFilesToolStripMenuItem.Click += PrintFilesToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new Size(210, 6);
+            // 
+            // toolStripMenuItemRun
+            // 
+            toolStripMenuItemRun.DropDownItems.AddRange(new ToolStripItem[] { pRGToolStripMenuItem, d64ToolStripMenuItem });
+            toolStripMenuItemRun.Name = "toolStripMenuItemRun";
+            toolStripMenuItemRun.Size = new Size(213, 22);
+            toolStripMenuItemRun.Text = "Run...";
+            // 
+            // pRGToolStripMenuItem
+            // 
+            pRGToolStripMenuItem.Name = "pRGToolStripMenuItem";
+            pRGToolStripMenuItem.Size = new Size(96, 22);
+            pRGToolStripMenuItem.Text = "PRG";
+            pRGToolStripMenuItem.Click += pRGToolStripMenuItem_Click;
+            // 
+            // d64ToolStripMenuItem
+            // 
+            d64ToolStripMenuItem.Name = "d64ToolStripMenuItem";
+            d64ToolStripMenuItem.Size = new Size(96, 22);
+            d64ToolStripMenuItem.Text = "D64";
+            d64ToolStripMenuItem.Click += d64ToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItem2
+            // 
+            toolStripMenuItem2.Name = "toolStripMenuItem2";
+            toolStripMenuItem2.Size = new Size(213, 22);
+            toolStripMenuItem2.Text = "FTP Client";
+            toolStripMenuItem2.Click += toolStripMenuItem2_Click;
+            // 
+            // exitToolStripMenuItem
+            // 
+            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            exitToolStripMenuItem.Size = new Size(213, 22);
+            exitToolStripMenuItem.Text = "Exit";
+            exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
+            // 
+            // organizeFilesToolStripMenuItem
+            // 
+            organizeFilesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { singleFileCategorizerToolStripMenuItem, extensionOrganizerToolStripMenuItem, showContentsToolStripMenuItem });
+            organizeFilesToolStripMenuItem.Name = "organizeFilesToolStripMenuItem";
+            organizeFilesToolStripMenuItem.Size = new Size(92, 20);
+            organizeFilesToolStripMenuItem.Text = "Organize Files";
+            // 
+            // singleFileCategorizerToolStripMenuItem
+            // 
+            singleFileCategorizerToolStripMenuItem.Name = "singleFileCategorizerToolStripMenuItem";
+            singleFileCategorizerToolStripMenuItem.Size = new Size(212, 22);
+            singleFileCategorizerToolStripMenuItem.Text = "Single file categorizer (PC)";
+            singleFileCategorizerToolStripMenuItem.ToolTipText = "Groups common PC files in a folder (top level) into different categories.";
+            singleFileCategorizerToolStripMenuItem.Click += organizeFilesToolStripMenuItem_Click;
+            // 
+            // extensionOrganizerToolStripMenuItem
+            // 
+            extensionOrganizerToolStripMenuItem.Name = "extensionOrganizerToolStripMenuItem";
+            extensionOrganizerToolStripMenuItem.Size = new Size(212, 22);
+            extensionOrganizerToolStripMenuItem.Tag = "Organize by extension, alphabetize or flatten a directory - used for single files.";
+            extensionOrganizerToolStripMenuItem.Text = "Extension Organizer (C64)";
+            extensionOrganizerToolStripMenuItem.Click += organizeFilesToolStripMenuItem_Click;
+            // 
+            // showContentsToolStripMenuItem
+            // 
+            showContentsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { d64FoldersToolStripMenuItem, searchToolStripMenuItem });
+            showContentsToolStripMenuItem.Name = "showContentsToolStripMenuItem";
+            showContentsToolStripMenuItem.Size = new Size(212, 22);
+            showContentsToolStripMenuItem.Tag = "D64 content viewers";
+            showContentsToolStripMenuItem.Text = "Show contents";
+            // 
+            // d64FoldersToolStripMenuItem
+            // 
+            d64FoldersToolStripMenuItem.Name = "d64FoldersToolStripMenuItem";
+            d64FoldersToolStripMenuItem.Size = new Size(180, 22);
+            d64FoldersToolStripMenuItem.Tag = "List all C64 files and their .d64 properties.";
+            d64FoldersToolStripMenuItem.Text = "D64 Folders";
+            d64FoldersToolStripMenuItem.ToolTipText = "Opens a folder, reads all content within .d64 files\\r\\nand saves a CSV file with the details of those fies to be viewed later.";
+            d64FoldersToolStripMenuItem.Click += d64FoldersToolStripMenuItem_Click;
+            // 
+            // searchToolStripMenuItem
+            // 
+            searchToolStripMenuItem.Name = "searchToolStripMenuItem";
+            searchToolStripMenuItem.Size = new Size(180, 22);
+            searchToolStripMenuItem.Text = "Search";
+            searchToolStripMenuItem.Click += searchToolStripMenuItem_Click;
+            // 
+            // windowsToolStripMenuItem
+            // 
+            windowsToolStripMenuItem.AutoToolTip = true;
+            windowsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { cascadeWindowsToolStripMenuItem, tileVerticalToolStripMenuItem, tileHorizontalToolStripMenuItem, arrangeIconsToolStripMenuItem, closeAllToolStripMenuItem });
+            windowsToolStripMenuItem.Name = "windowsToolStripMenuItem";
+            windowsToolStripMenuItem.Size = new Size(63, 20);
+            windowsToolStripMenuItem.Text = "&Window";
+            // 
+            // cascadeWindowsToolStripMenuItem
+            // 
+            cascadeWindowsToolStripMenuItem.Name = "cascadeWindowsToolStripMenuItem";
+            cascadeWindowsToolStripMenuItem.Size = new Size(168, 22);
+            cascadeWindowsToolStripMenuItem.Text = "Cascade windows";
+            cascadeWindowsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
+            // 
+            // tileVerticalToolStripMenuItem
+            // 
+            tileVerticalToolStripMenuItem.Name = "tileVerticalToolStripMenuItem";
+            tileVerticalToolStripMenuItem.Size = new Size(168, 22);
+            tileVerticalToolStripMenuItem.Text = "Tile Vertical";
+            tileVerticalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
+            // 
+            // tileHorizontalToolStripMenuItem
+            // 
+            tileHorizontalToolStripMenuItem.Name = "tileHorizontalToolStripMenuItem";
+            tileHorizontalToolStripMenuItem.Size = new Size(168, 22);
+            tileHorizontalToolStripMenuItem.Text = "Tile Horizontal";
+            tileHorizontalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
+            // 
+            // arrangeIconsToolStripMenuItem
+            // 
+            arrangeIconsToolStripMenuItem.Name = "arrangeIconsToolStripMenuItem";
+            arrangeIconsToolStripMenuItem.Size = new Size(168, 22);
+            arrangeIconsToolStripMenuItem.Text = "Arrange Icons";
+            arrangeIconsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
+            // 
+            // closeAllToolStripMenuItem
+            // 
+            closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
+            closeAllToolStripMenuItem.Size = new Size(168, 22);
+            closeAllToolStripMenuItem.Text = "Close All";
+            closeAllToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
+            // 
+            // aboutToolStripMenuItem
+            // 
+            aboutToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutC64SorterToolStripMenuItem });
+            aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            aboutToolStripMenuItem.Size = new Size(52, 20);
+            aboutToolStripMenuItem.Text = "About";
+            // 
+            // aboutC64SorterToolStripMenuItem
+            // 
+            aboutC64SorterToolStripMenuItem.Name = "aboutC64SorterToolStripMenuItem";
+            aboutC64SorterToolStripMenuItem.Size = new Size(180, 22);
+            aboutC64SorterToolStripMenuItem.Text = "About C64Sorter";
+            aboutC64SorterToolStripMenuItem.Click += aboutC64SorterToolStripMenuItem_Click;
+            // 
+            // toolStrip1
+            // 
+            toolStrip1.Dock = DockStyle.Bottom;
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus });
+            toolStrip1.Location = new Point(0, 632);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new Size(1032, 25);
+            toolStrip1.TabIndex = 2;
+            toolStrip1.Text = "toolStrip1";
+            // 
+            // toolStripStatusLabelStatus
+            // 
+            toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
+            toolStripStatusLabelStatus.Size = new Size(57, 22);
+            toolStripStatusLabelStatus.Text = "Welcome";
+            // 
+            // MainForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1032, 657);
+            Controls.Add(toolStrip1);
+            Controls.Add(menuStrip1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            IsMdiContainer = true;
+            MainMenuStrip = menuStrip1;
+            Name = "MainForm";
+            Text = "Kolibri.net.C64Sorter";
+            menuStrip1.ResumeLayout(false);
+            menuStrip1.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
+        }
+
+
+
+        #endregion
+
+        private MenuStrip menuStrip1;
+        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem exitToolStripMenuItem;
+        private ToolStrip toolStrip1;
+        private ToolStripMenuItem organizeFilesToolStripMenuItem;
+        private ToolStripMenuItem singleFileCategorizerToolStripMenuItem;
+        private ToolStripLabel toolStripStatusLabelStatus;
+        private ToolStripMenuItem windowsToolStripMenuItem;
+        private ToolStripMenuItem cascadeWindowsToolStripMenuItem;
+        private ToolStripMenuItem closeAllToolStripMenuItem;
+        private ToolStripMenuItem tileVerticalToolStripMenuItem;
+        private ToolStripMenuItem tileHorizontalToolStripMenuItem;
+        private ToolStripMenuItem arrangeIconsToolStripMenuItem;
+        private ToolStripMenuItem extensionOrganizerToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItemRemoveEmptyDirs;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem showContentsToolStripMenuItem;
+        private ToolStripMenuItem d64FoldersToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItem1;
+        private ToolStripMenuItem pNGFilesToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItem2;
+        private ToolStripSeparator toolStripSeparator2;
+        private ToolStripSeparator toolStripSeparator3;
+        private ToolStripMenuItem searchToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItemRun;
+        private ToolStripMenuItem pRGToolStripMenuItem;
+        private ToolStripMenuItem d64ToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItemHostname;
+        private ToolStripMenuItem aboutToolStripMenuItem;
+        private ToolStripMenuItem aboutC64SorterToolStripMenuItem;
+    }
+}

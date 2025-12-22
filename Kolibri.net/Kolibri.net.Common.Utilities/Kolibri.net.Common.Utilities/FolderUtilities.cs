@@ -7,7 +7,7 @@ using System.Security;
 using System.Security.Permissions;
 using System.Text;
 
-namespace Kolibri.net.Common.FormUtilities.Forms
+namespace Kolibri.net.Common.Utilities
 {
     public class FolderUtilities
     {
