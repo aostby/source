@@ -347,7 +347,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         // Directory.Move(file.Directory.FullName, destination .FullName);
                         SetLabelText(info);
                         // Microsoft.VisualBasic.FileIO.FileSystem.CopyDirectory(file.Directory.FullName, destination.FullName, UIOption.AllDialogs);
-                        Kolibri.net.Common.FormUtilities.Forms.FolderUtilities.CopyDirectoryAndFiles(file.Directory.FullName, destination.FullName, true);
+                        FolderUtilities.CopyDirectoryAndFiles(file.Directory.FullName, destination.FullName, true);
                         try
                         {
                             foreach (var source in file.Directory.GetFiles("*.*", System.IO.SearchOption.AllDirectories))

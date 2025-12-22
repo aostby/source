@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Kolibri.Common\Kolibri.Common.Utilities\Kolibri.Common.Utilities.csproj" />
+    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

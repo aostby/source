@@ -453,7 +453,23 @@ namespace Kolibri.net.Common.Utilities
 
             return table;
         }
+        public static T Cast<T>(this DataRow dataRow) where T : new()
+        {
+            T item = new T();
+            foreach (DataColumn column in dataRow.Table.Columns)
+            {
+                if (dataRow[column] == DBNull.Value) continue;
 
+                var property = typeof(T).GetProperty(column.ColumnName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                if (property != null && property.CanWrite)
+                {
+                    Type targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                    object safeValue = Convert.ChangeType(dataRow[column], targetType);
+                    property.SetValue(item, safeValue, null);
+                }
+            }
+            return item;
+        }
         public static DataTable CreateTable<T>()
         {
             Type entityType = typeof(T);
