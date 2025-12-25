@@ -1,5 +1,7 @@
-﻿using Kolibri.net.Common.Utilities;
-using System.Text; 
+﻿using com.sun.tools.@internal.xjc;
+using Kolibri.net.Common.Utilities;
+using System.Text;
+
 
 namespace Kolibri.net.C64Sorter.Controllers
 {
@@ -10,7 +12,7 @@ namespace Kolibri.net.C64Sorter.Controllers
 
         public D64Controller(DirectoryInfo source) { this._dirSource = source; }
 
-        public D64Controller(FileInfo source) { this._fileSource = source; }
+        public D64Controller(FileInfo source) { this._fileSource = source; } 
 
 
         public FileInfo GetSearchResults(string searchString) {

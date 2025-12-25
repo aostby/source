@@ -17,21 +17,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BarCode" Version="2024.11.5" />
-    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
+    <PackageReference Include="D64ReaderCore" Version="1.0.7" />
     <PackageReference Include="MovieFileLibrary" Version="3.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Ookii.Dialogs.WinForms" Version="4.0.0" />
     <PackageReference Include="runtime.any.System.Resources.ResourceManager" Version="4.3.0" />
     <PackageReference Include="SaxonHE10Net31Api" Version="10.9.12" />
-    <PackageReference Include="SaxonHE11s9apiExtensions" Version="11.6.14" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
-    <PackageReference Include="System.ComponentModel" Version="4.3.0" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.4" />
-    <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.4" />
-    <PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
-    <PackageReference Include="System.Windows.Extensions" Version="9.0.4" />
   </ItemGroup>
 
 </Project>

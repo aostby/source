@@ -1114,9 +1114,11 @@ namespace Kolibri.net.Common.Utilities
         /// </summary>
         /// <param name="title">give this search a title</param>
         /// <returns></returns>
-        public static FileInfo LetOppFil(DirectoryInfo initialPath = null, string title = null)
+        public static FileInfo LetOppFil(DirectoryInfo initialPath = null, string title = null, string filter=null)
         {
             var dialog = new VistaOpenFileDialog() { Title = string.IsNullOrEmpty(title) ? "Let opp fil" : title };
+            if (filter != null)
+                dialog.Filter = filter;
             if (initialPath != null) { dialog.InitialDirectory = initialPath.FullName; dialog.FileName = dialog.InitialDirectory; }
 
             var res = dialog.ShowDialog();
@@ -1696,5 +1698,12 @@ All files (*.*)|*.*";
             }
             return sfd.FileName;
         }
+
+        public static void OpenWindowsExplorer(string path = "")
+        {
+            string folderPath = string.IsNullOrEmpty(path) ? "explorer.exe" : path;
+            Process.Start("explorer.exe", folderPath);
+        }
+
     }
 }

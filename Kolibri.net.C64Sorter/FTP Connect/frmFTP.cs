@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
-using System.Net;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace FTP_Connect
 {
@@ -145,24 +146,33 @@ namespace FTP_Connect
 
         public List<string> ShowFiles(string ftpURL, string UserName, string Password, string ftpDirectory)
         {
-            // implement a file transfer protocol client
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpURL + "/" + ftpDirectory);
-            request.Credentials = new NetworkCredential(UserName, Password);  // pass the credentials
-            request.Method = WebRequestMethods.Ftp.ListDirectory;  // request a list of the directory
-            FtpWebResponse Response = (FtpWebResponse)request.GetResponse();  // get the response message to the servers request
-            StreamReader streamReader = new StreamReader(request.GetResponse().GetResponseStream());  // returns the response
-
-            List<string> lines = new List<string>();
-            string line;
-            lstBoxFtpStatus.Items.Add("•" + Response.StatusDescription);
-            // add the lines to the list
-            while ((line = streamReader.ReadLine()) != null)
+            try
             {
-                lines.Add(line);
+                // implement a file transfer protocol client
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpURL + "/" + ftpDirectory);
+                request.Credentials = new NetworkCredential(UserName, Password);  // pass the credentials
+                request.Method = WebRequestMethods.Ftp.ListDirectory;  // request a list of the directory
+                FtpWebResponse Response = (FtpWebResponse)request.GetResponse();  // get the response message to the servers request
+                StreamReader streamReader = new StreamReader(request.GetResponse().GetResponseStream());  // returns the response
+
+                List<string> lines = new List<string>();
+                string line;
+                lstBoxFtpStatus.Items.Add("•" + Response.StatusDescription);
+                // add the lines to the list
+                while ((line = streamReader.ReadLine()) != null)
+                {
+                    lines.Add(line);
+                }
+                lstBoxFtpStatus.Items.Add("•" + Response.StatusDescription);
+                streamReader.Close(); // close the StreamReader
+                return lines;
             }
-            lstBoxFtpStatus.Items.Add("•" + Response.StatusDescription);
-            streamReader.Close(); // close the StreamReader
-            return lines;
+            catch (Exception ex)
+            {
+                lstBoxFtpStatus.Items.Add("•" + ex.Message);
+                lblOpsStatus.Text = ex.Message;
+                return null;
+            }
         }
 
         public void UploadFileToFtp(string filePath, string username, string password)
@@ -372,5 +382,23 @@ namespace FTP_Connect
             }
 
         }
+
+        private void lstBoxDirContents2_MouseDown(object sender, MouseEventArgs e)
+        {
+
+            if (e.Button == MouseButtons.Right)
+            {
+                // Get the item index based on coordinates (Framework 4.8 compatible)
+                int index = lstBoxDirContents2.IndexFromPoint(e.Location);
+
+                // IndexFromPoint returns -1 (ListBox.NoMatches) if no item is under the cursor
+                if (index != ListBox.NoMatches)
+                {
+                    // Update the selection so the menu actions apply to the correct item
+                    lstBoxDirContents2.SelectedIndex = index;
+                }
+            }
+        }
+
     }
 }

@@ -162,6 +162,7 @@ namespace FTP_Connect
             this.lstBoxDirContents2.Size = new System.Drawing.Size(282, 264);
             this.lstBoxDirContents2.TabIndex = 19;
             this.lstBoxDirContents2.SelectedIndexChanged += new System.EventHandler(this.lstBoxDirContents2_SelectedIndexChanged);
+            this.lstBoxDirContents2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lstBoxDirContents2_MouseDown);
             // 
             // groupBox1
             // 

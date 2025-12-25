@@ -40,10 +40,7 @@ namespace Kolibri.net.C64Sorter
             toolStripMenuItem1 = new ToolStripMenuItem();
             pNGFilesToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
-            toolStripMenuItemRun = new ToolStripMenuItem();
-            pRGToolStripMenuItem = new ToolStripMenuItem();
-            d64ToolStripMenuItem = new ToolStripMenuItem();
-            toolStripMenuItem2 = new ToolStripMenuItem();
+            toolStripMenuItemFTPClient = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
             organizeFilesToolStripMenuItem = new ToolStripMenuItem();
             singleFileCategorizerToolStripMenuItem = new ToolStripMenuItem();
@@ -51,6 +48,24 @@ namespace Kolibri.net.C64Sorter
             showContentsToolStripMenuItem = new ToolStripMenuItem();
             d64FoldersToolStripMenuItem = new ToolStripMenuItem();
             searchToolStripMenuItem = new ToolStripMenuItem();
+            browseLocalFilesToolStripMenuItem = new ToolStripMenuItem();
+            ultimateEliteIIToolStripMenuItem = new ToolStripMenuItem();
+            machineToolStripMenuItem = new ToolStripMenuItem();
+            resetToolStripMenuItem = new ToolStripMenuItem();
+            rebootToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator4 = new ToolStripSeparator();
+            pauseToolStripMenuItem = new ToolStripMenuItem();
+            resumeToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator5 = new ToolStripSeparator();
+            powerOffToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem3 = new ToolStripMenuItem();
+            volumeToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItemRun = new ToolStripMenuItem();
+            pRGToolStripMenuItem = new ToolStripMenuItem();
+            d64ToolStripMenuItem = new ToolStripMenuItem();
+            sIDToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator6 = new ToolStripSeparator();
+            aboutToolStripMenuItem1 = new ToolStripMenuItem();
             windowsToolStripMenuItem = new ToolStripMenuItem();
             cascadeWindowsToolStripMenuItem = new ToolStripMenuItem();
             tileVerticalToolStripMenuItem = new ToolStripMenuItem();
@@ -59,8 +74,11 @@ namespace Kolibri.net.C64Sorter
             closeAllToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
             aboutC64SorterToolStripMenuItem = new ToolStripMenuItem();
+            linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
+            toolStripSeparator7 = new ToolStripSeparator();
+            toolStripMenuItemFTPTreeView = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -68,7 +86,7 @@ namespace Kolibri.net.C64Sorter
             // menuStrip1
             // 
             menuStrip1.ImageScalingSize = new Size(20, 20);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, organizeFilesToolStripMenuItem, windowsToolStripMenuItem, aboutToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, organizeFilesToolStripMenuItem, ultimateEliteIIToolStripMenuItem, windowsToolStripMenuItem, aboutToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.MdiWindowListItem = windowsToolStripMenuItem;
             menuStrip1.Name = "menuStrip1";
@@ -79,7 +97,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItemHostname, toolStripSeparator2, toolStripMenuItemRemoveEmptyDirs, toolStripSeparator1, toolStripMenuItem1, toolStripSeparator3, toolStripMenuItemRun, toolStripMenuItem2, exitToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItemHostname, toolStripSeparator2, toolStripMenuItemRemoveEmptyDirs, toolStripSeparator1, toolStripMenuItem1, toolStripSeparator3, toolStripMenuItemFTPTreeView, toolStripMenuItemFTPClient, toolStripSeparator7, exitToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(37, 20);
             fileToolStripMenuItem.Text = "File";
@@ -118,7 +136,7 @@ namespace Kolibri.net.C64Sorter
             // pNGFilesToolStripMenuItem
             // 
             pNGFilesToolStripMenuItem.Name = "pNGFilesToolStripMenuItem";
-            pNGFilesToolStripMenuItem.Size = new Size(122, 22);
+            pNGFilesToolStripMenuItem.Size = new Size(180, 22);
             pNGFilesToolStripMenuItem.Text = "PNG files";
             pNGFilesToolStripMenuItem.Click += PrintFilesToolStripMenuItem_Click;
             // 
@@ -127,33 +145,12 @@ namespace Kolibri.net.C64Sorter
             toolStripSeparator3.Name = "toolStripSeparator3";
             toolStripSeparator3.Size = new Size(210, 6);
             // 
-            // toolStripMenuItemRun
+            // toolStripMenuItemFTPClient
             // 
-            toolStripMenuItemRun.DropDownItems.AddRange(new ToolStripItem[] { pRGToolStripMenuItem, d64ToolStripMenuItem });
-            toolStripMenuItemRun.Name = "toolStripMenuItemRun";
-            toolStripMenuItemRun.Size = new Size(213, 22);
-            toolStripMenuItemRun.Text = "Run...";
-            // 
-            // pRGToolStripMenuItem
-            // 
-            pRGToolStripMenuItem.Name = "pRGToolStripMenuItem";
-            pRGToolStripMenuItem.Size = new Size(96, 22);
-            pRGToolStripMenuItem.Text = "PRG";
-            pRGToolStripMenuItem.Click += pRGToolStripMenuItem_Click;
-            // 
-            // d64ToolStripMenuItem
-            // 
-            d64ToolStripMenuItem.Name = "d64ToolStripMenuItem";
-            d64ToolStripMenuItem.Size = new Size(96, 22);
-            d64ToolStripMenuItem.Text = "D64";
-            d64ToolStripMenuItem.Click += d64ToolStripMenuItem_Click;
-            // 
-            // toolStripMenuItem2
-            // 
-            toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(213, 22);
-            toolStripMenuItem2.Text = "FTP Client";
-            toolStripMenuItem2.Click += toolStripMenuItem2_Click;
+            toolStripMenuItemFTPClient.Name = "toolStripMenuItemFTPClient";
+            toolStripMenuItemFTPClient.Size = new Size(213, 22);
+            toolStripMenuItemFTPClient.Text = "FTP Client";
+            toolStripMenuItemFTPClient.Click += toolStripMenuItem2_Click;
             // 
             // exitToolStripMenuItem
             // 
@@ -164,7 +161,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // organizeFilesToolStripMenuItem
             // 
-            organizeFilesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { singleFileCategorizerToolStripMenuItem, extensionOrganizerToolStripMenuItem, showContentsToolStripMenuItem });
+            organizeFilesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { singleFileCategorizerToolStripMenuItem, extensionOrganizerToolStripMenuItem, showContentsToolStripMenuItem, browseLocalFilesToolStripMenuItem });
             organizeFilesToolStripMenuItem.Name = "organizeFilesToolStripMenuItem";
             organizeFilesToolStripMenuItem.Size = new Size(92, 20);
             organizeFilesToolStripMenuItem.Text = "Organize Files";
@@ -196,7 +193,7 @@ namespace Kolibri.net.C64Sorter
             // d64FoldersToolStripMenuItem
             // 
             d64FoldersToolStripMenuItem.Name = "d64FoldersToolStripMenuItem";
-            d64FoldersToolStripMenuItem.Size = new Size(180, 22);
+            d64FoldersToolStripMenuItem.Size = new Size(179, 22);
             d64FoldersToolStripMenuItem.Tag = "List all C64 files and their .d64 properties.";
             d64FoldersToolStripMenuItem.Text = "D64 Folders";
             d64FoldersToolStripMenuItem.ToolTipText = "Opens a folder, reads all content within .d64 files\\r\\nand saves a CSV file with the details of those fies to be viewed later.";
@@ -205,9 +202,129 @@ namespace Kolibri.net.C64Sorter
             // searchToolStripMenuItem
             // 
             searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            searchToolStripMenuItem.Size = new Size(180, 22);
-            searchToolStripMenuItem.Text = "Search";
+            searchToolStripMenuItem.Size = new Size(179, 22);
+            searchToolStripMenuItem.Text = "Search (in .d64 files)";
             searchToolStripMenuItem.Click += searchToolStripMenuItem_Click;
+            // 
+            // browseLocalFilesToolStripMenuItem
+            // 
+            browseLocalFilesToolStripMenuItem.Name = "browseLocalFilesToolStripMenuItem";
+            browseLocalFilesToolStripMenuItem.Size = new Size(212, 22);
+            browseLocalFilesToolStripMenuItem.Text = "Browse local files";
+            browseLocalFilesToolStripMenuItem.Click += browseLocalFilesToolStripMenuItem_Click;
+            // 
+            // ultimateEliteIIToolStripMenuItem
+            // 
+            ultimateEliteIIToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { machineToolStripMenuItem, toolStripMenuItem3, toolStripMenuItemRun, toolStripSeparator6, aboutToolStripMenuItem1 });
+            ultimateEliteIIToolStripMenuItem.Name = "ultimateEliteIIToolStripMenuItem";
+            ultimateEliteIIToolStripMenuItem.Size = new Size(98, 20);
+            ultimateEliteIIToolStripMenuItem.Text = "Ultimate Elite II";
+            // 
+            // machineToolStripMenuItem
+            // 
+            machineToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { resetToolStripMenuItem, rebootToolStripMenuItem, toolStripSeparator4, pauseToolStripMenuItem, resumeToolStripMenuItem, toolStripSeparator5, powerOffToolStripMenuItem });
+            machineToolStripMenuItem.Name = "machineToolStripMenuItem";
+            machineToolStripMenuItem.Size = new Size(148, 22);
+            machineToolStripMenuItem.Text = "Machine";
+            // 
+            // resetToolStripMenuItem
+            // 
+            resetToolStripMenuItem.Name = "resetToolStripMenuItem";
+            resetToolStripMenuItem.Size = new Size(125, 22);
+            resetToolStripMenuItem.Text = "Reset";
+            resetToolStripMenuItem.Click += machineToolStripMenuItem_Click;
+            // 
+            // rebootToolStripMenuItem
+            // 
+            rebootToolStripMenuItem.Name = "rebootToolStripMenuItem";
+            rebootToolStripMenuItem.Size = new Size(125, 22);
+            rebootToolStripMenuItem.Text = "Reboot";
+            rebootToolStripMenuItem.Click += machineToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(122, 6);
+            // 
+            // pauseToolStripMenuItem
+            // 
+            pauseToolStripMenuItem.Name = "pauseToolStripMenuItem";
+            pauseToolStripMenuItem.Size = new Size(125, 22);
+            pauseToolStripMenuItem.Text = "Pause";
+            pauseToolStripMenuItem.Click += machineToolStripMenuItem_Click;
+            // 
+            // resumeToolStripMenuItem
+            // 
+            resumeToolStripMenuItem.Name = "resumeToolStripMenuItem";
+            resumeToolStripMenuItem.Size = new Size(125, 22);
+            resumeToolStripMenuItem.Text = "Resume";
+            resumeToolStripMenuItem.Click += machineToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new Size(122, 6);
+            // 
+            // powerOffToolStripMenuItem
+            // 
+            powerOffToolStripMenuItem.Name = "powerOffToolStripMenuItem";
+            powerOffToolStripMenuItem.Size = new Size(125, 22);
+            powerOffToolStripMenuItem.Text = "Power off";
+            powerOffToolStripMenuItem.Click += machineToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItem3
+            // 
+            toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem });
+            toolStripMenuItem3.Name = "toolStripMenuItem3";
+            toolStripMenuItem3.Size = new Size(148, 22);
+            toolStripMenuItem3.Text = "Configuration";
+            // 
+            // volumeToolStripMenuItem
+            // 
+            volumeToolStripMenuItem.Name = "volumeToolStripMenuItem";
+            volumeToolStripMenuItem.Size = new Size(114, 22);
+            volumeToolStripMenuItem.Text = "Volume";
+            volumeToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItemRun
+            // 
+            toolStripMenuItemRun.DropDownItems.AddRange(new ToolStripItem[] { pRGToolStripMenuItem, d64ToolStripMenuItem, sIDToolStripMenuItem });
+            toolStripMenuItemRun.Name = "toolStripMenuItemRun";
+            toolStripMenuItemRun.Size = new Size(148, 22);
+            toolStripMenuItemRun.Text = "Run...";
+            // 
+            // pRGToolStripMenuItem
+            // 
+            pRGToolStripMenuItem.Name = "pRGToolStripMenuItem";
+            pRGToolStripMenuItem.Size = new Size(216, 22);
+            pRGToolStripMenuItem.Text = "PRG or CRT";
+            pRGToolStripMenuItem.Click += runnersMenuItem_Click;
+            // 
+            // d64ToolStripMenuItem
+            // 
+            d64ToolStripMenuItem.Name = "d64ToolStripMenuItem";
+            d64ToolStripMenuItem.Size = new Size(216, 22);
+            d64ToolStripMenuItem.Text = "D64 or g64, d71, g71 or d81";
+            d64ToolStripMenuItem.Click += runnersMenuItem_Click;
+            // 
+            // sIDToolStripMenuItem
+            // 
+            sIDToolStripMenuItem.Name = "sIDToolStripMenuItem";
+            sIDToolStripMenuItem.Size = new Size(216, 22);
+            sIDToolStripMenuItem.Text = "SID or MOD";
+            sIDToolStripMenuItem.Click += runnersMenuItem_Click;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(145, 6);
+            // 
+            // aboutToolStripMenuItem1
+            // 
+            aboutToolStripMenuItem1.Name = "aboutToolStripMenuItem1";
+            aboutToolStripMenuItem1.Size = new Size(148, 22);
+            aboutToolStripMenuItem1.Text = "About";
+            aboutToolStripMenuItem1.Click += aboutToolStripMenuItem1_Click;
             // 
             // windowsToolStripMenuItem
             // 
@@ -254,7 +371,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // aboutToolStripMenuItem
             // 
-            aboutToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutC64SorterToolStripMenuItem });
+            aboutToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutC64SorterToolStripMenuItem, linksToolStripMenuItem });
             aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             aboutToolStripMenuItem.Size = new Size(52, 20);
             aboutToolStripMenuItem.Text = "About";
@@ -262,9 +379,16 @@ namespace Kolibri.net.C64Sorter
             // aboutC64SorterToolStripMenuItem
             // 
             aboutC64SorterToolStripMenuItem.Name = "aboutC64SorterToolStripMenuItem";
-            aboutC64SorterToolStripMenuItem.Size = new Size(180, 22);
+            aboutC64SorterToolStripMenuItem.Size = new Size(161, 22);
             aboutC64SorterToolStripMenuItem.Text = "About C64Sorter";
             aboutC64SorterToolStripMenuItem.Click += aboutC64SorterToolStripMenuItem_Click;
+            // 
+            // linksToolStripMenuItem
+            // 
+            linksToolStripMenuItem.Name = "linksToolStripMenuItem";
+            linksToolStripMenuItem.Size = new Size(161, 22);
+            linksToolStripMenuItem.Text = "Links";
+            linksToolStripMenuItem.Click += linksToolStripMenuItem_Click;
             // 
             // toolStrip1
             // 
@@ -282,8 +406,21 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
             // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new Size(210, 6);
+            // 
+            // toolStripMenuItemFTPTreeView
+            // 
+            toolStripMenuItemFTPTreeView.Name = "toolStripMenuItemFTPTreeView";
+            toolStripMenuItemFTPTreeView.Size = new Size(213, 22);
+            toolStripMenuItemFTPTreeView.Text = "FTP TreeView";
+            toolStripMenuItemFTPTreeView.Click += toolStripMenuItem2_Click;
+            // 
             // MainForm
             // 
+            AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1032, 657);
@@ -294,6 +431,9 @@ namespace Kolibri.net.C64Sorter
             MainMenuStrip = menuStrip1;
             Name = "MainForm";
             Text = "Kolibri.net.C64Sorter";
+            DragDrop += MainForm_DragDrop;
+            DragEnter += MainForm_DragEnter;
+            DragOver += MainForm_DragOver;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             toolStrip1.ResumeLayout(false);
@@ -326,15 +466,33 @@ namespace Kolibri.net.C64Sorter
         private ToolStripMenuItem d64FoldersToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem pNGFilesToolStripMenuItem;
-        private ToolStripMenuItem toolStripMenuItem2;
+        private ToolStripMenuItem toolStripMenuItemFTPClient;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem searchToolStripMenuItem;
-        private ToolStripMenuItem toolStripMenuItemRun;
-        private ToolStripMenuItem pRGToolStripMenuItem;
-        private ToolStripMenuItem d64ToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItemHostname;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private ToolStripMenuItem aboutC64SorterToolStripMenuItem;
+        private ToolStripMenuItem browseLocalFilesToolStripMenuItem;
+        private ToolStripMenuItem ultimateEliteIIToolStripMenuItem;
+        private ToolStripMenuItem machineToolStripMenuItem;
+        private ToolStripMenuItem resetToolStripMenuItem;
+        private ToolStripMenuItem rebootToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator4;
+        private ToolStripMenuItem pauseToolStripMenuItem;
+        private ToolStripMenuItem resumeToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator5;
+        private ToolStripMenuItem powerOffToolStripMenuItem;
+        private ToolStripMenuItem aboutToolStripMenuItem1;
+        private ToolStripMenuItem toolStripMenuItemRun;
+        private ToolStripMenuItem pRGToolStripMenuItem;
+        private ToolStripMenuItem d64ToolStripMenuItem;
+        private ToolStripMenuItem sIDToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator6;
+        private ToolStripMenuItem linksToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItem3;
+        private ToolStripMenuItem volumeToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItemFTPTreeView;
+        private ToolStripSeparator toolStripSeparator7;
     }
 }
