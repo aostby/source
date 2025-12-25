@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System.Reflection;
-using System.Collections.Generic;
-using System.IO;
+using System.Runtime.InteropServices;
 using System.Security;
-using System.Drawing.Imaging;
-using IronSoftware.Drawing;
+using System.Text;
 
 namespace Kolibri.net.Common.Images
-
 {
     public static partial class Icons
     {
@@ -180,7 +170,7 @@ namespace Kolibri.net.Common.Images
             uint uFlags);
 
 
-   
+
         #endregion
 
         /// <summary>
@@ -550,7 +540,7 @@ namespace Kolibri.net.Common.Images
                 int.TryParse(strArr[1].Trim(), out index);
             }
         }
-       
+
         public static Icon ExtractFromRegistryString(string regString, SystemIconSize size)
         {
             string fileName;
@@ -608,10 +598,10 @@ namespace Kolibri.net.Common.Images
             }
             return null;
         }
+        public static Icon ImageToIcon(Bitmap image)
+        {
 
-        public static Icon ImageToIcon(Bitmap image) {
-
-        return ImageToIcon(image as Image);
+            return ImageToIcon(image as Image);
         }
 
         public static Icon ImageToIcon(Image image)
@@ -620,11 +610,6 @@ namespace Kolibri.net.Common.Images
             Icon newIcon = Icon.FromHandle(Hicon);
             return newIcon;
         }
-
-
-
-
-
 
         /// <summary>
         /// This class suppresses stack walks for unmanaged code permission. 
