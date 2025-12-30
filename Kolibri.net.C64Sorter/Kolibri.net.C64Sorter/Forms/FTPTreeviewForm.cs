@@ -45,7 +45,9 @@ namespace Kolibri.net.C64Sorter.Forms
             treeView1.Nodes.Add(rootNode);
             treeView1.ImageList = imageListIcons;
             this.treeView1.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView1_BeforeExpand);
-            SetStatusLabel($"Host:{_FtpRootUrl} User: {_FtpUser}");
+            this.Text = $"Host:{_FtpRootUrl} User: {_FtpUser}";
+            SetStatusLabel(this.Text);
+
 
             try
             {
@@ -147,10 +149,10 @@ namespace Kolibri.net.C64Sorter.Forms
         private async void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             string url = string.Empty;
-            // Get the clicked node
+            TreeNode clickedNode = e.Node;
             try
             {
-                TreeNode clickedNode = e.Node;
+              
 
                 // Perform your desired action with the clicked node
                 if (clickedNode != null)
@@ -158,7 +160,7 @@ namespace Kolibri.net.C64Sorter.Forms
                     var test = e.Node.ImageKey;
                     SetStatusLabel($"You double-clicked: {clickedNode.Text} - {test}");
 
-                    if (!(clickedNode.Tag != null && (clickedNode.Tag as FtpItemDetail).IsDirectory))
+                    if (clickedNode.Tag != null && !(clickedNode.Tag as FtpItemDetail).IsDirectory)
                     {
                         UltmateEliteClient client = new UltmateEliteClient(_hostname);
                         if (test.Contains("prg", StringComparison.OrdinalIgnoreCase))
@@ -171,28 +173,35 @@ namespace Kolibri.net.C64Sorter.Forms
                         }
                         else if (test.Contains("crt", StringComparison.OrdinalIgnoreCase))
                         {
-                            url = ApiUrls.RunCartridgeOnDeviceUri( clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"));
+                            url = ApiUrls.RunCartridgeOnDeviceUri(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"));
                             url = url.Replace($"http://{_hostname}/", string.Empty);
+                            client.PutUrl(url);
+                            client.sendCommand("RUN");
+                            return;
+                        }
+                        else if (test.Contains("sid", StringComparison.OrdinalIgnoreCase) || test.Contains("mod", StringComparison.OrdinalIgnoreCase)) {
+                            Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
+                            url = ApiUrls.SidPlayOnDevice(_hostname,tst.LocalPath,0);
                             client.PutUrl(url);
                             client.sendCommand("RUN");
                             return;
                         }
 
                             DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
-                          url = ApiUrls.MountImageOnDevice(_hostname,"a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
+                        url = ApiUrls.MountImageOnDevice(_hostname, "a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
                         url = url.Replace($"http://{_hostname}/", string.Empty);
-                        url =$"v1/drives/a:mount?image={HttpUtility.UrlEncode(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"))}";
-                        
+                        url = $"v1/drives/a:mount?image={HttpUtility.UrlEncode(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"))}";
+
                         // Example: Open a new form based on the node data
                         // Form2 detailForm = new Form2(clickedNode.Tag);
                         // detailForm.Show();
 
-                      
+
                         await client.MachineReset();
                         await client.MachineReboot();
                         Thread.Sleep(3000);
                         var jall = await client.PutUrl(url, true);
-                        
+
                     }
                 }
             }
@@ -208,6 +217,25 @@ namespace Kolibri.net.C64Sorter.Forms
             catch (Exception ex)
             {
                 SetStatusLabel(ex.Message);
+                try
+                {
+                    Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
+                    url = tst.LocalPath;
+
+                    if (!tst.LocalPath.Contains(".exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var test = FTPControllerC64.DownloadFileFTP(new UE2LogOn() { Hostname = _hostname, Username = _FtpUser, Password = _FtpPass }
+
+                        , Kolibri.net.C64Sorter.Controllers.UltmateEliteClient.ResourcesPath,
+                        url
+                        );
+                        FileUtilities.Start(test);
+                    }
+                }
+                catch (Exception ftpex)
+                {
+                    SetStatusLabel(ftpex.Message);
+                }
 
             }
 

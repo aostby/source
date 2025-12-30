@@ -76,7 +76,7 @@
             Controls.Add(toolStrip1);
             Controls.Add(treeView1);
             Name = "FTPTreeviewForm";
-            Text = "FTPTreeviewForm";
+            Text = "UE2 Browser";
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             ResumeLayout(false);

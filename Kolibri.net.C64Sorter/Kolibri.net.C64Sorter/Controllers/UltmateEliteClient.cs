@@ -1,21 +1,11 @@
-﻿using com.sun.security.ntlm;
-using javax.sound.sampled;
-using javax.swing.text;
-using javax.xml.crypto;
-using Kolibri.net.C64Sorter.Entities;
-using System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Kolibri.net.C64Sorter.Entities;
+using Kolibri.net.Common.Utilities.Extensions;
+using Newtonsoft.Json;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using System.Threading.Tasks;
 using static Kolibri.net.C64Sorter.Controllers.Ultimate64Commands;
 using Version = Kolibri.net.C64Sorter.Entities.Version;
 
@@ -28,6 +18,9 @@ namespace Kolibri.net.C64Sorter.Controllers
         private readonly HttpClient _httpClient;
         private string _clientName;
         public string ClientName { get { return _clientName; } }
+
+        public  static FileInfo AppsettingsPath { get { return new FileInfo(@".\Resources\appsettings.json"); } }
+        public static  DirectoryInfo ResourcesPath { get { return new DirectoryInfo(@".\Resources\"); } }
 
         public UltmateEliteClient(string clientName)
         {
@@ -326,6 +319,30 @@ namespace Kolibri.net.C64Sorter.Controllers
         }
         #endregion
         #region Configuration commands
+
+
+        internal async Task<int> ConfigurationGetVolumeLevel()
+        {
+            int ret = 0;
+            var url = $"v1/configs/Speaker%20Mixer/Vol%20UltiSid%20{1}*/*current";
+            HttpResponseMessage response = await _httpClient.GetAsync(url); // Replace "products" with your endpoint path
+            if (response.IsSuccessStatusCode)
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    var json =  await response.Content.ReadAsStringAsync();
+                    dynamic data = JsonConvert.DeserializeObject<dynamic>(json.Replace(" ", string.Empty));
+                    var test = $"{data.SpeakerMixer.VolUltiSid1.current}".Replace("dB", string.Empty).ToInt32(); 
+                    ret = test;
+                }
+                else
+                {
+                    return ret;
+                }
+            }
+            return ret;
+        }
+
         internal async Task<bool> ConfigurationVolumeLevel(int level)
         {
             HttpResponseMessage response = await _httpClient.GetAsync("v1/version"); // Replace "products" with your endpoint path
@@ -392,18 +409,29 @@ namespace Kolibri.net.C64Sorter.Controllers
             }
             return false;
         }
-        internal async Task<bool> ConfigurationSpeakerEnable(string state = "Enabled")
-        {
-            HttpResponseMessage response = await _httpClient.GetAsync("v1/version"); // Replace "products" with your endpoint path
+
+        internal async Task<string> ConfigurationGetSpeakerEnable()
+        {   var url = $"v1/configs/Speaker%20Mixer/Speaker%20Enable/";
+            HttpResponseMessage response = await _httpClient.GetAsync(url); // Replace "products" with your endpoint path
             if (response.IsSuccessStatusCode)
             {
-                //var url = "v1/configs/Speaker%20Mixer/Speaker%20Enable?value={state}";
+                // Read response content as a string asynchronously
+                string responseBody =await   response.Content.ReadAsStringAsync(); 
+              
+       
+                Speaker  dynamicObject =    JsonConvert.DeserializeObject<Speaker>(responseBody);
 
-                var url = $"http://{_clientName}/v1/configs/Speaker%20Mixer/Speaker%20Enable?value={state}";
-                var result = await _httpClient.PutAsync(url, null);
-                return result.IsSuccessStatusCode;
+                var ret = dynamicObject.SpeakerMixer.SpeakerEnable.current;
+                return ret; 
             }
-            return false;
+            return null;
+        }
+
+        internal async Task<bool> ConfigurationSpeakerEnable(string state = "Enabled")
+        {
+            var url = $"v1/configs/Speaker%20Mixer/Speaker%20Enable?value={state}";
+            HttpResponseMessage response = await _httpClient.PutAsync(url, null);
+            return response.IsSuccessStatusCode;
         }
 
 
@@ -480,7 +508,7 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
 
 
         #endregion
-        #region System commands
+                    #region System commands
         public async Task<UltimateSystem> GetSystemInformationAsync() // Replace Product with your model class
         {
             HttpResponseMessage response = await _httpClient.GetAsync("v1/system"); // Replace "products" with your endpoint path

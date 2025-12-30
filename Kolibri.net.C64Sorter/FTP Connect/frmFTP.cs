@@ -20,15 +20,21 @@ namespace FTP_Connect
         private string filename;
         private string filepath;
         private string _ftpUrl;
-        public frmFTP()
+        public frmFTP(string hostname = null, string username=null, string password = null)
         {
             InitializeComponent();
+
+            txtBoxHostname.Text = $"{hostname}";
+            txtBoxUsername.Text = $"{username}"; 
+            txtBoxPword.Text = $"{password}";    
+
             Init();
 
         }
 
         private void Init()
-        {
+        { 
+
             this.picBoxUpload.Image = (System.Drawing.Image)Image.FromFile(@".\Resources\upload.png");
             this.picBoxDelete.Image = (System.Drawing.Image)Image.FromFile(@".\Resources\icons8-delete-32.png");
             this.picBoxDownload.Image = (System.Drawing.Image)Image.FromFile(@".\Resources\icons8-download-from-the-cloud-32.png");
@@ -39,13 +45,16 @@ namespace FTP_Connect
 
             lblConnectStatus.Text = "Not currently logged into FTP Server.";
             lstBoxFtpStatus.Items.Add("Not currently logged into FTP Server.");
+
             try
             {
-                txtBoxHostname.Text = File.ReadAllText(@".\Resources\hostname.txt");
+                btnConnect_Click(null, null);
             }
-            catch (Exception)
-            { }
+            catch (Exception ex)
+            {
 
+                
+            }
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
@@ -371,17 +380,7 @@ namespace FTP_Connect
             }
         }
 
-        private void txtBoxHostname_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                File.WriteAllText(@".\Resources\hostname.txt", txtBoxHostname.Text);
-            }
-            catch (Exception)
-            {
-            }
-
-        }
+  
 
         private void lstBoxDirContents2_MouseDown(object sender, MouseEventArgs e)
         {

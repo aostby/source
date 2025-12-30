@@ -57,6 +57,30 @@ namespace Kolibri.net.C64Sorter.Controllers
             return details;
         }
 
+        public static FileInfo DownloadFileFTP(UE2LogOn logon, DirectoryInfo destinationPath, string ftpfilepath)
+        {
+            FileInfo ret = null;
+            string inputfilepath = Path.Combine(UltmateEliteClient.ResourcesPath.FullName,  Path.GetFileName(ftpfilepath)); // @"C:\Temp\FileName.exe";
+           // string ftphost = "xxx.xx.x.xxx";
+            //string ftpfilepath = "/Updater/Dir1/FileName.exe";
+
+            string ftpfullpath = "ftp://" + logon.Hostname + ftpfilepath;
+
+            using (WebClient request = new WebClient())
+            {
+                request.Credentials = new NetworkCredential(logon.Username,logon.Password);
+                byte[] fileData = request.DownloadData(ftpfullpath);
+
+                using (FileStream file = File.Create(inputfilepath))
+                {
+                    file.Write(fileData, 0, fileData.Length);
+                    file.Close();
+                }
+             //   MessageBox.Show("Download Complete");
+                ret= new FileInfo(inputfilepath); 
+            }
+            return ret;
+        }
 
     }
 }
