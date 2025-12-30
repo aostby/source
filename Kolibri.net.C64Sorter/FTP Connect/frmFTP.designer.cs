@@ -231,7 +231,6 @@ namespace FTP_Connect
             this.txtBoxHostname.Name = "txtBoxHostname";
             this.txtBoxHostname.Size = new System.Drawing.Size(127, 20);
             this.txtBoxHostname.TabIndex = 12;
-            this.txtBoxHostname.TextChanged += new System.EventHandler(this.txtBoxHostname_TextChanged);
             // 
             // connectButton
             // 

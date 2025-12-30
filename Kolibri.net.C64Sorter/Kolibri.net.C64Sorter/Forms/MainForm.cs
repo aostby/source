@@ -1,26 +1,24 @@
- 
+
 using File_Organizer;
 using FTP_Connect;
- 
+
 using Kolibri.net.C64Sorter.Controllers;
+using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.C64Sorter.Forms;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
-using Kolibri.net.Common.Utilities.Controller;
 using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
-using sun.misc;
-using sun.security.util;
 using System.Data;
-using System.Drawing.Imaging.Effects;
 using System.Net.NetworkInformation;
+using System.Reflection;
 
 
 namespace Kolibri.net.C64Sorter
 {
     public partial class MainForm : Form
     {
-        private string _hostname = string.Empty;
+        private UE2LogOn _hostname = new UE2LogOn();
         private DirectoryInfo _sSelectedFolder;
         private string _searchText = string.Empty;
         public MainForm()
@@ -30,12 +28,25 @@ namespace Kolibri.net.C64Sorter
         }
         private void Init()
         {
-            try { _hostname = File.ReadAllText(@".\Resources\hostname.txt"); } catch (Exception) { }
-            if (string.IsNullOrWhiteSpace(_hostname))
+            try { _hostname = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(UltmateEliteClient.AppsettingsPath.FullName)); } catch (Exception) { }
+            if (string.IsNullOrWhiteSpace(_hostname.Hostname))
             {
                 SetStatusLabel($"NB! - no IP or Hostname for the Ultimate Elite II is set! Please fill it in in the {fileToolStripMenuItem.Text} menu.");
             }
             this.AllowDrop = true;
+            this.Text = Assembly.GetExecutingAssembly().GetName().Name + $" ({_hostname.Hostname})";
+            try
+            {
+                this.Text += $" Version: {Assembly.GetExecutingAssembly()?
+   .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+   .InformationalVersion.Substring(0, 5)}";
+
+            }
+            catch (Exception)
+            {
+
+
+            }
         }
 
         public void SetStatusLabel(string statusText)
@@ -170,7 +181,7 @@ namespace Kolibri.net.C64Sorter
             SetStatusLabel($"Printing completed.");
         }
 
-        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        private void toolStripMenuItemFTP_Click(object sender, EventArgs e)
         {
             try
             {
@@ -178,11 +189,11 @@ namespace Kolibri.net.C64Sorter
 
                 if (sender.Equals(toolStripMenuItemFTPClient))
                 {
-                    newMDIChild = new frmFTP();
+                    newMDIChild = new frmFTP(_hostname.Hostname, _hostname.Username, _hostname.Password);
                 }
                 else if (sender.Equals(toolStripMenuItemFTPTreeView))
                 {
-                    newMDIChild = new FTPTreeviewForm(_hostname);
+                    newMDIChild = new FTPTreeviewForm(_hostname.Hostname);
                 }
                 newMDIChild.MdiParent = this;
                 newMDIChild.Show();
@@ -264,13 +275,19 @@ namespace Kolibri.net.C64Sorter
         private async void runnersMenuItem_Click(object sender, EventArgs e)
         {
 
-            if (string.IsNullOrEmpty(_hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
+            if (string.IsNullOrEmpty(_hostname.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
             try
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname);
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var text = ((sender as ToolStripMenuItem).Text.Replace("or", " ").Replace(",", " ").Split(" ")).ToArray().Where(s => !string.IsNullOrEmpty(s)).ToArray();
                 string filter = FileUtilities.GetFileDialogFilter(text, true);
+
+                if (sender.Equals(allFilesToolStripMenuItem))
+                {
+                    filter = FileUtilities.GetFileDialogFilter(new List<string>() { "*.*" }.ToArray(), true);
+                }
+
 
                 FileInfo fbd = FileUtilities.LetOppFil(_sSelectedFolder, $"{item.Text} file to search for ", filter = filter);
                 if (fbd != null && fbd.Exists)
@@ -278,7 +295,7 @@ namespace Kolibri.net.C64Sorter
                     if (fbd.Exists && (fbd.Name.Contains(".PRG", StringComparison.OrdinalIgnoreCase) || fbd.Name.Contains(".CRT", StringComparison.OrdinalIgnoreCase)))
                     {
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname}");
-                        client.UploadAndRunPrgOrCrt(_hostname, fbd.FullName);
+                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, fbd.FullName);
 
                     }
                     else if (fbd.Exists && fbd.Name.Contains(".D64", StringComparison.OrdinalIgnoreCase)
@@ -288,20 +305,20 @@ namespace Kolibri.net.C64Sorter
                         || fbd.Name.Contains(".G71", StringComparison.OrdinalIgnoreCase)
                         )
                     {
-                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname}");
-                        var existing = client.FtpUpload(_hostname, fbd.FullName);
+                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname.Hostname}");
+                        var existing = client.FtpUpload(_hostname.Hostname, fbd.FullName);
                         if (fbd.Extension.Substring(fbd.Extension.Length - 2, 2).ToInt32() > 41)
                         { await client.MachineReset(); Thread.Sleep(3500); }
-                        client.MountAndRunExistingTempFile(_hostname, Path.GetFileName(fbd.Name));
+                        client.MountAndRunExistingTempFile(_hostname.Hostname, Path.GetFileName(fbd.Name));
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
                     }
                     else if (fbd.Exists && fbd.Name.Contains(".SID", StringComparison.OrdinalIgnoreCase)
                         || fbd.Name.Contains(".MOD", StringComparison.OrdinalIgnoreCase)
                         )
                     {
-                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname}");
-                        var existing = client.FtpUpload(_hostname, fbd.FullName);
-                        client.UploadAndRunPrgOrCrt(_hostname, fbd.FullName);
+                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname.Hostname}");
+                        var existing = client.FtpUpload(_hostname.Hostname, fbd.FullName);
+                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, fbd.FullName);
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
                     }
                     else { throw new Exception($"{fbd.Extension.ToUpper()} files not supported!"); }
@@ -331,18 +348,35 @@ namespace Kolibri.net.C64Sorter
 
         private void toolStripMenuItemHostname_Click(object sender, EventArgs e)
         {
+            string filename = UltmateEliteClient.AppsettingsPath.FullName;
             try
             {
-                string hostname = string.Empty;
+                UE2LogOn logon = new UE2LogOn();
+                string hostname = _hostname.Hostname;
+                string username = _hostname.Username;
+                string password = _hostname.Password;
 
-                try { hostname = File.ReadAllText(@".\Resources\hostname.txt"); } catch (Exception) { }
+                try
+                {
+                    logon = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(filename));
+                }
+                catch (Exception) { }
 
                 var choice = InputDialogs.InputBox("IP or HostName", "Please input a value", ref hostname);
                 if (choice == DialogResult.OK)
                 {
-                    File.WriteAllText(@".\Resources\hostname.txt", hostname);
-                    _hostname = hostname;
-                    SetStatusLabel($"IP or Hostname for the Ultimate Elite II is set! {_hostname} menu.");
+                    var res = InputDialogs.PasswordDialog("Set username / password (blank if none)", "Leave blank for anonymous", ref username, ref password);
+                    if (res == DialogResult.OK)
+                    {
+                        logon.Username = username;
+                        logon.Password = password;
+                        logon.Hostname = hostname;
+                        _hostname = logon;
+                        File.WriteAllText(filename, logon.JsonSerializeObject());
+
+                        SetStatusLabel($"IP or Hostname for the Ultimate Elite II is set! {_hostname.Hostname}.");
+                    }
+                    else { SetStatusLabel($"No changes to config for {_hostname.Hostname}."); }
                 }
             }
             catch (Exception ex)
@@ -373,7 +407,7 @@ namespace Kolibri.net.C64Sorter
 
             try
             {
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname);
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 if (sender.Equals(resetToolStripMenuItem))
                 { client.MachineReset(); }
                 if (sender.Equals(rebootToolStripMenuItem))
@@ -397,7 +431,7 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname);
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var version = await client.GetVersionAsync();
                 string text = $"Version: {version.version} - {GetIPv4AddressForInterface("en0")}";
 
@@ -456,7 +490,7 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname);
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 if (sender.Equals(volumeToolStripMenuItem))
                 {
 
@@ -474,7 +508,7 @@ namespace Kolibri.net.C64Sorter
         private void MainForm_DragEnter(object sender, DragEventArgs e)
         {
             Console.WriteLine("DragEnter!");
-            
+
 
             // Check if the data being dragged is a file drop (e.g., from Explorer)
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -510,13 +544,13 @@ namespace Kolibri.net.C64Sorter
             // Check if the data being dragged is something your control can use (e.g., files)
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-              //   DragDropEffects.Copy; // Allow copying files
-             //   e.Handled = true; // Tell the system we handled it
+                //   DragDropEffects.Copy; // Allow copying files
+                //   e.Handled = true; // Tell the system we handled it
             }
             else
             {
-               // e.Effects = DragDropEffects.None; // Show the red icon (not allowed)
-              //  e.Handled = true;
+                // e.Effects = DragDropEffects.None; // Show the red icon (not allowed)
+                //  e.Handled = true;
             }
         }
     }

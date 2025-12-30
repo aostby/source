@@ -30,8 +30,7 @@
         {
             components = new System.ComponentModel.Container();
             trackBar1 = new TrackBar();
-            buttonEnable = new Button();
-            buttonDisable = new Button();
+            buttonToggle = new Button();
             toolTip1 = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
             SuspendLayout();
@@ -46,34 +45,24 @@
             trackBar1.TabIndex = 0;
             trackBar1.TickFrequency = 2;
             trackBar1.Scroll += trackBar1_Scroll;
+            trackBar1.MouseHover += trackBar1_MouseHover;
             // 
-            // buttonEnable
+            // buttonToggle
             // 
-            buttonEnable.Location = new Point(362, 63);
-            buttonEnable.Name = "buttonEnable";
-            buttonEnable.Size = new Size(75, 23);
-            buttonEnable.TabIndex = 1;
-            buttonEnable.Text = "Enabled";
-            buttonEnable.UseVisualStyleBackColor = true;
-            buttonEnable.Click += toggleSound_Click;
-            // 
-            // buttonDisable
-            // 
-            buttonDisable.Location = new Point(12, 63);
-            buttonDisable.Name = "buttonDisable";
-            buttonDisable.Size = new Size(75, 23);
-            buttonDisable.TabIndex = 2;
-            buttonDisable.Text = "Disabled";
-            buttonDisable.UseVisualStyleBackColor = true;
-            buttonDisable.Click += toggleSound_Click;
+            buttonToggle.Location = new Point(362, 63);
+            buttonToggle.Name = "buttonToggle";
+            buttonToggle.Size = new Size(75, 23);
+            buttonToggle.TabIndex = 1;
+            buttonToggle.Text = "Enabled";
+            buttonToggle.UseVisualStyleBackColor = true;
+            buttonToggle.Click += toggleSound_Click;
             // 
             // VolumeControlForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(443, 98);
-            Controls.Add(buttonDisable);
-            Controls.Add(buttonEnable);
+            Controls.Add(buttonToggle);
             Controls.Add(trackBar1);
             MaximumSize = new Size(459, 137);
             MinimumSize = new Size(459, 137);
@@ -87,8 +76,7 @@
         #endregion
 
         private TrackBar trackBar1;
-        private Button buttonEnable;
-        private Button buttonDisable;
+        private Button buttonToggle;
         private ToolTip toolTip1;
     }
 }
