@@ -44,9 +44,9 @@ namespace Kolibri.net.C64Sorter.Controllers
             }
         }
 
-        public async Task UploadAndRunPrgOrCrt(string ipAddress, string localFilePath)
+        public async Task UploadAndRunPrgOrCrt(string ipAddress, FileInfo localFilePath)
         {
-            var ext = Path.GetExtension(localFilePath).TrimStart('.').ToLower();
+            var ext = Path.GetExtension(localFilePath.FullName).TrimStart('.').ToLower();
             using HttpClient client = new HttpClient();
             string url = $"http://{ipAddress}/v1/runners:run_{ext}";
             if (ext.Equals("sid") || ext.Equals("mod"))
@@ -54,7 +54,7 @@ namespace Kolibri.net.C64Sorter.Controllers
 
 
             // Read the .prg file into a byte array
-            byte[] prgData = await File.ReadAllBytesAsync(localFilePath);
+            byte[] prgData = await File.ReadAllBytesAsync(localFilePath.FullName);
 
             // Create the content as a binary stream
             using ByteArrayContent content = new ByteArrayContent(prgData);

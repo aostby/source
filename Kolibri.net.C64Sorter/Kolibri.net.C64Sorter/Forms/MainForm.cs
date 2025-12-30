@@ -1,4 +1,5 @@
 
+using com.sun.org.apache.bcel.@internal.generic;
 using File_Organizer;
 using FTP_Connect;
 
@@ -28,6 +29,8 @@ namespace Kolibri.net.C64Sorter
         }
         private void Init()
         {
+            this.KeyPreview = true; // This makes the form receive key events first.
+
             try { _hostname = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(UltmateEliteClient.AppsettingsPath.FullName)); } catch (Exception) { }
             if (string.IsNullOrWhiteSpace(_hostname.Hostname))
             {
@@ -38,15 +41,11 @@ namespace Kolibri.net.C64Sorter
             try
             {
                 this.Text += $" Version: {Assembly.GetExecutingAssembly()?
-   .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-   .InformationalVersion.Substring(0, 5)}";
+                                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                                 .InformationalVersion.Substring(0, 5)}";
 
             }
-            catch (Exception)
-            {
-
-
-            }
+            catch (Exception) { }
         }
 
         public void SetStatusLabel(string statusText)
@@ -295,7 +294,7 @@ namespace Kolibri.net.C64Sorter
                     if (fbd.Exists && (fbd.Name.Contains(".PRG", StringComparison.OrdinalIgnoreCase) || fbd.Name.Contains(".CRT", StringComparison.OrdinalIgnoreCase)))
                     {
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname}");
-                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, fbd.FullName);
+                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, new FileInfo(fbd.FullName));
 
                     }
                     else if (fbd.Exists && fbd.Name.Contains(".D64", StringComparison.OrdinalIgnoreCase)
@@ -318,7 +317,7 @@ namespace Kolibri.net.C64Sorter
                     {
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname.Hostname}");
                         var existing = client.FtpUpload(_hostname.Hostname, fbd.FullName);
-                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, fbd.FullName);
+                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, fbd);
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
                     }
                     else { throw new Exception($"{fbd.Extension.ToUpper()} files not supported!"); }
@@ -532,10 +531,30 @@ namespace Kolibri.net.C64Sorter
             // Process the dropped files (example: display in a MessageBox)
             if (files != null && files.Length > 0)
             {
-                MessageBox.Show("Dropped files:\n" + string.Join("\n", files));
+                string text = "Dropped files:\n" + string.Join("\n", files);
+                SetStatusLabel(text);
 
                 // You can add further logic here, such as loading the file contents
                 // into a control or performing file operations.
+
+
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                //client.UploadAndRunPrgOrCrt(_hostname.Hostname, files[0].ToString());
+                var rt = string.Empty;
+                foreach (var item in files)
+                {
+                    rt = client.FtpUpload(_hostname.Hostname, item);
+                }
+
+
+                Uri uri = new Uri(rt);
+                string ext = Path.GetExtension(Path.GetFileName(uri.LocalPath));
+                if ((ext.ToLower().Contains("mod") || ext.ToLower().Contains("sid")))
+                {
+                    var retur = client.UploadAndRunPrgOrCrt(_hostname.Hostname, new FileInfo(files[0].ToString()));
+                }
+                else client.MountAndRunExistingTempFile(_hostname.Hostname, Path.GetFileName(uri.LocalPath));
+
             }
         }
 
@@ -551,6 +570,59 @@ namespace Kolibri.net.C64Sorter
             {
                 // e.Effects = DragDropEffects.None; // Show the red icon (not allowed)
                 //  e.Handled = true;
+            }
+        }
+
+        private async void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                var key = e.KeyValue;
+                switch (key)
+                {
+                    case 173/*mute*/: var tmp = await client.ConfigurationGetSpeakerEnable();
+                        switch (tmp)
+                        {
+                            case "Enabled":await client.ConfigurationSpeakerEnable("Disabled");break;
+                            case "Disabled": await  client.ConfigurationSpeakerEnable("Enabled"); break;
+                            default:
+                                break;
+                        }
+                        e.Handled=true;      break;
+                    case 174/*down*/:
+                        var current = await client.ConfigurationGetVolumeLevel();
+
+                        await client.ConfigurationVolumeLevel(current-5);
+                        SetStatusLabel($"Volume down pressed. ({current})");
+                        e.Handled = true; break;
+                    case 175/*up*/:
+                    var    level = await client.ConfigurationGetVolumeLevel();
+                        int value = level;
+                        if (level < -18)
+                        {
+                            if (level > -27)
+                                value = -24+4;
+                            else if (level > -30)
+                                value = -27+5;
+                            else if (level > -36)
+                                value = -30+5;
+                            else if (level > -36)
+                                value = -30+5;
+                            else value = -5;
+                        }
+                        
+                        value = value + 5;
+
+                        SetStatusLabel($"Volume up pressed. ({value})");
+                        await client.ConfigurationVolumeLevel(value+1);
+                        e.Handled = true; break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
             }
         }
     }

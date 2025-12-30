@@ -96,7 +96,7 @@ namespace FTP_Connect
             this.lstBoxFtpStatus.HorizontalScrollbar = true;
             this.lstBoxFtpStatus.Location = new System.Drawing.Point(12, 322);
             this.lstBoxFtpStatus.Name = "lstBoxFtpStatus";
-            this.lstBoxFtpStatus.Size = new System.Drawing.Size(894, 95);
+            this.lstBoxFtpStatus.Size = new System.Drawing.Size(761, 95);
             this.lstBoxFtpStatus.TabIndex = 10;
             // 
             // lstBoxDirContents1
@@ -104,7 +104,7 @@ namespace FTP_Connect
             this.lstBoxDirContents1.FormattingEnabled = true;
             this.lstBoxDirContents1.Location = new System.Drawing.Point(460, 143);
             this.lstBoxDirContents1.Name = "lstBoxDirContents1";
-            this.lstBoxDirContents1.Size = new System.Drawing.Size(446, 173);
+            this.lstBoxDirContents1.Size = new System.Drawing.Size(313, 173);
             this.lstBoxDirContents1.TabIndex = 12;
             this.lstBoxDirContents1.SelectedIndexChanged += new System.EventHandler(this.lstBoxDirContents1_SelectedIndexChanged);
             // 
@@ -156,7 +156,7 @@ namespace FTP_Connect
             // 
             this.lstBoxDirContents2.FormattingEnabled = true;
             this.lstBoxDirContents2.HorizontalScrollbar = true;
-            this.lstBoxDirContents2.Location = new System.Drawing.Point(934, 149);
+            this.lstBoxDirContents2.Location = new System.Drawing.Point(806, 149);
             this.lstBoxDirContents2.Name = "lstBoxDirContents2";
             this.lstBoxDirContents2.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.lstBoxDirContents2.Size = new System.Drawing.Size(282, 264);
@@ -373,7 +373,7 @@ namespace FTP_Connect
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 424);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1228, 5);
+            this.panel2.Size = new System.Drawing.Size(1095, 5);
             this.panel2.TabIndex = 27;
             // 
             // panel1
@@ -382,7 +382,7 @@ namespace FTP_Connect
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1228, 7);
+            this.panel1.Size = new System.Drawing.Size(1095, 7);
             this.panel1.TabIndex = 26;
             // 
             // dialogOpenFileToUpload
@@ -392,7 +392,7 @@ namespace FTP_Connect
             // pictureBox2
             // 
             this.pictureBox2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox2.Location = new System.Drawing.Point(907, 208);
+            this.pictureBox2.Location = new System.Drawing.Point(779, 208);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(26, 26);
             this.pictureBox2.TabIndex = 24;
@@ -412,7 +412,7 @@ namespace FTP_Connect
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(1228, 429);
+            this.ClientSize = new System.Drawing.Size(1095, 429);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.pictureBox2);

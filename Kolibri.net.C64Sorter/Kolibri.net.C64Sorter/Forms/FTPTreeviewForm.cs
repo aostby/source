@@ -152,8 +152,6 @@ namespace Kolibri.net.C64Sorter.Forms
             TreeNode clickedNode = e.Node;
             try
             {
-              
-
                 // Perform your desired action with the clicked node
                 if (clickedNode != null)
                 {
@@ -179,15 +177,16 @@ namespace Kolibri.net.C64Sorter.Forms
                             client.sendCommand("RUN");
                             return;
                         }
-                        else if (test.Contains("sid", StringComparison.OrdinalIgnoreCase) || test.Contains("mod", StringComparison.OrdinalIgnoreCase)) {
+                        else if (test.Contains("sid", StringComparison.OrdinalIgnoreCase) || test.Contains("mod", StringComparison.OrdinalIgnoreCase))
+                        {
                             Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
-                            url = ApiUrls.SidPlayOnDevice(_hostname,tst.LocalPath,0);
+                            url = ApiUrls.SidPlayOnDevice(_hostname, tst.LocalPath, 0);
                             client.PutUrl(url);
                             client.sendCommand("RUN");
                             return;
                         }
 
-                            DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
+                        DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
                         url = ApiUrls.MountImageOnDevice(_hostname, "a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
                         url = url.Replace($"http://{_hostname}/", string.Empty);
                         url = $"v1/drives/a:mount?image={HttpUtility.UrlEncode(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"))}";
@@ -224,11 +223,12 @@ namespace Kolibri.net.C64Sorter.Forms
 
                     if (!tst.LocalPath.Contains(".exe", StringComparison.OrdinalIgnoreCase))
                     {
-                        var test = FTPControllerC64.DownloadFileFTP(new UE2LogOn() { Hostname = _hostname, Username = _FtpUser, Password = _FtpPass }
-
-                        , Kolibri.net.C64Sorter.Controllers.UltmateEliteClient.ResourcesPath,
-                        url
-                        );
+                        DirectoryInfo tmp = new DirectoryInfo(Path.Combine(Kolibri.net.C64Sorter.Controllers.UltmateEliteClient.ResourcesPath.FullName, "TEMP"));
+                        if (!tmp.Exists) tmp.Create();
+                        var test = FTPControllerC64.DownloadFileFTP(
+                            new UE2LogOn() { Hostname = _hostname, Username = _FtpUser, Password = _FtpPass },
+                            tmp,
+                            url);
                         FileUtilities.Start(test);
                     }
                 }
@@ -236,7 +236,6 @@ namespace Kolibri.net.C64Sorter.Forms
                 {
                     SetStatusLabel(ftpex.Message);
                 }
-
             }
 
         }
