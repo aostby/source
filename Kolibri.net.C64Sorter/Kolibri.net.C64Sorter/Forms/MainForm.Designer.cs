@@ -82,6 +82,7 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
+            toolStripMenuItemOpenResoursesfolder = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -100,7 +101,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItemHostname, toolStripSeparator2, toolStripMenuItemRemoveEmptyDirs, toolStripSeparator1, toolStripMenuItem1, toolStripSeparator3, toolStripMenuItemFTPClient, toolStripSeparator7, exitToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItemHostname, toolStripSeparator2, toolStripMenuItemOpenResoursesfolder, toolStripMenuItemRemoveEmptyDirs, toolStripSeparator1, toolStripMenuItem1, toolStripSeparator3, toolStripMenuItemFTPClient, toolStripSeparator7, exitToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(37, 20);
             fileToolStripMenuItem.Text = "File";
@@ -374,35 +375,35 @@ namespace Kolibri.net.C64Sorter
             // cascadeWindowsToolStripMenuItem
             // 
             cascadeWindowsToolStripMenuItem.Name = "cascadeWindowsToolStripMenuItem";
-            cascadeWindowsToolStripMenuItem.Size = new Size(180, 22);
+            cascadeWindowsToolStripMenuItem.Size = new Size(168, 22);
             cascadeWindowsToolStripMenuItem.Text = "Cascade windows";
             cascadeWindowsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // tileVerticalToolStripMenuItem
             // 
             tileVerticalToolStripMenuItem.Name = "tileVerticalToolStripMenuItem";
-            tileVerticalToolStripMenuItem.Size = new Size(180, 22);
+            tileVerticalToolStripMenuItem.Size = new Size(168, 22);
             tileVerticalToolStripMenuItem.Text = "Tile Vertical";
             tileVerticalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // tileHorizontalToolStripMenuItem
             // 
             tileHorizontalToolStripMenuItem.Name = "tileHorizontalToolStripMenuItem";
-            tileHorizontalToolStripMenuItem.Size = new Size(180, 22);
+            tileHorizontalToolStripMenuItem.Size = new Size(168, 22);
             tileHorizontalToolStripMenuItem.Text = "Tile Horizontal";
             tileHorizontalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // arrangeIconsToolStripMenuItem
             // 
             arrangeIconsToolStripMenuItem.Name = "arrangeIconsToolStripMenuItem";
-            arrangeIconsToolStripMenuItem.Size = new Size(180, 22);
+            arrangeIconsToolStripMenuItem.Size = new Size(168, 22);
             arrangeIconsToolStripMenuItem.Text = "Arrange Icons";
             arrangeIconsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // closeAllToolStripMenuItem
             // 
             closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
-            closeAllToolStripMenuItem.Size = new Size(180, 22);
+            closeAllToolStripMenuItem.Size = new Size(168, 22);
             closeAllToolStripMenuItem.Text = "Close All";
             closeAllToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
@@ -442,6 +443,13 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
+            // 
+            // toolStripMenuItemOpenResoursesfolder
+            // 
+            toolStripMenuItemOpenResoursesfolder.Name = "toolStripMenuItemOpenResoursesfolder";
+            toolStripMenuItemOpenResoursesfolder.Size = new Size(213, 22);
+            toolStripMenuItemOpenResoursesfolder.Text = "Open Resourses folder";
+            toolStripMenuItemOpenResoursesfolder.Click += browseLocalFilesToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -523,5 +531,6 @@ namespace Kolibri.net.C64Sorter
         private ToolStripSeparator toolStripSeparator8;
         private ToolStripMenuItem allFilesToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator9;
+        private ToolStripMenuItem toolStripMenuItemOpenResoursesfolder;
     }
 }
