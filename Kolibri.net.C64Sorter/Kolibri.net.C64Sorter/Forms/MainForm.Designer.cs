@@ -374,35 +374,35 @@ namespace Kolibri.net.C64Sorter
             // cascadeWindowsToolStripMenuItem
             // 
             cascadeWindowsToolStripMenuItem.Name = "cascadeWindowsToolStripMenuItem";
-            cascadeWindowsToolStripMenuItem.Size = new Size(168, 22);
+            cascadeWindowsToolStripMenuItem.Size = new Size(180, 22);
             cascadeWindowsToolStripMenuItem.Text = "Cascade windows";
             cascadeWindowsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // tileVerticalToolStripMenuItem
             // 
             tileVerticalToolStripMenuItem.Name = "tileVerticalToolStripMenuItem";
-            tileVerticalToolStripMenuItem.Size = new Size(168, 22);
+            tileVerticalToolStripMenuItem.Size = new Size(180, 22);
             tileVerticalToolStripMenuItem.Text = "Tile Vertical";
             tileVerticalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // tileHorizontalToolStripMenuItem
             // 
             tileHorizontalToolStripMenuItem.Name = "tileHorizontalToolStripMenuItem";
-            tileHorizontalToolStripMenuItem.Size = new Size(168, 22);
+            tileHorizontalToolStripMenuItem.Size = new Size(180, 22);
             tileHorizontalToolStripMenuItem.Text = "Tile Horizontal";
             tileHorizontalToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // arrangeIconsToolStripMenuItem
             // 
             arrangeIconsToolStripMenuItem.Name = "arrangeIconsToolStripMenuItem";
-            arrangeIconsToolStripMenuItem.Size = new Size(168, 22);
+            arrangeIconsToolStripMenuItem.Size = new Size(180, 22);
             arrangeIconsToolStripMenuItem.Text = "Arrange Icons";
             arrangeIconsToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 
             // closeAllToolStripMenuItem
             // 
             closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
-            closeAllToolStripMenuItem.Size = new Size(168, 22);
+            closeAllToolStripMenuItem.Size = new Size(180, 22);
             closeAllToolStripMenuItem.Text = "Close All";
             closeAllToolStripMenuItem.Click += windowsToolStripMenuItem_Click;
             // 

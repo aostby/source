@@ -581,41 +581,42 @@ namespace Kolibri.net.C64Sorter
                 var key = e.KeyValue;
                 switch (key)
                 {
-                    case 173/*mute*/: var tmp = await client.ConfigurationGetSpeakerEnable();
+                    case 173/*mute*/:
+                        var tmp = await client.ConfigurationGetSpeakerEnable();
                         switch (tmp)
                         {
-                            case "Enabled":await client.ConfigurationSpeakerEnable("Disabled");break;
-                            case "Disabled": await  client.ConfigurationSpeakerEnable("Enabled"); break;
+                            case "Enabled": await client.ConfigurationSpeakerEnable("Disabled"); break;
+                            case "Disabled": await client.ConfigurationSpeakerEnable("Enabled"); break;
                             default:
                                 break;
                         }
-                        e.Handled=true;      break;
+                        e.Handled = true; break;
                     case 174/*down*/:
                         var current = await client.ConfigurationGetVolumeLevel();
 
-                        await client.ConfigurationVolumeLevel(current-5);
+                        await client.ConfigurationVolumeLevel(current - 5);
                         SetStatusLabel($"Volume down pressed. ({current})");
                         e.Handled = true; break;
                     case 175/*up*/:
-                    var    level = await client.ConfigurationGetVolumeLevel();
+                        var level = await client.ConfigurationGetVolumeLevel();
                         int value = level;
                         if (level < -18)
                         {
                             if (level > -27)
-                                value = -24+4;
+                                value = -24 + 4;
                             else if (level > -30)
-                                value = -27+5;
+                                value = -27 + 5;
                             else if (level > -36)
-                                value = -30+5;
+                                value = -30 + 5;
                             else if (level > -36)
-                                value = -30+5;
+                                value = -30 + 5;
                             else value = -5;
                         }
-                        
+
                         value = value + 5;
 
                         SetStatusLabel($"Volume up pressed. ({value})");
-                        await client.ConfigurationVolumeLevel(value+1);
+                        await client.ConfigurationVolumeLevel(value + 1);
                         e.Handled = true; break;
                     default:
                         break;
@@ -623,6 +624,21 @@ namespace Kolibri.net.C64Sorter
             }
             catch (Exception ex)
             {
+            }
+        }
+
+        [Obsolete("LibVLC er for komprimerte formater, finn ut hvordan proprietær udp for UE2 kan løses")]
+        private void uE2VideoStreamToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Form form = new Forms.VideoStreamForm(_hostname);
+                form.MdiParent = this;
+                form.Show();
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabel(ex.Message);
             }
         }
     }
