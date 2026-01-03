@@ -13,14 +13,14 @@ using Version = Kolibri.net.C64Sorter.Entities.Version;
 // or use the built-in System.Text.Json in modern .NET.
 namespace Kolibri.net.C64Sorter.Controllers
 {
-    public class UltmateEliteClient
+    public class UltmateEliteClient : IDisposable
     {
         private readonly HttpClient _httpClient;
         private string _clientName;
         public string ClientName { get { return _clientName; } }
 
-        public  static FileInfo AppsettingsPath { get { return new FileInfo(@".\Resources\appsettings.json"); } }
-        public static  DirectoryInfo ResourcesPath { get { return new DirectoryInfo(@".\Resources\"); } }
+        public static FileInfo AppsettingsPath { get { return new FileInfo(@".\Resources\appsettings.json"); } }
+        public static DirectoryInfo ResourcesPath { get { return new DirectoryInfo(@".\Resources\"); } }
 
         public UltmateEliteClient(string clientName)
         {
@@ -180,10 +180,10 @@ namespace Kolibri.net.C64Sorter.Controllers
             var result = await client.PutAsync(keyboardUrl, null);
             if (!result.IsSuccessStatusCode)
             {
-                SendCommand(runCmd, ipAddress);
+                SendCommandAsBytes(runCmd, ipAddress);
             }
         }
-        private void SendCommand(string command, string ipAddress)
+        private void SendCommandAsBytes(string command, string ipAddress)
         {
             Config config = new Config() { Hostname = ipAddress };
             String text = command.ToUpper();
@@ -194,13 +194,13 @@ namespace Kolibri.net.C64Sorter.Controllers
 
             do
             {
-                SendCommand(config, SocketCommand.SOCKET_CMD_KEYB, data.Skip(startIndex).Take(count).ToArray(), false);
+                SendCommandAsBytes(config, SocketCommand.SOCKET_CMD_KEYB, data.Skip(startIndex).Take(count).ToArray(), false);
                 startIndex += count;
             }
             while (startIndex < data.Length);
 
         }
-        private static byte[] SendCommand(Config config, SocketCommand Command, byte[] data, bool WaitReply)
+        private static byte[] SendCommandAsBytes(Config config, SocketCommand Command, byte[] data, bool WaitReply)
         {
             String hostname = config.Hostname;
             int port = config.Port;
@@ -330,9 +330,9 @@ namespace Kolibri.net.C64Sorter.Controllers
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    var json =  await response.Content.ReadAsStringAsync();
+                    var json = await response.Content.ReadAsStringAsync();
                     dynamic data = JsonConvert.DeserializeObject<dynamic>(json.Replace(" ", string.Empty));
-                    var test = $"{data.SpeakerMixer.VolUltiSid1.current}".Replace("dB", string.Empty).ToInt32(); 
+                    var test = $"{data.SpeakerMixer.VolUltiSid1.current}".Replace("dB", string.Empty).ToInt32();
                     ret = test;
                 }
                 else
@@ -411,18 +411,19 @@ namespace Kolibri.net.C64Sorter.Controllers
         }
 
         internal async Task<string> ConfigurationGetSpeakerEnable()
-        {   var url = $"v1/configs/Speaker%20Mixer/Speaker%20Enable/";
+        {
+            var url = $"v1/configs/Speaker%20Mixer/Speaker%20Enable/";
             HttpResponseMessage response = await _httpClient.GetAsync(url); // Replace "products" with your endpoint path
             if (response.IsSuccessStatusCode)
             {
                 // Read response content as a string asynchronously
-                string responseBody =await   response.Content.ReadAsStringAsync(); 
-              
-       
-                Speaker  dynamicObject =    JsonConvert.DeserializeObject<Speaker>(responseBody);
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+
+                Speaker dynamicObject = JsonConvert.DeserializeObject<Speaker>(responseBody);
 
                 var ret = dynamicObject.SpeakerMixer.SpeakerEnable.current;
-                return ret; 
+                return ret;
             }
             return null;
         }
@@ -508,7 +509,7 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
 
 
         #endregion
-                    #region System commands
+        #region System commands
         public async Task<UltimateSystem> GetSystemInformationAsync() // Replace Product with your model class
         {
             HttpResponseMessage response = await _httpClient.GetAsync("v1/system"); // Replace "products" with your endpoint path
@@ -525,21 +526,19 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
             HttpResponseMessage response = await _httpClient.PostAsync(url, null); // Replace "products" with your endpoint path
             return (response.IsSuccessStatusCode);
         }
-        internal async void sendCommand(string command)
-        {
-
-
-
-
-            // 3. Send the keyboard commands
+        internal async Task<bool> SendCommand(string command)
+        {  // 3. Send the keyboard commands
             string runCmd = command;
             // Ensure the data is URL-encoded
             string keyboardUrl = $"v1/machine:keyboard?data={Uri.EscapeDataString(runCmd)}";
             var result = await _httpClient.PutAsync(keyboardUrl, null);
+
             if (!result.IsSuccessStatusCode)
             {
-                SendCommand(runCmd, _clientName);
+                SendCommandAsBytes(runCmd, _clientName);
+                return true;
             }
+            else return result.IsSuccessStatusCode;
         }
         internal async Task<bool> PutUrl(string url, bool run = false)
         {
@@ -551,10 +550,10 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
                     var text = response.Content.ReadAsStringAsync();
 
                     if (run)
-                    { 
+                    {
                         // 3. Send the keyboard commands
                         string runCmd = "load\"*\",8,1\rrun\r";
-                        sendCommand(runCmd);
+                        SendCommand(runCmd);
                     }
 
                     return response.IsSuccessStatusCode;
@@ -565,20 +564,34 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
                     return (response.IsSuccessStatusCode);
                 }
             }
-            #endregion
-            //public async Task RunLocalPrg(string ipAddress, string filePathOnUltimate)
-            //{
-            //    using HttpClient client = new HttpClient();
+        }
+        #endregion
+        //public async Task RunLocalPrg(string ipAddress, string filePathOnUltimate)
+        //{
+        //    using HttpClient client = new HttpClient();
 
-            //    // Example: 192.168.1.100
-            //    string url = $"http://{ipAddress}/v1/runners:run_prg?file={Uri.EscapeDataString(filePathOnUltimate)}";
+        //    // Example: 192.168.1.100
+        //    string url = $"http://{ipAddress}/v1/runners:run_prg?file={Uri.EscapeDataString(filePathOnUltimate)}";
 
-            //    HttpResponseMessage response = await client.PutAsync(url, null);
-            // var msg=   response.EnsureSuccessStatusCode();
-            //    if (msg.IsSuccessStatusCode) {
-            //        var text = "ja"; 
-            //    }
-            //}
+        //    HttpResponseMessage response = await client.PutAsync(url, null);
+        // var msg=   response.EnsureSuccessStatusCode();
+        //    if (msg.IsSuccessStatusCode) {
+        //        var text = "ja"; 
+        //    }
+        //}
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // free managed resources
+            }
+            // free native resources if there are any.
         }
     }
 }

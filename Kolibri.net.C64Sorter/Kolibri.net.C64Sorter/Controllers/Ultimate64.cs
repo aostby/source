@@ -73,7 +73,7 @@ namespace Kolibri.net.C64Sorter.Controllers
         {
             byte[] data = new byte[1];
             data[0] = key;
-            SendCommand(config, SocketCommand.SOCKET_CMD_KEYB, data, false);
+            SendCommandAsBytes(config, SocketCommand.SOCKET_CMD_KEYB, data, false);
         }
 
         public static void SendKeyboardString(Config config, String Command)
@@ -97,12 +97,12 @@ namespace Kolibri.net.C64Sorter.Controllers
 
         private static void SendString(Config config, byte[] data)
         {
-            SendCommand(config, SocketCommand.SOCKET_CMD_KEYB, data, false);
+            SendCommandAsBytes(config, SocketCommand.SOCKET_CMD_KEYB, data, false);
         }
 
         public static byte[] ReadMemory(Config config)
         {
-            return SendCommand(config, SocketCommand.SOCKET_CMD_READMEM, null, true);
+            return SendCommandAsBytes  (config, SocketCommand.SOCKET_CMD_READMEM, null, true);
         }
 
         public static void WriteMemory(Config config, UInt16 address, byte[] data)
@@ -112,22 +112,22 @@ namespace Kolibri.net.C64Sorter.Controllers
             tosend[1] = Utilities.GetHighByte(address);
             data.CopyTo(tosend, 2);
 
-            SendCommand(config, SocketCommand.SOCKET_CMD_DMAWRITE, tosend, false);
+            SendCommandAsBytes(config, SocketCommand.SOCKET_CMD_DMAWRITE, tosend, false);
         }
 
         public static void WriteMemoryWithAddress(Config config, byte[] data)
         {
-            SendCommand(config, SocketCommand.SOCKET_CMD_DMAWRITE, data, false);
+            SendCommandAsBytes(config, SocketCommand.SOCKET_CMD_DMAWRITE, data, false);
         }
 
         public static void SendRamAndRun(Config config, byte[] binary)
         {
-            SendCommand(config, SocketCommand.SOCKET_CMD_DMARUN, binary, false);
+            SendCommandAsBytes(config, SocketCommand.SOCKET_CMD_DMARUN, binary, false);
         }
 
         public static void SendRamAndJump(Config config, byte[] binary)
         {
-            SendCommand(config, SocketCommand.SOCKET_CMD_DMAJUMP, binary, false);
+            SendCommandAsBytes(config, SocketCommand.SOCKET_CMD_DMAJUMP, binary, false);
         }
 
         public static void StartStream(Config config, StreamID id, String ipaddress)
@@ -139,22 +139,22 @@ namespace Kolibri.net.C64Sorter.Controllers
             byte[] addr = Encoding.ASCII.GetBytes(ipaddress);
             byte[] data = duration.Concat(addr).ToArray();
 
-            SendCommand(config, scmd, data, false);
+            SendCommandAsBytes(config, scmd, data, false);
         }
 
         public static void StopStream(Config config, StreamID id)
         {
             int cmd = (int)SocketCommand.SOCKET_CMD_DISABLE_OUTPUT_STREAM | (int)id;
             SocketCommand scmd = (SocketCommand)cmd;
-            SendCommand(config, scmd, null, false);
+            SendCommandAsBytes (config, scmd, null, false);
         }
 
         private static void SendCommand(Config config, SocketCommand Command)
         {
-            SendCommand(config, Command, null, false);
+            SendCommandAsBytes(config, Command, null, false);
         }
 
-        private static byte[] SendCommand(Config config, SocketCommand Command, byte[] data, bool WaitReply)
+        private static byte[] SendCommandAsBytes(Config config, SocketCommand Command, byte[] data, bool WaitReply)
         {
             String hostname = config.Hostname;
             int port = config.Port;

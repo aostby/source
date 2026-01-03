@@ -1,0 +1,40 @@
+﻿User avatargklinger
+Bruce Lee
+Posts: 9281
+Joined: Mon Dec 06, 2004 1:43 am
+Location: Toronto, CANADA
+Post by gklinger » Mon Sep 18, 2006 7:05 pm
+
+You want some pokes? Okay...
+set cursor speed = poke 56341,x (where x = 0 to 255)
+switch to uppercase/graphics =poke 53272,21
+switch to lowercase/uppercase = poke 53272,23
+set border colour = poke 53280,x (where x = 0 to 15)
+set background colour = poke 53281,x (where x = 0 to 15)
+set cursor color = poke 646,x (where x = 0 to 15)
+disable list = poke 775,200
+enable list = poke 775,167
+hide line numbers = poke 22,35
+show line number = poke 22,25
+turn cursor on during get = poke 204,0
+turn cursor back off = poke 204,255
+turn off question mark during input = poke 19,65
+turn question mark back on = poke 19,0
+make a click sound = poke 54296,15:POKE 54296,0
+disable keyboard = poke 649,0
+enable keyboard = poke 649,10
+disable keyboard buffer = poke 649,1
+increase keyboard buffer = poke 649,15
+clear keyboard buffer = poke 198,0
+no keys repeat = poke 650,127
+all keys repeat = poke 650,128
+normal repeat = poke 650,0
+disable SHIFT-Commodore = poke 657,128
+enable SHIFT-Commodore = poke 657,0
+disable RUN/STOP = poke 808,239
+disable RESTORE = poke 792,193
+disable RUN-STOP/RESTORE = poke 808,239:poke 792,193
+disable RUN-STOP/RESTORE and list = poke 808,234
+enable RUN-STOP/RESTORE and list = poke 808,237:poke 792,71
+poke 1,0 = disable OS (default value 1,1)
+You want more?
