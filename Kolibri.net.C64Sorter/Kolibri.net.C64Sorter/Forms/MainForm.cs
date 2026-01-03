@@ -11,6 +11,7 @@ using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
 using System.Data;
+using System.Drawing;
 using System.Net.NetworkInformation;
 using System.Reflection;
 
@@ -393,7 +394,12 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                FileUtilities.OpenWindowsExplorer(_sSelectedFolder == null ? null : _sSelectedFolder.FullName);
+                if (sender.Equals(toolStripMenuItemOpenResoursesfolder))
+                { FileUtilities.OpenWindowsExplorer(Controllers.UltmateEliteClient.ResourcesPath.FullName); }
+                else
+                {
+                    FileUtilities.OpenWindowsExplorer(_sSelectedFolder == null ? null : _sSelectedFolder.FullName);
+                }
             }
             catch (Exception ex)
             {
@@ -543,6 +549,7 @@ namespace Kolibri.net.C64Sorter
                 var rt = string.Empty;
                 foreach (var item in files)
                 {
+                    text = "Uploading file:\n"+ item; SetStatusLabel(text);
                     rt = client.FtpUpload(_hostname.Hostname, item);
                 }
 

@@ -39,7 +39,7 @@ namespace Kolibri.net.C64Sorter.Forms
                 buttonToggle.Text = string.Empty;
                 trackBar1.Value = await _client.ConfigurationGetVolumeLevel();
                 buttonToggle.BackgroundImage = new Icon(Path.Combine(UltmateEliteClient.ResourcesPath.FullName, $"{buttonToggle.Tag}.ico")).ToBitmap();
-                buttonToggle.BackgroundImageLayout = ImageLayout.Zoom;
+                buttonToggle.BackgroundImageLayout = ImageLayout.Center;
             }
             catch (Exception ex)
             {
@@ -79,6 +79,7 @@ namespace Kolibri.net.C64Sorter.Forms
                     default: btn.Tag = "Enabled"; break;
                 }
                 buttonToggle.BackgroundImage = new Icon(Path.Combine(UltmateEliteClient.ResourcesPath.FullName, $"{btn.Tag.ToString()}.ico")).ToBitmap();
+                
                 _client.ConfigurationSpeakerEnable(btn.Tag.ToString());
             }
             catch (Exception ex) { }
