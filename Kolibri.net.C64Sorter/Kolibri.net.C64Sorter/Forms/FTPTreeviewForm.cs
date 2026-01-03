@@ -166,7 +166,7 @@ namespace Kolibri.net.C64Sorter.Forms
                             url = ApiUrls.LoadProgramOnDevice(_hostname, clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"));
                             url = url.Replace($"http://{_hostname}/", string.Empty);
                             client.PutUrl(url);
-                            client.sendCommand("RUN");
+                            client.SendCommand("RUN");
                             return;
                         }
                         else if (test.Contains("crt", StringComparison.OrdinalIgnoreCase))
@@ -174,7 +174,7 @@ namespace Kolibri.net.C64Sorter.Forms
                             url = ApiUrls.RunCartridgeOnDeviceUri(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"));
                             url = url.Replace($"http://{_hostname}/", string.Empty);
                             client.PutUrl(url);
-                            client.sendCommand("RUN");
+                            client.SendCommand("RUN");
                             return;
                         }
                         else if (test.Contains("sid", StringComparison.OrdinalIgnoreCase) || test.Contains("mod", StringComparison.OrdinalIgnoreCase))
@@ -182,7 +182,7 @@ namespace Kolibri.net.C64Sorter.Forms
                             Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
                             url = ApiUrls.SidPlayOnDevice(_hostname, tst.LocalPath, 0);
                             client.PutUrl(url);
-                            client.sendCommand("RUN");
+                            client.SendCommand("RUN");
                             return;
                         }
 

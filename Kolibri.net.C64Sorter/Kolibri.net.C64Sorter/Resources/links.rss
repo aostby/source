@@ -1,78 +1,92 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
-  <channel>
-    <title>Kolibri.net.C64Sorter</title>
-    <link>https://www.problembar.net/2025/12/ulimate-elite-ii/</link>
-    <description>Knew nothing about UE2 till i got it. Now I love it!.</description>  
-
-    <item>
-      <title>Gideon's Logic</title>
-      <link>https://ultimate64.com/Ultimate-64-Elite-MK2</link>
-      <description>Gideon made this all posssible. Credis is very much due, and his work makes it all possible. Cudos is what this man gets. Greatness.</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:01 GMT</pubDate>
-      <guid isPermaLink="false">12345678</guid>
-    </item>
-
-        <item>
-      <title>U64 Streamer</title>
-      <link>https://www.tsb.space/projects-2/u64-streamer/2</link>
-      <description>Spent so many hours creating this, coudld not do it.So please give this guys their credit. Great images of how it works too....</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:01 GMT</pubDate>
-      <guid isPermaLink="false">12345668</guid>
-    </item>
-    <item>
-      <title>UltimateRemote</title>
-      <link> https://github.com/Buyukcaglar/UltimateRemote?tab=readme-ov-file/</link>
-      <description>Started this project before I realized someone else beat me to it Credis is due I suppose.</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
-      <guid isPermaLink="false">123456789</guid>
-    </item>
-    <item>
-      <title>ultimate64-manager</title>
-      <link> https://github.com/sandlbn/ultimate64-manager/blob/main/src/settings.rs</link>
-      <description>What the hell, more like this.</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
-      <guid isPermaLink="false">123456786</guid>
-    </item>
-    
-    <item>
-      <title>Ultimate Remote</title>
-      <link>https://apps.microsoft.com/detail/9mwk6lxrvxmb?hl=en-USS</link>
-      <description>Credits due, did not know that.</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
-      <guid isPermaLink="false">123456787</guid>
-    </item>
-      <item>
-      <title>Ultimate users guide</title>
-      <link>https://downloads.commodore-international.com/documentation/C64U/c64u-user-guide-1st-edition.pdf</link>
-      <description>Cudos,Users Guide. Ist just so incredible.</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
-      <guid isPermaLink="false">123456787</guid>
-    </item>
-         <item>
-      <title>Lemon 64 - Love this site</title>
-      <link>https://www.lemon64.com</link>
-      <description>Lemon64 runs on passion. And money. Donate!</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
-      <guid isPermaLink="false">123456787</guid>
-    </item>
-
-   
-
-
-    <item>
-      <title>Beer XML</title>
-      <link>https://www.problembar.net/verktoy/beerxml/</link>
-      <description>Beauty of it all. Beer we make..</description>
-      <pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
-      <guid isPermaLink="false">123456789</guid>
-    </item>
-    <item>
-      <title>Bryggelogg</title>
-      <link>https://www.problembar.net/category/bryggelogg/</link>
-      <description>Bryggelogg. We make awesome amount of liters annually.</description>
-      <pubDate>Mon, 22 Dec 2025 16:30:00 GMT</pubDate>
-      <guid isPermaLink="false">987654321</guid>
-    </item>
-  </channel>
+	<channel>
+		<title>Kolibri.net.C64Sorter</title>
+		<link>https://www.problembar.net/2025/12/ulimate-elite-ii/</link>
+		<description>Knew nothing about UE2 till i got it. Now I love it!.</description>
+		<item>
+			<title>Gideon's Logic</title>
+			<link>https://ultimate64.com/Ultimate-64-Elite-MK2</link>
+			<description>Gideon made this all posssible. Credis is very much due, and his work makes it all possible. Cudos is what this man gets. Greatness.</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:01 GMT</pubDate>
+			<guid isPermaLink="false">12345678</guid>
+		</item>
+		<item>
+			<title>U64 Streamer</title>
+			<link>https://www.tsb.space/projects-2/u64-streamer/2</link>
+			<description>Spent so many hours creating this, coudld not do it.So please give this guys their credit. Great images of how it works too....</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:01 GMT</pubDate>
+			<guid isPermaLink="false">12345668</guid>
+		</item>
+		<item>
+			<title>UltimateRemote</title>
+			<link> https://github.com/Buyukcaglar/UltimateRemote?tab=readme-ov-file/</link>
+			<description>Started this project before I realized someone else beat me to it Credis is due I suppose.</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456789</guid>
+		</item>
+		<item>
+			<title>ultimate64-manager</title>
+			<link> https://github.com/sandlbn/ultimate64-manager/blob/main/src/settings.rs</link>
+			<description>What the hell, more like this.</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456786</guid>
+		</item>
+		<item>
+			<title>Ultimate Remote</title>
+			<link>https://apps.microsoft.com/detail/9mwk6lxrvxmb?hl=en-USS</link>
+			<description>Credits due, did not know that.</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456787</guid>
+		</item>
+		<item>
+			<title>Ultimate users guide</title>
+			<link>https://downloads.commodore-international.com/documentation/C64U/c64u-user-guide-1st-edition.pdf</link>
+			<description>Cudos,Users Guide. Ist just so incredible.</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456787</guid>
+		</item>
+		<item>
+			<title>Lemon 64 - Love this site</title>
+			<link>https://www.lemon64.com</link>
+			<description>Lemon64 runs on passion. And money. Donate!</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456787</guid>
+		</item>
+		<item>
+			<title>POKES 64 - ready64</title>
+			<link>https://ready64.org/articoli/_files/043_pokesc64.txt</link>
+			<description>Ready64 list of fun pokes</description>
+			<pubDate>03 Jan 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456787</guid>
+		</item>
+		<item>
+			<title>Peeks and POKES for the commodore 64</title>
+			<link>https://www.scribd.com/document/374200157/Peeks-and-Pokes-for-the-Commodore-64-pdf</link>
+			<description>A DATA BECKER BOOK BY H.J. LIESERT</description>
+			<pubDate>03 Jan 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456787</guid>
+		</item>
+		<item>
+			<title>Lemon Pokes</title>
+			<link>https://www.lemon64.com/forum/viewtopic.php?t=81738</link>
+			<description>Lemon 64</description>
+			<pubDate>03 Jan 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456787</guid>
+		</item>
+		<item>
+			<title>Beer XML</title>
+			<link>https://www.problembar.net/verktoy/beerxml/</link>
+			<description>Beauty of it all. Beer we make..</description>
+			<pubDate>Tue, 23 Dec 2025 08:00:00 GMT</pubDate>
+			<guid isPermaLink="false">123456789</guid>
+		</item>
+		<item>
+			<title>Bryggelogg</title>
+			<link>https://www.problembar.net/category/bryggelogg/</link>
+			<description>Bryggelogg. We make awesome amount of liters annually.</description>
+			<pubDate>Mon, 22 Dec 2025 16:30:00 GMT</pubDate>
+			<guid isPermaLink="false">987654321</guid>
+		</item>
+	</channel>
 </rss>

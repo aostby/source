@@ -13,15 +13,20 @@ using System.Xml;
 namespace Kolibri.net.Common.Formutilities.Forms
 {
     public partial class RSSForm : Form
-    {
-       
-
+    { 
         private string _url = string.Empty;
         public RSSForm(string url)
         {
             InitializeComponent();
             _url = url;
-            PopulateRssList(url);
+            try
+            {
+                PopulateRssList(url);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name, ex.Message);
+            }
         }
         
 

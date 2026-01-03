@@ -1,0 +1,32 @@
+[
+  {
+    "Name": "U64-Streamer",
+    "Description": "Stream video and audio from the UE2.",
+    "FullPath": "D:\\Commodore\\u64-streamer-v125\\U64-Streamer.exe"
+  },
+  {
+    "Name": "VICE",
+    "Description": "The best 8-BIT emulator.",
+    "FullPath": "D:\\Commodore\\GTK3VICE-3.9-win64\\bin\\x64sc.exe"
+  },
+  {
+    "Name": "DirMaster",
+    "Description": "DirMaster is a Windows-based GUI application designed to help Commodore enthusiasts explore and manage their disk image collections.",
+    "FullPath": "C:\\Program Files (x86)\\Style\\DirMaster\\DirMaster.exe"
+  },
+  {
+    "Name": "GB64Reorganizer",
+    "Description": "GB 64 Reorganizer began as a little utility to extract a Gamebase game archive collection into a folder structure ideal for the 1541 Ultimate. ",
+    "FullPath": "E:\\Consoles\\Commodore64\\C64_PCUtilities\\GB64ReorganizerSD\\gb64reorg.exe"
+  },
+  {
+    "Name": "D64Lister",
+    "Description": "The D64Lister is a Windows application for Windows 9x or higher, which shows Commodore diskimages in D64 format. The File Viewer has some extras for e.g. converting text files or showing formatted BASIC program code, and includes GEOS file support",
+    "FullPath": "D:\\Commodore\\Freaken_KWR_2025\\PCUtils\\D64Lister\\D64Lister.exe"
+  },
+  {
+    "Name": "LaunchBox",
+    "Description": "A Game Launcher with Style - We originally built LaunchBox as an attractive frontend for DOSBox, but it now boasts support for modern games and retro game emulation.",
+    "FullPath": "D:\\Commodore\\c64-dreams-v0.60\\C64 Dreams\\LaunchBox.exe"
+  }
+]

@@ -12,8 +12,10 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
 using System.Data;
 using System.Drawing;
+using System.Net.Http.Json;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Text.Json;
 
 
 namespace Kolibri.net.C64Sorter
@@ -47,6 +49,55 @@ namespace Kolibri.net.C64Sorter
 
             }
             catch (Exception) { }
+
+            try
+            {
+                InitToolsMenu();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name, ex.Message);
+            }
+
+        }
+
+        private void InitToolsMenu()
+        {
+            if (toolStripMenuItemTools.HasDropDownItems)
+                toolStripMenuItemTools.DropDownItems.Clear();
+            List<FileItemDetail> items = new List<FileItemDetail>();
+            try
+            {
+
+                // Read the JSON file content
+                string jsonString = File.ReadAllText(Path.Combine(UltmateEliteClient.ResourcesPath.FullName, "tools.json"));
+                toolStripMenuItemTools.Visible = true;
+
+                items = JsonConvert.DeserializeObject<List<FileItemDetail>>(jsonString);
+
+            }
+            catch (Exception ex) { toolStripMenuItemTools.Visible = false; }
+
+            foreach (var item in items)
+            {
+                if (File.Exists($"{item.FullPath}"))
+                    try
+                    {
+                        item.Icon = Icon.ExtractAssociatedIcon(item.FullPath).ToBitmap();
+                    }
+                    catch (Exception)
+                    { }
+                ToolStripMenuItem tmi = new ToolStripMenuItem()
+                {
+                    ToolTipText = $"{item.Description}",
+                    Image = item.Icon ?? null,
+                    Text = item.Name,
+                    Tag = item.FullPath
+                };
+                tmi.Tag = item;
+                tmi.Click += toolsMenuItem_Click;
+                toolStripMenuItemTools.DropDownItems.Add(tmi);
+            }
         }
 
         public void SetStatusLabel(string statusText)
@@ -272,6 +323,22 @@ namespace Kolibri.net.C64Sorter
             }
         }
 
+
+        private async void toolsMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var info = new FileInfo(((sender as ToolStripMenuItem).Tag as FileItemDetail).FullPath);
+                FileUtilities.Start(info);
+
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabel(ex.Message);
+            }
+
+        }
+
         private async void runnersMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -385,9 +452,23 @@ namespace Kolibri.net.C64Sorter
             }
         }
 
-        private void aboutC64SorterToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void aboutC64SorterToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SplashScreen.Splash("PCUtil for the Commodore Ultimate Elite II", 4000, this.Icon.ToBitmap());
+            try
+            {
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                var version = await client.GetVersionAsync();
+                string text = $"Version: {version.version} - {GetIPv4AddressForInterface("en0")}";
+
+                SplashScreen.Splash(text, 2000, this.Icon.ToBitmap());
+            }
+            catch (Exception ex)
+            {
+              
+            SplashScreen.Splash("PCUtil for the Commodore Ultimate Elite II", 4000, this.Icon.ToBitmap()); 
+                SetStatusLabel(ex.Message);
+            }
+
         }
 
         private void browseLocalFilesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -434,18 +515,7 @@ namespace Kolibri.net.C64Sorter
 
         private async void aboutToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
-                var version = await client.GetVersionAsync();
-                string text = $"Version: {version.version} - {GetIPv4AddressForInterface("en0")}";
-
-                SplashScreen.Splash(text, 2000, this.Icon.ToBitmap());
-            }
-            catch (Exception ex)
-            {
-                SetStatusLabel(ex.Message);
-            }
+           
         }
 
         public string? GetIPv4AddressForInterface(string interfaceName)
@@ -549,7 +619,7 @@ namespace Kolibri.net.C64Sorter
                 var rt = string.Empty;
                 foreach (var item in files)
                 {
-                    text = "Uploading file:\n"+ item; SetStatusLabel(text);
+                    text = "Uploading file:\n" + item; SetStatusLabel(text);
                     rt = client.FtpUpload(_hostname.Hostname, item);
                 }
 
@@ -646,6 +716,41 @@ namespace Kolibri.net.C64Sorter
             catch (Exception ex)
             {
                 SetStatusLabel(ex.Message);
+            }
+        }
+
+        private async void commandToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DialogResult res = DialogResult.Cancel;
+                string script = string.Empty;
+                if (sender.Equals(commandToolStripMenuItem))
+                {
+                    res = InputDialogs.InputBox($"Send a command to {_hostname.Hostname} (no PETSCII)", "Command to send (run, load, poke etc.)", ref script);
+                }
+                else if (sender.Equals(scriptToolStripMenuItem))
+                {
+                    res = InputDialogs.InputRichTextBox($"Send a script to {_hostname.Hostname} (no PETSCII or special commands)", "Command to send (10 print MyName 20 Goto 10; etc.)", ref script);
+                }
+                if (res == DialogResult.OK)
+                {
+
+                    using (Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname))
+                    {
+                        foreach (var line in script.Split(Environment.NewLine))
+                        {
+                            var test = await client.SendCommand(line);
+                            Thread.Sleep(100);
+                        }
+                        client.Dispose();
+                    }
+                }
+                else SetStatusLabel($"No command given!");
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
             }
         }
     }
