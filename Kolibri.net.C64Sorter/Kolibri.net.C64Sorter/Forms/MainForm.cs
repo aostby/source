@@ -549,6 +549,7 @@ namespace Kolibri.net.C64Sorter
                 var rt = string.Empty;
                 foreach (var item in files)
                 {
+                    text = "Uploading file:\n"+ item; SetStatusLabel(text);
                     rt = client.FtpUpload(_hostname.Hostname, item);
                 }
 

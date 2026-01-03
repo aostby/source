@@ -51,7 +51,7 @@
             // 
             buttonToggle.Location = new Point(362, 63);
             buttonToggle.Name = "buttonToggle";
-            buttonToggle.Size = new Size(75, 23);
+            buttonToggle.Size = new Size(75, 37);
             buttonToggle.TabIndex = 1;
             buttonToggle.Text = "Enabled";
             buttonToggle.UseVisualStyleBackColor = true;

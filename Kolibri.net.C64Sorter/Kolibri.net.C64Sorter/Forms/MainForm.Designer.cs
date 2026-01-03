@@ -35,6 +35,7 @@ namespace Kolibri.net.C64Sorter
             fileToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItemHostname = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
+            toolStripMenuItemOpenResoursesfolder = new ToolStripMenuItem();
             toolStripMenuItemRemoveEmptyDirs = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             toolStripMenuItem1 = new ToolStripMenuItem();
@@ -82,7 +83,6 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
-            toolStripMenuItemOpenResoursesfolder = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -117,6 +117,13 @@ namespace Kolibri.net.C64Sorter
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
             toolStripSeparator2.Size = new Size(210, 6);
+            // 
+            // toolStripMenuItemOpenResoursesfolder
+            // 
+            toolStripMenuItemOpenResoursesfolder.Name = "toolStripMenuItemOpenResoursesfolder";
+            toolStripMenuItemOpenResoursesfolder.Size = new Size(213, 22);
+            toolStripMenuItemOpenResoursesfolder.Text = "Open Resourses folder";
+            toolStripMenuItemOpenResoursesfolder.Click += browseLocalFilesToolStripMenuItem_Click;
             // 
             // toolStripMenuItemRemoveEmptyDirs
             // 
@@ -189,6 +196,7 @@ namespace Kolibri.net.C64Sorter
             extensionOrganizerToolStripMenuItem.Size = new Size(212, 22);
             extensionOrganizerToolStripMenuItem.Tag = "Organize by extension, alphabetize or flatten a directory - used for single files.";
             extensionOrganizerToolStripMenuItem.Text = "Extension Organizer (C64)";
+            extensionOrganizerToolStripMenuItem.ToolTipText = "Organize by extension, alphabetize or flatten a directory - used for single files.";
             extensionOrganizerToolStripMenuItem.Click += organizeFilesToolStripMenuItem_Click;
             // 
             // showContentsToolStripMenuItem
@@ -202,7 +210,7 @@ namespace Kolibri.net.C64Sorter
             // d64FoldersToolStripMenuItem
             // 
             d64FoldersToolStripMenuItem.Name = "d64FoldersToolStripMenuItem";
-            d64FoldersToolStripMenuItem.Size = new Size(179, 22);
+            d64FoldersToolStripMenuItem.Size = new Size(180, 22);
             d64FoldersToolStripMenuItem.Tag = "List all C64 files and their .d64 properties.";
             d64FoldersToolStripMenuItem.Text = "D64 Folders";
             d64FoldersToolStripMenuItem.ToolTipText = "Opens a folder, reads all content within .d64 files\\r\\nand saves a CSV file with the details of those fies to be viewed later.";
@@ -211,8 +219,9 @@ namespace Kolibri.net.C64Sorter
             // searchToolStripMenuItem
             // 
             searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            searchToolStripMenuItem.Size = new Size(179, 22);
+            searchToolStripMenuItem.Size = new Size(180, 22);
             searchToolStripMenuItem.Text = "Search (in .d64 files)";
+            searchToolStripMenuItem.ToolTipText = "Search (in .d64 files), if found a CSV is created";
             searchToolStripMenuItem.Click += searchToolStripMenuItem_Click;
             // 
             // browseLocalFilesToolStripMenuItem
@@ -443,13 +452,6 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
-            // 
-            // toolStripMenuItemOpenResoursesfolder
-            // 
-            toolStripMenuItemOpenResoursesfolder.Name = "toolStripMenuItemOpenResoursesfolder";
-            toolStripMenuItemOpenResoursesfolder.Size = new Size(213, 22);
-            toolStripMenuItemOpenResoursesfolder.Text = "Open Resourses folder";
-            toolStripMenuItemOpenResoursesfolder.Click += browseLocalFilesToolStripMenuItem_Click;
             // 
             // MainForm
             // 
