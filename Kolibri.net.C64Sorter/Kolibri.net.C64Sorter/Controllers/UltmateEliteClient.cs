@@ -140,7 +140,7 @@ namespace Kolibri.net.C64Sorter.Controllers
         //    }
         //}
 
-        public async void MountAndRunExistingTempFile(string ipAddress, string remoteFileName)
+        public async void MountAndRunExistingTempFile(string ipAddress, string remoteFileName, bool run=true)
         {
             var drive = "a";
             using HttpClient client = new HttpClient();
@@ -172,15 +172,17 @@ namespace Kolibri.net.C64Sorter.Controllers
 
             // 2. Wait 1 second for the 1541 hardware to "see" the disk
             await Task.Delay(2000);
-
-            // 3. Send the keyboard commands
-            string runCmd = "load\"*\",8,1\rrun\r";
-            // Ensure the data is URL-encoded
-            string keyboardUrl = $"http://{ipAddress}/v1/machine:keyboard?data={Uri.EscapeDataString(runCmd)}";
-            var result = await client.PutAsync(keyboardUrl, null);
-            if (!result.IsSuccessStatusCode)
+            if (run)
             {
-                SendCommandAsBytes(runCmd, ipAddress);
+                // 3. Send the keyboard commands
+                string runCmd = "load\"*\",8,1\rrun\r";
+                // Ensure the data is URL-encoded
+                string keyboardUrl = $"http://{ipAddress}/v1/machine:keyboard?data={Uri.EscapeDataString(runCmd)}";
+                var result = await client.PutAsync(keyboardUrl, null);
+                if (!result.IsSuccessStatusCode)
+                {
+                    SendCommandAsBytes(runCmd, ipAddress);
+                }
             }
         }
         private void SendCommandAsBytes(string command, string ipAddress)

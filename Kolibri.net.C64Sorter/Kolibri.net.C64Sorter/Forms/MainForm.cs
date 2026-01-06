@@ -1,5 +1,6 @@
 
 using com.sun.org.apache.bcel.@internal.generic;
+using com.sun.security.ntlm;
 using File_Organizer;
 using FTP_Connect;
 
@@ -341,6 +342,49 @@ namespace Kolibri.net.C64Sorter
 
         }
 
+        private async void mountersMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            { 
+                if (string.IsNullOrEmpty(_hostname.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                var text = ((sender as ToolStripMenuItem).Text.Replace("or", " ").Replace(",", " ").Split(" ")).ToArray().Where(s => !string.IsNullOrEmpty(s)).ToArray();
+                string filter = FileUtilities.GetFileDialogFilter(text, true);
+
+                FileInfo fbd = FileUtilities.LetOppFil(_sSelectedFolder, $"{text} file to search for ", filter = filter);
+                if (fbd != null && fbd.Exists
+                          && fbd.Name.Contains(".D64", StringComparison.OrdinalIgnoreCase)
+                          || fbd.Name.Contains(".G64", StringComparison.OrdinalIgnoreCase)
+                          || fbd.Name.Contains(".D81", StringComparison.OrdinalIgnoreCase)
+                          || fbd.Name.Contains(".D71", StringComparison.OrdinalIgnoreCase)
+                          || fbd.Name.Contains(".G71", StringComparison.OrdinalIgnoreCase)
+                          )
+                {
+                    SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname.Hostname}");
+                    var existing = client.FtpUpload(_hostname.Hostname, fbd.FullName);
+                    if (fbd.Extension.Substring(fbd.Extension.Length - 2, 2).ToInt32() > 41)
+                    { Thread.Sleep(1000); }
+                    client.MountAndRunExistingTempFile(_hostname.Hostname, Path.GetFileName(fbd.Name), false);
+                    SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
+                }
+                else SetStatusLabel($"Wrong filetype: {fbd.Name} - not a {string.Join(" or ",text)}");
+            }
+            catch (HttpRequestException hex)
+            {
+                MessageBox.Show(hex.Message, hex.GetType().Name);
+                SetStatusLabel($"Mounting failed: {hex.Message}");
+            }
+            catch (AggregateException aex)
+            {
+                MessageBox.Show(aex.Message, aex.GetType().Name);
+                SetStatusLabel($"Mounting failed: {aex.Message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+                SetStatusLabel($"Mounting failed: {ex.Message}");
+            }
+        }
         private async void runnersMenuItem_Click(object sender, EventArgs e)
         {
 

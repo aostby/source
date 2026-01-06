@@ -86,6 +86,8 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
+            mountToolStripMenuItem = new ToolStripMenuItem();
+            d64OrG64OrD81OrD71OrG71ToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -150,7 +152,7 @@ namespace Kolibri.net.C64Sorter
             // pNGFilesToolStripMenuItem
             // 
             pNGFilesToolStripMenuItem.Name = "pNGFilesToolStripMenuItem";
-            pNGFilesToolStripMenuItem.Size = new Size(180, 22);
+            pNGFilesToolStripMenuItem.Size = new Size(122, 22);
             pNGFilesToolStripMenuItem.Tag = "PNG";
             pNGFilesToolStripMenuItem.Text = "PNG files";
             pNGFilesToolStripMenuItem.Click += PrintFilesToolStripMenuItem_Click;
@@ -237,7 +239,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // ultimateEliteIIToolStripMenuItem
             // 
-            ultimateEliteIIToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { machineToolStripMenuItem, toolStripMenuItem3, toolStripMenuItemRun, toolStripSeparator6 });
+            ultimateEliteIIToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { machineToolStripMenuItem, toolStripMenuItem3, toolStripMenuItemRun, toolStripSeparator6, mountToolStripMenuItem });
             ultimateEliteIIToolStripMenuItem.Name = "ultimateEliteIIToolStripMenuItem";
             ultimateEliteIIToolStripMenuItem.Size = new Size(98, 20);
             ultimateEliteIIToolStripMenuItem.Text = "Ultimate Elite II";
@@ -246,7 +248,7 @@ namespace Kolibri.net.C64Sorter
             // 
             machineToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { resetToolStripMenuItem, rebootToolStripMenuItem, toolStripSeparator4, pauseToolStripMenuItem, resumeToolStripMenuItem, toolStripSeparator5, powerOffToolStripMenuItem });
             machineToolStripMenuItem.Name = "machineToolStripMenuItem";
-            machineToolStripMenuItem.Size = new Size(148, 22);
+            machineToolStripMenuItem.Size = new Size(180, 22);
             machineToolStripMenuItem.Text = "Machine";
             // 
             // resetToolStripMenuItem
@@ -298,7 +300,7 @@ namespace Kolibri.net.C64Sorter
             // 
             toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem });
             toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(148, 22);
+            toolStripMenuItem3.Size = new Size(180, 22);
             toolStripMenuItem3.Text = "Configuration";
             // 
             // volumeToolStripMenuItem
@@ -312,7 +314,7 @@ namespace Kolibri.net.C64Sorter
             // 
             toolStripMenuItemRun.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItemFTPTreeView, toolStripSeparator8, allFilesToolStripMenuItem, toolStripSeparator9, pRGToolStripMenuItem, d64ToolStripMenuItem, sIDToolStripMenuItem });
             toolStripMenuItemRun.Name = "toolStripMenuItemRun";
-            toolStripMenuItemRun.Size = new Size(148, 22);
+            toolStripMenuItemRun.Size = new Size(180, 22);
             toolStripMenuItemRun.Text = "Run...";
             // 
             // toolStripMenuItemFTPTreeView
@@ -368,7 +370,7 @@ namespace Kolibri.net.C64Sorter
             // toolStripSeparator6
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new Size(145, 6);
+            toolStripSeparator6.Size = new Size(177, 6);
             // 
             // toolStripMenuItem2
             // 
@@ -477,6 +479,20 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
             // 
+            // mountToolStripMenuItem
+            // 
+            mountToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { d64OrG64OrD81OrD71OrG71ToolStripMenuItem });
+            mountToolStripMenuItem.Name = "mountToolStripMenuItem";
+            mountToolStripMenuItem.Size = new Size(180, 22);
+            mountToolStripMenuItem.Text = "Mount...";
+            // 
+            // d64OrG64OrD81OrD71OrG71ToolStripMenuItem
+            // 
+            d64OrG64OrD81OrD71OrG71ToolStripMenuItem.Name = "d64OrG64OrD81OrD71OrG71ToolStripMenuItem";
+            d64OrG64OrD81OrD71OrG71ToolStripMenuItem.Size = new Size(242, 22);
+            d64OrG64OrD81OrD71OrG71ToolStripMenuItem.Text = "D64 or G64 or D81 or D71 or G71";
+            d64OrG64OrD81OrD71OrG71ToolStripMenuItem.Click += mountersMenuItem_Click;
+            // 
             // MainForm
             // 
             AllowDrop = true;
@@ -561,5 +577,7 @@ namespace Kolibri.net.C64Sorter
         private ToolStripMenuItem toolStripMenuItem2;
         private ToolStripMenuItem commandToolStripMenuItem;
         private ToolStripMenuItem scriptToolStripMenuItem;
+        private ToolStripMenuItem mountToolStripMenuItem;
+        private ToolStripMenuItem d64OrG64OrD81OrD71OrG71ToolStripMenuItem;
     }
 }
