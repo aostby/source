@@ -20,25 +20,25 @@ namespace Kolibri.net.C64Sorter.Controllers
 
             if (preview)
             {
-                //PrintDialog printDialog = new PrintDialog();
-                //if (printDialog.ShowDialog() == DialogResult.OK)
-                //{
-                //    PrintPreviewDialog printPreview = new PrintPreviewDialog();
-                //    printPreview.Document = pd;
-                //    // Apply the settings chosen in the PrintDialog
-                //    printPreview.Document.PrinterSettings = printDialog.PrinterSettings;
-                //    printPreview.ShowDialog();
-                //}
-
-
-                PrintPreviewDialog previewDialog = new PrintPreviewDialog();
-                previewDialog.Document = pd;
-                previewDialog.ShowDialog();
+                PrintDialog printDialog = new PrintDialog();
+                if (printDialog.ShowDialog() == DialogResult.OK)
+                {
+                    PrintPreviewDialog printPreview = new PrintPreviewDialog();
+                    printPreview.Document = pd;
+                    // Apply the settings chosen in the PrintDialog
+                    printPreview.Document.PrinterSettings = printDialog.PrinterSettings;
+                    printPreview.ShowDialog();
+                } 
+                //PrintPreviewDialog previewDialog = new PrintPreviewDialog();
+                //previewDialog.Document = pd;
+                //previewDialog.ShowDialog();
             }
             else
             {
                 // This prints the document to the default printer without a dialog
-                pd.Print();
+ 
+                    pd.Print();
+                
             }
             try { pd.PrintPage -= PrintDocument_PrintPage; pd.Dispose(); }
             catch (Exception ex) { }
@@ -68,6 +68,8 @@ namespace Kolibri.net.C64Sorter.Controllers
         {
             // 2. Draw the image for the current page index
             Image currentImage =   Image.FromFile(_imagesToPrint[_pageIndex].FullName);
+            
+
 
             // You can adjust drawing position and size. This example fits the image within the page margins while maintaining aspect ratio.
             var printableArea = e.MarginBounds;
@@ -86,6 +88,8 @@ namespace Kolibri.net.C64Sorter.Controllers
             
             // 4. Indicate whether there are more pages/images to print
             e.HasMorePages = (_pageIndex < _imagesToPrint.Count);
+            if (_pageIndex >= _imagesToPrint.Count)
+                _pageIndex = 0;
         }
     }
 }
