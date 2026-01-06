@@ -206,22 +206,24 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-
-
                 FolderBrowserDialog fbd = new FolderBrowserDialog();
                 fbd.Description = $"Look up folder with with files in it";
 
                 if (fbd.ShowDialog() == DialogResult.OK)
                 {
                     _sSelectedFolder = new DirectoryInfo(fbd.SelectedPath);
+                    var filetype = $"{(sender as ToolStripMenuItem).Tag}";
 
-                    var list = _sSelectedFolder.GetFiles("*.*", SearchOption.TopDirectoryOnly);
-                    if (sender.Equals(pNGFilesToolStripMenuItem))
+                    var list = _sSelectedFolder.GetFiles($"*.{filetype}", SearchOption.TopDirectoryOnly);
+
+                    var infos = list.Where(file => file.Extension.Contains(filetype, StringComparison.OrdinalIgnoreCase)).ToList();
+                    SetStatusLabel($"Printing {_sSelectedFolder.Name}");
+                    if (infos.Count >= 1)
                     {
-                        var infos = list.Where(file => new string[] { ".png" }.Contains(file.Extension)).ToList();
-                        SetStatusLabel($"Printing {_sSelectedFolder.Name}");
                         PrinterController.PrintImage(infos);
                     }
+                    else SetStatusLabel($"No files found ({filetype}).");
+
                 }
                 else throw new FileNotFoundException("file wasnt found");
             }
