@@ -1,4 +1,5 @@
 
+using com.sun.corba.se.spi.activation;
 using com.sun.org.apache.bcel.@internal.generic;
 using com.sun.security.ntlm;
 using File_Organizer;
@@ -17,6 +18,7 @@ using System.Net.Http.Json;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text.Json;
+using System.Web;
 
 
 namespace Kolibri.net.C64Sorter
@@ -345,7 +347,7 @@ namespace Kolibri.net.C64Sorter
         private async void mountersMenuItem_Click(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 if (string.IsNullOrEmpty(_hostname.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
                 Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var text = ((sender as ToolStripMenuItem).Text.Replace("or", " ").Replace(",", " ").Split(" ")).ToArray().Where(s => !string.IsNullOrEmpty(s)).ToArray();
@@ -367,7 +369,7 @@ namespace Kolibri.net.C64Sorter
                     client.MountAndRunExistingTempFile(_hostname.Hostname, Path.GetFileName(fbd.Name), false);
                     SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
                 }
-                else SetStatusLabel($"Wrong filetype: {fbd.Name} - not a {string.Join(" or ",text)}");
+                else SetStatusLabel($"Wrong filetype: {fbd.Name} - not a {string.Join(" or ", text)}");
             }
             catch (HttpRequestException hex)
             {
@@ -502,16 +504,23 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
+                Form form = new net.Common.Formutilities.Forms.WebBrowserForm("https://www.problembar.net/uranus/BeerXML/uploads/APPS/Kolibri.net.C64Sorter_UserManual.pdf");
+                form.MdiParent = this;
+                form.Show();
+
                 Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var version = await client.GetVersionAsync();
                 string text = $"Version: {version.version} - {GetIPv4AddressForInterface("en0")}";
 
                 SplashScreen.Splash(text, 2000, this.Icon.ToBitmap());
+
+
+
             }
             catch (Exception ex)
             {
-              
-            SplashScreen.Splash("PCUtil for the Commodore Ultimate Elite II", 4000, this.Icon.ToBitmap()); 
+
+                SplashScreen.Splash("PCUtil for the Commodore Ultimate Elite II", 4000, this.Icon.ToBitmap());
                 SetStatusLabel(ex.Message);
             }
 
@@ -542,27 +551,23 @@ namespace Kolibri.net.C64Sorter
                 Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 if (sender.Equals(resetToolStripMenuItem))
                 { client.MachineReset(); }
-                if (sender.Equals(rebootToolStripMenuItem))
+                else if (sender.Equals(rebootToolStripMenuItem))
                     client.MachineReboot();
 
-                if (sender.Equals(pauseToolStripMenuItem))
+                else if (sender.Equals(pauseToolStripMenuItem))
                     client.MachinePause();
-                if (sender.Equals(resumeToolStripMenuItem))
+                else if (sender.Equals(resumeToolStripMenuItem))
                     client.MachineResume();
-                if (sender.Equals(powerOffToolStripMenuItem))
+                else if (sender.Equals(powerOffToolStripMenuItem))
                     client.MachinePowerOff();
-
+                else if (sender.Equals(ue2MenutoolStripMenuItem))
+                    client.MachineMenu();
             }
             catch (Exception ex)
             {
                 SetStatusLabel(ex.Message);
             }
-        }
-
-        private async void aboutToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-           
-        }
+        } 
 
         public string? GetIPv4AddressForInterface(string interfaceName)
         {
@@ -799,5 +804,21 @@ namespace Kolibri.net.C64Sorter
                 SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
             }
         }
+
+        private void toolStripMenuItemHTTPServer_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Form form = new Kolibri.net.Common.Formutilities.Forms.WebBrowserForm($"http://{_hostname.Hostname}");
+                form.MdiParent = this;
+                form.Show();
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
+            }
+        }
+
+       
     }
 }

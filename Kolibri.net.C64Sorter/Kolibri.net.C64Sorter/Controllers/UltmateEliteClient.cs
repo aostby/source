@@ -260,6 +260,18 @@ namespace Kolibri.net.C64Sorter.Controllers
         }
 
         #region Machine commands
+        internal async Task<bool> MachineMenu(bool show=true)
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync("v1/version"); // Replace "products" with your endpoint path
+            if (response.IsSuccessStatusCode)
+            {
+                string url = $"http://{_clientName}/v1/machine:menu_button";
+                var res = await _httpClient.PutAsync(url, null);
+                return res.IsSuccessStatusCode;
+            }
+            return false;
+        } 
+
         internal async Task<bool> MachineReset()
         {
             HttpResponseMessage response = await _httpClient.GetAsync("v1/version"); // Replace "products" with your endpoint path
