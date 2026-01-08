@@ -483,11 +483,7 @@ namespace Kolibri.net.C64Sorter.Controllers
                 throw new Exception($"{response.RequestMessage} Error: {response.StatusCode}");
             }
         }
-
-        internal void GetSystemInformation()
-        {
-            throw new NotImplementedException();
-        }
+ 
 
         /* volume control values
         Set UltiSID 1 volume
@@ -526,10 +522,9 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
         #region System commands
         public async Task<UltimateSystem> GetSystemInformationAsync() // Replace Product with your model class
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("v1/system"); // Replace "products" with your endpoint path
+            HttpResponseMessage response = await _httpClient.GetAsync("v1/info"); // v1/system var dårlig. Replace "products" with your endpoint path
             if (response.IsSuccessStatusCode)
-            {
-                string url = $"http://{_clientName}/v1/machine:reset";
+            {   
                 return await response.Content.ReadFromJsonAsync<UltimateSystem>();
             }
             return null;

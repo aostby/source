@@ -1,7 +1,3 @@
-
-using com.sun.corba.se.spi.activation;
-using com.sun.org.apache.bcel.@internal.generic;
-using com.sun.security.ntlm;
 using File_Organizer;
 using FTP_Connect;
 
@@ -13,37 +9,47 @@ using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
 using System.Data;
-using System.Drawing;
-using System.Net.Http.Json;
 using System.Net.NetworkInformation;
-using System.Reflection;
-using System.Text.Json;
-using System.Web;
-
+using System.Reflection; 
 
 namespace Kolibri.net.C64Sorter
 {
     public partial class MainForm : Form
     {
-        private UE2LogOn _hostname = new UE2LogOn();
+        private UE2LogOn _ue2logon = new UE2LogOn();
         private DirectoryInfo _sSelectedFolder;
         private string _searchText = string.Empty;
+        private Controllers.UltmateEliteClient _client = null;
+
         public MainForm()
         {
             InitializeComponent();
             Init();
         }
-        private void Init()
+        private async void Init()
         {
             this.KeyPreview = true; // This makes the form receive key events first.
 
-            try { _hostname = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(UltmateEliteClient.AppsettingsPath.FullName)); } catch (Exception) { }
-            if (string.IsNullOrWhiteSpace(_hostname.Hostname))
+            try { _ue2logon = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(UltmateEliteClient.AppsettingsPath.FullName)); } catch (Exception) { }
+            if (string.IsNullOrWhiteSpace(_ue2logon.Hostname))
             {
                 SetStatusLabel($"NB! - no IP or Hostname for the Ultimate Elite II is set! Please fill it in in the {fileToolStripMenuItem.Text} menu.");
             }
+            else
+            {
+                try
+                {
+                    _client = new UltmateEliteClient(_ue2logon.Hostname);
+                    var sysInfo = await _client.GetSystemInformationAsync();
+                    SetStatusLabel($"{sysInfo.Product} - Host: {sysInfo.Hostname}, Firmware version: {sysInfo.FirmwareVersion}");
+                }
+                catch (Exception)
+                {
+                }
+            }
+
             this.AllowDrop = true;
-            this.Text = Assembly.GetExecutingAssembly().GetName().Name + $" ({_hostname.Hostname})";
+            this.Text += $" {Assembly.GetExecutingAssembly().GetName().Name} ({_ue2logon.Hostname})";
             try
             {
                 this.Text += $" Version: {Assembly.GetExecutingAssembly()?
@@ -61,7 +67,6 @@ namespace Kolibri.net.C64Sorter
             {
                 MessageBox.Show(ex.GetType().Name, ex.Message);
             }
-
         }
 
         private void InitToolsMenu()
@@ -193,7 +198,7 @@ namespace Kolibri.net.C64Sorter
                 {
 
                     _sSelectedFolder = new DirectoryInfo(fbd.SelectedPath);
-                    D64Controller ctrl = new D64Controller(new DirectoryInfo(_sSelectedFolder.FullName));
+                    D64ImagesController ctrl = new D64ImagesController(new DirectoryInfo(_sSelectedFolder.FullName));
                     var jall = ctrl.GetDiskInfos();
                     FileUtilities.OpenFolderHighlightFile(jall);
                 }
@@ -245,11 +250,11 @@ namespace Kolibri.net.C64Sorter
 
                 if (sender.Equals(toolStripMenuItemFTPClient))
                 {
-                    newMDIChild = new frmFTP(_hostname.Hostname, _hostname.Username, _hostname.Password);
+                    newMDIChild = new frmFTP(_ue2logon.Hostname, _ue2logon.Username, _ue2logon.Password);
                 }
                 else if (sender.Equals(toolStripMenuItemFTPTreeView))
                 {
-                    newMDIChild = new FTPTreeviewForm(_hostname.Hostname);
+                    newMDIChild = new FTPTreeviewForm(_ue2logon);
                 }
                 newMDIChild.MdiParent = this;
                 newMDIChild.Show();
@@ -278,7 +283,7 @@ namespace Kolibri.net.C64Sorter
                 if (fbd.ShowDialog() == DialogResult.OK)
                 {
                     _sSelectedFolder = new DirectoryInfo(fbd.SelectedPath);
-                    D64Controller ctrl = new D64Controller(new DirectoryInfo(_sSelectedFolder.FullName));
+                    D64ImagesController ctrl = new D64ImagesController(new DirectoryInfo(_sSelectedFolder.FullName));
 
                     var choice = InputDialogs.InputBox("Part of filename to search for", "Please input a search string", ref _searchText);
                     if (choice == DialogResult.Cancel) return;
@@ -348,8 +353,8 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                if (string.IsNullOrEmpty(_hostname.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                if (string.IsNullOrEmpty(_ue2logon.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
+              
                 var text = ((sender as ToolStripMenuItem).Text.Replace("or", " ").Replace(",", " ").Split(" ")).ToArray().Where(s => !string.IsNullOrEmpty(s)).ToArray();
                 string filter = FileUtilities.GetFileDialogFilter(text, true);
 
@@ -362,11 +367,11 @@ namespace Kolibri.net.C64Sorter
                           || fbd.Name.Contains(".G71", StringComparison.OrdinalIgnoreCase)
                           )
                 {
-                    SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname.Hostname}");
-                    var existing = client.FtpUpload(_hostname.Hostname, fbd.FullName);
+                    SetStatusLabel($"Mounting {fbd.Name} remotely to {_ue2logon.Hostname}");
+                    var existing = _client.FtpUpload(_ue2logon.Hostname, fbd.FullName);
                     if (fbd.Extension.Substring(fbd.Extension.Length - 2, 2).ToInt32() > 41)
                     { Thread.Sleep(1000); }
-                    client.MountAndRunExistingTempFile(_hostname.Hostname, Path.GetFileName(fbd.Name), false);
+                    _client.MountAndRunExistingTempFile(_ue2logon.Hostname, Path.GetFileName(fbd.Name), false);
                     SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
                 }
                 else SetStatusLabel($"Wrong filetype: {fbd.Name} - not a {string.Join(" or ", text)}");
@@ -390,11 +395,11 @@ namespace Kolibri.net.C64Sorter
         private async void runnersMenuItem_Click(object sender, EventArgs e)
         {
 
-            if (string.IsNullOrEmpty(_hostname.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
+            if (string.IsNullOrEmpty(_ue2logon.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
             try
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+              //  Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var text = ((sender as ToolStripMenuItem).Text.Replace("or", " ").Replace(",", " ").Split(" ")).ToArray().Where(s => !string.IsNullOrEmpty(s)).ToArray();
                 string filter = FileUtilities.GetFileDialogFilter(text, true);
 
@@ -409,8 +414,8 @@ namespace Kolibri.net.C64Sorter
                 {
                     if (fbd.Exists && (fbd.Name.Contains(".PRG", StringComparison.OrdinalIgnoreCase) || fbd.Name.Contains(".CRT", StringComparison.OrdinalIgnoreCase)))
                     {
-                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname}");
-                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, new FileInfo(fbd.FullName));
+                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_ue2logon}");
+                        _client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, new FileInfo(fbd.FullName));
 
                     }
                     else if (fbd.Exists && fbd.Name.Contains(".D64", StringComparison.OrdinalIgnoreCase)
@@ -420,20 +425,20 @@ namespace Kolibri.net.C64Sorter
                         || fbd.Name.Contains(".G71", StringComparison.OrdinalIgnoreCase)
                         )
                     {
-                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname.Hostname}");
-                        var existing = client.FtpUpload(_hostname.Hostname, fbd.FullName);
+                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_ue2logon.Hostname}");
+                        var existing = _client.FtpUpload(_ue2logon.Hostname, fbd.FullName);
                         if (fbd.Extension.Substring(fbd.Extension.Length - 2, 2).ToInt32() > 41)
-                        { await client.MachineReset(); Thread.Sleep(3500); }
-                        client.MountAndRunExistingTempFile(_hostname.Hostname, Path.GetFileName(fbd.Name));
+                        { await _client.MachineReset(); Thread.Sleep(3500); }
+                        _client.MountAndRunExistingTempFile(_ue2logon.Hostname, Path.GetFileName(fbd.Name));
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
                     }
                     else if (fbd.Exists && fbd.Name.Contains(".SID", StringComparison.OrdinalIgnoreCase)
                         || fbd.Name.Contains(".MOD", StringComparison.OrdinalIgnoreCase)
                         )
                     {
-                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_hostname.Hostname}");
-                        var existing = client.FtpUpload(_hostname.Hostname, fbd.FullName);
-                        client.UploadAndRunPrgOrCrt(_hostname.Hostname, fbd);
+                        SetStatusLabel($"Mounting {fbd.Name} remotely to {_ue2logon.Hostname}");
+                        var existing = _client.FtpUpload(_ue2logon.Hostname, fbd.FullName);
+                        _client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, fbd);
                         SetStatusLabel($"Mounting {fbd.Name} remotely to {existing}");
                     }
                     else { throw new Exception($"{fbd.Extension.ToUpper()} files not supported!"); }
@@ -467,9 +472,9 @@ namespace Kolibri.net.C64Sorter
             try
             {
                 UE2LogOn logon = new UE2LogOn();
-                string hostname = _hostname.Hostname;
-                string username = _hostname.Username;
-                string password = _hostname.Password;
+                string hostname = _ue2logon.Hostname;
+                string username = _ue2logon.Username;
+                string password = _ue2logon.Password;
 
                 try
                 {
@@ -486,12 +491,13 @@ namespace Kolibri.net.C64Sorter
                         logon.Username = username;
                         logon.Password = password;
                         logon.Hostname = hostname;
-                        _hostname = logon;
+                        _ue2logon = logon;
                         File.WriteAllText(filename, logon.JsonSerializeObject());
 
-                        SetStatusLabel($"IP or Hostname for the Ultimate Elite II is set! {_hostname.Hostname}.");
+                        SetStatusLabel($"IP or Hostname for the Ultimate Elite II is set! {_ue2logon.Hostname}.");
+                        Init();
                     }
-                    else { SetStatusLabel($"No changes to config for {_hostname.Hostname}."); }
+                    else { SetStatusLabel($"No changes to config for {_ue2logon.Hostname}."); }
                 }
             }
             catch (Exception ex)
@@ -508,8 +514,8 @@ namespace Kolibri.net.C64Sorter
                 form.MdiParent = this;
                 form.Show();
 
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
-                var version = await client.GetVersionAsync();
+             //   Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                var version = await _client.GetVersionAsync();
                 string text = $"Version: {version.version} - {GetIPv4AddressForInterface("en0")}";
 
                 SplashScreen.Splash(text, 2000, this.Icon.ToBitmap());
@@ -548,20 +554,20 @@ namespace Kolibri.net.C64Sorter
 
             try
             {
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+             //   Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 if (sender.Equals(resetToolStripMenuItem))
-                { client.MachineReset(); }
+                { _client.MachineReset(); }
                 else if (sender.Equals(rebootToolStripMenuItem))
-                    client.MachineReboot();
+                    _client.MachineReboot();
 
                 else if (sender.Equals(pauseToolStripMenuItem))
-                    client.MachinePause();
+                    _client.MachinePause();
                 else if (sender.Equals(resumeToolStripMenuItem))
-                    client.MachineResume();
+                    _client.MachineResume();
                 else if (sender.Equals(powerOffToolStripMenuItem))
-                    client.MachinePowerOff();
+                    _client.MachinePowerOff();
                 else if (sender.Equals(ue2MenutoolStripMenuItem))
-                    client.MachineMenu();
+                    _client.MachineMenu();
             }
             catch (Exception ex)
             {
@@ -616,11 +622,10 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+           //     Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 if (sender.Equals(volumeToolStripMenuItem))
                 {
-
-                    Form form = new Forms.VolumeControlForm(client);
+                    Form form = new Forms.VolumeControlForm(_client);
                     form.MdiParent = this;
                     form.Show();
                 }
@@ -665,13 +670,13 @@ namespace Kolibri.net.C64Sorter
                 // into a control or performing file operations.
 
 
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                Controllers.UltmateEliteClient client = new UltmateEliteClient(_ue2logon.Hostname);
                 //client.UploadAndRunPrgOrCrt(_hostname.Hostname, files[0].ToString());
                 var rt = string.Empty;
                 foreach (var item in files)
                 {
                     text = "Uploading file:\n" + item; SetStatusLabel(text);
-                    rt = client.FtpUpload(_hostname.Hostname, item);
+                    rt = client.FtpUpload(_ue2logon.Hostname, item);
                 }
 
 
@@ -679,9 +684,9 @@ namespace Kolibri.net.C64Sorter
                 string ext = Path.GetExtension(Path.GetFileName(uri.LocalPath));
                 if ((ext.ToLower().Contains("mod") || ext.ToLower().Contains("sid")))
                 {
-                    var retur = client.UploadAndRunPrgOrCrt(_hostname.Hostname, new FileInfo(files[0].ToString()));
+                    var retur = client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, new FileInfo(files[0].ToString()));
                 }
-                else client.MountAndRunExistingTempFile(_hostname.Hostname, Path.GetFileName(uri.LocalPath));
+                else client.MountAndRunExistingTempFile(_ue2logon.Hostname, Path.GetFileName(uri.LocalPath));
 
             }
         }
@@ -705,28 +710,28 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+              //  Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var key = e.KeyValue;
                 switch (key)
                 {
                     case 173/*mute*/:
-                        var tmp = await client.ConfigurationGetSpeakerEnable();
+                        var tmp = await _client.ConfigurationGetSpeakerEnable();
                         switch (tmp)
                         {
-                            case "Enabled": await client.ConfigurationSpeakerEnable("Disabled"); break;
-                            case "Disabled": await client.ConfigurationSpeakerEnable("Enabled"); break;
+                            case "Enabled": await _client.ConfigurationSpeakerEnable("Disabled"); break;
+                            case "Disabled": await _client.ConfigurationSpeakerEnable("Enabled"); break;
                             default:
                                 break;
                         }
                         e.Handled = true; break;
                     case 174/*down*/:
-                        var current = await client.ConfigurationGetVolumeLevel();
+                        var current = await _client.ConfigurationGetVolumeLevel();
 
-                        await client.ConfigurationVolumeLevel(current - 5);
+                        await _client.ConfigurationVolumeLevel(current - 5);
                         SetStatusLabel($"Volume down pressed. ({current})");
                         e.Handled = true; break;
                     case 175/*up*/:
-                        var level = await client.ConfigurationGetVolumeLevel();
+                        var level = await _client.ConfigurationGetVolumeLevel();
                         int value = level;
                         if (level < -18)
                         {
@@ -744,7 +749,7 @@ namespace Kolibri.net.C64Sorter
                         value = value + 5;
 
                         SetStatusLabel($"Volume up pressed. ({value})");
-                        await client.ConfigurationVolumeLevel(value + 1);
+                        await _client.ConfigurationVolumeLevel(value + 1);
                         e.Handled = true; break;
                     default:
                         break;
@@ -760,7 +765,7 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Form form = new Forms.VideoStreamForm(_hostname);
+                Form form = new Forms.VideoStreamForm(_ue2logon);
                 form.MdiParent = this;
                 form.Show();
             }
@@ -778,16 +783,16 @@ namespace Kolibri.net.C64Sorter
                 string script = string.Empty;
                 if (sender.Equals(commandToolStripMenuItem))
                 {
-                    res = InputDialogs.InputBox($"Send a command to {_hostname.Hostname} (no PETSCII)", "Command to send (run, load, poke etc.)", ref script);
+                    res = InputDialogs.InputBox($"Send a command to {_ue2logon.Hostname} (no PETSCII)", "Command to send (run, load, poke etc.)", ref script);
                 }
                 else if (sender.Equals(scriptToolStripMenuItem))
                 {
-                    res = InputDialogs.InputRichTextBox($"Send a script to {_hostname.Hostname} (no PETSCII or special commands)", "Command to send (10 print MyName 20 Goto 10; etc.)", ref script);
+                    res = InputDialogs.InputRichTextBox($"Send a script to {_ue2logon.Hostname} (no PETSCII or special commands)", "Command to send (10 print MyName 20 Goto 10; etc.)", ref script);
                 }
                 if (res == DialogResult.OK)
                 {
 
-                    using (Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname))
+                    using (Controllers.UltmateEliteClient client = new UltmateEliteClient(_ue2logon.Hostname))
                     {
                         foreach (var line in script.Split(Environment.NewLine))
                         {
@@ -809,7 +814,7 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Form form = new Kolibri.net.Common.Formutilities.Forms.WebBrowserForm($"http://{_hostname.Hostname}");
+                Form form = new Kolibri.net.Common.Formutilities.Forms.WebBrowserForm($"http://{_ue2logon.Hostname}");
                 form.MdiParent = this;
                 form.Show();
             }

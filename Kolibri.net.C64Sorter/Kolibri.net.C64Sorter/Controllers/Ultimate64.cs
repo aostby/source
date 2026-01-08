@@ -1,4 +1,5 @@
 ﻿
+using Kolibri.net.C64Sorter.Entities;
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;

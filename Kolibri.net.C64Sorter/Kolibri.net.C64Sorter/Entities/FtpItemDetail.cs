@@ -16,6 +16,6 @@ namespace Kolibri.net.C64Sorter.Entities
         // Add an IsDirectory property based on your parsing logic
         public bool IsDirectory { get; set; }
         // You might need more properties based on your FTP server's LIST command response
-     
+     public string LocalPath { get { return new Uri(FullPath).LocalPath.Replace("\\", "/"); } }
     }
 }

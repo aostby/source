@@ -1,18 +1,17 @@
-﻿using com.sun.tools.@internal.xjc;
-using Kolibri.net.Common.Utilities;
+﻿using Kolibri.net.Common.Utilities;
 using System.Text;
 
 
 namespace Kolibri.net.C64Sorter.Controllers
 {
-    public class D64Controller
+    public class D64ImagesController
     {
         private DirectoryInfo _dirSource;
         private FileInfo _fileSource;
 
-        public D64Controller(DirectoryInfo source) { this._dirSource = source; }
+        public D64ImagesController(DirectoryInfo source) { this._dirSource = source; }
 
-        public D64Controller(FileInfo source) { this._fileSource = source; } 
+        public D64ImagesController(FileInfo source) { this._fileSource = source; } 
 
 
         public FileInfo GetSearchResults(string searchString) {
