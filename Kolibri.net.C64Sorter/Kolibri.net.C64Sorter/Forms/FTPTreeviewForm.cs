@@ -25,11 +25,22 @@ namespace Kolibri.net.C64Sorter.Forms
         private string _FtpPass = string.Empty;
         private string _FtpRootUrl = string.Empty;
         private string _hostname = string.Empty;
+        private UE2LogOn _ue2logon = null;
+
+        [Obsolete("Use constructor with UE2LogOn instead",true)]
         public FTPTreeviewForm(string hostname)
         {
             InitializeComponent();
             _hostname = hostname;
             _FtpRootUrl = $"ftp://{hostname}";
+            Init();
+        }
+        public FTPTreeviewForm(UE2LogOn ue2logon)
+        {
+            InitializeComponent();
+            _ue2logon = ue2logon;
+            _hostname = _ue2logon.Hostname;
+            _FtpRootUrl = $"ftp://{_hostname}";
             Init();
         }
 
@@ -163,7 +174,8 @@ namespace Kolibri.net.C64Sorter.Forms
                         UltmateEliteClient client = new UltmateEliteClient(_hostname);
                         if (test.Contains("prg", StringComparison.OrdinalIgnoreCase))
                         {
-                            url = ApiUrls.LoadProgramOnDevice(_hostname, clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"));
+                            Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
+                            url = ApiUrls.LoadProgramOnDevice(_hostname, tst.LocalPath);
                             url = url.Replace($"http://{_hostname}/", string.Empty);
                             client.PutUrl(url);
                             client.SendCommand("RUN");
@@ -171,7 +183,8 @@ namespace Kolibri.net.C64Sorter.Forms
                         }
                         else if (test.Contains("crt", StringComparison.OrdinalIgnoreCase))
                         {
-                            url = ApiUrls.RunCartridgeOnDeviceUri(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"));
+                            Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
+                            url = ApiUrls.RunCartridgeOnDeviceUri(tst.LocalPath);
                             url = url.Replace($"http://{_hostname}/", string.Empty);
                             client.PutUrl(url);
                             client.SendCommand("RUN");
@@ -190,12 +203,7 @@ namespace Kolibri.net.C64Sorter.Forms
                         url = ApiUrls.MountImageOnDevice(_hostname, "a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
                         url = url.Replace($"http://{_hostname}/", string.Empty);
                         url = $"v1/drives/a:mount?image={HttpUtility.UrlEncode(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"))}";
-
-                        // Example: Open a new form based on the node data
-                        // Form2 detailForm = new Form2(clickedNode.Tag);
-                        // detailForm.Show();
-
-
+                          
                         await client.MachineReset();
                         await client.MachineReboot();
                         Thread.Sleep(3000);

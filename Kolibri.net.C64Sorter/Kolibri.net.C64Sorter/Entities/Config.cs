@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
 
-namespace Kolibri.net.C64Sorter.Controllers
+namespace Kolibri.net.C64Sorter.Entities
 {
     class Config
     {
-        
-
         public string Hostname { get; set; }
         public readonly int Port = 64;
 
