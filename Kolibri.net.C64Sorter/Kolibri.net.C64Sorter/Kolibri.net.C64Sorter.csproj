@@ -15,13 +15,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj" />
+    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
     <ProjectReference Include="..\FTP Connect\FTP Connect.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Update="Forms\ExtensionOrganizer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\ConfigsTreeviewForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Properties\Resources.Designer.cs">

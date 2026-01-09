@@ -510,7 +510,7 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Form form = new net.Common.Formutilities.Forms.WebBrowserForm("https://www.problembar.net/uranus/BeerXML/uploads/APPS/Kolibri.net.C64Sorter_UserManual.pdf");
+                Form form = new net.Common.FormUtilities.Forms.WebBrowserForm("https://www.problembar.net/uranus/BeerXML/uploads/APPS/Kolibri.net.C64Sorter_UserManual.pdf");
                 form.MdiParent = this;
                 form.Show();
 
@@ -608,7 +608,7 @@ namespace Kolibri.net.C64Sorter
                 FileInfo info = new FileInfo(@".\Resources\links.rss");
 
                 var rssfeed = File.ReadAllText(info.FullName);
-                Form form = new Kolibri.net.Common.Formutilities.Forms.RSSForm(info.FullName);
+                Form form = new Kolibri.net.Common.FormUtilities.Forms.RSSForm(info.FullName);
                 form.MdiParent = this;
                 form.Show();
             }
@@ -626,6 +626,12 @@ namespace Kolibri.net.C64Sorter
                 if (sender.Equals(volumeToolStripMenuItem))
                 {
                     Form form = new Forms.VolumeControlForm(_client);
+                    form.MdiParent = this;
+                    form.Show();
+                }
+                if (sender.Equals(configsToolStripMenuItem))
+                {
+                    Form form = new Forms.ConfigsTreeviewForm(_ue2logon );
                     form.MdiParent = this;
                     form.Show();
                 }
@@ -814,7 +820,7 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-                Form form = new Kolibri.net.Common.Formutilities.Forms.WebBrowserForm($"http://{_ue2logon.Hostname}");
+                Form form = new Kolibri.net.Common.FormUtilities.Forms.WebBrowserForm($"http://{_ue2logon.Hostname}");
                 form.MdiParent = this;
                 form.Show();
             }

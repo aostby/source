@@ -194,6 +194,7 @@ namespace Kolibri.net.C64Sorter.Forms
                         {
                             Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
                             url = ApiUrls.SidPlayOnDevice(_hostname, tst.LocalPath, 0);
+                            url = url.Replace($"http://{_hostname}/", string.Empty);
                             client.PutUrl(url);
                             client.SendCommand("RUN");
                             return;
