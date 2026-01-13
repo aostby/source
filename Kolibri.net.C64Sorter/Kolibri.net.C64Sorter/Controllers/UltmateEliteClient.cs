@@ -289,6 +289,33 @@ namespace Kolibri.net.C64Sorter.Controllers
         #endregion
         #region Configuration commands
 
+        internal async Task<string> ConfigurationGetCurrentStreamSettings()
+        {
+            string ret = string.Empty;
+            try
+            {
+                var url = $"v1/configs/Data Streams/Stream VIC to*/*current";
+                HttpResponseMessage response = await _httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var json = await response.Content.ReadAsStringAsync();
+                        dynamic data = JsonConvert.DeserializeObject<dynamic>(json.Replace(" ", string.Empty));
+                        var test = $"{data.DataStreams.StreamVICto.current}" ;
+                        ret = test;
+                    }
+                    else
+                    {
+                        return ret;
+                    }
+                }
+            }
+            catch (Exception) { }
+            return ret;
+        }
+
+
 
         internal async Task<int> ConfigurationGetVolumeLevel()
         {
@@ -488,6 +515,18 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
             HttpResponseMessage response = await _httpClient.PostAsync(url, null); // Replace "products" with your endpoint path
             return (response.IsSuccessStatusCode);
         }
+         internal async Task<string> Get(string url)
+        {
+                
+            using HttpResponseMessage response = await _httpClient.GetAsync(url);
+
+            // Throws an exception if the status code is not a success code (200-299)
+            response.EnsureSuccessStatusCode();
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            return (jsonResponse);
+        
+        }
+
         internal async Task<bool> SendCommand(string command)
         {  // 3. Send the keyboard commands
             string runCmd = command;
@@ -555,5 +594,7 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
             }
             // free native resources if there are any.
         }
+
+       
     }
 }

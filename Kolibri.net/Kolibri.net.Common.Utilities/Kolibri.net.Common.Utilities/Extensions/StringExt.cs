@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Kolibri.net.Common.Utilities.Extensions
 {
@@ -42,6 +43,16 @@ namespace Kolibri.net.Common.Utilities.Extensions
 
             return text;
         }
+
+        public static string JsonPrettyPrint(this string jsonString)
+        {
+            // Parse the JSON string into a JToken
+            JToken parsedJson = JToken.Parse(jsonString);
+
+            // Convert the JToken to a string with Indented formatting
+            return parsedJson.ToString(Formatting.Indented);
+        }
+
         public static string FirstToUpper(this string str)
         {
             return  StringUtilities.FirstToUpper(str);

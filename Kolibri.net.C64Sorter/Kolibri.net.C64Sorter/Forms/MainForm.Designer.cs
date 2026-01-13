@@ -64,6 +64,8 @@ namespace Kolibri.net.C64Sorter
             powerOffToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem3 = new ToolStripMenuItem();
             volumeToolStripMenuItem = new ToolStripMenuItem();
+            configsToolStripMenuItem = new ToolStripMenuItem();
+            videostreamToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItemRun = new ToolStripMenuItem();
             toolStripMenuItemFTPTreeView = new ToolStripMenuItem();
             toolStripSeparator8 = new ToolStripSeparator();
@@ -92,7 +94,7 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
-            configsToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator12 = new ToolStripSeparator();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -315,7 +317,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // toolStripMenuItem3
             // 
-            toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem, configsToolStripMenuItem });
+            toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem, toolStripSeparator12, configsToolStripMenuItem, videostreamToolStripMenuItem });
             toolStripMenuItem3.Name = "toolStripMenuItem3";
             toolStripMenuItem3.Size = new Size(213, 22);
             toolStripMenuItem3.Text = "Configuration";
@@ -326,6 +328,21 @@ namespace Kolibri.net.C64Sorter
             volumeToolStripMenuItem.Size = new Size(180, 22);
             volumeToolStripMenuItem.Text = "Volume";
             volumeToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            // 
+            // configsToolStripMenuItem
+            // 
+            configsToolStripMenuItem.Name = "configsToolStripMenuItem";
+            configsToolStripMenuItem.Size = new Size(180, 22);
+            configsToolStripMenuItem.Text = "Configs...";
+            configsToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            // 
+            // videostreamToolStripMenuItem
+            // 
+            videostreamToolStripMenuItem.Enabled = false;
+            videostreamToolStripMenuItem.Name = "videostreamToolStripMenuItem";
+            videostreamToolStripMenuItem.Size = new Size(180, 22);
+            videostreamToolStripMenuItem.Text = "Videostream";
+            videostreamToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripMenuItemRun
             // 
@@ -339,7 +356,7 @@ namespace Kolibri.net.C64Sorter
             toolStripMenuItemFTPTreeView.Name = "toolStripMenuItemFTPTreeView";
             toolStripMenuItemFTPTreeView.Size = new Size(216, 22);
             toolStripMenuItemFTPTreeView.Text = "FTP TreeView";
-            toolStripMenuItemFTPTreeView.ToolTipText = "View and run external files";
+            toolStripMenuItemFTPTreeView.ToolTipText = "View and run external files (on UE2)";
             toolStripMenuItemFTPTreeView.Click += toolStripMenuItemFTP_Click;
             // 
             // toolStripSeparator8
@@ -522,12 +539,10 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
             // 
-            // configsToolStripMenuItem
+            // toolStripSeparator12
             // 
-            configsToolStripMenuItem.Name = "configsToolStripMenuItem";
-            configsToolStripMenuItem.Size = new Size(180, 22);
-            configsToolStripMenuItem.Text = "Configs...";
-            configsToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            toolStripSeparator12.Name = "toolStripSeparator12";
+            toolStripSeparator12.Size = new Size(177, 6);
             // 
             // MainForm
             // 
@@ -620,5 +635,7 @@ namespace Kolibri.net.C64Sorter
         private ToolStripMenuItem ue2MenutoolStripMenuItem;
         private ToolStripSeparator toolStripSeparator11;
         private ToolStripMenuItem configsToolStripMenuItem;
+        private ToolStripMenuItem videostreamToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator12;
     }
 }

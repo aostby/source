@@ -1,30 +1,17 @@
-﻿
-
-using com.sun.org.apache.bcel.@internal.generic;
-using com.sun.rowset.@internal;
-using com.sun.security.ntlm;
-using com.sun.tools.@internal.ws.wsdl.document.http;
+﻿using FastColoredTextBoxNS;
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using Newtonsoft.Json.Linq;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Security.Policy;
-using System.Text;
+using System.Dynamic;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
-using System.Windows.Forms;
 using System.Xml;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Kolibri.net.C64Sorter.Forms
 {
@@ -34,6 +21,8 @@ namespace Kolibri.net.C64Sorter.Forms
 
         private UE2LogOn _ue2logon = null;
         private UltmateEliteClient _client = null;
+        private Dictionary<string, Dictionary<string, string>> CategoriesNodeDic = new Dictionary<string, Dictionary<string, string>>();
+        private List<Sections> CategoriesSectiosList = new List<Sections>();
 
         public ConfigsTreeviewForm(UE2LogOn ue2logon)
         {
@@ -46,6 +35,7 @@ namespace Kolibri.net.C64Sorter.Forms
         // Initial load (e.g., in Form_Load event)
         private async void Init()
         {
+            fastColoredTextBox1.Text = $"Double click on the grid line -  often twice..\r\nInitializing takes time....\r\nRight Click to change a value, if you have initialized the current category.\r\nafter changing a value, double clik again on the category";
             treeView1.Nodes.Clear();
             _client = new UltmateEliteClient(_ue2logon.Hostname);
 
@@ -84,10 +74,11 @@ namespace Kolibri.net.C64Sorter.Forms
         {
             try
             {
-
                 string result = Regex.Replace(statusText, @"\r\n?|\n", Environment.NewLine);
                 result = result.Replace(Environment.NewLine, " ");
                 toolStripStatusLabelStatus.Text = result;
+                //fastColoredTextBox1.Text = result;
+
             }
             catch (Exception) { }
         }
@@ -134,164 +125,185 @@ namespace Kolibri.net.C64Sorter.Forms
         private async void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             SetStatusLabel($"{e.Node.Name}: Showing values");
-
+            Dictionary<string, string> dictionary = null;
             if (e.Node.Name != "Categories")
             {
                 try
                 {
-                    var url = ApiUrls.GetConfigCategory(_ue2logon.Hostname, HttpUtility.UrlEncode(e.Node.Name));
-                    HttpClient client = new HttpClient();
-                    string jsonString = await client.GetStringAsync(url);
+                    toolStripStatusLabelStatus.Tag = e.Node.Name;
+                    if (CategoriesNodeDic.ContainsKey(e.Node.Name))
+                    {
+                        dictionary = CategoriesNodeDic[e.Node.Name];
+                    }
+                    else
+                    {
+                        var url = ApiUrls.GetConfigCategory(_ue2logon.Hostname, HttpUtility.UrlEncode(e.Node.Name));
+                        HttpClient client = new HttpClient();
+                        string jsonString = await client.GetStringAsync(url);
 
-                    e.Node.Tag = url;
+                        e.Node.Tag = url;
 
-                    //// Note:Json convertor needs a json with one node as root
-                    jsonString = $"{{ \"rootNode\": {{{jsonString.Trim().TrimStart('{').TrimEnd('}')}}} }}";
+                        //// Note:Json convertor needs a json with one node as root
+                        jsonString = $"{{ \"rootNode\": {{{jsonString.Trim().TrimStart('{').TrimEnd('}')}}} }}";
 
-                    var xd = JsonConvert.DeserializeXmlNode(jsonString.Replace("DMA Load Mimics ID:", "DMA Load Mimics ID"));
+                        var xd = JsonConvert.DeserializeXmlNode(jsonString.Replace("DMA Load Mimics ID:", "DMA Load Mimics ID"));
 
-                    //// DataSet is able to read from XML and return a proper DataSet
-                    var result = new DataSet();
-                    XmlReadMode mode = XmlReadMode.Auto;
-                    result.ReadXml(new XmlNodeReader(xd), mode);
+                        //// DataSet is able to read from XML and return a proper DataSet
+                        var result = new DataSet();
+                        XmlReadMode mode = XmlReadMode.Auto;
+                        result.ReadXml(new XmlNodeReader(xd), mode);
 
-                    DataRow row = result.Tables[0].Rows[0];
+                        DataRow row = result.Tables[0].Rows[0];
 
-                    Dictionary<string, object> dictionary = row.Table.Columns
-                        .Cast<DataColumn>()
-                        .ToDictionary(col => col.ColumnName, col => row[col.ColumnName]);
-
-
-                    // Example using a DataTable
+                        dictionary = row.Table.Columns
+                             .Cast<DataColumn>()
+                             .ToDictionary(col => col.ColumnName, col => row[col.ColumnName].ToString());
+                        CategoriesNodeDic.Add(e.Node.Name, dictionary);
+                    }
                     dataGridView1.DataSource = null;
                     dataGridView1.DataSource = dictionary.ToDataTable();
                     dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                    dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                     dataGridView1.MultiSelect = false;
                     dataGridView1.ReadOnly = true;
                     dataGridView1.Refresh();
-                
+
                 }
                 catch (Exception ex)
                 {
                     dataGridView1.DataSource = null;
                     SetStatusLabel($"{e.Node.Name}: {ex.Message}");
                 }
-
             }
-
-
-            //    string url = string.Empty;
-            //    TreeNode clickedNode = e.Node;
-            //    try
-            //    {
-            //        // Perform your desired action with the clicked node
-            //        if (clickedNode != null)
-            //        {
-            //            var test = e.Node.ImageKey;
-            //            SetStatusLabel($"You double-clicked: {clickedNode.Text} - {test}");
-
-            //            if (clickedNode.Tag != null && !(clickedNode.Tag as FtpItemDetail).IsDirectory)
-            //            {
-            //                UltmateEliteClient client = new UltmateEliteClient(_hostname);
-            //                if (test.Contains("prg", StringComparison.OrdinalIgnoreCase))
-            //                {
-            //                    Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
-            //                    url = ApiUrls.LoadProgramOnDevice(_hostname, tst.LocalPath);
-            //                    url = url.Replace($"http://{_hostname}/", string.Empty);
-            //                    client.PutUrl(url);
-            //                    client.SendCommand("RUN");
-            //                    return;
-            //                }
-            //                else if (test.Contains("crt", StringComparison.OrdinalIgnoreCase))
-            //                {
-            //                    Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
-            //                    url = ApiUrls.RunCartridgeOnDeviceUri(tst.LocalPath);
-            //                    url = url.Replace($"http://{_hostname}/", string.Empty);
-            //                    client.PutUrl(url);
-            //                    client.SendCommand("RUN");
-            //                    return;
-            //                }
-            //                else if (test.Contains("sid", StringComparison.OrdinalIgnoreCase) || test.Contains("mod", StringComparison.OrdinalIgnoreCase))
-            //                {
-            //                    Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
-            //                    url = ApiUrls.SidPlayOnDevice(_hostname, tst.LocalPath, 0);
-            //                    client.PutUrl(url);
-            //                    client.SendCommand("RUN");
-            //                    return;
-            //                }
-
-            //                DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
-            //                url = ApiUrls.MountImageOnDevice(_hostname, "a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
-            //                url = url.Replace($"http://{_hostname}/", string.Empty);
-            //                url = $"v1/drives/a:mount?image={HttpUtility.UrlEncode(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"))}";
-
-            //                await client.MachineReset();
-            //                await client.MachineReboot();
-            //                Thread.Sleep(3000);
-            //                var jall = await client.PutUrl(url, true);
-
-            //            }
-            //        }
-            //    }
-            //    catch (HttpRequestException hex)
-            //    {
-            //        MessageBox.Show(hex.Message, hex.GetType().Name);
-            //        SetStatusLabel($"Mounting failed: {hex.Message}");
-            //    }
-            //    catch (AggregateException aex)
-            //    {
-            //        SetStatusLabel(aex.Message);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        SetStatusLabel(ex.Message);
-            //        try
-            //        {
-            //            Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
-            //            url = tst.LocalPath;
-
-            //            if (!tst.LocalPath.Contains(".exe", StringComparison.OrdinalIgnoreCase))
-            //            {
-            //                DirectoryInfo tmp = new DirectoryInfo(Path.Combine(Kolibri.net.C64Sorter.Controllers.UltmateEliteClient.ResourcesPath.FullName, "TEMP"));
-            //                if (!tmp.Exists) tmp.Create();
-            //                var test = FTPControllerC64.DownloadFileFTP(
-            //                    new UE2LogOn() { Hostname = _hostname, Username = _FtpUser, Password = _FtpPass },
-            //                    tmp,
-            //                    url);
-            //                FileUtilities.Start(test);
-            //            }
-            //        }
-            //        catch (Exception ftpex)
-            //        {
-            //            SetStatusLabel(ftpex.Message);
-            //        }
-            //    }
-
         }
 
-      
 
-        private void dataGridView1_RowHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+
+        private async void dataGridView1_RowHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
+            var lang = fastColoredTextBox1.Language;
             try
             {
-
-
+                fastColoredTextBox1.Language = FastColoredTextBoxNS.Language.JSON;
                 // Get the clicked row and cell
                 DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                var category = toolStripStatusLabelStatus.Tag.ToString();
+                var section = row.Cells["Key"].Value.ToString();
+                var currentValue = row.Cells["Value"].Value.ToString();
+
 
                 string text = $"Row Index: {e.RowIndex}, Column Index: {e.ColumnIndex}\nKey: {row.Cells["Key"].Value.ToString()} \nValue: {row.Cells["Value"].Value.ToString()}";
-                // Example: Display the row index and cell value
-                //MessageBox.Show(text);
 
 
-                throw new NotImplementedException(text);
+                var url = ApiUrls.GetConfigCategorySection(_client.ClientName, category, section);
+                url = ApiUrls.ToLocalPath(url);
+                var json = await _client.Get(url);
+
+                if (!CategoriesSectiosList.Any(p => p.SectionName == section))
+                {
+                    CategoriesSectiosList.Add(new Sections() { CatagoryName = category, SectionName = section, AllowedValues = GetAllowedValues(section, currentValue, json) });
+                }
+                fastColoredTextBox1.Text = json.JsonPrettyPrint();
+
+
 
             }
             catch (Exception ex)
             {
-                
-                    SetStatusLabel($"Error occured: {ex.GetType().Name} -  {ex.Message.Replace(@"\r", " ")}");
+                fastColoredTextBox1.Language = lang;
+
+                SetStatusLabel($"Error occured: {ex.GetType().Name} -  {ex.Message.Replace(@"\r", " ")}");
+            }
+        }
+
+        private List<string> GetAllowedValues(string section, string? currentValue, string jsonString)
+        {
+            List<string> allStrings = new List<string>();
+            List<string> ret = new List<string>() { currentValue };
+            {
+                try
+                {
+
+
+                    dynamic dynamicObject = JsonConvert.DeserializeObject(jsonString);
+
+                    JObject obj = JObject.Parse(jsonString);
+                    var firstProperty = obj.Properties().First();
+                    var firstKey = firstProperty.First().First();
+                    var nestedValue = obj[firstProperty.Name][section]["values"].ToArray();
+                    ret = nestedValue.Select(x => x.ToString()).ToList();
+                }
+                catch (Exception) { }
+
+            }
+            return ret;
+        }
+
+        private async void dataGridView1_MouseClick(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+
+                    DataGridViewRow row = dataGridView1.SelectedRows[0];
+                    var key = row.Cells["Key"].Value.ToString();
+                    var change = CategoriesSectiosList.Find(x => x.SectionName == key);
+                    if (change == null)
+                    {
+                        string text = $"Change for {key} not possibible, double click to initalize the setting {key} first";
+                        SetStatusLabel(text);
+                        return;
+                    }
+                    var currentValue = row.Cells["Value"].Value.ToString();
+                    var res = DialogResult.Cancel;
+
+                    string sValue = string.Empty;
+                    object oValue = null;
+
+                    if (change.AllowedValues.Count == 1)
+                    {
+                        sValue = currentValue;
+                        res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.InputBox(change.CatagoryName, $"Set a value for {change.SectionName}", change.AllowedValues.ToArray(), ref sValue);
+                    }
+                    else
+                    {
+                        res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.ChooseListBox(change.CatagoryName, $"Set a value for {change.SectionName}", change.AllowedValues, ref oValue, false);
+                    }
+                    if (res == DialogResult.OK)
+                    {
+                        var value = $"{sValue}".Trim();
+                        if (string.IsNullOrWhiteSpace(value))
+                            value = (oValue as ListViewItem).Text.Trim();
+
+                      var url =   ApiUrls.UpdateConfigCategorySectionValue(_client.ClientName, change.CatagoryName, change.SectionName, value);
+                        ApiUrls.ToLocalPath(url);
+                        var happened = await _client.PutUrl(url);
+                        if (happened)
+                        { string text = $"New value for {change.CatagoryName} - {change.SectionName} set to {value} (was {currentValue})";
+                            SetStatusLabel(text);
+                            if (CategoriesSectiosList.Any(p => p.SectionName == change.SectionName))
+                            {
+                                CategoriesSectiosList.Remove(change);
+                                CategoriesNodeDic.Remove(change.CatagoryName);
+                                fastColoredTextBox1.Language = Language.Custom;
+                                fastColoredTextBox1.Text = $"New value for {change.CatagoryName} - {change.SectionName} set to {value} (was {currentValue})";
+                                dataGridView1.DataSource = null;
+                            }
+                        }
+                        else { throw new Exception($"Could not complete request: New value for {change.CatagoryName} - {change.SectionName} was not carried out. Still {currentValue}. "); 
+                        }
+                    }
+                    else
+                    {
+                        SetStatusLabel($"New value for {change.CatagoryName} - {change.SectionName} was not carried out. Still {currentValue}. Operation dialog: {res})");
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabel($"Error occured: {ex.GetType().Name} -  {ex.Message.Replace(@"\r", " ")} - Exception: {ex.Message}");
             }
         }
     }

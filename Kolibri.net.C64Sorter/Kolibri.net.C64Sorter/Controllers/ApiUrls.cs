@@ -16,6 +16,30 @@ public class ApiUrls
     private const string DataStreamsUri = "/v1/streams";
     private const string FileManipulationsUri = "/v1/files";
 
+    #region tools
+    public static string ToLocalPath(string urlString, bool urlEncode=false)
+    {
+        string ret = urlString;
+
+        try
+        {
+            if (urlString.Contains("http://", StringComparison.OrdinalIgnoreCase))
+            {
+                urlString = new Uri(urlString).PathAndQuery;
+                if (urlEncode)
+                {
+                    urlString = HttpUtility.UrlEncode(urlString);
+                }
+                ret = urlString;
+            }
+        }
+        catch (Exception)
+        { ret = urlString; }
+        return ret;
+    }
+    #endregion
+
+
     #region Runners
 
     private static string SidPlayOnDeviceUri(string filePath, int songNumber) => $"{RunnersUri}:sidplay?file={HttpUtility.UrlEncode(filePath)}&songnr={songNumber}";

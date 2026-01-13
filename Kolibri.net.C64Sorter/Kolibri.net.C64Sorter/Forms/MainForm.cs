@@ -36,15 +36,21 @@ namespace Kolibri.net.C64Sorter
                 SetStatusLabel($"NB! - no IP or Hostname for the Ultimate Elite II is set! Please fill it in in the {fileToolStripMenuItem.Text} menu.");
             }
             else
-            {
+            { 
                 try
                 {
                     _client = new UltmateEliteClient(_ue2logon.Hostname);
                     var sysInfo = await _client.GetSystemInformationAsync();
                     SetStatusLabel($"{sysInfo.Product} - Host: {sysInfo.Hostname}, Firmware version: {sysInfo.FirmwareVersion}");
                 }
-                catch (Exception)
+                catch (AggregateException aex)
                 {
+                    MessageBox.Show(aex.Message, aex.GetType().Name);
+                    SetStatusLabel($"Getting SystemInformation failed: {aex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    SetStatusLabel($"SystemInformation failed: {ex.Message}");
                 }
             }
 
@@ -67,6 +73,9 @@ namespace Kolibri.net.C64Sorter
             {
                 MessageBox.Show(ex.GetType().Name, ex.Message);
             }
+
+          
+
         }
 
         private void InitToolsMenu()
@@ -514,9 +523,20 @@ namespace Kolibri.net.C64Sorter
                 form.MdiParent = this;
                 form.Show();
 
-             //   Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
-                var version = await _client.GetVersionAsync();
-                string text = $"Version: {version.version} - {GetIPv4AddressForInterface("en0")}";
+                //   Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                var version = "1.0.0.0";// await _client.GetVersionAsync().ToString();
+
+                try
+                {
+                    version = Assembly.GetExecutingAssembly()?
+                                      .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                                      .InformationalVersion.Substring(0, 5).ToString();
+                }
+                catch (Exception)
+                { }
+
+
+                string text = $"Version: {version} - {GetIPv4AddressForInterface("en0")}";
 
                 SplashScreen.Splash(text, 2000, this.Icon.ToBitmap());
 
@@ -622,16 +642,22 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-           //     Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                //     Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 if (sender.Equals(volumeToolStripMenuItem))
                 {
                     Form form = new Forms.VolumeControlForm(_client);
                     form.MdiParent = this;
                     form.Show();
                 }
-                if (sender.Equals(configsToolStripMenuItem))
+                else if (sender.Equals(configsToolStripMenuItem))
                 {
-                    Form form = new Forms.ConfigsTreeviewForm(_ue2logon );
+                    Form form = new Forms.ConfigsTreeviewForm(_ue2logon);
+                    form.MdiParent = this;
+                    form.Show();
+                }
+                else if (sender.Equals(videostreamToolStripMenuItem)) 
+                {
+                    Form form = new Forms.VideoStreamForm(_ue2logon);
                     form.MdiParent = this;
                     form.Show();
                 }
