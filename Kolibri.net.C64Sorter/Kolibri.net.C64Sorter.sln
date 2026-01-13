@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.Utilitie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTP Connect", "FTP Connect\FTP Connect.csproj", "{C9FC5BA8-43ED-4C43-8273-60C096470771}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.Formutilities", "..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj", "{552544FE-843C-60DA-FDAD-AEB1C04D18F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.FormUtilities", "..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.FormUtilities.csproj", "{552544FE-843C-60DA-FDAD-AEB1C04D18F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

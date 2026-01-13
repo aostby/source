@@ -103,20 +103,7 @@ namespace Kolibri.net.C64Sorter.Forms
             return directoryNode;
         }
 
-        //private TreeNode CreateDirectoryNode(string path, string name)
-        //{
-        //    TreeNode directoryNode = new TreeNode(name);
-        //    // Set the icons for the normal and selected states
-        //    directoryNode.ImageKey = "default";
-        //    directoryNode.SelectedImageKey = "default";
-        //    directoryNode.Tag = path; // Store the full FTP path in the Tag
-
-        //    // Add a dummy node to allow the parent node to be expandable
-        //    directoryNode.Nodes.Add("Loading...");
-        //    return directoryNode;
-        //}
-
-        // Handle the BeforeExpand event of the TreeView
+    
         private void treeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             TreeNode expandingNode = e.Node;
@@ -194,6 +181,7 @@ namespace Kolibri.net.C64Sorter.Forms
                         {
                             Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
                             url = ApiUrls.SidPlayOnDevice(_hostname, tst.LocalPath, 0);
+                            url = url.Replace($"http://{_hostname}/", string.Empty);
                             client.PutUrl(url);
                             client.SendCommand("RUN");
                             return;

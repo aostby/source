@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kolibri.net.Common.Formutilities.Controller
+namespace Kolibri.net.Common.FormUtilities.Controller
 {
     public class AutoCompleteController
     {

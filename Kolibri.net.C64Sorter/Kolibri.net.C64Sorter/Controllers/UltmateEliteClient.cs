@@ -94,52 +94,7 @@ namespace Kolibri.net.C64Sorter.Controllers
             Thread.Sleep(500);
             return ftpUrl;
         }
-        //public async Task MountAndRunExistingFile(string ipAddress, string remoteFileName)
-        //{
-        //    using HttpClient client = new HttpClient();
-        //    var ext = Path.GetExtension(remoteFileName).TrimStart('.').ToLower();
-
-        //    // 1. Mount the local file (now it has a name, extension doesn't matter if you use ?type=d64)
-        //    string mountUrl = $"http://{ipAddress}/v1/drives/8:mount?image=/Temp/{remoteFileName}&type=d64";
-        //    await client.PutAsync(mountUrl, null);
-
-        //    // 2. Wait 1 second for the 1541 hardware to "see" the disk
-        //    await Task.Delay(1000);
-
-        //    // 3. Send the keyboard commands
-        //    string runCmd = "LOAD\"*\",8,1\rRUN\r";
-        //    string keyboardUrl = $"http://{ipAddress}/v1/machine:keyboard?data={Uri.EscapeDataString(runCmd)}";
-        //    await client.PutAsync(keyboardUrl, null);
-        //}
-
-
-        //public async Task UploadAndMountD64(string ipAddress, string localFilePath)
-        //{
-        //    byte[] d64Data = await File.ReadAllBytesAsync(localFilePath);
-
-        //    using HttpClient client = new HttpClient();
-
-        //    // 1. Force simple binary transfer (avoids Ultimate rejecting the stream)
-        //    client.DefaultRequestHeaders.ExpectContinue = false;
-        //    client.DefaultRequestHeaders.TransferEncodingChunked = false;
-
-        //    using ByteArrayContent content = new ByteArrayContent(d64Data);
-        //    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-        //    content.Headers.ContentLength = d64Data.Length;
-
-        //    // 2. EXPLICITLY set the type to d64 so the filename doesn't matter
-        //    string url = $"http://{ipAddress}/v1/drives/8:mount?type=d64";
-
-        //    var response = await client.PostAsync(url, content);
-
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        // 3. Pause for hardware emulation and then start
-        //        await Task.Delay(1000);
-        //    //    await MountAndRunExistingFile(ipAddress);
-        //    }
-        //}
-
+      
         public async void MountAndRunExistingTempFile(string ipAddress, string remoteFileName, bool run=true)
         {
             var drive = "a";
@@ -334,6 +289,33 @@ namespace Kolibri.net.C64Sorter.Controllers
         #endregion
         #region Configuration commands
 
+        internal async Task<string> ConfigurationGetCurrentStreamSettings()
+        {
+            string ret = string.Empty;
+            try
+            {
+                var url = $"v1/configs/Data Streams/Stream VIC to*/*current";
+                HttpResponseMessage response = await _httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var json = await response.Content.ReadAsStringAsync();
+                        dynamic data = JsonConvert.DeserializeObject<dynamic>(json.Replace(" ", string.Empty));
+                        var test = $"{data.DataStreams.StreamVICto.current}" ;
+                        ret = test;
+                    }
+                    else
+                    {
+                        return ret;
+                    }
+                }
+            }
+            catch (Exception) { }
+            return ret;
+        }
+
+
 
         internal async Task<int> ConfigurationGetVolumeLevel()
         {
@@ -449,8 +431,6 @@ namespace Kolibri.net.C64Sorter.Controllers
             return response.IsSuccessStatusCode;
         }
 
-
-
         public async Task<string> GetConfigs(string category = null)
         {
             string url = "v1/configs";
@@ -535,6 +515,18 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
             HttpResponseMessage response = await _httpClient.PostAsync(url, null); // Replace "products" with your endpoint path
             return (response.IsSuccessStatusCode);
         }
+         internal async Task<string> Get(string url)
+        {
+                
+            using HttpResponseMessage response = await _httpClient.GetAsync(url);
+
+            // Throws an exception if the status code is not a success code (200-299)
+            response.EnsureSuccessStatusCode();
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            return (jsonResponse);
+        
+        }
+
         internal async Task<bool> SendCommand(string command)
         {  // 3. Send the keyboard commands
             string runCmd = command;
@@ -602,5 +594,7 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
             }
             // free native resources if there are any.
         }
+
+       
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>2.0.0</VersionPrefix>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -15,13 +15,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj" />
+    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
     <ProjectReference Include="..\FTP Connect\FTP Connect.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Update="Forms\ExtensionOrganizer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\ConfigsTreeviewForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
@@ -39,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FastColoredTextBox.Net5" Version="2.16.26" />
     <PackageReference Include="LibVLCSharp.WinForms" Version="3.9.5" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21" />
   </ItemGroup>

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 
-namespace Kolibri.net.Common.Formutilities.Forms
+namespace Kolibri.net.Common.FormUtilities.Forms
 {
     public partial class RSSForm : Form
     { 

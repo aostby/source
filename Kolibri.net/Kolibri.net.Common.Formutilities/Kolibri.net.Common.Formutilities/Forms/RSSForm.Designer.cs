@@ -1,4 +1,4 @@
-﻿namespace Kolibri.net.Common.Formutilities.Forms
+﻿namespace Kolibri.net.Common.FormUtilities.Forms
 {
     partial class RSSForm
     {

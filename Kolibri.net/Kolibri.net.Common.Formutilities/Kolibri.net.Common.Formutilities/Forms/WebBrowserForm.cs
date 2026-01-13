@@ -10,7 +10,7 @@ using System.Windows.Forms;
       using Microsoft.Web.WebView2.WinForms;
 using System.Windows.Forms;
 
-namespace Kolibri.net.Common.Formutilities.Forms
+namespace Kolibri.net.Common.FormUtilities.Forms
 {
     public partial class WebBrowserForm : Form
     {
