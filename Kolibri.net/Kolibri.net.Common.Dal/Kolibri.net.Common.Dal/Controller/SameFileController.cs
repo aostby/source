@@ -1,5 +1,6 @@
 ﻿
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.Utilities;
 using System.Data;
 
 namespace Kolibri.net.Common.Dal.Controller
@@ -29,7 +30,7 @@ namespace Kolibri.net.Common.Dal.Controller
             foreach (var file in list)
             {
                 // _currentList.Add(new SearchFile { Name = Utilities.MovieUtilites.GetMovieTitle(file.Name), FilePath = new FileInfo(file.FullName) });
-                _currentList.Add(new SearchFile { Name = Utilities.MovieUtilites.GetMovieTitle(file), FilePath = new FileInfo(file) });
+                _currentList.Add(new SearchFile { Name = Utilities.MovieUtilites.GetMovieTitle(file),Year = MovieUtilites.GetYear(file),   FilePath = new FileInfo(file) });
             }
             return _currentList;
         }

@@ -39,7 +39,7 @@ namespace Kolibri.SilverScreen.Forms
 
         private void InitUserSettings(FileInfo liteDBPath = null)
         {
-            string dbPath =  string.Empty;
+            string dbPath = string.Empty;
             if (liteDBPath != null)
             {
                 dbPath = liteDBPath.FullName;
@@ -48,7 +48,7 @@ namespace Kolibri.SilverScreen.Forms
             {
                 try
                 {
-                    dbPath= Properties.Settings.Default.LiteDBPath;
+                    dbPath = Properties.Settings.Default.LiteDBPath;
                     if (string.IsNullOrEmpty(dbPath))
                     {
 
@@ -86,7 +86,7 @@ namespace Kolibri.SilverScreen.Forms
 
                     tmp.Upsert(_userSettings);
                     Properties.Settings.Default.LiteDBPath = _userSettings.LiteDBFilePath;
-                    Properties.Settings.Default.Save(); 
+                    Properties.Settings.Default.Save();
                 }
             }
             catch (Exception ex) { }
@@ -321,17 +321,37 @@ namespace Kolibri.SilverScreen.Forms
 
             try
             {
-                if (sender.Equals(closeAllToolStripMenuItem)) { foreach (Form frm in this.MdiChildren) { frm.Dispose(); return; } }
-                else if (sender.Equals(cascadeWindowsToolStripMenuItem)) { this.LayoutMdi(System.Windows.Forms.MdiLayout.Cascade); }
+                if (sender.Equals(cascadeWindowsToolStripMenuItem)) { this.LayoutMdi(System.Windows.Forms.MdiLayout.Cascade); }
                 else if (sender.Equals(tileVerticalToolStripMenuItem)) { this.LayoutMdi(System.Windows.Forms.MdiLayout.TileVertical); }
                 else if (sender.Equals(tileHorizontalToolStripMenuItem)) { this.LayoutMdi(System.Windows.Forms.MdiLayout.TileHorizontal); }
                 else if (sender.Equals(arrangeIconsToolStripMenuItem)) { this.LayoutMdi(System.Windows.Forms.MdiLayout.ArrangeIcons); }
+                else if (sender.Equals(closeAllToolStripMenuItem)) { foreach (Form frm in this.MdiChildren) { frm.Dispose(); } return; }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
-        } 
-       
+        }
+
+        private void removeEmptyDirectoriesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+         
+            try
+            {
+                DirectoryInfo folder = FileUtilities.LetOppMappe(null, "Let opp mappen med tomme undermapper");
+                if (folder != null && folder.Exists)
+                {
+                    SetStatusLabel($"Starting recursive removal of empty directories from ...\\{folder.Name}");
+                    Kolibri.net.Common.Utilities.FileUtilities.DeleteEmptyDirs(folder);
+                    SetStatusLabel($"{removeEmptyDirectoriesToolStripMenuItem.Text} - Operation complete. Name: \\{folder.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+                SetStatusLabel($"Exception occured when trying to remove directories from folder.");
+            }
+        }
     }
+     
 }

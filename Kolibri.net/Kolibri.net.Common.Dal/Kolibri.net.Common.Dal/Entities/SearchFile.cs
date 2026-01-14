@@ -4,6 +4,7 @@ namespace Kolibri.net.Common.Dal.Entities
     public class SearchFile
     { 
         public string Name { get; set; }
+        public int Year { get; set; }
         public FileInfo FilePath { get; set; }
         public DirectoryInfo Path { get { return FilePath.Directory; } }       
 
