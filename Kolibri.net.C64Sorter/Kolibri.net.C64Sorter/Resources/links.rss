@@ -3,7 +3,7 @@
 	<channel>
 		<title>Kolibri.net.C64Sorter</title>
 		<link>https://www.problembar.net/2025/12/ulimate-elite-ii/</link>
-		<description>Knew nothing about UE2 till i got it. Now I love it!.</description>
+		<description>Knew nothing about UE2 till i got it. Now I love it!. Put up these links for hopefully covering linking to inspiering project and to greet and such.</description>
 		<item>
 			<title>Gideon's Logic</title>
 			<link>https://ultimate64.com/Ultimate-64-Elite-MK2</link>
@@ -88,5 +88,14 @@
 			<pubDate>Mon, 22 Dec 2025 16:30:00 GMT</pubDate>
 			<guid isPermaLink="false">987654321</guid>
 		</item>
+			<item>
+			<title>Ultimate64</title>
+			<link>https://github.com/mlund/ultimate64/</link>
+			<description>Rust library and command line interface for communicating with Ultimate-64 and Ultimate-II+ devices using the REST API. The library is used in the Ultimate Manager GUI application.</description>
+			<pubDate> 22 Dec 2025 16:30:00 GMT</pubDate>
+			<guid isPermaLink="false">987654321</guid>
+		</item>
+		
+
 	</channel>
 </rss>

@@ -28,35 +28,20 @@
         /// </summary>
         private void InitializeComponent()
         {
-            videoview = new LibVLCSharp.WinForms.VideoView();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
             toolStripDropDownButtonToggleVideo = new ToolStripDropDownButton();
-            menuStrip1 = new MenuStrip();
-            streamToolStripMenuItem = new ToolStripMenuItem();
-            startStreamToolStripMenuItem = new ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)videoview).BeginInit();
+            buttonOpenStreamWindow = new Button();
+            labelOpenStreamWindow = new Label();
             statusStrip1.SuspendLayout();
-            menuStrip1.SuspendLayout();
             SuspendLayout();
-            // 
-            // videoview
-            // 
-            videoview.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            videoview.BackColor = Color.Black;
-            videoview.Location = new Point(12, 0);
-            videoview.MediaPlayer = null;
-            videoview.Name = "videoview";
-            videoview.Size = new Size(815, 518);
-            videoview.TabIndex = 0;
-            videoview.Text = "videoView1";
             // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus, toolStripDropDownButtonToggleVideo });
-            statusStrip1.Location = new Point(0, 521);
+            statusStrip1.Location = new Point(0, 76);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(839, 22);
+            statusStrip1.Size = new Size(443, 22);
             statusStrip1.TabIndex = 1;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -77,57 +62,48 @@
             toolStripDropDownButtonToggleVideo.Text = "Enabled";
             toolStripDropDownButtonToggleVideo.Click += toolStripDropDownButtonToggleVideo_Click;
             // 
-            // menuStrip1
+            // buttonOpenStreamWindow
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { streamToolStripMenuItem });
-            menuStrip1.Location = new Point(0, 0);
-            menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(839, 24);
-            menuStrip1.TabIndex = 2;
-            menuStrip1.Text = "menuStrip1";
+            buttonOpenStreamWindow.BackgroundImageLayout = ImageLayout.Zoom;
+            buttonOpenStreamWindow.Location = new Point(293, 12);
+            buttonOpenStreamWindow.Name = "buttonOpenStreamWindow";
+            buttonOpenStreamWindow.Size = new Size(138, 61);
+            buttonOpenStreamWindow.TabIndex = 2;
+            buttonOpenStreamWindow.Text = "Open";
+            buttonOpenStreamWindow.UseVisualStyleBackColor = true;
+            buttonOpenStreamWindow.Click += buttonOpenStreamWindow_Click;
             // 
-            // streamToolStripMenuItem
+            // labelOpenStreamWindow
             // 
-            streamToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { startStreamToolStripMenuItem });
-            streamToolStripMenuItem.Name = "streamToolStripMenuItem";
-            streamToolStripMenuItem.Size = new Size(56, 20);
-            streamToolStripMenuItem.Text = "Stream";
-            // 
-            // startStreamToolStripMenuItem
-            // 
-            startStreamToolStripMenuItem.Name = "startStreamToolStripMenuItem";
-            startStreamToolStripMenuItem.Size = new Size(137, 22);
-            startStreamToolStripMenuItem.Text = "Start stream";
-            startStreamToolStripMenuItem.Click += startStreamToolStripMenuItem_Click;
+            labelOpenStreamWindow.Location = new Point(12, 12);
+            labelOpenStreamWindow.Name = "labelOpenStreamWindow";
+            labelOpenStreamWindow.Size = new Size(275, 61);
+            labelOpenStreamWindow.TabIndex = 3;
+            labelOpenStreamWindow.Text = "Opening the stream can be done if you configure the Tools menu";
             // 
             // VideoStreamForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(839, 543);
+            ClientSize = new Size(443, 98);
+            Controls.Add(labelOpenStreamWindow);
+            Controls.Add(buttonOpenStreamWindow);
             Controls.Add(statusStrip1);
-            Controls.Add(menuStrip1);
-            Controls.Add(videoview);
-            MainMenuStrip = menuStrip1;
+            MaximumSize = new Size(459, 137);
+            MinimumSize = new Size(459, 137);
             Name = "VideoStreamForm";
             Text = "VideoStreamForm";
-            ((System.ComponentModel.ISupportInitialize)videoview).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
-            menuStrip1.ResumeLayout(false);
-            menuStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private LibVLCSharp.WinForms.VideoView videoview;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabelStatus;
-        private MenuStrip menuStrip1;
-        private ToolStripMenuItem streamToolStripMenuItem;
-        private ToolStripMenuItem startStreamToolStripMenuItem;
         private ToolStripDropDownButton toolStripDropDownButtonToggleVideo;
+        private Button buttonOpenStreamWindow;
+        private Label labelOpenStreamWindow;
     }
 }

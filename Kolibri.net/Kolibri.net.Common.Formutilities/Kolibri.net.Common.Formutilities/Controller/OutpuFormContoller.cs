@@ -22,6 +22,7 @@ namespace Kolibri.net.Common.FormUtilities.Controller
             form.Text = title;
 
             FastColoredTextBoxNS.FastColoredTextBox dgv = new FastColoredTextBoxNS.FastColoredTextBox();
+            dgv.Name = nameof(dgv);
             if (lang != null) dgv.Language = (FastColoredTextBoxNS.Language)lang;
             dgv.Text = text;
             dgv.ShowScrollBars = true;
