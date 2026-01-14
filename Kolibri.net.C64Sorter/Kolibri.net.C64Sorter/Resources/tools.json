@@ -1,5 +1,10 @@
 [
   {
+    "Name": "Ultimate64Manager",
+    "Description": "A cross-platform desktop application for managing Commodore 64 Ultimate, Ultimate 64, Ultimate 64 Elite, and Ultimate-II+ devices. Browse files, mount disk images, stream VIC video/audio, play SID music, and edit device configuration.",
+    "FullPath": "D:\\Commodore\\Ultimate64Manager-Win\\Ultimate64Manager-Win.exe"
+  },
+  {
     "Name": "U64-Streamer",
     "Description": "Stream video and audio from the UE2.",
     "FullPath": "D:\\Commodore\\u64-streamer-v125\\U64-Streamer.exe"

@@ -33,6 +33,8 @@
             treeView1 = new TreeView();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
+            toolStripButton1 = new ToolStripDropDownButton();
+            downloadCFGToolStripMenuItem = new ToolStripMenuItem();
             imageListIcons = new ImageList(components);
             dataGridView1 = new DataGridView();
             splitContainer1 = new SplitContainer();
@@ -57,12 +59,11 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            toolStrip1.Dock = DockStyle.None;
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus });
-            toolStrip1.Location = new Point(12, 422);
+            toolStrip1.Dock = DockStyle.Bottom;
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus, toolStripButton1 });
+            toolStrip1.Location = new Point(0, 425);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(98, 25);
+            toolStrip1.Size = new Size(800, 25);
             toolStrip1.TabIndex = 1;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -71,6 +72,23 @@
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
             toolStripStatusLabelStatus.Size = new Size(86, 22);
             toolStripStatusLabelStatus.Text = "toolStripLabel1";
+            // 
+            // toolStripButton1
+            // 
+            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButton1.DropDownItems.AddRange(new ToolStripItem[] { downloadCFGToolStripMenuItem });
+            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.ImageTransparentColor = Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(29, 22);
+            toolStripButton1.Text = "toolStripButton1";
+            toolStripButton1.Click += toolStripButton1_Click;
+            // 
+            // downloadCFGToolStripMenuItem
+            // 
+            downloadCFGToolStripMenuItem.Name = "downloadCFGToolStripMenuItem";
+            downloadCFGToolStripMenuItem.Size = new Size(180, 22);
+            downloadCFGToolStripMenuItem.Text = "Download CFG";
             // 
             // imageListIcons
             // 
@@ -83,11 +101,13 @@
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Dock = DockStyle.Fill;
             dataGridView1.Location = new Point(0, 0);
+            dataGridView1.MultiSelect = false;
             dataGridView1.Name = "dataGridView1";
+            dataGridView1.ReadOnly = true;
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView1.Size = new Size(287, 407);
             dataGridView1.TabIndex = 2;
-            dataGridView1.RowHeaderMouseDoubleClick += dataGridView1_RowHeaderMouseDoubleClick;
+            dataGridView1.CellClick += dataGridView1_CellClick;
             dataGridView1.MouseClick += dataGridView1_MouseClick;
             // 
             // splitContainer1
@@ -129,7 +149,6 @@
             fastColoredTextBox1.CharWidth = 8;
             fastColoredTextBox1.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             fastColoredTextBox1.Dock = DockStyle.Fill;
-            fastColoredTextBox1.Font = new Font("Courier New", 9.75F);
             fastColoredTextBox1.Hotkeys = resources.GetString("fastColoredTextBox1.Hotkeys");
             fastColoredTextBox1.IsReplaceMode = false;
             fastColoredTextBox1.Location = new Point(0, 0);
@@ -173,5 +192,7 @@
         private DataGridView dataGridView1;
         private SplitContainer splitContainer1;
         private FastColoredTextBoxNS.FastColoredTextBox fastColoredTextBox1;
+        private ToolStripDropDownButton toolStripButton1;
+        private ToolStripMenuItem downloadCFGToolStripMenuItem;
     }
 }

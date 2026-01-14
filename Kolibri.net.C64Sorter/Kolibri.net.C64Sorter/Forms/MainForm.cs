@@ -1,3 +1,4 @@
+using FastColoredTextBoxNS;
 using File_Organizer;
 using FTP_Connect;
 
@@ -10,7 +11,8 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
 using System.Data;
 using System.Net.NetworkInformation;
-using System.Reflection; 
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Kolibri.net.C64Sorter
 {
@@ -655,17 +657,59 @@ namespace Kolibri.net.C64Sorter
                     form.MdiParent = this;
                     form.Show();
                 }
-                else if (sender.Equals(videostreamToolStripMenuItem)) 
+                else if (sender.Equals(videostreamToolStripMenuItem))
                 {
                     Form form = new Forms.VideoStreamForm(_ue2logon);
                     form.MdiParent = this;
                     form.Show();
+                }
+                else if (sender.Equals(displayCfgFilesToolStripMenuItem)) {
+                    string filter = FileUtilities.GetFileDialogFilter(new List<string>() { "cfg" }.ToArray(), true);
+                    FileInfo fileInfo = FileUtilities.LetOppFil(title: "Let opp mappen med tomme undermapper", filter: filter);
+                    if (fileInfo != null && fileInfo.Exists)
+                    {
+                        Form form = Common.FormUtilities.Controller.OutputFormController.RichTexBoxForm(fileInfo.Name, "",
+                            //FastColoredTextBoxNS.Language.PHP,
+                            //FastColoredTextBoxNS.Language.Lua,
+                            FastColoredTextBoxNS.Language.Custom,
+                            new Size(600, 300));
+
+                   var fctb=     form.Controls.Find("dgv", false).FirstOrDefault() as FastColoredTextBoxNS.FastColoredTextBox;
+                        fctb.TextChanged += (s, e) =>
+                        {
+                            HighlightIni(fctb);
+                        }; 
+
+                        form.MdiParent = this;
+                        form.Show();
+                        fctb.Text = FileUtilities.ReadTextFile(fileInfo.FullName);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 SetStatusLabel(ex.Message);
             }
+        }
+        Style sectionStyle = new TextStyle(Brushes.DarkBlue, null, FontStyle.Bold);
+        Style keyStyle = new TextStyle(Brushes.Brown, null, FontStyle.Regular);
+        Style valueStyle = new TextStyle(Brushes.DarkOliveGreen, null, FontStyle.Regular);
+        Style commentStyle = new TextStyle(Brushes.Green, null, FontStyle.Italic);
+        private      void HighlightIni(FastColoredTextBoxNS.FastColoredTextBox tb)
+        {
+            //tb.ClearStyle( (sectionStyle, keyStyle, valueStyle, commentStyle);
+
+            // Sections [Section]
+            tb.Range.SetStyle(sectionStyle, @"^\s*\[.+?\]\s*$", RegexOptions.Multiline);
+
+            // Comments ; or #
+            tb.Range.SetStyle(commentStyle, @"^\s*[;#].*$", RegexOptions.Multiline);
+
+            // Keys (left side of =)
+            tb.Range.SetStyle(keyStyle, @"^\s*[^=;\[#]+(?=\=)", RegexOptions.Multiline);
+
+            // Values (right side of =)
+            tb.Range.SetStyle(valueStyle, @"(?<=\=).*", RegexOptions.Multiline);
         }
 
         private void MainForm_DragEnter(object sender, DragEventArgs e)

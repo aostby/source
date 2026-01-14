@@ -1,4 +1,5 @@
 ﻿using FastColoredTextBoxNS;
+using javax.xml.crypto;
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.Common.Images;
@@ -8,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
 using System.Dynamic;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -68,6 +70,13 @@ namespace Kolibri.net.C64Sorter.Forms
             }
             catch (Exception)
             { }
+            try
+            {
+                toolStripButton1.Image = (Image)Common.Images.Icons.IconFromExtensionShell(".txt", Icons.SystemIconSize.Small).ToBitmap(); // imageListIcons.Images["default"];
+            }
+            catch (Exception)
+            { }
+
         }
 
         public void SetStatusLabel(string statusText)
@@ -137,28 +146,7 @@ namespace Kolibri.net.C64Sorter.Forms
                     }
                     else
                     {
-                        var url = ApiUrls.GetConfigCategory(_ue2logon.Hostname, HttpUtility.UrlEncode(e.Node.Name));
-                        HttpClient client = new HttpClient();
-                        string jsonString = await client.GetStringAsync(url);
-
-                        e.Node.Tag = url;
-
-                        //// Note:Json convertor needs a json with one node as root
-                        jsonString = $"{{ \"rootNode\": {{{jsonString.Trim().TrimStart('{').TrimEnd('}')}}} }}";
-
-                        var xd = JsonConvert.DeserializeXmlNode(jsonString.Replace("DMA Load Mimics ID:", "DMA Load Mimics ID"));
-
-                        //// DataSet is able to read from XML and return a proper DataSet
-                        var result = new DataSet();
-                        XmlReadMode mode = XmlReadMode.Auto;
-                        result.ReadXml(new XmlNodeReader(xd), mode);
-
-                        DataRow row = result.Tables[0].Rows[0];
-
-                        dictionary = row.Table.Columns
-                             .Cast<DataColumn>()
-                             .ToDictionary(col => col.ColumnName, col => row[col.ColumnName].ToString());
-                        CategoriesNodeDic.Add(e.Node.Name, dictionary);
+                        dictionary = await CreateDictionaryForNode(e.Node.Name);
                     }
                     dataGridView1.DataSource = null;
                     dataGridView1.DataSource = dictionary.ToDataTable();
@@ -177,10 +165,37 @@ namespace Kolibri.net.C64Sorter.Forms
             }
         }
 
-
-
-        private async void dataGridView1_RowHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        private async Task<Dictionary<string, string>> CreateDictionaryForNode(string nodeName)
         {
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
+            var url = ApiUrls.GetConfigCategory(_ue2logon.Hostname, HttpUtility.UrlEncode(nodeName));
+            HttpClient client = new HttpClient();
+            string jsonString = await client.GetStringAsync(url);
+
+            //    e.Node.Tag = url;
+
+            //// Note:Json convertor needs a json with one node as root
+            jsonString = $"{{ \"rootNode\": {{{jsonString.Trim().TrimStart('{').TrimEnd('}')}}} }}";
+
+            var xd = JsonConvert.DeserializeXmlNode(jsonString.Replace("DMA Load Mimics ID:", "DMA Load Mimics ID"));
+
+            //// DataSet is able to read from XML and return a proper DataSet
+            var result = new DataSet();
+            XmlReadMode mode = XmlReadMode.Auto;
+            result.ReadXml(new XmlNodeReader(xd), mode);
+
+            DataRow row = result.Tables[0].Rows[0];
+
+            dictionary = row.Table.Columns
+                 .Cast<DataColumn>()
+                 .ToDictionary(col => col.ColumnName, col => row[col.ColumnName].ToString());
+            CategoriesNodeDic[nodeName] = dictionary;
+            return dictionary;
+        }
+        private async void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+
             var lang = fastColoredTextBox1.Language;
             try
             {
@@ -192,8 +207,8 @@ namespace Kolibri.net.C64Sorter.Forms
                 var currentValue = row.Cells["Value"].Value.ToString();
 
 
-                string text = $"Row Index: {e.RowIndex}, Column Index: {e.ColumnIndex}\nKey: {row.Cells["Key"].Value.ToString()} \nValue: {row.Cells["Value"].Value.ToString()}";
-
+                //  string text = $"Row Index: {e.RowIndex}, Column Index: {e.ColumnIndex}\nKey: {row.Cells["Key"].Value.ToString()} \nValue: {row.Cells["Value"].Value.ToString()}";
+                SetStatusLabel($"{category}: Right click to change [{section}] value (Current: [{currentValue}])");
 
                 var url = ApiUrls.GetConfigCategorySection(_client.ClientName, category, section);
                 url = ApiUrls.ToLocalPath(url);
@@ -276,11 +291,12 @@ namespace Kolibri.net.C64Sorter.Forms
                         if (string.IsNullOrWhiteSpace(value))
                             value = (oValue as ListViewItem).Text.Trim();
 
-                      var url =   ApiUrls.UpdateConfigCategorySectionValue(_client.ClientName, change.CatagoryName, change.SectionName, value);
+                        var url = ApiUrls.UpdateConfigCategorySectionValue(_client.ClientName, change.CatagoryName, change.SectionName, HttpUtility.UrlEncode(value));
                         ApiUrls.ToLocalPath(url);
                         var happened = await _client.PutUrl(url);
                         if (happened)
-                        { string text = $"New value for {change.CatagoryName} - {change.SectionName} set to {value} (was {currentValue})";
+                        {
+                            string text = $"New value for {change.CatagoryName} - {change.SectionName} set to {value} (was {currentValue})";
                             SetStatusLabel(text);
                             if (CategoriesSectiosList.Any(p => p.SectionName == change.SectionName))
                             {
@@ -288,10 +304,22 @@ namespace Kolibri.net.C64Sorter.Forms
                                 CategoriesNodeDic.Remove(change.CatagoryName);
                                 fastColoredTextBox1.Language = Language.Custom;
                                 fastColoredTextBox1.Text = $"New value for {change.CatagoryName} - {change.SectionName} set to {value} (was {currentValue})";
+                                Thread.Sleep(200);
+                                var dictionary = await CreateDictionaryForNode(change.CatagoryName);
                                 dataGridView1.DataSource = null;
+                                dataGridView1.DataSource = dictionary.ToDataTable();
+                                dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                                dataGridView1.MultiSelect = false;
+                                dataGridView1.ReadOnly = true;
+                                dataGridView1.Refresh();
+
+
                             }
                         }
-                        else { throw new Exception($"Could not complete request: New value for {change.CatagoryName} - {change.SectionName} was not carried out. Still {currentValue}. "); 
+                        else
+                        {
+                            throw new Exception($"Could not complete request: New value for {change.CatagoryName} - {change.SectionName} was not carried out. Still {currentValue}. ");
                         }
                     }
                     else
@@ -304,6 +332,53 @@ namespace Kolibri.net.C64Sorter.Forms
             catch (Exception ex)
             {
                 SetStatusLabel($"Error occured: {ex.GetType().Name} -  {ex.Message.Replace(@"\r", " ")} - Exception: {ex.Message}");
+            }
+        }
+
+
+
+        private async void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var items = await _client.GetConfigs();
+
+                var sysInfo = await _client.GetSystemInformationAsync();
+                SetStatusLabel($"Getting current config for {sysInfo.Product} - Host: {sysInfo.Hostname}, Firmware version: {sysInfo.FirmwareVersion}");
+
+                // Add directories first, then files
+                foreach (var item in items.categories)
+                {
+                await    CreateDictionaryForNode(item);
+                }
+                //CategoriesNodeDic[nodeName] = dictionary;
+
+                var sb = new StringBuilder();
+                foreach (var section in CategoriesNodeDic)
+                {
+                    sb.AppendLine($"[{section.Key}]");
+
+                    foreach (var kvp in section.Value)
+                    {
+                        sb.AppendLine($"{kvp.Key}={kvp.Value}");
+                    }
+
+                    sb.AppendLine(); // blank line between sections
+                }
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.FileName = $"{DateTime.Now.ToString("yyyy-MM-dd")}-v{sysInfo.FirmwareVersion}.cfg";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    FileInfo info = new FileInfo(sfd.FileName);
+                    FileUtilities.WriteStringToFile(sb.ToString(), info.FullName);
+                    FileUtilities.OpenFolderHighlightFile(info);
+                }
+                else SetStatusLabel("Operation save System config cancelled.");
+            }
+            catch (Exception ex)
+            {
+
+                SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
             }
         }
     }

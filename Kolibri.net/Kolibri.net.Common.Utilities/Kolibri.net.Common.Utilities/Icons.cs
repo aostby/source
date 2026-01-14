@@ -466,6 +466,7 @@ namespace Kolibri.net.Common.Images
         {
             // Add the '.' to the extension if needed
             if (extension[0] != '.') extension = '.' + extension;
+            extension = extension.Replace("..", ".");
 
             //opens the registry for the wanted key.
             RegistryKey Root = Registry.ClassesRoot;

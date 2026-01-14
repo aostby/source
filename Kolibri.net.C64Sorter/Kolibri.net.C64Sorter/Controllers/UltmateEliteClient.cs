@@ -289,25 +289,46 @@ namespace Kolibri.net.C64Sorter.Controllers
         #endregion
         #region Configuration commands
 
-        internal async Task<string> ConfigurationGetCurrentStreamSettings()
+        /// <summary>
+        /// Types are video, audio and debug.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        internal async Task<string> ConfigurationGetCurrentStreamSettings(string type = "debug")
         {
             string ret = string.Empty;
             try
             {
-                var url = $"v1/configs/Data Streams/Stream VIC to*/*current";
+                var url = $"v1/configs/Data Streams/Stream Debug to*/*current";
+                if (type == "video")
+                {
+                    url = $"v1/configs/Data Streams/Stream VIC to*/*current";
+                }
+                if (type == "audio")
+                {
+                    url = $"v1/configs/Data Streams/Stream Audio to*/*current";
+                }
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
                     if (response.IsSuccessStatusCode)
                     {
+                        string test = string.Empty;
                         var json = await response.Content.ReadAsStringAsync();
                         dynamic data = JsonConvert.DeserializeObject<dynamic>(json.Replace(" ", string.Empty));
-                        var test = $"{data.DataStreams.StreamVICto.current}" ;
+                        switch (type)
+                        {
+                            case "video": test = $"{data.DataStreams.StreamVICto.current}"; break;
+                            case "audio": test = $"{data.DataStreams.StreamAudioto.current}"; break;
+                            case "debug": test = $"{data.DataStreams.StreamDebugto.current}"; break;
+                            default:
+                                break;
+                        } 
                         ret = test;
                     }
                     else
                     {
-                        return ret;
+                          ret=string.Empty;
                     }
                 }
             }
