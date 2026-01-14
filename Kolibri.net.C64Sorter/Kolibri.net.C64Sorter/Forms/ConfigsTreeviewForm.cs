@@ -360,7 +360,14 @@ namespace Kolibri.net.C64Sorter.Forms
 
                     foreach (var kvp in section.Value)
                     {
-                        sb.AppendLine($"{kvp.Key}={kvp.Value}");
+                        if (kvp.Key.Equals("DMA Load Mimics ID"))
+                        {
+                            sb.AppendLine($"{kvp.Key}:={kvp.Value}");
+                        }
+                        else
+                        {
+                            sb.AppendLine($"{kvp.Key}={kvp.Value}");
+                        }
                     }
 
                     sb.AppendLine(); // blank line between sections
