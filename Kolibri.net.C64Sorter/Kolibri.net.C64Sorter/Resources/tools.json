@@ -33,5 +33,10 @@
     "Name": "LaunchBox",
     "Description": "A Game Launcher with Style - We originally built LaunchBox as an attractive frontend for DOSBox, but it now boasts support for modern games and retro game emulation.",
     "FullPath": "D:\\Commodore\\c64-dreams-v0.60\\C64 Dreams\\LaunchBox.exe"
+  },
+  {
+    "Name": "FileZilla",
+    "Description": "The FileZilla Client not only supports FTP, but also FTP over TLS (FTPS) and SFTP. It is open source software distributed free of charge under the terms of the GNU General Public License.",
+    "FullPath": "C:\\Program Files\\FileZilla FTP Client\\filezilla.exe"
   }
 ]

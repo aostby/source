@@ -70,8 +70,8 @@
             // toolStripStatusLabelStatus
             // 
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
-            toolStripStatusLabelStatus.Size = new Size(86, 22);
-            toolStripStatusLabelStatus.Text = "toolStripLabel1";
+            toolStripStatusLabelStatus.Size = new Size(57, 22);
+            toolStripStatusLabelStatus.Text = "Welcome";
             // 
             // toolStripButton1
             // 
@@ -81,7 +81,7 @@
             toolStripButton1.ImageTransparentColor = Color.Magenta;
             toolStripButton1.Name = "toolStripButton1";
             toolStripButton1.Size = new Size(29, 22);
-            toolStripButton1.Text = "toolStripButton1";
+            toolStripButton1.Text = "Download CFG";
             toolStripButton1.Click += toolStripButton1_Click;
             // 
             // downloadCFGToolStripMenuItem
@@ -149,6 +149,7 @@
             fastColoredTextBox1.CharWidth = 8;
             fastColoredTextBox1.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             fastColoredTextBox1.Dock = DockStyle.Fill;
+            fastColoredTextBox1.Font = new Font("Courier New", 9.75F);
             fastColoredTextBox1.Hotkeys = resources.GetString("fastColoredTextBox1.Hotkeys");
             fastColoredTextBox1.IsReplaceMode = false;
             fastColoredTextBox1.Location = new Point(0, 0);

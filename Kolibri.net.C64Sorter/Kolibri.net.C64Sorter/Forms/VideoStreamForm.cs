@@ -57,10 +57,7 @@ namespace Kolibri.net.C64Sorter.Forms
                 }
 
                 try
-                {
-
-
-
+                { 
                     var json = Path.Combine(UltmateEliteClient.ResourcesPath.FullName, $"tools.json");
                     if (File.Exists(json))
                     {
@@ -76,8 +73,7 @@ namespace Kolibri.net.C64Sorter.Forms
                                 if (info.Name.Equals("U64-Streamer.exe")) break;
                                 labelOpenStreamWindow.Text = $"{item.Description}";
                             }
-                        }
-
+                        } 
                     }
                 }
                 catch (Exception ex)

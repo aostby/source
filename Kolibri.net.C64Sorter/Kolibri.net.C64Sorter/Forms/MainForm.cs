@@ -57,7 +57,7 @@ namespace Kolibri.net.C64Sorter
             }
 
             this.AllowDrop = true;
-            this.Text += $" {Assembly.GetExecutingAssembly().GetName().Name} ({_ue2logon.Hostname})";
+            this.Text = $" {Assembly.GetExecutingAssembly().GetName().Name} ({_ue2logon.Hostname})";
             try
             {
                 this.Text += $" Version: {Assembly.GetExecutingAssembly()?

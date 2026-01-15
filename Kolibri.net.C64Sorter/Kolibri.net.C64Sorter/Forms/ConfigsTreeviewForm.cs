@@ -140,7 +140,7 @@ namespace Kolibri.net.C64Sorter.Forms
                 try
                 {
                     toolStripStatusLabelStatus.Tag = e.Node.Name;
-                    if (CategoriesNodeDic.ContainsKey(e.Node.Name))
+                    if (CategoriesNodeDic.ContainsKey(e.Node.Name)&&!e.Node.Name.Equals("Speaker Mixer"))
                     {
                         dictionary = CategoriesNodeDic[e.Node.Name];
                     }
