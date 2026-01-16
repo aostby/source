@@ -131,8 +131,9 @@ namespace Kolibri.net.C64Sorter.Controllers
             {
                 // 3. Send the keyboard commands
                 string runCmd = "load\"*\",8,1\rrun\r";
+                runCmd = (runCmd);
                 // Ensure the data is URL-encoded
-                string keyboardUrl = $"http://{ipAddress}/v1/machine:keyboard?data={Uri.EscapeDataString(runCmd)}";
+                string keyboardUrl = $"http://{ipAddress}/v1/machine:keyboard?data={runCmd}";
                 var result = await client.PutAsync(keyboardUrl, null);
                 if (!result.IsSuccessStatusCode)
                 {
@@ -359,8 +360,13 @@ namespace Kolibri.net.C64Sorter.Controllers
             }
             return ret;
         }
-
-        internal async Task<bool> ConfigurationVolumeLevel(int level)
+        /// <summary>
+        /// Type can be UltiSid or Drive
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        internal async Task<bool> ConfigurationVolumeLevel(int level, string type= "UltiSid")
         {
             HttpResponseMessage response = await _httpClient.GetAsync("v1/version"); // Replace "products" with your endpoint path
             if (response.IsSuccessStatusCode)
@@ -380,9 +386,9 @@ namespace Kolibri.net.C64Sorter.Controllers
                 }
 
                 //     var url = $"http://{_clientName}/v1/configs/Speaker%20Mixer/Vol%20UltiSid%20{2}?value={value}%20dB";
-                var url = $"v1/configs/Speaker%20Mixer/Vol%20UltiSid%20{1}?value={value}%20dB";
+                var url = $"v1/configs/Speaker%20Mixer/Vol%20{type}%20{1}?value={value}%20dB";
                 var result = await _httpClient.PutAsync(url, null);
-                url = $"v1/configs/Speaker%20Mixer/Vol%20UltiSid%20{2}?value={value}%20dB";
+                url = $"v1/configs/Speaker%20Mixer/Vol%20{type}%20{2}?value={value}%20dB";
                 result = await _httpClient.PutAsync(url, null);
                 string body = await result.Content.ReadAsStringAsync();
                 return result.IsSuccessStatusCode;
@@ -565,7 +571,6 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
         internal async Task<bool> PutUrl(string url, bool run = false)
         {
             {
-
                 HttpResponseMessage response = await _httpClient.PutAsync(url, null); // Replace "products" with your endpoint path
                 if (response.IsSuccessStatusCode)
                 {
@@ -573,9 +578,12 @@ PUT http://<IP>/v1/configs/Audio%20Mixer/Vol%20UltiSid%202?value=Off
 
                     if (run)
                     {
+                        Thread.Sleep(500);
                         // 3. Send the keyboard commands
-                        string runCmd = "load\"*\",8,1\rrun\r";
-                        SendCommand(runCmd);
+                        string runCmd = "load \"*\" ,8,1 ";
+                        await SendCommand(runCmd);
+                        runCmd = "\rRUN";
+                        await SendCommand(runCmd);
                     }
 
                     return response.IsSuccessStatusCode;

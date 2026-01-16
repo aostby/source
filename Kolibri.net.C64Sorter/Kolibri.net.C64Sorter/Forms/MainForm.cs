@@ -1,3 +1,4 @@
+using com.sun.org.apache.bcel.@internal.generic;
 using FastColoredTextBoxNS;
 using File_Organizer;
  
@@ -445,6 +446,14 @@ namespace Kolibri.net.C64Sorter
                         _client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, new FileInfo(fbd.FullName));
 
                     }
+                    else if (fbd.Exists && (fbd.Name.Contains(".CFG", StringComparison.OrdinalIgnoreCase))  )
+                    {
+                        SetStatusLabel($"Uploading {fbd.Name} remotely to {_ue2logon}");
+                      string remotePath=  _client.FtpUpload(_ue2logon.Hostname,  fbd.FullName);
+                        SetStatusLabel($"File uploaded to {remotePath}");
+                        MessageBox.Show($"File uploaded to {remotePath}", fbd.Name, MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                    }
+
                     else if (fbd.Exists && fbd.Name.Contains(".D64", StringComparison.OrdinalIgnoreCase)
                         || fbd.Name.Contains(".G64", StringComparison.OrdinalIgnoreCase)
                         || fbd.Name.Contains(".D81", StringComparison.OrdinalIgnoreCase)
@@ -778,8 +787,16 @@ namespace Kolibri.net.C64Sorter
                 {
                     var retur = client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, new FileInfo(files[0].ToString()));
                 }
-                else client.MountAndRunExistingTempFile(_ue2logon.Hostname, Path.GetFileName(uri.LocalPath));
+                else if (ext.ToUpper().Contains(".CFG", StringComparison.OrdinalIgnoreCase))
+                {
 
+                    SetStatusLabel($"File uploaded to {uri}");
+                    if (files.Count() == 1)
+                    {
+                        MessageBox.Show($"File uploaded to {uri}", uri.Fragment.LastOrDefault().ToString(), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else client.MountAndRunExistingTempFile(_ue2logon.Hostname, Path.GetFileName(uri.LocalPath));
             }
         }
 

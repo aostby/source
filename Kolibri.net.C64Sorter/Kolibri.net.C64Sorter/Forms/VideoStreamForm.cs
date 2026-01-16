@@ -70,8 +70,18 @@ namespace Kolibri.net.C64Sorter.Forms
                             {
                                 buttonOpenStreamWindow.Tag = info;
                                 buttonOpenStreamWindow.BackgroundImage = (Image)Icon.ExtractAssociatedIcon(info.FullName).ToBitmap();
-                                if (info.Name.Equals("U64-Streamer.exe")) break;
+                                
+                                this.Text = item.Name;
                                 labelOpenStreamWindow.Text = $"{item.Description}";
+                             
+                                if (info.Exists && info.Name.Equals("U64-Streamer.exe")) {
+                                    labelOpenStreamWindow.BackColor = Control.DefaultBackColor;
+                                    break; }
+                                if (!info.Exists)
+                                {
+                                    labelOpenStreamWindow.BackColor = Color.LightSalmon;
+                                    labelOpenStreamWindow.Text = $"{Environment.NewLine} The file does not exist at {item.FullPath}";
+                                }
                             }
                         } 
                     }

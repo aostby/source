@@ -190,8 +190,8 @@ namespace Kolibri.net.C64Sorter.Forms
                         DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
                         url = ApiUrls.MountImageOnDevice(_hostname, "a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
                         url = url.Replace($"http://{_hostname}/", string.Empty);
-                        url = $"v1/drives/a:mount?image={HttpUtility.UrlEncode(clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"))}";
-                          
+                        url = $"v1/drives/a:mount?image={clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/")}";
+                     
                         await client.MachineReset();
                         await client.MachineReboot();
                         Thread.Sleep(3000);

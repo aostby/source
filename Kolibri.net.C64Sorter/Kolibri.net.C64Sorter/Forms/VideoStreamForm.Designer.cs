@@ -39,9 +39,9 @@
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelStatus, toolStripDropDownButtonToggleVideo });
-            statusStrip1.Location = new Point(0, 76);
+            statusStrip1.Location = new Point(0, 139);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(443, 22);
+            statusStrip1.Size = new Size(584, 22);
             statusStrip1.TabIndex = 1;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -65,7 +65,7 @@
             // buttonOpenStreamWindow
             // 
             buttonOpenStreamWindow.BackgroundImageLayout = ImageLayout.Zoom;
-            buttonOpenStreamWindow.Location = new Point(293, 12);
+            buttonOpenStreamWindow.Location = new Point(434, 12);
             buttonOpenStreamWindow.Name = "buttonOpenStreamWindow";
             buttonOpenStreamWindow.Size = new Size(138, 61);
             buttonOpenStreamWindow.TabIndex = 2;
@@ -77,7 +77,7 @@
             // 
             labelOpenStreamWindow.Location = new Point(12, 12);
             labelOpenStreamWindow.Name = "labelOpenStreamWindow";
-            labelOpenStreamWindow.Size = new Size(275, 61);
+            labelOpenStreamWindow.Size = new Size(416, 115);
             labelOpenStreamWindow.TabIndex = 3;
             labelOpenStreamWindow.Text = "Opening the stream can be done if you configure the Tools menu";
             // 
@@ -85,11 +85,11 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(443, 98);
+            ClientSize = new Size(584, 161);
             Controls.Add(labelOpenStreamWindow);
             Controls.Add(buttonOpenStreamWindow);
             Controls.Add(statusStrip1);
-            MaximumSize = new Size(459, 137);
+            MaximumSize = new Size(600, 200);
             MinimumSize = new Size(459, 137);
             Name = "VideoStreamForm";
             Text = "VideoStreamForm";

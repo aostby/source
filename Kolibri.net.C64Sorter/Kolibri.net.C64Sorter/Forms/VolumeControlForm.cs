@@ -56,7 +56,10 @@ namespace Kolibri.net.C64Sorter.Forms
             {
                 int NewVolume = trackBar1.Value;// ((ushort.MaxValue / 10) * trackWave.Value);
                 toolTip1.SetToolTip(trackBar1, NewVolume.ToString());
-                var success = await _client.ConfigurationVolumeLevel(NewVolume);
+                var success = await _client.ConfigurationVolumeLevel(NewVolume,
+                    groupBoxtype.Controls.OfType<RadioButton>()
+                                            .FirstOrDefault(r => r.Checked).Text
+                    );
 
 
             }

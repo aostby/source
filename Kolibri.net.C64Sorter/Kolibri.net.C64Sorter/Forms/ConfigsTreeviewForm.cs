@@ -294,7 +294,7 @@ namespace Kolibri.net.C64Sorter.Forms
                     {
                         var value = $"{sValue}".Trim();
                         if (string.IsNullOrWhiteSpace(value))
-                            value = (oValue as ListViewItem).Text.Trim();
+                            value = (oValue as ListViewItem).Text;
 
                         var url = ApiUrls.UpdateConfigCategorySectionValue(_client.ClientName, change.CatagoryName, change.SectionName, HttpUtility.UrlEncode(value));
                         ApiUrls.ToLocalPath(url);
@@ -378,10 +378,11 @@ namespace Kolibri.net.C64Sorter.Forms
                     sb.AppendLine(); // blank line between sections
                 }
                 SaveFileDialog sfd = new SaveFileDialog();
-                sfd.FileName = $"{DateTime.Now.ToString("yyyy-MM-dd")}-v{sysInfo.FirmwareVersion}.cfg";
+                sfd.FileName = $"{DateTime.Now.ToString("yyyyMMdd")}-v{sysInfo.FirmwareVersion}-{sysInfo.Hostname}.cfg";
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     FileInfo info = new FileInfo(sfd.FileName);
+                    info = new FileInfo(Path.Combine(info.Directory.FullName, FileUtilities.SafeFileName(info.Name).Replace("_", "-").TrimStart('.')));
                     FileUtilities.WriteStringToFile(sb.ToString(), info.FullName);
                     FileUtilities.OpenFolderHighlightFile(info);
                 }
