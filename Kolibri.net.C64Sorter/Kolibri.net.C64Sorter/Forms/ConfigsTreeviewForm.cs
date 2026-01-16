@@ -238,14 +238,19 @@ namespace Kolibri.net.C64Sorter.Forms
             {
                 try
                 {
+                    string lookUp = "values";
+                 
 
 
                     dynamic dynamicObject = JsonConvert.DeserializeObject(jsonString);
 
                     JObject obj = JObject.Parse(jsonString);
-                    var firstProperty = obj.Properties().First();
+                  
+                        var firstProperty = obj.Properties().First();
                     var firstKey = firstProperty.First().First();
-                    var nestedValue = obj[firstProperty.Name][section]["values"].ToArray();
+                    if ((obj[firstProperty.Name][section]["presets"]) != null)
+                    { lookUp = "presets"; }
+                    var nestedValue = obj[firstProperty.Name][section][lookUp].ToArray();
                     ret = nestedValue.Select(x => x.ToString()).ToList();
                 }
                 catch (Exception) { }

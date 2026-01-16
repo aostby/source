@@ -17,7 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
-    <ProjectReference Include="..\FTP Connect\FTP Connect.csproj" />
   </ItemGroup>
 
   <ItemGroup>
