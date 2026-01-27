@@ -1,8 +1,5 @@
-using com.sun.org.apache.bcel.@internal.generic;
 using FastColoredTextBoxNS;
 using File_Organizer;
-using FTP_Connect;
-
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.C64Sorter.Forms;
@@ -262,7 +259,23 @@ namespace Kolibri.net.C64Sorter
 
                 if (sender.Equals(toolStripMenuItemFTPClient))
                 {
-                    newMDIChild = new frmFTP(_ue2logon.Hostname, _ue2logon.Username, _ue2logon.Password);
+                    //newMDIChild = new frmFTP(_ue2logon.Hostname, _ue2logon.Username, _ue2logon.Password);
+                    var json = Path.Combine(UltmateEliteClient.ResourcesPath.FullName, $"tools.json");
+                    if (File.Exists(json))
+                    {
+                        dynamic data = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(json));
+
+                        foreach (var item in data)
+                        {
+                            FileInfo info = new FileInfo($"{item.FullPath}");
+                            if (info.Exists && (info.Name.EndsWith("filezilla.exe") || info.Name.Contains("FTP")))
+                            {
+                                FileUtilities.Start(info);
+                                SetStatusLabel($"Staring FTP: {info.Name}");
+                                return;
+                            }
+                        }
+                    }
                 }
                 else if (sender.Equals(toolStripMenuItemFTPTreeView))
                 {
@@ -698,8 +711,9 @@ namespace Kolibri.net.C64Sorter
                     {
                         var listing = FTPControllerC64.GetDirectoryListing($"ftp://{_ue2logon.Hostname}/", _ue2logon.Username, _ue2logon.Password);
                         var tmp = listing.FindAll(x => x.Name.StartsWith("Temp", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                        if (tmp != null) {
-                        var ftpUrl=    _client.FtpUpload(_ue2logon.Hostname, fileInfo.FullName);
+                        if (tmp != null&&fileInfo!=null)
+                        {
+                            var ftpUrl = _client.FtpUpload(_ue2logon.Hostname, fileInfo.FullName);
                             SetStatusLabel($"{fileInfo.Name} uploaded to {ftpUrl}");
                             _client.MachineMenu(true);
 
@@ -714,7 +728,7 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
                                 _client.PutUrl("v1/configs:load_from_flash");
                                 _client.MachineReboot();
                             }
-                                
+
                         }
 
                     }
@@ -767,8 +781,8 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
         // Event handler for when the user releases the mouse button over the form
         private async void MainForm_DragDrop(object sender, DragEventArgs e)
         {
-        await    _client.MachineReboot();
-            
+            await _client.MachineReboot();
+
             // Extract the file paths from the data
             // object into a string array
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
@@ -795,7 +809,7 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
 
                 Uri uri = new Uri(rt);
                 string ext = Path.GetExtension(Path.GetFileName(uri.LocalPath));
-                if ((ext.ToLower().Contains("mod") || ext.ToLower().Contains("sid")|| ext.ToLower().Contains("prg")|| ext.ToLower().Contains("crt")))
+                if ((ext.ToLower().Contains("mod") || ext.ToLower().Contains("sid") || ext.ToLower().Contains("prg") || ext.ToLower().Contains("crt")))
                 {
                     var retur = client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, new FileInfo(files[0].ToString()));
                 }
@@ -945,6 +959,6 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
             }
         }
 
-      
+
     }
 }
