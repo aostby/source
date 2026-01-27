@@ -219,9 +219,6 @@ namespace Kolibri.net.C64Sorter.Forms
                     CategoriesSectiosList.Add(new Sections() { CatagoryName = category, SectionName = section, AllowedValues = GetAllowedValues(section, currentValue, json) });
                 }
                 fastColoredTextBox1.Text = json.JsonPrettyPrint();
-
-
-
             }
             catch (Exception ex)
             {
@@ -239,9 +236,6 @@ namespace Kolibri.net.C64Sorter.Forms
                 try
                 {
                     string lookUp = "values";
-                 
-
-
                     dynamic dynamicObject = JsonConvert.DeserializeObject(jsonString);
 
                     JObject obj = JObject.Parse(jsonString);

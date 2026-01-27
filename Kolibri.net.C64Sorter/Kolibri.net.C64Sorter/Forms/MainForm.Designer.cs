@@ -68,7 +68,6 @@ namespace Kolibri.net.C64Sorter
             toolStripSeparator12 = new ToolStripSeparator();
             configsToolStripMenuItem = new ToolStripMenuItem();
             displayCfgFilesToolStripMenuItem = new ToolStripMenuItem();
-            uploadLocalCfgFileToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItemRun = new ToolStripMenuItem();
             toolStripMenuItemFTPTreeView = new ToolStripMenuItem();
             toolStripSeparator8 = new ToolStripSeparator();
@@ -97,7 +96,6 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
-            toolStripSeparator13 = new ToolStripSeparator();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -328,42 +326,35 @@ namespace Kolibri.net.C64Sorter
             // volumeToolStripMenuItem
             // 
             volumeToolStripMenuItem.Name = "volumeToolStripMenuItem";
-            volumeToolStripMenuItem.Size = new Size(180, 22);
+            volumeToolStripMenuItem.Size = new Size(156, 22);
             volumeToolStripMenuItem.Text = "Volume";
             volumeToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // videostreamToolStripMenuItem
             // 
             videostreamToolStripMenuItem.Name = "videostreamToolStripMenuItem";
-            videostreamToolStripMenuItem.Size = new Size(180, 22);
+            videostreamToolStripMenuItem.Size = new Size(156, 22);
             videostreamToolStripMenuItem.Text = "Videostream";
             videostreamToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripSeparator12
             // 
             toolStripSeparator12.Name = "toolStripSeparator12";
-            toolStripSeparator12.Size = new Size(177, 6);
+            toolStripSeparator12.Size = new Size(153, 6);
             // 
             // configsToolStripMenuItem
             // 
             configsToolStripMenuItem.Name = "configsToolStripMenuItem";
-            configsToolStripMenuItem.Size = new Size(180, 22);
+            configsToolStripMenuItem.Size = new Size(156, 22);
             configsToolStripMenuItem.Text = "Configs...";
             configsToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // displayCfgFilesToolStripMenuItem
             // 
             displayCfgFilesToolStripMenuItem.Name = "displayCfgFilesToolStripMenuItem";
-            displayCfgFilesToolStripMenuItem.Size = new Size(180, 22);
+            displayCfgFilesToolStripMenuItem.Size = new Size(156, 22);
             displayCfgFilesToolStripMenuItem.Text = "Display cfg files";
             displayCfgFilesToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
-            // 
-            // uploadLocalCfgFileToolStripMenuItem
-            // 
-            uploadLocalCfgFileToolStripMenuItem.Name = "uploadLocalCfgFileToolStripMenuItem";
-            uploadLocalCfgFileToolStripMenuItem.Size = new Size(180, 22);
-            uploadLocalCfgFileToolStripMenuItem.Text = "Upload local cfg file";
-            uploadLocalCfgFileToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripMenuItemRun
             // 
@@ -390,7 +381,7 @@ namespace Kolibri.net.C64Sorter
             allFilesToolStripMenuItem.Name = "allFilesToolStripMenuItem";
             allFilesToolStripMenuItem.Size = new Size(216, 22);
             allFilesToolStripMenuItem.Text = "All files";
-            allFilesToolStripMenuItem.ToolTipText = "Run all types of local files externally";
+            allFilesToolStripMenuItem.ToolTipText = "Run all types of local files externally (PC->UE2)";
             allFilesToolStripMenuItem.Click += runnersMenuItem_Click;
             // 
             // toolStripSeparator9
@@ -559,11 +550,6 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
-            // 
-            // toolStripSeparator13
-            // 
-            toolStripSeparator13.Name = "toolStripSeparator13";
-            toolStripSeparator13.Size = new Size(177, 6);
             // 
             // MainForm
             // 
