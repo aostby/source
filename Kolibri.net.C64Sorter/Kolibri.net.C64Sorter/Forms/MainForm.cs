@@ -1,7 +1,7 @@
 using com.sun.org.apache.bcel.@internal.generic;
 using FastColoredTextBoxNS;
 using File_Organizer;
- 
+using FTP_Connect;
 
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
@@ -262,23 +262,7 @@ namespace Kolibri.net.C64Sorter
 
                 if (sender.Equals(toolStripMenuItemFTPClient))
                 {
-                    //newMDIChild = new frmFTP(_ue2logon.Hostname, _ue2logon.Username, _ue2logon.Password);
-                    var json = Path.Combine(UltmateEliteClient.ResourcesPath.FullName, $"tools.json");
-                    if (File.Exists(json))
-                    {
-                        dynamic data = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(json));
-
-                        foreach (var item in data)
-                        {
-                            FileInfo info = new FileInfo($"{item.FullPath}");
-                            if (info.Exists && (info.Name.EndsWith("filezilla.exe") || info.Name.Contains("FTP")))
-                            {
-                                FileUtilities.Start(info);
-                                SetStatusLabel($"Staring FTP: {info.Name}");
-                                return;
-                            }
-                        }
-                    }
+                    newMDIChild = new frmFTP(_ue2logon.Hostname, _ue2logon.Username, _ue2logon.Password);
                 }
                 else if (sender.Equals(toolStripMenuItemFTPTreeView))
                 {
