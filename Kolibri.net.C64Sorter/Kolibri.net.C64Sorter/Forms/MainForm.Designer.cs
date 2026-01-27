@@ -318,7 +318,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // toolStripMenuItem3
             // 
-            toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem, videostreamToolStripMenuItem, toolStripSeparator12, configsToolStripMenuItem, displayCfgFilesToolStripMenuItem, toolStripSeparator13, uploadLocalCfgFileToolStripMenuItem });
+            toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem, videostreamToolStripMenuItem, toolStripSeparator12, configsToolStripMenuItem, displayCfgFilesToolStripMenuItem });
             toolStripMenuItem3.Name = "toolStripMenuItem3";
             toolStripMenuItem3.Size = new Size(213, 22);
             toolStripMenuItem3.Text = "Configuration";
