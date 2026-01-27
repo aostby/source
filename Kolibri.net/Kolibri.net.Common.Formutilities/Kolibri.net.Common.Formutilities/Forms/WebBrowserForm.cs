@@ -27,6 +27,15 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
             // Navigate to a URL
             webView21.Source = new System.Uri(url);
+
+            try
+            {
+                Uri address = new Uri(url);
+                this.Text = address.Segments.LastOrDefault().ToString();
+            }
+            catch (Exception)
+            { this.Text = url; }
+
         }
     }
 

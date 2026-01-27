@@ -39,7 +39,7 @@ namespace Kolibri.net.C64Sorter
                 SetStatusLabel($"NB! - no IP or Hostname for the Ultimate Elite II is set! Please fill it in in the {fileToolStripMenuItem.Text} menu.");
             }
             else
-            { 
+            {
                 try
                 {
                     _client = new UltmateEliteClient(_ue2logon.Hostname);
@@ -77,7 +77,7 @@ namespace Kolibri.net.C64Sorter
                 MessageBox.Show(ex.GetType().Name, ex.Message);
             }
 
-          
+
 
         }
 
@@ -384,7 +384,7 @@ namespace Kolibri.net.C64Sorter
             try
             {
                 if (string.IsNullOrEmpty(_ue2logon.Hostname)) { toolStripMenuItemHostname_Click(null, null); return; }
-              
+
                 var text = ((sender as ToolStripMenuItem).Text.Replace("or", " ").Replace(",", " ").Split(" ")).ToArray().Where(s => !string.IsNullOrEmpty(s)).ToArray();
                 string filter = FileUtilities.GetFileDialogFilter(text, true);
 
@@ -429,7 +429,7 @@ namespace Kolibri.net.C64Sorter
             try
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-              //  Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                //  Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var text = ((sender as ToolStripMenuItem).Text.Replace("or", " ").Replace(",", " ").Split(" ")).ToArray().Where(s => !string.IsNullOrEmpty(s)).ToArray();
                 string filter = FileUtilities.GetFileDialogFilter(text, true);
 
@@ -448,12 +448,12 @@ namespace Kolibri.net.C64Sorter
                         _client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, new FileInfo(fbd.FullName));
 
                     }
-                    else if (fbd.Exists && (fbd.Name.Contains(".CFG", StringComparison.OrdinalIgnoreCase))  )
+                    else if (fbd.Exists && (fbd.Name.Contains(".CFG", StringComparison.OrdinalIgnoreCase)))
                     {
                         SetStatusLabel($"Uploading {fbd.Name} remotely to {_ue2logon}");
-                      string remotePath=  _client.FtpUpload(_ue2logon.Hostname,  fbd.FullName);
+                        string remotePath = _client.FtpUpload(_ue2logon.Hostname, fbd.FullName);
                         SetStatusLabel($"File uploaded to {remotePath}");
-                        MessageBox.Show($"File uploaded to {remotePath}", fbd.Name, MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                        MessageBox.Show($"File uploaded to {remotePath}", fbd.Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
 
                     else if (fbd.Exists && fbd.Name.Contains(".D64", StringComparison.OrdinalIgnoreCase)
@@ -603,7 +603,7 @@ namespace Kolibri.net.C64Sorter
 
             try
             {
-             //   Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                //   Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 if (sender.Equals(resetToolStripMenuItem))
                 { _client.MachineReset(); }
                 else if (sender.Equals(rebootToolStripMenuItem))
@@ -622,7 +622,7 @@ namespace Kolibri.net.C64Sorter
             {
                 SetStatusLabel(ex.Message);
             }
-        } 
+        }
 
         public string? GetIPv4AddressForInterface(string interfaceName)
         {
@@ -690,10 +690,11 @@ namespace Kolibri.net.C64Sorter
                     form.MdiParent = this;
                     form.Show();
                 }
-                else if (sender.Equals(displayCfgFilesToolStripMenuItem)) {
+                else if (sender.Equals(displayCfgFilesToolStripMenuItem) || sender.Equals(uploadLocalCfgFileToolStripMenuItem))
+                {
                     string filter = FileUtilities.GetFileDialogFilter(new List<string>() { "cfg" }.ToArray(), true);
-                    FileInfo fileInfo = FileUtilities.LetOppFil(title: "Let opp mappen med tomme undermapper", filter: filter);
-                    if (fileInfo != null && fileInfo.Exists)
+                    FileInfo fileInfo = FileUtilities.LetOppFil(title: "Let opp mappen med cfg fil i", filter: filter);
+                    if (fileInfo != null && fileInfo.Exists && sender.Equals(displayCfgFilesToolStripMenuItem))
                     {
                         Form form = Common.FormUtilities.Controller.OutputFormController.RichTexBoxForm(fileInfo.Name, "",
                             //FastColoredTextBoxNS.Language.PHP,
@@ -701,15 +702,39 @@ namespace Kolibri.net.C64Sorter
                             FastColoredTextBoxNS.Language.Custom,
                             new Size(600, 300));
 
-                   var fctb=     form.Controls.Find("dgv", false).FirstOrDefault() as FastColoredTextBoxNS.FastColoredTextBox;
+                        var fctb = form.Controls.Find("dgv", false).FirstOrDefault() as FastColoredTextBoxNS.FastColoredTextBox;
                         fctb.TextChanged += (s, e) =>
                         {
                             HighlightIni(fctb);
-                        }; 
+                        };
 
                         form.MdiParent = this;
                         form.Show();
                         fctb.Text = FileUtilities.ReadTextFile(fileInfo.FullName);
+                    }
+                    else if (sender.Equals(uploadLocalCfgFileToolStripMenuItem))
+                    {
+                        var listing = FTPControllerC64.GetDirectoryListing($"ftp://{_ue2logon.Hostname}/", _ue2logon.Username, _ue2logon.Password);
+                        var tmp = listing.FindAll(x => x.Name.StartsWith("Temp", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                        if (tmp != null) {
+                        var ftpUrl=    _client.FtpUpload(_ue2logon.Hostname, fileInfo.FullName);
+                            SetStatusLabel($"{fileInfo.Name} uploaded to {ftpUrl}");
+                            _client.MachineMenu(true);
+
+
+                            var res = MessageBox.Show($@"So, now whats weird, you need to go to {ftpUrl} and run the .cfg file. 
+Not only that, you need to load it from flash after that. Want to load for flash after you've loaded? Hit OK.
+I haven't figured this out yet, it seems like you have to hit F5 and choose {"reset from flash"} to make it take....
+Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear flash config"}, load your config file, and restart.
+", "This is something....", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                            if (res == DialogResult.OK)
+                            {
+                                _client.PutUrl("v1/configs:load_from_flash");
+                                _client.MachineReboot();
+                            }
+                                
+                        }
+
                     }
                 }
             }
@@ -722,7 +747,7 @@ namespace Kolibri.net.C64Sorter
         Style keyStyle = new TextStyle(Brushes.Brown, null, FontStyle.Regular);
         Style valueStyle = new TextStyle(Brushes.DarkOliveGreen, null, FontStyle.Regular);
         Style commentStyle = new TextStyle(Brushes.Green, null, FontStyle.Italic);
-        private      void HighlightIni(FastColoredTextBoxNS.FastColoredTextBox tb)
+        private void HighlightIni(FastColoredTextBoxNS.FastColoredTextBox tb)
         {
             //tb.ClearStyle( (sectionStyle, keyStyle, valueStyle, commentStyle);
 
@@ -758,11 +783,14 @@ namespace Kolibri.net.C64Sorter
         }
 
         // Event handler for when the user releases the mouse button over the form
-        private void MainForm_DragDrop(object sender, DragEventArgs e)
+        private async void MainForm_DragDrop(object sender, DragEventArgs e)
         {
-            // Extract the file paths from the data object into a string array
+        await    _client.MachineReboot();
+            
+            // Extract the file paths from the data
+            // object into a string array
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-
+            //Thread.Sleep(2800);
             // Process the dropped files (example: display in a MessageBox)
             if (files != null && files.Length > 0)
             {
@@ -785,7 +813,7 @@ namespace Kolibri.net.C64Sorter
 
                 Uri uri = new Uri(rt);
                 string ext = Path.GetExtension(Path.GetFileName(uri.LocalPath));
-                if ((ext.ToLower().Contains("mod") || ext.ToLower().Contains("sid")))
+                if ((ext.ToLower().Contains("mod") || ext.ToLower().Contains("sid")|| ext.ToLower().Contains("prg")|| ext.ToLower().Contains("crt")))
                 {
                     var retur = client.UploadAndRunPrgOrCrt(_ue2logon.Hostname, new FileInfo(files[0].ToString()));
                 }
@@ -821,7 +849,7 @@ namespace Kolibri.net.C64Sorter
         {
             try
             {
-              //  Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
+                //  Controllers.UltmateEliteClient client = new UltmateEliteClient(_hostname.Hostname);
                 var key = e.KeyValue;
                 switch (key)
                 {
@@ -935,6 +963,6 @@ namespace Kolibri.net.C64Sorter
             }
         }
 
-       
+      
     }
 }

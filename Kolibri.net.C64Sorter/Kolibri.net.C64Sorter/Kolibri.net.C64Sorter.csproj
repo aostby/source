@@ -52,6 +52,9 @@
     <None Update="Resources\C64_default.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\cfg.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Command_Pokes_gklinger.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
