@@ -289,10 +289,8 @@ namespace Kolibri.net.C64Sorter
             }
             catch (Exception ex)
             {
-                string msg = $"FTP: {ex.Message}";
-
-                MessageBox.Show(msg, ex.GetType().Name);
-                SetStatusLabel(msg);
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+                SetStatusLabel($"FTP: {ex.Message}");
             }
         }
 

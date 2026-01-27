@@ -95,18 +95,6 @@
 			<pubDate> 22 Dec 2025 16:30:00 GMT</pubDate>
 			<guid isPermaLink="false">987654321</guid>
 		</item>
-			<item>
-			<title>the C-64 Scene Database</title>
-			<link>https://csdb.dk/</link>
-			<description>A site dedicated to gathering as much information as possible about the productions, the groups, the sceners, the events and bbs's in the Commodore 64 scene.
-You can help this database grow by submitting information about the productions/groups/sceners/events/bbs you know about.
-In order to do that you first need to create an account.
-For more info about the CSDb check the docs.</description>
-			<pubDate>2026-01-16</pubDate>
-			<guid isPermaLink="false">987654321</guid>
-		</item>
-
-		
 		
 
 	</channel>
