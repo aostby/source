@@ -95,6 +95,15 @@
 			<pubDate> 22 Dec 2025 16:30:00 GMT</pubDate>
 			<guid isPermaLink="false">987654321</guid>
 		</item>
+
+
+			<item>
+			<title>Running GEOS on the Ultimate 1541-II (C64)</title>
+			<link>https://www.rgcd.co.uk/2011/05/running-geos-on-ultimate-1541-ii-c64.html</link>
+			<description>GEOS on the C64 was something I'd been meaning to look into using ever since I received my Ultimate 1541-II last year, so with my main desktop PC still out of action I decided to finally give it a go.</description>
+			<pubDate>2011-05-30</pubDate>
+			<guid isPermaLink="false">987654321</guid>
+		</item>
 		
 
 	</channel>

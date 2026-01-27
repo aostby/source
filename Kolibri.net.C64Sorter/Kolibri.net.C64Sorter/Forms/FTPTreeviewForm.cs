@@ -1,5 +1,6 @@
 ﻿
 
+using com.sun.security.ntlm;
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.Common.Images;
@@ -186,8 +187,25 @@ namespace Kolibri.net.C64Sorter.Forms
                             client.SendCommand("RUN");
                             return;
                         }
+                        else if (test.Contains("cfg", StringComparison.OrdinalIgnoreCase)) {
+                            Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
+                            var res = MessageBox.Show($@"So, now whats weird, you need to go to {Environment.NewLine}{tst}{Environment.NewLine} and run the .cfg file. 
+Not only that, you need to load it from flash after that. Want to load for flash after you've loaded? Hit OK.
+I haven't figured this out yet, it seems like you have to hit F5 and choose {"reset from flash"} to make it take....
+Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear flash config"}, load your config file, and restart.
+", "This is something....", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                            if (res == DialogResult.OK)
+                            {
+                                using (UltmateEliteClient _client = new UltmateEliteClient(_ue2logon.Hostname))
+                                {
+                                    _client.PutUrl("v1/configs:load_from_flash");
+                                    _client.MachineReboot();
+                                }
+                            }
+                            return;
+                        }
 
-                        DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
+                            DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
                         url = ApiUrls.MountImageOnDevice(_hostname, "a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
                         url = url.Replace($"http://{_hostname}/", string.Empty);
                         url = $"v1/drives/a:mount?image={clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/")}";

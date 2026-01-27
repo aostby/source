@@ -64,9 +64,11 @@ namespace Kolibri.net.C64Sorter
             powerOffToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem3 = new ToolStripMenuItem();
             volumeToolStripMenuItem = new ToolStripMenuItem();
+            videostreamToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator12 = new ToolStripSeparator();
             configsToolStripMenuItem = new ToolStripMenuItem();
-            videostreamToolStripMenuItem = new ToolStripMenuItem();
+            displayCfgFilesToolStripMenuItem = new ToolStripMenuItem();
+            uploadLocalCfgFileToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItemRun = new ToolStripMenuItem();
             toolStripMenuItemFTPTreeView = new ToolStripMenuItem();
             toolStripSeparator8 = new ToolStripSeparator();
@@ -95,7 +97,7 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
-            displayCfgFilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator13 = new ToolStripSeparator();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -318,7 +320,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // toolStripMenuItem3
             // 
-            toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem, videostreamToolStripMenuItem, toolStripSeparator12, configsToolStripMenuItem, displayCfgFilesToolStripMenuItem });
+            toolStripMenuItem3.DropDownItems.AddRange(new ToolStripItem[] { volumeToolStripMenuItem, videostreamToolStripMenuItem, toolStripSeparator12, configsToolStripMenuItem, displayCfgFilesToolStripMenuItem, toolStripSeparator13, uploadLocalCfgFileToolStripMenuItem });
             toolStripMenuItem3.Name = "toolStripMenuItem3";
             toolStripMenuItem3.Size = new Size(213, 22);
             toolStripMenuItem3.Text = "Configuration";
@@ -329,6 +331,13 @@ namespace Kolibri.net.C64Sorter
             volumeToolStripMenuItem.Size = new Size(180, 22);
             volumeToolStripMenuItem.Text = "Volume";
             volumeToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            // 
+            // videostreamToolStripMenuItem
+            // 
+            videostreamToolStripMenuItem.Name = "videostreamToolStripMenuItem";
+            videostreamToolStripMenuItem.Size = new Size(180, 22);
+            videostreamToolStripMenuItem.Text = "Videostream";
+            videostreamToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripSeparator12
             // 
@@ -342,12 +351,19 @@ namespace Kolibri.net.C64Sorter
             configsToolStripMenuItem.Text = "Configs...";
             configsToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
-            // videostreamToolStripMenuItem
+            // displayCfgFilesToolStripMenuItem
             // 
-            videostreamToolStripMenuItem.Name = "videostreamToolStripMenuItem";
-            videostreamToolStripMenuItem.Size = new Size(180, 22);
-            videostreamToolStripMenuItem.Text = "Videostream";
-            videostreamToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            displayCfgFilesToolStripMenuItem.Name = "displayCfgFilesToolStripMenuItem";
+            displayCfgFilesToolStripMenuItem.Size = new Size(180, 22);
+            displayCfgFilesToolStripMenuItem.Text = "Display cfg files";
+            displayCfgFilesToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            // 
+            // uploadLocalCfgFileToolStripMenuItem
+            // 
+            uploadLocalCfgFileToolStripMenuItem.Name = "uploadLocalCfgFileToolStripMenuItem";
+            uploadLocalCfgFileToolStripMenuItem.Size = new Size(180, 22);
+            uploadLocalCfgFileToolStripMenuItem.Text = "Upload local cfg file";
+            uploadLocalCfgFileToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripMenuItemRun
             // 
@@ -544,12 +560,10 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
             // 
-            // displayCfgFilesToolStripMenuItem
+            // toolStripSeparator13
             // 
-            displayCfgFilesToolStripMenuItem.Name = "displayCfgFilesToolStripMenuItem";
-            displayCfgFilesToolStripMenuItem.Size = new Size(180, 22);
-            displayCfgFilesToolStripMenuItem.Text = "Display cfg files";
-            displayCfgFilesToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            toolStripSeparator13.Name = "toolStripSeparator13";
+            toolStripSeparator13.Size = new Size(177, 6);
             // 
             // MainForm
             // 
@@ -645,5 +659,7 @@ namespace Kolibri.net.C64Sorter
         private ToolStripMenuItem videostreamToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator12;
         private ToolStripMenuItem displayCfgFilesToolStripMenuItem;
+        private ToolStripMenuItem uploadLocalCfgFileToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator13;
     }
 }

@@ -483,7 +483,8 @@ namespace Kolibri.net.C64Sorter.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var text = response.Content.ReadAsStringAsync();
-                return await response.Content.ReadFromJsonAsync<Configs>();
+                var ret = await response.Content.ReadFromJsonAsync<Configs>(); 
+                return ret;
             }
             else
             {
