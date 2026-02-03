@@ -775,8 +775,10 @@ namespace Kolibri.net.Common.Dal.Controller
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public bool Upsert(FileItem file, bool checkPath=false)
+        public bool Upsert(FileItem file, bool checkPath = false)
         {
+            if (file.ImdbId == null) { return false; }
+
             if (checkPath)
             {
                 if (!file.ItemFileInfo.Exists)
@@ -784,20 +786,17 @@ namespace Kolibri.net.Common.Dal.Controller
             }
             try
             {
-                _liteDB.GetCollection<FileItem>("FileItem")
-                    .Insert(file.ImdbId, file);
-                return true;
+                if (FindFile(file.ImdbId) == null)
+                {
+                    _liteDB.GetCollection<FileItem>("FileItem")
+                        .Insert(file.ImdbId, file);
+                    return true;
+                }
+                else return Update(file);
+
             }
             catch (Exception ex)
             {
-                try
-                {
-                    Update(file);
-                    return true;
-                }
-                catch (Exception exf)
-                { return false; }
-
                 return false;
             }
         }
@@ -1136,6 +1135,24 @@ switch (searchCriteria)
             {
                 return false;
             }
+        }
+
+        public List<Item> FindItems(IEnumerable<FileItem> fileItems)
+        {if (fileItems == null) return null;
+            List<Item> ret = new List<Item>();
+
+            foreach (FileItem item in fileItems)
+            {
+                try
+                {
+                    var itemItem = FindItem(item.ImdbId);
+                    if (itemItem != null) { ret.Add(itemItem); }
+                }
+                catch (Exception)
+                { }
+            }
+
+            return ret;
         }
 
         #endregion

@@ -567,14 +567,23 @@ namespace Kolibri.net.SilverScreen.Forms
                 SetLabelText(ex.Message);
             }
         }
-        private void SetLabelText(string text)
-        {
+        private void SetLabelText(string message)
+        {   
             try
             {
-                toolStripStatusLabelStatus.GetCurrentParent().BringToFront();
-                toolStripStatusLabelStatus.Text = text;
+                Task.Delay(1).GetAwaiter().GetResult();
+                if (InvokeRequired)
+                    Invoke(new System.Windows.Forms.MethodInvoker(
+                        delegate { SetLabelText(message); }
+                    ));
+                else
+                {
+                    toolStripStatusLabelStatus.Text = message;
+                    Thread.Sleep(3);
+                }
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            { }
         }
 
         private void radioButtonFilter_CheckedChanged(object sender, EventArgs e)
