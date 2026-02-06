@@ -74,6 +74,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             toolTip1 = new ToolTip(components);
             labelOmdbId = new Label();
             checkBoxLookUp = new CheckBox();
+            buttonStream = new Button();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
@@ -492,11 +493,22 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             checkBoxLookUp.Text = "LookUp missing";
             checkBoxLookUp.UseVisualStyleBackColor = true;
             // 
+            // buttonStream
+            // 
+            buttonStream.Location = new Point(221, 536);
+            buttonStream.Name = "buttonStream";
+            buttonStream.Size = new Size(75, 26);
+            buttonStream.TabIndex = 35;
+            buttonStream.Text = "Stream";
+            buttonStream.UseVisualStyleBackColor = true;
+            buttonStream.Click += button1_Click;
+            // 
             // MovieForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(934, 577);
+            Controls.Add(buttonStream);
             Controls.Add(checkBoxLookUp);
             Controls.Add(labelOmdbId);
             Controls.Add(linkLabelOpenFilePath);
@@ -581,6 +593,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private Label labelOmdbId;
         private CheckBox checkBoxLookUp;
         private Label labelLine;
+        private Button buttonStream;
     }
 }
 

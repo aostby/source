@@ -752,11 +752,11 @@ namespace Kolibri.Common.VisualizeOMDbItem
             }
         }
 
-        private void contextMenu_Click(object sender, EventArgs e)
+        private async void contextMenu_Click(object sender, EventArgs e)
         {
             try
             {
-                Item item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
+                Item item = await getMovieDetails(_currentItem.ImdbId);
                 if (item == null) { throw new Exception("Fant ikkje na der serien"); }
 
                 if (sender.Equals(toolStripMenuItemDelete))
@@ -794,8 +794,19 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     {
                         if (!Path.Exists(item.TomatoUrl))
                         {
-                            MessageBox.Show($"{item.TomatoUrl} ({item.Title})", "Sorry, the filepath does not exist");
-                            var res = MessageBox.Show($"Wanna look up this folder?", "Wanna fix it? ({item.Title})", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            DialogResult res;
+                            var src = Directory.GetDirectories(_userSettings.UserFilePaths.SeriesSourcePath, $"*{item.ImdbId}*", SearchOption.AllDirectories).FirstOrDefault();
+                            if (src != null && Directory.Exists(src)) { 
+                                res = DialogResult.Yes;
+                                item.TomatoUrl = src;
+                                _liteDB.Upsert(item);
+                                _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                                SetStatusLabelText($"Updated {item.Title} path: {item.TomatoUrl}");
+                                return;
+                            }
+                            else {
+                                MessageBox.Show($"{item.TomatoUrl} ({item.Title})", "Sorry, the filepath does not exist");
+                             res= MessageBox.Show($"Wanna look up this folder?", "Wanna fix it? ({item.Title})", MessageBoxButtons.YesNo, MessageBoxIcon.Question); }
                             if (res == DialogResult.Yes)
                             {
 
@@ -809,7 +820,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                                 }
                                 catch (Exception) { }
                                
-                                                                        var resultSearch = FolderUtilities.LetOppMappe(path, $"Finn hovedmappe for {item.Title}");
+                                var resultSearch = FolderUtilities.LetOppMappe(path, $"Finn hovedmappe for {item.Title}");
                                 if (resultSearch != null)
                                 {
                                     item.TomatoUrl = resultSearch.FullName;
@@ -822,7 +833,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         }
                         else
                         {
-                            if (_liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl)))
+                            if (await _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl)))
                             {
                                 SetStatusLabelText($"{item.TomatoUrl} is allready set to a tt id.");
                             }

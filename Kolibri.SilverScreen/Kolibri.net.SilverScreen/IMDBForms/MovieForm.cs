@@ -9,6 +9,7 @@ using MoviesFromImdb.Controller;
 using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
+using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -30,17 +31,17 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             InitializeComponent();
             Init();
         }
-        public MovieForm(UserSettings userSettings, FileInfo info, string year="")
+        public MovieForm(UserSettings userSettings, FileInfo info, string year = "")
         {
             _info = info;
             _userSettings = userSettings;
             InitializeComponent();
             this.Text = $"File: {info.Name}";
-            
+
             Init();
             tbSearch.Text = MovieUtilites.GetMovieTitle(info.FullName);
             tbYearParameter.Text = year;
-            if(string.IsNullOrWhiteSpace(year)) tbYearParameter.Text = MovieUtilites.GetYear(info.Directory.FullName).ToString();
+            if (string.IsNullOrWhiteSpace(year)) tbYearParameter.Text = MovieUtilites.GetYear(info.Directory.FullName).ToString();
             buttonUpdate.Visible = true;
 
         }
@@ -120,7 +121,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             var parameter = "t"; //title
             if (tbSearch.Text.StartsWith("tt", StringComparison.OrdinalIgnoreCase)) { parameter = "i"; } //id //https://www.omdbapi.com/ - options
             string url = $@"http://www.omdbapi.com/?{parameter}={tbSearch.Text.Trim()}";
-            if (parameter.Equals("t") && YearParameterNumber>1800) { url += "&y=" + tbYearParameter.Text.Trim(); }
+            if (parameter.Equals("t") && YearParameterNumber > 1800) { url += "&y=" + tbYearParameter.Text.Trim(); }
             url += $"&apikey={_userSettings.OMDBkey}";
 
             string json = null;
@@ -130,7 +131,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 try
                 {
                     string year = tbYearParameter.Text.Trim().TrimEnd('-').ToInt32().ToString();
-                    Item sItem = parameter == "t" ? _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(),YearParameterNumber) : _liteDB.FindItem(tbSearch.Text.Trim().FirstToUpper());
+                    Item sItem = parameter == "t" ? _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(), YearParameterNumber) : _liteDB.FindItem(tbSearch.Text.Trim().FirstToUpper());
                     if (sItem != null && sItem.Year.TrimEnd('–').ToInt32() != YearParameterNumber) { sItem = null; }
 
                     if (sItem == null)
@@ -139,7 +140,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         //  var result = JsonConvert.DeserializeObject<WatchList>(json);
                         sItem = JsonConvert.DeserializeObject<Item>(json);
                     }
-                    if (sItem!=null)
+                    if (sItem != null)
                     {
                         tbTitle.Text = sItem.Title;
                         tbYear.Text = sItem.Year;
@@ -152,18 +153,18 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         pbPoster.ImageLocation = sItem.Poster;
                         labelImdbId.Text = sItem.ImdbId;
                         labelImdbRating.Text = sItem.ImdbRating;
-                        var f= _liteDB.FindFile(labelImdbId.Text);
+                        var f = _liteDB.FindFile(labelImdbId.Text);
                         FileItem file = f.Result;
 
-                        linkLabelOpenFilePath.BackColor = file==null ? Color.IndianRed :  (file!=null&&file.ItemFileInfo.Exists? Control.DefaultBackColor:Color.Yellow );
-                    
+                        linkLabelOpenFilePath.BackColor = file == null ? Color.IndianRed : (file != null && file.ItemFileInfo.Exists ? Control.DefaultBackColor : Color.Yellow);
+
                         try
                         {
                             string alternative = string.Empty;
                             using (TMDBController tmdbC = new TMDBController(_liteDB, _userSettings.TMDBkey))
                             {
-                               var t= Task.Run(()=>tmdbC.FindById(labelImdbId.Text));
-                             var res = t.Result;
+                                var t = Task.Run(() => tmdbC.FindById(labelImdbId.Text));
+                                var res = t.Result;
                                 if (sItem.Type.StartsWith("serie", StringComparison.OrdinalIgnoreCase))
                                 {
                                     var tmpTV = tmdbC.GetTVShow(res.TvResults.FirstOrDefault().Id);
@@ -172,9 +173,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                                 {
 
                                     var tmpMov = tmdbC.GetMovie(res.MovieResults.FirstOrDefault().Id);
-                                    
+
                                     labelOmdbId.Text = tmpMov.Id.ToString();
-                                      alternative =    tmpMov.AlternativeTitles.JsonSerializeObject().TrimEnd("null".ToCharArray());
+                                    alternative = tmpMov.AlternativeTitles.JsonSerializeObject().TrimEnd("null".ToCharArray());
                                     toolTip1.SetToolTip(tbTitle, alternative);
 
                                 }
@@ -182,9 +183,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                             toolTip1.SetToolTip(tbTitle, alternative);
                         }
                         catch (Exception)
-                        {   toolTip1.SetToolTip(tbTitle, string.Empty);
+                        {
+                            toolTip1.SetToolTip(tbTitle, string.Empty);
                         }
-                     
+
 
 
                     }
@@ -238,8 +240,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             try
             {
-        WatchlistForm frm = new WatchlistForm(_liteDB, comboBox1.SelectedValue.ToString());
-            frm.ShowDialog();
+                WatchlistForm frm = new WatchlistForm(_liteDB, comboBox1.SelectedValue.ToString());
+                frm.ShowDialog();
             }
             catch (Exception ex)
             {
@@ -383,7 +385,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
-  
+
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
@@ -488,6 +490,40 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             if (tbYearParameter.Text.Length == 0) { tbYearParameter.BackColor = Color.White; }
             else { tbYearParameter.BackColor = tbYearParameter.Text.Length == 4 ? Color.White : Color.LightSalmon; }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            {/*Simple way  https://www.superembed.stream/
+Just paste url to iframe. No extra files needed. Works on all servers, even Blogger.
+
+Request movie by IMDB id: https://multiembed.mov/?video_id=tt8385148
+Request movie by TMDB id: https://multiembed.mov/?video_id=522931&tmdb=1
+Request episode by IMDB id: https://multiembed.mov/?video_id=tt13157618&s=1&e=2
+Request episode by TMDB id: https://multiembed.mov/?video_id=114472&tmdb=1&s=1&e=2
+
+Paste these urls to iframe and the player will appear there. Just change imdb or tmdb id.
+For IMDB id you can use tt0000000 or just number 0000000.
+For season and episode parameters you can use s=1&e=1 or season=1&episode=1.
+Don't forget to always include &tmdb=1 if using TMDB id.*/
+                try
+                {
+                    if (!string.IsNullOrEmpty(labelImdbId.Text))
+                    {
+
+                        var url = $"https://multiembed.mov/?video_id={labelImdbId.Text}";
+
+                        url = url.Replace("&", "^&");
+                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    }
+                    else throw new Exception($"Fant ikke data for {this.tbTitle}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, ex.GetType().Name);
+
+                }
+            }
         }
     }
 }

@@ -752,12 +752,12 @@ namespace Kolibri.net.Common.Dal.Controller
 
             if (ret == null)
             {
-                var tmp = FindItem(imdbId);
-                if (tmp != null && tmp.TomatoUrl != null)
-                {
-                    FileItem item = new FileItem(imdbId, tmp.TomatoUrl);
-                    return item;
-                }
+                //var tmp = FindItem(imdbId);
+                //if (tmp != null && tmp.TomatoUrl != null)
+                //{
+                //    FileItem item = new FileItem(imdbId, tmp.TomatoUrl);
+                //    return item;
+                //}
             }
             return ret;
 
@@ -775,7 +775,7 @@ namespace Kolibri.net.Common.Dal.Controller
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public bool Upsert(FileItem file, bool checkPath = false)
+        public async Task< bool> Upsert(FileItem file, bool checkPath = false)
         {
             if (file.ImdbId == null) { return false; }
 
@@ -786,13 +786,14 @@ namespace Kolibri.net.Common.Dal.Controller
             }
             try
             {
-                if (FindFile(file.ImdbId) == null)
+                FileItem fi = await FindFile(file.ImdbId);
+                if (fi == null)
                 {
                     _liteDB.GetCollection<FileItem>("FileItem")
                         .Insert(file.ImdbId, file);
                     return true;
                 }
-                else return Update(file);
+                else {  var success=  await  Update(file); return success; }
 
             }
             catch (Exception ex)
@@ -801,7 +802,7 @@ namespace Kolibri.net.Common.Dal.Controller
             }
         }
 
-        public bool Update(FileItem file)
+        public async Task< bool> Update(FileItem file)
         {
             if (file.ImdbId == null) { return false; }
 
