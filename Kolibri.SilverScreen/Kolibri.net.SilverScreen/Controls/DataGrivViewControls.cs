@@ -42,10 +42,10 @@ namespace Kolibri.net.SilverScreen.Controls
             _LITEDB = contr;
             
         }
-        public Form GetMulitMediaDBDataGridViewAsForm(DataTable table) {
-            return GetMulitMediaDBDataGridViewAsForm(table, _type);
+        public async Task< Form> GetMulitMediaDBDataGridViewAsForm(DataTable table) {
+            return await GetMulitMediaDBDataGridViewAsForm(table, _type);
         }
-        public Form GetMulitMediaDBDataGridViewAsForm(DataTable table, MultimediaType type)
+        public async Task< Form> GetMulitMediaDBDataGridViewAsForm(DataTable table, MultimediaType type)
         {
             DataGridView view = null;
             if (!type.Equals(MultimediaType.Series))

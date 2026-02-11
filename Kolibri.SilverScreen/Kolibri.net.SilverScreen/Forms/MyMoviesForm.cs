@@ -4,11 +4,13 @@ using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.SilverScreen.Controller;
+using Kolibri.net.SilverScreen.Controls;
 using Kolibri.net.SilverScreen.IMDBForms;
 using OMDbApiNet.Model;
 using sun.net.www.content.audio;
 using System.Data;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using static Kolibri.net.SilverScreen.Controls.Constants;
 
@@ -28,7 +30,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private List<string> _currentSearch = new List<string>();
 
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
-
+        private bool isProcessing;
 
         public MyMoviesForm()
         {
@@ -49,6 +51,7 @@ namespace Kolibri.net.SilverScreen.Forms
             this.Text = $" - {_userSettings.LiteDBFilePath}";
             GetPathSearchFiles();
             _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
+             _dgvController = new DataGrivViewControls(MultimediaType.Movies, _liteDB);
 
             _imageCache = new ImageCacheDB(_userSettings);
             buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
@@ -97,7 +100,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 dInfo = GetCurentPath();
             try
             {
-                if (_currentSearch == null || _currentSearch.Count < 1 || !_currentSearch.FirstOrDefault().Contains(dInfo))
+                if (_searchFiles.Count<=0||_currentSearch == null || _currentSearch.Count < 1 || !_currentSearch.FirstOrDefault().Contains(dInfo))
                 {
                     _currentSearch = Directory.EnumerateFiles(dInfo, "*.*", SearchOption.AllDirectories)
                                   .Where(file => MovieUtilites.MoviesCommonFileExt(true).ToArray()
@@ -128,7 +131,7 @@ namespace Kolibri.net.SilverScreen.Forms
             return ret.Trim();
         }
 
-        private void buttonOpenFolder_Click(object sender, EventArgs e)
+        private async void buttonOpenFolder_Click(object sender, EventArgs e)
         {
             _searchFiles = new List<string>();
             DirectoryInfo dInfo = null;
@@ -144,7 +147,8 @@ namespace Kolibri.net.SilverScreen.Forms
             dInfo = FileUtilities.LetOppMappe(dInfo.FullName, $"Let opp mappe ({Assembly.GetEntryAssembly().GetName().Name})");
             if (dInfo != null && dInfo.Exists)
             {
-                SetCurrentPath(dInfo);
+               SetCurrentPath(dInfo);
+               
             }
         }
 
@@ -168,7 +172,9 @@ namespace Kolibri.net.SilverScreen.Forms
                 // OutputDialogs.ShowRichTextBox($"CurrentLog", searchController.CurrentLog.ToString(), this.Size);
                 progress = ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
             }
-            var count = _liteDB.FindAllFileItems(dInfo). Count();
+            _fileItems = _liteDB.FindAllFileItems(dInfo);
+
+            var count = _fileItems.Count();
             var diff = _searchFiles.Count - count;
             labelNumItemsDB.Text = $"{count} found in LiteDB (diff: {diff} - folder: {_searchFiles.Count})";
             labelNumItemsDB.Tag = dInfo;
@@ -196,13 +202,13 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
-        private void SetForm(Form form, Panel setPanel = null)
+        private void SetForm(Form form, SplitterPanel setPanel = null)
         {
             try
             {
-                Panel panel = setPanel;
-                if (panel == null) panel = panel1;
-                if (panel == panel)
+                SplitterPanel panel = setPanel;
+                if (panel == null) panel = splitContainer1.Panel2;
+                if (panel == splitContainer1.Panel1)
                 {
                     foreach (Control item in panel.Controls)
                     {
@@ -211,6 +217,7 @@ namespace Kolibri.net.SilverScreen.Forms
                             panel.Controls.Remove(item);
                         }
                     }
+
                 }
                 else
                 {
@@ -219,7 +226,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 form.TopLevel = false;
                 form.FormBorderStyle = FormBorderStyle.None;
-
+                form.Dock= DockStyle.Fill;  
                 panel.Controls.Add(form);
                 form.Show();
                 SetLabelText(form.Text);
@@ -229,15 +236,14 @@ namespace Kolibri.net.SilverScreen.Forms
                 SetLabelText(ex.Message);
             }
         }
-        private void SetForm(Object mm, Panel setPanel)
+        private async void SetForm(Item mm, SplitterPanel setPanel)
         {
             Form form;
-            Panel panel = setPanel;
+            SplitterPanel panel = setPanel;
 
-         
-                if (true) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(mm as Item, _liteDB, tmdb: _TMDB, imagecache: _imageCache); }
-                else { form = new MovieForm(_userSettings, mm as Item); }
-            
+            if (true) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(mm as Item, _liteDB, tmdb: _TMDB, imagecache: _imageCache); }
+            else { form = new MovieForm(_userSettings, mm as Item); }
+
             SetForm(form, panel);
         }
         private void ShowGridForDBItems(List<Item> list = null)
@@ -284,34 +290,45 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
-        private void ShowGridView(DataTable tableItem)
+        private async void ShowGridView(DataTable tableItem)
         {
             try
-            {
-                Form view = _dgvController.GetMulitMediaDBDataGridViewAsForm(tableItem);
-                (view.Controls[0] as DataGridView).SelectionChanged += DataGridView_LocalSelectionChanged;
-                SetForm(view, panel1);
+            { 
+                Form view = await _dgvController.GetMulitMediaDBDataGridViewAsForm(tableItem);
+                var contr = (view.Controls[0] as DataGridView);
+                contr.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                //contr.SelectionChanged += DataGridView_LocalSelectionChanged;
+                contr.MouseUp += DataGridView_LocalSelectionChanged;
+                SetForm(view, splitContainer1.Panel1);
                 
                 SetLabelText($"{tableItem.Rows.Count} rader.");
 
                 var movie = _liteDB.FindItem(tableItem.Rows[0]["ImdbId"].ToString());
-                SetForm(movie, panel1);
+                SetForm(movie, splitContainer1.Panel2);
             }
             catch (Exception ex)
             {
-                SetLabelText(ex.Message);
+                SetLabelText($"Is the controller set? error: {ex.Message}");
             }
         }
 
         private void DataGridView_LocalSelectionChanged(object sender, EventArgs e)
         {
+            if (isProcessing) return;
+            isProcessing = true;
             try
             {
-                SetForm(_dgvController.CurrentItem, panel1);
+                var dgv = (sender as DataGridView);
+                if (dgv.Visible && dgv.SelectedRows.Count == 1)
+                { SetForm(_dgvController.CurrentItem, splitContainer1.Panel2); }
             }
             catch (Exception ex)
             {
                 SetLabelText(ex.Message);
+            }
+            finally
+            {
+                isProcessing = false;
             }
         }
 

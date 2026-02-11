@@ -441,11 +441,11 @@ namespace Kolibri.net.SilverScreen.Forms
                 Init();
             }
         }
-        private void ShowGridView(DataTable tableItem)
+        private async void ShowGridView(DataTable tableItem)
         {
             try
             {
-                Form view = _dgvController.GetMulitMediaDBDataGridViewAsForm(tableItem);
+                Form view = await _dgvController.GetMulitMediaDBDataGridViewAsForm(tableItem);
                 (view.Controls[0] as DataGridView).SelectionChanged += DataGridView_LocalSelectionChanged;
                 SetForm(view, splitContainer2.Panel1);
 

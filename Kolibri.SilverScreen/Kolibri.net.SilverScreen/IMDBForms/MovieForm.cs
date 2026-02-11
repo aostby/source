@@ -1,6 +1,4 @@
-﻿using com.sun.java.swing.plaf.motif.resources;
-using javax.xml.crypto;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Controller;
 using Kolibri.net.Common.Utilities;
@@ -13,16 +11,13 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.IMDBForms
 {
     public partial class MovieForm : Form
     {
         FileInfo _info = null;
-        LiteDBController _liteDB;
-        OMDBController _omdbController;
-        //string _apiKey = "e17f08db";
+        LiteDBController _liteDB;         
         UserSettings _userSettings;
         IMDBDAL _IMDBDAL;
         public MovieForm(UserSettings userSettings)
@@ -510,9 +505,7 @@ Don't forget to always include &tmdb=1 if using TMDB id.*/
                 {
                     if (!string.IsNullOrEmpty(labelImdbId.Text))
                     {
-
                         var url = $"https://multiembed.mov/?video_id={labelImdbId.Text}";
-
                         url = url.Replace("&", "^&");
                         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                     }

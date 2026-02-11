@@ -52,7 +52,7 @@ namespace Kolibri.net.SilverScreen.Forms
             Init(item);
         }
 
-        private void Init()
+        private async void Init()
         {
 
             //List < DataTable > datatableList = new List<DataTable>();
@@ -81,7 +81,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     table.Columns.Add(newColumn);
                 }
 
-                var form = dgvtrls.GetMulitMediaDBDataGridViewAsForm(SeriesUtilities.SortAndFormatSeriesTable(table));
+                var form = await dgvtrls.GetMulitMediaDBDataGridViewAsForm(SeriesUtilities.SortAndFormatSeriesTable(table));
                 
                 tabPage.Controls.Add(form.Controls[0]);
                 tabControlSeasons.TabPages.Add(tabPage);

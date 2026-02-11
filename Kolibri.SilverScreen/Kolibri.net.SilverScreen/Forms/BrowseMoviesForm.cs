@@ -438,7 +438,7 @@ img:hover{{transform: scale(1.5)}}
             }
         }
 
-        private void buttonVisualize_Click(object sender, EventArgs e)
+        private async void buttonVisualize_Click(object sender, EventArgs e)
         {
             splitContainer1.Panel2.Controls.Clear();
             try
@@ -446,7 +446,7 @@ img:hover{{transform: scale(1.5)}}
                 List<Item> items = buttonVisualize.Tag as List<Item>;
                 DataTable resultTable = DataSetUtilities.ConvertToDataTable(items);
                 DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false));
-                Form form = dgvtrls.GetMulitMediaDBDataGridViewAsForm(resultTable);
+                Form form = await dgvtrls.GetMulitMediaDBDataGridViewAsForm(resultTable);
                 splitContainer1.Panel2.Controls.Add(form);
 
                 form.Show();

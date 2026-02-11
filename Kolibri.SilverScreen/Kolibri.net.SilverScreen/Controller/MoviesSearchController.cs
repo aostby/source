@@ -25,6 +25,8 @@ namespace Kolibri.net.SilverScreen.Controller
         private TMDBController _TMDB;
         private OMDBController _OMDB;
 
+        private PlexController _plex;
+
         private DirectoryInfo _currentDirectory = null;
         //private List<FileInfo> _currentMediaList = new List<FileInfo>();
 
@@ -73,6 +75,14 @@ namespace Kolibri.net.SilverScreen.Controller
                 if (omdb != null) { _OMDB = omdb; } else { _OMDB = new OMDBController(_settings.OMDBkey, _liteDB); }
             }
             catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
+
+            try
+            {
+                if (!string.IsNullOrEmpty(_settings.XPlexToken))
+                    _plex = new PlexController(plexBaseUrl: $"http://{_settings.XPlexServerName}:32400", plexToken: _settings.XPlexToken);
+                _plex.CheckSettings();
+            }
+            catch (Exception ex) { _plex = null; SetStatusLabelText(ex.Message, ex.GetType().Name); }
         }
 
         private void SetStatusLabelText(string message, string type = "INFO" )
@@ -214,26 +224,36 @@ namespace Kolibri.net.SilverScreen.Controller
         /// <returns></returns>
         private async Task<Item> GetItem(FileInfo file, int year, string title)
         {
+            string imdbId = null;
+
             Item movie = null;
             if (string.IsNullOrEmpty(title))
             {
                 return null;
             }
-            if (_TMDB == null)
+            //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
+            var test = _liteDB.FindByFileName(file);
+            if (test != null && _updateTriState == null || _updateTriState == false)
             {
-                try
+                movie = _liteDB.FindItem(test.ImdbId);
+                if (movie != null)
                 {
-                    _TMDB = new TMDBController(_liteDB, _settings.TMDBkey);
+                    movie.TomatoUrl = file.FullName;
+                    _liteDB.Update(movie);
+                    _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                    SetStatusLabelText($"{movie.ImdbId} Lokal eksisterende {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                    return movie;
                 }
-                catch (Exception) { return movie; }
             }
-            else
+            //plex
+            if (movie == null && _plex != null)
             {
-                //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
-                var test = _liteDB.FindByFileName(file);
-                if (test != null && _updateTriState == null || _updateTriState == false)
+                var jall = await _plex.FindByTitleAsync(title, year);
+
+                if (jall != null)
                 {
-                    movie = _liteDB.FindItem(test.ImdbId);
+                    imdbId= jall.ImdbId;
+                    movie = _OMDB.GetItemByImdbId(imdbId);
                     if (movie != null)
                     {
                         movie.TomatoUrl = file.FullName;
@@ -243,6 +263,19 @@ namespace Kolibri.net.SilverScreen.Controller
                         return movie;
                     }
                 }
+            }
+
+            if (_TMDB == null)
+            {
+                try
+                {
+                    _TMDB = new TMDBController(_liteDB, _settings.TMDBkey);
+
+                }
+                catch (Exception) { return movie; }
+            }
+        
+
                 //Finn ved hjelp av TMDB
                 if (movie == null)
                 {
@@ -370,7 +403,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     catch (Exception)
                     { }
                 }
-            }
+            
             return movie;
         }
         #endregion

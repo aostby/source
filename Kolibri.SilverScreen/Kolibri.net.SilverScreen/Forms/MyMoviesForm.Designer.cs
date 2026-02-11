@@ -34,12 +34,14 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
             labelNumItemsDB = new LinkLabel();
-            panel1 = new Panel();
             groupBoxValg = new GroupBox();
-            button1 = new Button();
+            buttonVelg = new Button();
             radioButtonShowGrid = new RadioButton();
+            splitContainer1 = new SplitContainer();
             statusStrip1.SuspendLayout();
             groupBoxValg.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.SuspendLayout();
             SuspendLayout();
             // 
             // textBoxSource
@@ -92,18 +94,10 @@
             labelNumItemsDB.Text = "Antall (DB)";
             labelNumItemsDB.LinkClicked += labelNumItemsDB_LinkClicked;
             // 
-            // panel1
-            // 
-            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panel1.Location = new Point(12, 88);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(785, 337);
-            panel1.TabIndex = 6;
-            // 
             // groupBoxValg
             // 
             groupBoxValg.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            groupBoxValg.Controls.Add(button1);
+            groupBoxValg.Controls.Add(buttonVelg);
             groupBoxValg.Controls.Add(radioButtonShowGrid);
             groupBoxValg.Location = new Point(291, 41);
             groupBoxValg.Name = "groupBoxValg";
@@ -112,16 +106,16 @@
             groupBoxValg.TabStop = false;
             groupBoxValg.Text = "Velg handling";
             // 
-            // button1
+            // buttonVelg
             // 
-            button1.Anchor = AnchorStyles.Right;
-            button1.Location = new Point(422, 13);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 1;
-            button1.Text = "Velg";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            buttonVelg.Anchor = AnchorStyles.Right;
+            buttonVelg.Location = new Point(422, 13);
+            buttonVelg.Name = "buttonVelg";
+            buttonVelg.Size = new Size(75, 23);
+            buttonVelg.TabIndex = 1;
+            buttonVelg.Text = "Velg";
+            buttonVelg.UseVisualStyleBackColor = true;
+            buttonVelg.Click += button1_Click;
             // 
             // radioButtonShowGrid
             // 
@@ -135,13 +129,22 @@
             radioButtonShowGrid.Text = "Vis DB";
             radioButtonShowGrid.UseVisualStyleBackColor = true;
             // 
+            // splitContainer1
+            // 
+            splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            splitContainer1.Location = new Point(12, 82);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Size = new Size(779, 343);
+            splitContainer1.SplitterDistance = 344;
+            splitContainer1.TabIndex = 8;
+            // 
             // MyMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(splitContainer1);
             Controls.Add(groupBoxValg);
-            Controls.Add(panel1);
             Controls.Add(labelNumItemsDB);
             Controls.Add(statusStrip1);
             Controls.Add(textBoxSource);
@@ -152,6 +155,8 @@
             statusStrip1.PerformLayout();
             groupBoxValg.ResumeLayout(false);
             groupBoxValg.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -164,9 +169,9 @@
         private ToolStripStatusLabel toolStripStatusLabelStatus;
         private ToolStripProgressBar toolStripProgressBar1;
         private LinkLabel labelNumItemsDB;
-        private Panel panel1;
         private GroupBox groupBoxValg;
-        private Button button1;
+        private Button buttonVelg;
         private RadioButton radioButtonShowGrid;
+        private SplitContainer splitContainer1;
     }
 }
