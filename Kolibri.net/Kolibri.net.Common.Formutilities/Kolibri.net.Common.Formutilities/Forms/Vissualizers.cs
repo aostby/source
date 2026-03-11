@@ -3,7 +3,7 @@ using FastColoredTextBoxNS;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;

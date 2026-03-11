@@ -282,8 +282,7 @@ namespace Kolibri.SilverScreen.Forms
         }
 
         private async void filmerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
+        { 
             var dInfo = FileUtilities.LetOppMappe(_userSettings.UserFilePaths.MoviesSourcePath, $"Let opp mappe ({Kolibri.net.SilverScreen.Controls.Constants.MultimediaType.Movies})");
             if (dInfo != null && dInfo.Exists)
             {

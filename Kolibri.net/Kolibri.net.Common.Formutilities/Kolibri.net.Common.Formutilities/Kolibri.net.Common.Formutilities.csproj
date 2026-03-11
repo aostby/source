@@ -9,11 +9,9 @@
 
   <ItemGroup>
     <PackageReference Include="FastColoredTextBox.Net5" Version="2.16.26" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3719.77" />
-    <PackageReference Include="System.Collections" Version="4.3.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.2" />
-    <PackageReference Include="System.ServiceModel.Syndication" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="10.0.4" />
   </ItemGroup>
 
   <ItemGroup>

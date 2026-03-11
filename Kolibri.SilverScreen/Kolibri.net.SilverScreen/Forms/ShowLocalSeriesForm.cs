@@ -330,7 +330,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     plotContentLabel.Text = result.Plot;
                     try
                     {
-                        var path = await _liteDB.FindFile(result.ImdbId);
+                        var path = await _liteDB.FindFileAsync(result.ImdbId);
 
                         if (path == null)
                         {
@@ -348,8 +348,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
                                     if (folder != null && folder.Exists)
                                     {
                                         result.TomatoUrl = folder.FullName;
-                                        _liteDB.Update(result);
-                                        _liteDB.Update(new FileItem(result.ImdbId, folder.FullName));
+                                        _liteDB.UpdateAsync(result);
+                                        _liteDB.UpdateAsync(new FileItem(result.ImdbId, folder.FullName));
                                         movieList.Items[e.ItemIndex].BackColor = Color.LightGreen;
                                     }
                                 }
@@ -409,7 +409,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     string imdbid = folder.FullName.ImdbIdFromDirectoryName();
                     if (folder.Exists)
                     {
-                        Item item = _liteDB.FindItem(imdbid);
+                        Item item = await _liteDB.FindItemAsync(imdbid);
                         if (item == null)
                         {
                             item = new OMDBController(_userSettings.OMDBkey, _liteDB).GetItemByImdbId(imdbid);
@@ -433,8 +433,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
                             SetStatusLabelText($"Updating path for {folder.FullName}");
 
                             item.TomatoUrl = folder.FullName;
-                            _liteDB.Upsert(item);                            
-                            _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                            await _liteDB.UpsertAsync(item);
+                            await _liteDB.UpsertAsync(new FileItem(item.ImdbId, item.TomatoUrl));
 
 
                             try
@@ -513,7 +513,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         result.ImdbRating = val.Replace(',', '.');
                         using (LiteDBController tmp = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
                         {
-                            tmp.Update(result);
+                            tmp.UpdateAsync(result);
                         }
                     }
                 }
@@ -536,7 +536,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     {
                             
                         item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
-                        var file = await  tmp.FindFile(item.ImdbId);
+                        var file = await  tmp.FindFileAsync(item.ImdbId);
                         if (file != null)
                         {
                             if (file.ItemFileInfo.Exists)
@@ -560,7 +560,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                                 {
                                     FolderUtilities.OpenFolderInExplorer(path.FullName);
                                     item.TomatoUrl = path.FullName;
-                                    tmp.Upsert(item);
+                                    tmp.UpsertAsync(item);
                                 }
                                 else { throw new FileNotFoundException($"{item.Title} - location not found"); }
                             }
@@ -629,7 +629,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             this.movieList.Sort();
         }
 
-        private void buttonEdit_Click(object sender, EventArgs e)
+        private async void buttonEdit_Click(object sender, EventArgs e)
         {
             try
             {
@@ -677,7 +677,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     if (res == DialogResult.OK)
                     {
                         SetStatusLabelText($"Oppdaterer {item.Title}");
-                        if (_liteDB.Upsert(item))
+                        if (  await _liteDB.UpsertAsync(item))
                         {
                             _serieItems.RemoveAll(x => x.ImdbId == item.ImdbId);
                             movies.RemoveAll(x => x.ImdbId == item.ImdbId);
@@ -688,7 +688,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     if (res == DialogResult.Yes)
                     {
                         SetStatusLabelText($"Sletter lokal metadata om {item.Title}. Endringer blir synlige når vinduet åpnes på nytt");
-                        _liteDB.Delete(item);
+                        _liteDB.DeleteAsync(item);
                         try
                         {
                             _serieItems.RemoveAll(x => x.ImdbId == item.ImdbId);
@@ -761,7 +761,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
 
                 if (sender.Equals(toolStripMenuItemDelete))
                 {
-                    if (_liteDB.Delete(item))
+                    if (await _liteDB.DeleteAsync(item))
                     {
                         SetStatusLabelText($"{item.Title} deleted. Please refresh");
                         _serieItems.Remove(item);
@@ -779,8 +779,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
                                 var destination = item.TomatoUrl + $" {{imdb-{item.ImdbId}}}";
                                 Directory.Move(item.TomatoUrl, destination);
                                 item.TomatoUrl = destination;
-                                _liteDB.Upsert(item);
-                                _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                                await _liteDB.UpsertAsync(item);
+                                await _liteDB.UpsertAsync(new FileItem(item.ImdbId, item.TomatoUrl));
                             }
                             catch (Exception ex)
                             {
@@ -799,8 +799,8 @@ namespace Kolibri.Common.VisualizeOMDbItem
                             if (src != null && Directory.Exists(src)) { 
                                 res = DialogResult.Yes;
                                 item.TomatoUrl = src;
-                                _liteDB.Upsert(item);
-                                _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                                await _liteDB.UpsertAsync(item);
+                                await _liteDB.UpsertAsync(new FileItem(item.ImdbId, item.TomatoUrl));
                                 SetStatusLabelText($"Updated {item.Title} path: {item.TomatoUrl}");
                                 return;
                             }
@@ -833,7 +833,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         }
                         else
                         {
-                            if (await _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl)))
+                            if (await _liteDB.UpsertAsync(new FileItem(item.ImdbId, item.TomatoUrl)))
                             {
                                 SetStatusLabelText($"{item.TomatoUrl} is allready set to a tt id.");
                             }

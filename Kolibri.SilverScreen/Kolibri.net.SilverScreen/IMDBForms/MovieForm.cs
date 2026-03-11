@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Kolibri.net.SilverScreen.IMDBForms
 {
@@ -20,6 +21,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         LiteDBController _liteDB;         
         UserSettings _userSettings;
         IMDBDAL _IMDBDAL;
+        
         public MovieForm(UserSettings userSettings)
         {
             _userSettings = userSettings;
@@ -40,7 +42,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             buttonUpdate.Visible = true;
 
         }
-        public MovieForm(UserSettings userSettings, Item item)
+        public MovieForm(UserSettings userSettings, Item item, FileInfo info=null)
         {
             _userSettings = userSettings;
             InitializeComponent();
@@ -70,12 +72,15 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         }
 
-        private void Init()
+        private async void Init()
         {
             if (_liteDB == null)
             {
                 _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
             }
+
+            
+
             //https://www.c-sharpcorner.com/article/autocomplete-textbox-in-C-Sharp/
             _IMDBDAL = new IMDBDAL(_liteDB);
 
@@ -91,7 +96,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         }
 
-        private void btnSearch_Click(object sender, EventArgs e)
+        private async void btnSearch_Click(object sender, EventArgs e)
         {
             int YearParameterNumber;
             int.TryParse(tbYearParameter.Text.Trim().TrimEnd('-'), out YearParameterNumber);
@@ -126,14 +131,19 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 try
                 {
                     string year = tbYearParameter.Text.Trim().TrimEnd('-').ToInt32().ToString();
-                    Item sItem = parameter == "t" ? _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(), YearParameterNumber) : _liteDB.FindItem(tbSearch.Text.Trim().FirstToUpper());
+                    Item sItem = parameter == "t" ? await _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(), YearParameterNumber) : await _liteDB.FindItemAsync(tbSearch.Text.Trim().FirstToUpper());
                     if (sItem != null && sItem.Year.TrimEnd('–').ToInt32() != YearParameterNumber) { sItem = null; }
+              
 
-                    if (sItem == null)
+                    if (sItem == null || sItem.Poster == null||(e!=null&& sItem.ImdbRating=="N/A"))
                     {
                         json = wc.DownloadString(url);
                         //  var result = JsonConvert.DeserializeObject<WatchList>(json);
-                        sItem = JsonConvert.DeserializeObject<Item>(json);
+                        var result = JsonConvert.DeserializeObject<Item>(json);
+                        result.TomatoUrl = sItem?.TomatoUrl;
+                        await _liteDB.UpsertAsync(result);
+                        sItem = result;
+
                     }
                     if (sItem != null)
                     {
@@ -148,45 +158,45 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         pbPoster.ImageLocation = sItem.Poster;
                         labelImdbId.Text = sItem.ImdbId;
                         labelImdbRating.Text = sItem.ImdbRating;
-                        var f = _liteDB.FindFile(labelImdbId.Text);
+                        var f = _liteDB.FindFileAsync(labelImdbId.Text);
                         FileItem file = f.Result;
 
                         linkLabelOpenFilePath.BackColor = file == null ? Color.IndianRed : (file != null && file.ItemFileInfo.Exists ? Control.DefaultBackColor : Color.Yellow);
-
-                        try
+                        if (false)
                         {
-                            string alternative = string.Empty;
-                            using (TMDBController tmdbC = new TMDBController(_liteDB, _userSettings.TMDBkey))
+                            try
                             {
-                                var t = Task.Run(() => tmdbC.FindById(labelImdbId.Text));
-                                var res = t.Result;
-                                if (sItem.Type.StartsWith("serie", StringComparison.OrdinalIgnoreCase))
+                                string alternative = string.Empty;
+                                using (TMDBController tmdbC = new TMDBController(_liteDB, _userSettings.TMDBkey))
                                 {
-                                    var tmpTV = tmdbC.GetTVShow(res.TvResults.FirstOrDefault().Id);
+                                    var t = Task.Run(() => tmdbC.FindById(labelImdbId.Text));
+                                    var res = t.Result;
+                                    if (sItem.Type.StartsWith("serie", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        var tmpTV = tmdbC.GetTVShow(res.TvResults.FirstOrDefault().Id);
+                                    }
+                                    else
+                                    {
+
+                                        var tmpMov = tmdbC.GetMovie(res.MovieResults.FirstOrDefault().Id);
+
+                                        labelOmdbId.Text = tmpMov.Id.ToString();
+                                        alternative = tmpMov.AlternativeTitles.JsonSerializeObject().TrimEnd("null".ToCharArray());
+                                        toolTip1.SetToolTip(tbTitle, alternative);
+
+                                    }
                                 }
-                                else
-                                {
-
-                                    var tmpMov = tmdbC.GetMovie(res.MovieResults.FirstOrDefault().Id);
-
-                                    labelOmdbId.Text = tmpMov.Id.ToString();
-                                    alternative = tmpMov.AlternativeTitles.JsonSerializeObject().TrimEnd("null".ToCharArray());
-                                    toolTip1.SetToolTip(tbTitle, alternative);
-
-                                }
+                                toolTip1.SetToolTip(tbTitle, alternative);
                             }
-                            toolTip1.SetToolTip(tbTitle, alternative);
+                            catch (Exception)
+                            {
+                                toolTip1.SetToolTip(tbTitle, string.Empty);
+                            }
                         }
-                        catch (Exception)
-                        {
-                            toolTip1.SetToolTip(tbTitle, string.Empty);
-                        }
-
-
-
                     }
                     else { MessageBox.Show("Movie not found!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); }
                 }
+                catch (AggregateException ex) { MessageBox.Show($"Movie not found! {ex.Message}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Movie not found! {ex.Message}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -313,8 +323,18 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             else
             {
-                Top100IMDbForm frm = new Top100IMDbForm(_liteDB, tbTitle.Text, tbYear.Text.Substring(0, 4).ToInt32());
-                frm.ShowDialog();
+                try
+                {
+                    string title = tbTitle.Text;
+                    int year = tbYear.Text.Substring(0, 4).ToInt32();
+                    var found = _liteDB.FindItemByTitle(title, year) != null;
+                    if (found)
+                    {
+                        Top100IMDbForm frm = new Top100IMDbForm(_liteDB, title, year);
+                        if(frm!=null) frm.ShowDialog();
+                    }
+                }
+                catch (Exception ex) { } 
             }
 
         }
@@ -328,7 +348,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             return @"https://www.imdb.com/";
 
         }
-        private void linkLabelOpenFilePath_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private async void linkLabelOpenFilePath_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             (sender as LinkLabel).BackColor = Control.DefaultBackColor;
             if (string.IsNullOrEmpty(tbSearch.Text) || string.IsNullOrEmpty(tbYear.Text))
@@ -338,7 +358,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             try
             {
-                var url = _liteDB.FindFile(labelImdbId.Text);
+                var url = _liteDB.FindFileAsync(labelImdbId.Text);
                 FileUtilities.OpenFolderHighlightFile(url.GetAwaiter().GetResult().ItemFileInfo);
             }
             catch (Exception ex)
@@ -351,7 +371,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         if (info.Exists)
                         {
                             FileItem item = new FileItem(labelImdbId.Text, info.FullName);
-                            _liteDB.Upsert(item);
+                            await _liteDB.UpsertAsync(item);
                         }
                     }
                 }
@@ -429,7 +449,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         }
 
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
 
             try
@@ -437,15 +457,16 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 if (!string.IsNullOrEmpty(labelImdbId.Text))
                 {
                     string imdbId = labelImdbId.Text;
-                    Item mov = _liteDB.FindItem(imdbId);
+                    Item mov = await _liteDB.FindItemAsync(imdbId);
                     if (mov != null)
                     {
+                         
                         if (_info != null)
                         {
                             mov.TomatoUrl = _info.FullName;
-                            _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                        _=    await _liteDB.UpsertAsync(new FileItem(imdbId, _info.FullName));
                         }
-                        _liteDB.Update(mov);
+                     _ = await _liteDB.UpdateAsync(mov);
                     }
                     else if (mov == null)
                     {
@@ -456,9 +477,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                             if (_info != null)
                             {
                                 mov.TomatoUrl = _info.FullName;
-                                var f = _liteDB.Upsert(new FileItem(imdbId, _info.FullName));
+                                var f = await _liteDB.UpsertAsync(new FileItem(imdbId, _info.FullName));
                             }
-                            var i = _liteDB.Upsert(mov);
+                            var i = await _liteDB.UpsertAsync(mov);
                         }
                         else
                         {
@@ -469,8 +490,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     if (mov != null)
                     {
                         string movfile = _info == null ? string.Empty : _info.Name;
-                        MessageBox.Show($"{movfile} has been updated.", $"({mov.Type}): {imdbId} - {mov.Title}");
+                        //MessageBox.Show($"{movfile} has been updated.", $"({mov.Type}): {imdbId} - {mov.Title}");
                         //buttonUpdate.Enabled = false;
+                        this.Close();
                     }
                 }
             }

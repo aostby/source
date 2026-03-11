@@ -27,7 +27,7 @@ namespace Kolibri.net.SilverScreen.Controls
             }
         }
 
-        private LiteDBController _LITEDB;
+        private LiteDBController _liteDB;
         private MultimediaType _type;
 
         public Item CurrentItem { get;   set; } //blir konstruert for andre typer som SeasonEpisode etc
@@ -39,7 +39,7 @@ namespace Kolibri.net.SilverScreen.Controls
         public DataGrivViewControls(MultimediaType type, LiteDBController contr)
         {
             _type = type;
-            _LITEDB = contr;
+            _liteDB = contr;
             
         }
         public async Task< Form> GetMulitMediaDBDataGridViewAsForm(DataTable table) {
@@ -202,32 +202,59 @@ namespace Kolibri.net.SilverScreen.Controls
                         catch (Exception) { index = 0; dgv.ClearSelection(); }
                     try
                     {
- val = dgv.SelectedRows[0].Cells["ImdbId"].Value.ToString();
+                        val = dgv.SelectedRows[0].Cells["ImdbId"].Value.ToString();
                     }
-                    catch (Exception ex)
-                    {
+                    catch (Exception ex) { }
 
-                    }
-                   
                     var org = val;
 
                     var res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.InputBox("Set imdbid for this title", "set value", ref val);
                     if (res == DialogResult.OK)
                     {
-                        var OMDB = new OMDBController(_LITEDB.GetUserSettings().OMDBkey, _LITEDB);
-                        
+                        var OMDB = new OMDBController(_liteDB.GetUserSettings().OMDBkey, _liteDB);
+                        var orgfile = await _liteDB.FindFileAsync(val);
                         var fetched = OMDB.GetItemByImdbId(val);
-                        if (_LITEDB.Upsert(fetched)) {
-                            var orgfile = await _LITEDB.FindFile(org);
-                            if (_LITEDB.Delete(orgfile) == 1)
+                        if (fetched != null)
+                        {
+                            fetched.TomatoUrl = orgfile?.FullName;
+                            if (await _liteDB.UpsertAsync(fetched))
                             {
-                                orgfile.ImdbId = fetched.ImdbId;
-                                _LITEDB.Upsert(orgfile);
+                                if (orgfile != null && _liteDB.Delete(orgfile) == 1)
+                                {
+                                    orgfile.ImdbId = fetched.ImdbId;
+                                    await _liteDB.UpsertAsync(orgfile);
+                                }
+                                if (Path.Exists(fetched.TomatoUrl) && !fetched.TomatoUrl.Contains(fetched.ImdbId))
+                                {
+                                    FileInfo info = new FileInfo(fetched.TomatoUrl);
+                                    var destination = Path.Combine( info.Directory.FullName, Path.GetFileNameWithoutExtension(info.Name) + $" {{imdb-{fetched.ImdbId}}}{info.Extension}");
+                                    res = MessageBox.Show($"{fetched.TomatoUrl}\n\r-->\r\n{destination}", $"{fetched.Title} - Endre navnet på filsti?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                                    if (res == DialogResult.Yes)
+                                    {
+                                        try
+                                        {
+                                            
+                                            Directory.Move(fetched.TomatoUrl, destination);
+                                            fetched.TomatoUrl = destination;
+                                            await _liteDB.UpsertAsync(fetched);
+                                            await _liteDB.UpsertAsync(new FileItem(fetched.ImdbId, fetched.TomatoUrl));
+                                        }
+                                        catch (Exception ex)
+                                        {
+
+                                            //       SetStatusLabelText($"Error: {ex.Message}");
+                                            return;
+                                        }
+                                    }
+
+
+                                }
                             }
                         }
                     }
-
                 }
+                
+                
             }
             catch (Exception ex)
             {
@@ -310,7 +337,7 @@ namespace Kolibri.net.SilverScreen.Controls
             { }
         }
 
-        private void Dgv_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        private async void Dgv_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             try
             {
@@ -324,9 +351,9 @@ namespace Kolibri.net.SilverScreen.Controls
                     {
 
                         var id = dgv.Rows[e.RowIndex].Cells["ImdbId"].Value;
-                        var movie = _LITEDB.FindItem(id.ToString());
+                        var movie = await _liteDB.FindItemAsync(id.ToString());
                         movie.ImdbRating = newValue.ToString().Replace(",", ".");
-                        _LITEDB.Upsert(movie);
+                        await _liteDB.UpsertAsync(movie);
 
                     }
                 }
@@ -364,10 +391,10 @@ namespace Kolibri.net.SilverScreen.Controls
                         string id = $"{row["ImdbId"]}";
                         if (!string.IsNullOrEmpty(id))
                         {
-                            var fileitem = await _LITEDB.FindFile(id);
+                            var fileitem = await _liteDB.FindFileAsync(id);
                             if (fileitem != null)
                             {
-                                _LITEDB.DeleteItem(id);
+                                _liteDB.DeleteItem(id);
 
                                 FileInfo info = new FileInfo(fileitem.FullName);
                                 if (info.Exists)
@@ -449,18 +476,18 @@ namespace Kolibri.net.SilverScreen.Controls
                     catch (Exception) { index = 0; DataGridView1.ClearSelection(); } 
              
 
-                CurrentItem = _LITEDB.FindItem(imdbid);
+                CurrentItem = await _liteDB.FindItemAsync(imdbid);
                 if (CurrentItem != null)
                 {
                     
                     OnCurrentItemChanged(EventArgs.Empty); 
                     return;
                 }
-                CurrentSeasonEpisode = _LITEDB.FindSeasonEpisode(imdbid);
+                CurrentSeasonEpisode = _liteDB.FindSeasonEpisode(imdbid);
                 if (CurrentSeasonEpisode != null && CurrentSeasonEpisode.ImdbId != null) {
-                    using (OMDBController omdb = new OMDBController( _LITEDB.GetUserSettings().OMDBkey, _LITEDB)) {
+                    using (OMDBController omdb = new OMDBController( _liteDB.GetUserSettings().OMDBkey, _liteDB)) {
                         CurrentItem = omdb.GetItemByImdbId(imdbid);
-                        if (CurrentItem != null) { _LITEDB.Upsert(CurrentItem); }
+                        if (CurrentItem != null) { await _liteDB.UpsertAsync(CurrentItem); }
                     }
                     if (CurrentItem != null)
                     {
@@ -492,7 +519,7 @@ namespace Kolibri.net.SilverScreen.Controls
                   
                         }
                         if(year>1900)
-                            CurrentItem = _LITEDB.FindItemByTitle(title, year);
+                            CurrentItem = await _liteDB.FindItemByTitle(title, year);
                     }
                 }
 
@@ -526,7 +553,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 }
                 else
                 {
-                    var info = await _LITEDB.FindFile(imdbid);
+                    var info = await _liteDB.FindFileAsync(imdbid);
                     if (info != null)
                     {
                         string ext = Path.GetExtension(info.FullName).ToLower();
@@ -596,7 +623,7 @@ namespace Kolibri.net.SilverScreen.Controls
 
                 if (!string.IsNullOrEmpty(imdbid))
                 {
-                    var info = await _LITEDB.FindFile(imdbid);
+                    var info = await _liteDB.FindFileAsync(imdbid);
                     if (info != null)
                     {
                         FileInfo file = new FileInfo(info.FullName);

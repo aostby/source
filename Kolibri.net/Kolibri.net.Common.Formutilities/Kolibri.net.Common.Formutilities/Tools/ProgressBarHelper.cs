@@ -25,8 +25,6 @@ namespace Kolibri.net.Common.FormUtilities.Tools
                 ;
                 try
                 {
-                    
-
                     using (Graphics gr = pb.ProgressBar.CreateGraphics())
                     {
                         //Switch to Antialiased drawing for better (smoother) graphic results

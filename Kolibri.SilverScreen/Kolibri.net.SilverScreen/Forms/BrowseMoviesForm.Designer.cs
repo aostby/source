@@ -48,6 +48,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             comboBoxYear = new ComboBox();
             comboBoxGenre = new ComboBox();
             labelInfo = new Label();
+            checkBoxPoster = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.SuspendLayout();
@@ -147,6 +148,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // 
             // groupBoxSearch
             // 
+            groupBoxSearch.Controls.Add(checkBoxPoster);
             groupBoxSearch.Controls.Add(buttonSearch);
             groupBoxSearch.Controls.Add(checkBoxDecending);
             groupBoxSearch.Controls.Add(linkLabelOpenInBrowser);
@@ -182,7 +184,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             checkBoxDecending.AutoSize = true;
             checkBoxDecending.Checked = true;
             checkBoxDecending.CheckState = CheckState.Checked;
-            checkBoxDecending.Location = new Point(315, 102);
+            checkBoxDecending.Location = new Point(315, 98);
             checkBoxDecending.Margin = new Padding(4, 3, 4, 3);
             checkBoxDecending.Name = "checkBoxDecending";
             checkBoxDecending.Size = new Size(83, 19);
@@ -286,6 +288,18 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             labelInfo.TabIndex = 10;
             labelInfo.Text = "Search for a database item.";
             // 
+            // checkBoxPoster
+            // 
+            checkBoxPoster.AutoSize = true;
+            checkBoxPoster.Checked = true;
+            checkBoxPoster.CheckState = CheckState.Checked;
+            checkBoxPoster.Location = new Point(315, 118);
+            checkBoxPoster.Name = "checkBoxPoster";
+            checkBoxPoster.Size = new Size(59, 19);
+            checkBoxPoster.TabIndex = 10;
+            checkBoxPoster.Text = "Poster";
+            checkBoxPoster.UseVisualStyleBackColor = true;
+            // 
             // BrowseMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -328,5 +342,6 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private GroupBox groupBoxSearcByFolder;
         private Button buttonOpenFolder;
         private CheckBox checkBoxPrintable;
+        private CheckBox checkBoxPoster;
     }
 }

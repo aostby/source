@@ -1,34 +1,29 @@
-﻿using java.time;
-using javax.swing.text;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
-using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
-using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System.Data;
 using System.Text;
-using TMDbLib.Objects.Exceptions;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
-using TMDbLib.Objects.TvShows;
 
 namespace Kolibri.net.SilverScreen.Controller
 {
     public class MoviesSearchController
     {
         public event EventHandler<string> ProgressUpdated;
-        public StringBuilder CurrentLog { get; set; }
+        public StringBuilder CurrentLog { get; set; } = new StringBuilder();
         private LiteDBController _liteDB;
         private TMDBController _TMDB;
         private OMDBController _OMDB;
-
         private PlexController _plex;
 
         private DirectoryInfo _currentDirectory = null;
-        //private List<FileInfo> _currentMediaList = new List<FileInfo>();
+
+        private List<DirectoryInfo> cleandirs = new List<DirectoryInfo>();
+
 
         /// <summary>
         /// Oppdatering: 
@@ -36,10 +31,10 @@ namespace Kolibri.net.SilverScreen.Controller
         /// true =Alt 
         /// false = Kun filinformasjon
         /// </summary>
-        private   bool? _updateTriState;
+        private bool? _updateTriState;
 
         private UserSettings _settings { get; }
-        public List<FileInfo> CurrentMediaList { get ; private set ; }
+     
         IProgress<int> _progress;
 
         /// <summary>
@@ -50,23 +45,23 @@ namespace Kolibri.net.SilverScreen.Controller
         /// <param name="tmdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="omdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="updateTriState">null = Ingenting, true=alt, false= kun filinfromasjon</param>
-        public MoviesSearchController(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, IProgress<int> progress = null)
+        public MoviesSearchController(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, PlexController plex = null, IProgress<int> progress = null)
         {
             CurrentLog = new StringBuilder();
             _settings = userSettings;
             _updateTriState = null;
-            if( progress==null ) _progress = new Progress<int>();
+            if (progress == null) _progress = new Progress<int>();
             else _progress = progress;
 
-                try
-                {
-                    if (liteDB != null) { _liteDB = liteDB; } else { _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false); }
-                }
-                catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
+            try
+            {
+                if (liteDB != null) { _liteDB = liteDB; } else { _liteDB = new LiteDBController(new FileInfo(_settings.LiteDBFilePath), false, false); }
+            }
+            catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
             try
             {
                 if (tmdb != null) { _TMDB = tmdb; } else { _TMDB = new TMDBController(_liteDB, _settings.TMDBkey); }
-             //   _seriesCache = new SeriesCache(new FileInfo(_liteDB.ConnectionString.Filename).Directory);
+                //   _seriesCache = new SeriesCache(new FileInfo(_liteDB.ConnectionString.Filename).Directory);
 
             }
             catch (Exception ex) { SetStatusLabelText(ex.Message, ex.GetType().Name); }
@@ -78,14 +73,19 @@ namespace Kolibri.net.SilverScreen.Controller
 
             try
             {
-                if (!string.IsNullOrEmpty(_settings.XPlexToken))
-                    _plex = new PlexController(plexBaseUrl: $"http://{_settings.XPlexServerName}:32400", plexToken: _settings.XPlexToken);
-                _plex.CheckSettings();
+                if (plex != null) { _plex = plex; }
+                else if (!string.IsNullOrEmpty(_settings.XPlexToken))
+                {
+                    _plex = new PlexController(_settings);
+                }
             }
-            catch (Exception ex) { _plex = null; SetStatusLabelText(ex.Message, ex.GetType().Name); }
+            catch (Exception ex)
+            {
+                _plex = null; SetStatusLabelText(ex.Message, ex.GetType().Name);
+            }
         }
 
-        private void SetStatusLabelText(string message, string type = "INFO" )
+        private void SetStatusLabelText(string message, string type = "INFO")
         {
             try
             {
@@ -95,126 +95,209 @@ namespace Kolibri.net.SilverScreen.Controller
                 CurrentLog.AppendLine(text);
                 ProgressUpdated?.Invoke(this, text);
             }
-            catch (Exception ex)
-            {
-
-            }
+            catch (Exception ex) { }
         }
 
         #region Movie Item
-        public async Task <bool> SearchForMovies(DirectoryInfo dir, bool? updateTriState=null)
-        {
-            _progress.Report(0);
+        public async Task<bool> SearchForMovies(DirectoryInfo dir, bool? updateTriState = null)
+        {  int count = 0;
+            _updateTriState = updateTriState;
+            ClearIfTristateTrue(dir);
+
+            CurrentLog.Clear();
+            _progress?.Report(count);
             bool complete = false;
-            if(!Init(dir, updateTriState))return false;
+            if (!Init(dir, updateTriState)) return false;
 
             var currentItemList = new List<Item>();
-           
-            List<string> common = MovieUtilites.MoviesCommonFileExt(true);
-            var masks = common.Select(r => string.Concat('*', r)).ToArray();
-            var searchStr = "*." + string.Join("|*.", common);
+            
+            //List<string> common = MovieUtilites.MoviesCommonFileExt(true);
+            //var masks = common.Select(r => string.Concat('*', r)).ToArray();
+            //var searchStr = "*." + string.Join("|*.", common); 
+            
+            //  var numFiles = FileUtilities.CountFiles(dir, "*.*", new EnumerationOptions() { RecurseSubdirectories = true });
+            var numFiles = await MovieUtilites.GetCommonMovieFiles(dir);
+            foreach (var filter in numFiles)
+            {
+                _progress?.Report(ProgressBarHelper.CalculatePercent(count, numFiles.Count));
+                try
+                { 
+               //     var total = Directory.EnumerateFiles(dir.FullName, filter, new EnumerationOptions() { RecurseSubdirectories = true }).GetEnumerator();
+                    using (var e = await Task.Run(() => numFiles.GetEnumerator()))
+                    {
+                        while (await Task.Run(() => e.MoveNext()))
+                        {
+                            count = count + 1; 
 
-            if (_updateTriState == true)
+                            int year; string title;string fileTitle;
+                            FileInfo file = new FileInfo(e.Current);
+                            Item item =await GetItem(file, e.Current.ImdbIdFromDirectoryName());
+                            if (item == null)
+                            { 
+                                GetTitleAndYear(file, out year, out title, out fileTitle);
+                                  item = await GetItem(file, year, title, fileTitle);
+                                if (item != null)
+                                    currentItemList.Add(item);
+                                else
+                                    SetStatusLabelText($"{title} ikke funnet! {file.FullName}.", "NOTFOUND");
+                                _progress?.Report(ProgressBarHelper.CalculatePercent(count, numFiles.Count));
+                                await AddToUnwantedExtraFiles(file.Directory);
+                            } 
+                        }
+                    }
+                   
+                }
+                catch (Exception ex)
+                {
+                }
+               
+            }
+            _progress?.Report(100);
+
+            SetStatusLabelText($"Søket fullført.", "FINISHED");
+            complete = true;            
+            _ = await RemoveUnwantedExtraFilesExecute();
+            return complete;
+        }
+
+        private static void GetTitleAndYear(FileInfo file,out int year, out string title, out string fileNameAsTitle )
+        {
+            var movFile = MovieUtilites.DetectMovieFile(file);
+            if (movFile != null)
+            {
+                year = movFile.Year.ToInt().GetValueOrDefault();               
+                title = MovieUtilites.GetMovieTitle(file.Name); 
+                fileNameAsTitle = MovieUtilites.GetMovieTitleLight(file.Name);
+            }
+            else
+            {
+                year = MovieUtilites.GetYear(file.Directory.Name);
+                if (year.Equals(0) || year.Equals(1))
+                    year = MovieUtilites.GetYear(file.Name);
+                title = MovieUtilites.GetMovieTitle(Path.GetFileNameWithoutExtension(file.Name));
+                fileNameAsTitle = MovieUtilites.GetMovieTitleLight( Path.GetFileNameWithoutExtension(file.Name));  
+            }
+        }
+
+        private void ClearIfTristateTrue(DirectoryInfo dir)
+        {
+            if (_updateTriState==true)
             {
                 //Slett items
                 try
                 {
                     foreach (FileItem fi in _liteDB.FindAllFileItems(dir))
                     {
-                        SetStatusLabelText($"Sletter {fi.FullName} fra databasen.", "DELETE");
-                        _liteDB.DeleteItem(fi.ImdbId);
-                        _liteDB.Delete(fi);
+                      
+                        if (_updateTriState == true)
+                        {
+                            if (!fi.ItemFileInfo.Exists)
+                            {
+                                SetStatusLabelText($"Sletter {fi.FullName} fra databasen.", "DELETE");
+                                _liteDB.DeleteItem(fi.ImdbId);
+                                _liteDB.Delete(fi);
+                            }
+                        }
+                       
                     }
                 }
                 catch (Exception) { }
             }
+        }
 
-            foreach (var filter in masks)
-            {int count = 0;_progress.Report(count);
+        private async Task<bool> AddToUnwantedExtraFiles(DirectoryInfo dirInfo)
+        {
+            bool ret = true;
+            if (cleandirs == null) cleandirs = new List<DirectoryInfo>();
+            if (dirInfo != null && Directory.Exists(dirInfo.FullName))
+            { cleandirs.Add(dirInfo); }
+            return ret;
+        }
+        private async Task<bool> RemoveUnwantedExtraFilesExecute()
+        {
+            bool ret = true;
+            foreach (DirectoryInfo dir in cleandirs.Distinct())
+            {
                 try
-                { var total = Directory.EnumerateFiles(dir.FullName, filter, new EnumerationOptions() { RecurseSubdirectories = true }).GetEnumerator();
-                    using (var e = await Task.Run(() => total))
+                {
+                    var remove = FileUtilities.GetFileDialogFilter(new List<string>() { "nfo", "txt", "jpg" }.ToArray());
+
+                    var removeFiles = FileUtilities.GetFiles(dir, remove, true);
+                    if (removeFiles.Count() >= 1)
                     {
-                        while (await Task.Run(() => e.MoveNext()))
+                        foreach (var item in removeFiles)
                         {
-                            count = count++;
 
-                            _progress.Report(ProgressBarHelper.CalculatePercent(count, count * 2));
-                            int year; string title;
-                            FileInfo file = new FileInfo(e.Current);
-                            CurrentMediaList.Add(file);
-
-                            var movFile = MovieUtilites.DetectMovieFile(file);
-                            if (movFile != null)
-                            {
-                                year = movFile.Year.ToInt().GetValueOrDefault();
-                                title = movFile.Title;
-                                title = MovieUtilites.GetMovieTitle(file.Name);
-                            }
-                            else
-                            {
-                                year = MovieUtilites.GetYear(file.Directory.Name);
-                                if (year.Equals(0) || year.Equals(1))
-                                    year = MovieUtilites.GetYear(file.Name);
-                                title = MovieUtilites.GetMovieTitle(Path.GetFileNameWithoutExtension(file.Name));
-                            }
-
-                            await GetItem(file, year, title);
-
-                            #region CleanUnwantedExtraFiles
                             try
                             {
-                                var remove = FileUtilities.GetFileDialogFilter(new List<string>() { "nfo", "txt", "jpg" }.ToArray());
-
-                                var removeFiles = FileUtilities.GetFiles(file.Directory, remove, true);
-                                if (removeFiles.Count() >= 1)
-                                {
-                                    foreach (var item in removeFiles)
-                                    {
-
-                                        try
-                                        {
-                                            File.SetAttributes(item.FullName, FileAttributes.Normal); //sett attributter i tilfelle de er read only
-                                        }
-                                        catch (Exception)
-                                        {
-                                            SetStatusLabelText($"Filatrtibutter kan ikke endres {item.Name} fra {file.Directory.Name}.", "ATTRIBUTES");
-                                        }
-
-                                        item.Delete();
-                                        SetStatusLabelText($"Slettet {item.Name} fra {file.Directory.Name}.", "DELETE");
-
-                                    }
-                                    FileUtilities.DeleteEmptyDirs(file.Directory);
-                                    SetStatusLabelText($"Søket fullført, siste var {file.Directory}.", "FINISHED");
-                                }
+                                File.SetAttributes(item.FullName, FileAttributes.Normal); //sett attributter i tilfelle de er read only
+                                ret = true;
                             }
-                            catch (Exception ex)
-                            { SetStatusLabelText(ex.Message); }
-                            #endregion
+                            catch (Exception)
+                            {
+                                SetStatusLabelText($"Filatrtibutter kan ikke endres {item.Name} fra {dir.Name}.", "ATTRIBUTES");
+                                ret = false;
+                            }
+                            item.Delete();
+                            SetStatusLabelText($"Slettet {item.Name} fra {dir.Name}.", "DELETE");
+                            ret = true;
                         }
+                        FileUtilities.DeleteEmptyDirs(dir);
+                        SetStatusLabelText($"Søket fullført, siste var {dir.FullName}.", "FINISHED");
                     }
                 }
                 catch (Exception ex)
-                {
-                }
-            } 
+                { SetStatusLabelText(ex.Message); ret = false; }
 
-            SetStatusLabelText($"Søket fullført.", "FINISHED");
-            complete = true;
-            return complete;
+            }
+            cleandirs.Clear();
+            return ret;
+
         }
-
+         
         private bool Init(DirectoryInfo dir, bool? updateTriState)
         {
-            if (_TMDB == null || _OMDB == null) { SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR"); 
-                return false; }
-            
+            if (_TMDB == null || _OMDB == null)
+            {
+                SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR");
+                return false;
+            }
+
             _currentDirectory = dir;
-            CurrentMediaList = new List<FileInfo>();
+           
             _updateTriState = updateTriState;
-            return true;    
+            return true;
         }
+
+        private async Task<Item> GetItem(FileInfo file, string imdbid)
+        {
+            Item ret = null;
+            if (string.IsNullOrEmpty(imdbid)) return ret;
+            try
+            {
+             ret= await  _liteDB.FindItemAsync(imdbid);
+
+                if (_updateTriState != null)
+                {
+                    if (!$"{ret.TomatoUrl}".Equals(file.FullName))
+                    {
+                        ret.TomatoUrl = file.FullName;
+                        await _liteDB.UpdateAsync(ret);
+                        await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                    }
+                    SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_liteDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                  
+                }
+
+            }
+            catch (Exception)
+            { 
+            } 
+            return ret;
+        
+        }
+
+
         /// <summary>
         /// Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
         /// </summary>
@@ -222,190 +305,280 @@ namespace Kolibri.net.SilverScreen.Controller
         /// <param name="year"></param>
         /// <param name="title"></param>
         /// <returns></returns>
-        private async Task<Item> GetItem(FileInfo file, int year, string title)
+        private async Task<Item> GetItem(FileInfo file, int year, string title ,string alternativeSearchTitle=null)
         {
-            string imdbId = null;
-
             Item movie = null;
+
             if (string.IsNullOrEmpty(title))
             {
                 return null;
             }
+            
             //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
-            var test = _liteDB.FindByFileName(file);
-            if (test != null && _updateTriState == null || _updateTriState == false)
+            movie = await _liteDB.FindItemByTitle(title, year, alternativeSearchTitle);
+            if (_updateTriState == null && movie != null)
             {
-                movie = _liteDB.FindItem(test.ImdbId);
-                if (movie != null)
-                {
-                    movie.TomatoUrl = file.FullName;
-                    _liteDB.Update(movie);
-                    _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                    SetStatusLabelText($"{movie.ImdbId} Lokal eksisterende {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
-                    return movie;
-                }
+                return movie;
             }
-            //plex
-            if (movie == null && _plex != null)
-            {
-                var jall = await _plex.FindByTitleAsync(title, year);
+            if (movie == null || !file.FullName.Equals(movie.TomatoUrl))
+            {     //Finn ved hjelp av LiteDB eller PLEX
+                movie = await SearchLiteDB(file, year, title);
+            }
 
-                if (jall != null)
+            if (movie != null && !string.IsNullOrEmpty(movie.TomatoUrl) && File.Exists(movie.TomatoUrl)){
+                return movie;
+            }
+
+
+            //Finn ved hjelp av TMDB
+            if (movie == null && _TMDB != null)
+            {
+                movie = await SearchComplexTMDB(file, year, title);
+
+            }
+            //Finn ved hjelp av OMDB
+            if (movie == null && _OMDB != null)
+            {
+                movie = await SearchComplexOMDB(file, year, title);
+            }
+
+            return movie;
+        }
+        private async Task<Item> SearchLiteDB(FileInfo file, int year, string title)
+        {
+            Item ret = null;
+            var test =await  _liteDB.FindByFileNameAsync(file);
+                 
+            try
+            {
+                if (test != null)
                 {
-                    imdbId= jall.ImdbId;
-                    movie = _OMDB.GetItemByImdbId(imdbId);
-                    if (movie != null)
+                    ret = await _liteDB.FindItemAsync(test.ImdbId);
+                    if (ret != null)
                     {
-                        movie.TomatoUrl = file.FullName;
-                        _liteDB.Update(movie);
-                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                        SetStatusLabelText($"{movie.ImdbId} Lokal eksisterende {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
-                        return movie;
+                        if (_updateTriState != null)
+                        {
+                            if (!ret.TomatoUrl.GetHashCode().Equals(test.FullName.GetHashCode()))
+                            {
+                                ret.TomatoUrl = file.FullName;
+                                await _liteDB.UpdateAsync(ret);
+                                await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                                SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_liteDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                            }
+                            
+                            return ret;
+                        }
+                    }
+                    else {
+                        if (ret != null && _updateTriState==false) return ret;
+                    }
+                }
+                //plex
+                if (ret == null && _plex != null)
+                {
+                    Item? srcPlex = await _plex?.FindByTitleAsync(title, year);
+
+                    if (srcPlex != null)
+                    {
+                        ret = srcPlex;
+                        if (ret != null)
+                        {
+                            if (test == null || (!$"{ret.TomatoUrl}".Equals(file.FullName)))
+                            {
+                                ret.TomatoUrl = file.FullName;
+                             var ok=   await _liteDB.UpsertAsync(ret);
+                             ok=ok&&   await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+
+                            }
+                            SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_plex)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                            return ret;
+                        }
                     }
                 }
             }
-
-            if (_TMDB == null)
-            {
-                try
-                {
-                    _TMDB = new TMDBController(_liteDB, _settings.TMDBkey);
-
-                }
-                catch (Exception) { return movie; }
-            }
+            catch (Exception ex)
+            { SetStatusLabelText($"{file.FullName} - {ex.Message}", "ERROR"); }
         
+            return ret;
+        }
+        private async Task<Item> SearchComplexTMDB(FileInfo file, int year, string title)
+        {
+            var test = await _liteDB.FindByFileNameAsync(file);
+            if (test != null) {
+                var item = await _liteDB.FindItemAsync(test.ImdbId);
+                if (item != null) return item;
+            }
 
-                //Finn ved hjelp av TMDB
-                if (movie == null)
+
+            Item ret = null;
+            try
+            {
+                //   var t = Task.Run(() => _TMDB.FetchMovie(title, Convert.ToInt32(year)));
+                List<SearchMovie> tLibList = await _TMDB.FetchMovie(title, Convert.ToInt32(year));
+                if (tLibList != null && tLibList.Count > 1)
                 {
                     try
                     {
-                        //   var t = Task.Run(() => _TMDB.FetchMovie(title, Convert.ToInt32(year)));
-                        List<SearchMovie> tLibList = await _TMDB.FetchMovie(title, Convert.ToInt32(year));
+                        var match = tLibList.Find(x => x.Title.Equals(title, StringComparison.OrdinalIgnoreCase)); //&& Convert.ToDateTime(x.ReleaseDate, CultureInfo.InvariantCulture).Year.Equals(Convert.ToInt32(year)));
+                        if (match != null) { tLibList.Clear(); tLibList.Add(match); }
+                    }
+                    catch (Exception ex) { }
+                }
 
-                        if (tLibList != null && tLibList.Count == 1)
+                if (tLibList != null && tLibList.Count == 1)
+                {
+                    try
+                    {
+                        Movie tmdbMovie = _TMDB.GetMovie(tLibList[0].Id);
+                        if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                         {
-                            try
-                            {
-                                Movie tmdbMovie = _TMDB.GetMovie(tLibList[0].Id);
-                                if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
-                                {
-                                    movie = _liteDB.FindItem(tmdbMovie.ImdbId);
-                                    if (movie == null)
-                                        movie = _OMDB.GetMovieByIMDBid(tmdbMovie.ImdbId);
+                            ret = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                            if (ret == null)
+                                ret = await _plex?.FindByImdbAsync(tmdbMovie.ImdbId);
+                            if (ret == null)
+                                ret = await _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
 
-                                    if (movie != null)
-                                    {
-                                        movie.TomatoUrl = file.FullName;
-                                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                                        _liteDB.Upsert(movie);
-                                        SetStatusLabelText($"{movie.ImdbId} Fant via TMDB {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
-                                        return movie;
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                movie = _TMDB.GetMovie(tLibList[0]);
-                            }
-                        }
-                        else
-                        {
-                            try
-                            {
-                                if (year > 1)
-                                {
-                                    SearchMovie result;
-                                    result = tLibList.Find(y => (y.Title.Equals(title) && y.ReleaseDate.Value.Year.Equals(year))); // && s.Title.StartsWith(title));
-                                    if (result == null) result = tLibList.Find(y => (y.Title.Equals(title) && y.ReleaseDate.Value.Year.Equals(year - 1)));
-                                    if (result == null) result = tLibList.OrderByDescending(x => x.Popularity).FirstOrDefault(s => s.ReleaseDate.Value.Year.Equals(year));// && s.Title.StartsWith(title));
-                                    if (result != null)
-                                    {
-                                        var tmdbMovie = _TMDB.GetMovie(result.Id);
-                                        if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
-                                            if (_updateTriState == null)
-                                            {
-                                                movie = _liteDB.FindItem(tmdbMovie.ImdbId);
-                                            }
-                                        if (movie == null)
-                                        {
-                                            movie = _OMDB.GetMovieByIMDBid(tmdbMovie.ImdbId);
-                                        }
-                                        if (movie != null)
-                                        {
 
-                                            movie.TomatoUrl = file.FullName;
-                                            _liteDB.Upsert(movie);
-                                            _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                                            return movie;
-                                        }
-                                        else { }
-                                    }
+                            if (ret != null)
+                            {
+                                if ($"{ret.TomatoUrl}".Equals(file.FullName))
+                                {
+                                    SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_TMDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                                    return ret;
                                 }
+                                if (test == null || (!$"{ret.TomatoUrl}".Equals(test.FullName)))
+                                {
+                                    ret.TomatoUrl = file.FullName;
+                                     await _liteDB.UpsertAsync(ret);
+                            var testes=        await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                                  
+                                }
+                                SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_TMDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "NEW");
+                                return ret;
                             }
-                            catch (Exception ex)
-                            { }
                         }
                     }
                     catch (Exception ex)
                     {
-                        movie = null;
+                        ret = await _TMDB.GetMovieAsync(tLibList[0]);
                     }
                 }
-
-                //Sjekk om tittelen finnes i LiteDB som tittel/år
-                if (movie == null && _updateTriState == false)
-                {
-                    movie = _liteDB.FindItemByTitle(title, year);
-                    if (movie != null)
-                    {
-                        movie.TomatoUrl = file.FullName;
-                        _liteDB.Update(movie);
-                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                        return movie;
-                    }
-                }
-
-                //Hvis vi ikke har funnet filmen nå, leter vi vha TMDB søk
-                if (movie == null)
-                {
-
-                    //Finn filmen vha omdb tittel og år
-                    if (movie == null)
-                        movie = _OMDB.GetMovieByIMDBTitle(title, year);
-                    if (movie != null)
-                    {
-                        movie.TomatoUrl = file.FullName;
-                        _liteDB.Upsert(movie);
-                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                        return movie;
-                    }
-                    else
-                    {
-                        //Mangler tmdbID
-                        var temp = new OMDbApiNet.Model.Item() { Title = title, Year = year.ToString(), ImdbRating = "Unknown", Response = "false", TomatoUrl = file.FullName };
-                    }
-                }
-
-                if (movie != null && File.Exists(movie.TomatoUrl))
+                else
                 {
                     try
                     {
-                        if (!movie.Title.Contains("sample", StringComparison.OrdinalIgnoreCase))
+                        if (year > 1)
                         {
+                            SearchMovie result;
+                            result = tLibList.Find(y => (y.Title.Equals(title) && y.ReleaseDate.Value.Year.Equals(year))); // && s.Title.StartsWith(title));
+                            if (result == null) result = tLibList.Find(y => (y.Title.Equals(title) && y.ReleaseDate.Value.Year.Equals(year - 1)));
+                            if (result == null) result = tLibList.OrderByDescending(x => x.Popularity).FirstOrDefault(s => s.ReleaseDate.Value.Year.Equals(year));// && s.Title.StartsWith(title));
+                            if (result != null)
+                            {
+                                var tmdbMovie = _TMDB.GetMovie(result.Id);
+                                if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
+                                    if (_updateTriState == null)
+                                    {
+                                        ret = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                                    }
+                                if (ret == null)
+                                {
+                                    ret = await  _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
+                                }
+                                if (ret != null)
+                                {
+                                    if (!$"{ret.TomatoUrl}".Equals(file.FullName))
+                                    {
 
-                            movie.TomatoUrl = file.FullName;
-                            _liteDB.Update(movie);
-                            _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                                        ret.TomatoUrl = file.FullName;
+                                        await _liteDB.UpsertAsync(ret);
+                                        _ = await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                                    }
+                                    SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_TMDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                                    return ret;
+                                }
+                                else { }
+                            }
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     { }
                 }
-            
-            return movie;
+            }
+            catch (Exception ex)
+            {
+                ret = null;
+            }
+
+            return ret;
         }
+        private async Task<Item> SearchComplexOMDB(FileInfo file, int year, string title)
+        {
+
+            Item ret = null;
+
+            //Sjekk om tittelen finnes i LiteDB som tittel/år
+            if (ret == null && _updateTriState == false)
+            {
+                ret = await _liteDB.FindItemByTitle(title, year);
+                if (ret != null)
+                {
+                    if (ret.TomatoUrl.Equals(file.FullName))
+                    {
+                        ret.TomatoUrl = file.FullName;
+                        _liteDB.UpdateAsync(ret);
+                        await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                    }
+                    SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_liteDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+
+                    return ret;
+                }
+            }
+
+            //Hvis vi ikke har funnet filmen nå, leter vi vha TMDB søk
+            if (ret == null)
+            {
+
+                //Finn filmen vha omdb tittel og år
+                if (ret == null)
+                    ret = _OMDB.GetMovieByIMDBTitle(title, year);
+                if (ret != null)
+                {
+                    ret.TomatoUrl = file.FullName;
+                    await _liteDB.UpsertAsync(ret);
+                    await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                    SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_OMDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "NEW");
+                    return ret;
+                }
+            }
+            //er dette nødvendig nå?
+            if (ret != null && File.Exists(ret.TomatoUrl))
+            {
+                try
+                {
+                    if (!ret.Title.Contains("sample", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var test = await _liteDB.FindByFileNameAsync(file);
+                        {
+                            if (test != null && !$"{ret.TomatoUrl}".Equals(test.FullName))
+                            {
+                                ret.TomatoUrl = file.FullName;
+                                await _liteDB.UpdateAsync(ret);
+                                await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                { }
+            }
+
+            return ret;
+        }
+
+
+
+
         #endregion
 
         #region Series (Obsolete - moved)

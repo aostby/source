@@ -68,6 +68,7 @@ namespace Kolibri.net.C64Sorter
             toolStripSeparator12 = new ToolStripSeparator();
             configsToolStripMenuItem = new ToolStripMenuItem();
             displayCfgFilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator13 = new ToolStripSeparator();
             uploadLocalCfgFileToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItemRun = new ToolStripMenuItem();
             toolStripMenuItemFTPTreeView = new ToolStripMenuItem();
@@ -97,7 +98,8 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
-            toolStripSeparator13 = new ToolStripSeparator();
+            toolStripSeparator14 = new ToolStripSeparator();
+            setCommodorePrintPathToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -154,7 +156,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // toolStripMenuItem1
             // 
-            toolStripMenuItem1.DropDownItems.AddRange(new ToolStripItem[] { pNGFilesToolStripMenuItem });
+            toolStripMenuItem1.DropDownItems.AddRange(new ToolStripItem[] { pNGFilesToolStripMenuItem, toolStripSeparator14, setCommodorePrintPathToolStripMenuItem });
             toolStripMenuItem1.Name = "toolStripMenuItem1";
             toolStripMenuItem1.Size = new Size(213, 22);
             toolStripMenuItem1.Text = "Print...";
@@ -162,7 +164,7 @@ namespace Kolibri.net.C64Sorter
             // pNGFilesToolStripMenuItem
             // 
             pNGFilesToolStripMenuItem.Name = "pNGFilesToolStripMenuItem";
-            pNGFilesToolStripMenuItem.Size = new Size(122, 22);
+            pNGFilesToolStripMenuItem.Size = new Size(213, 22);
             pNGFilesToolStripMenuItem.Tag = "PNG";
             pNGFilesToolStripMenuItem.Text = "PNG files";
             pNGFilesToolStripMenuItem.Click += PrintFilesToolStripMenuItem_Click;
@@ -328,40 +330,45 @@ namespace Kolibri.net.C64Sorter
             // volumeToolStripMenuItem
             // 
             volumeToolStripMenuItem.Name = "volumeToolStripMenuItem";
-            volumeToolStripMenuItem.Size = new Size(180, 22);
+            volumeToolStripMenuItem.Size = new Size(179, 22);
             volumeToolStripMenuItem.Text = "Volume";
             volumeToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // videostreamToolStripMenuItem
             // 
             videostreamToolStripMenuItem.Name = "videostreamToolStripMenuItem";
-            videostreamToolStripMenuItem.Size = new Size(180, 22);
+            videostreamToolStripMenuItem.Size = new Size(179, 22);
             videostreamToolStripMenuItem.Text = "Videostream";
             videostreamToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripSeparator12
             // 
             toolStripSeparator12.Name = "toolStripSeparator12";
-            toolStripSeparator12.Size = new Size(177, 6);
+            toolStripSeparator12.Size = new Size(176, 6);
             // 
             // configsToolStripMenuItem
             // 
             configsToolStripMenuItem.Name = "configsToolStripMenuItem";
-            configsToolStripMenuItem.Size = new Size(180, 22);
+            configsToolStripMenuItem.Size = new Size(179, 22);
             configsToolStripMenuItem.Text = "Configs...";
             configsToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // displayCfgFilesToolStripMenuItem
             // 
             displayCfgFilesToolStripMenuItem.Name = "displayCfgFilesToolStripMenuItem";
-            displayCfgFilesToolStripMenuItem.Size = new Size(180, 22);
+            displayCfgFilesToolStripMenuItem.Size = new Size(179, 22);
             displayCfgFilesToolStripMenuItem.Text = "Display cfg files";
             displayCfgFilesToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator13
+            // 
+            toolStripSeparator13.Name = "toolStripSeparator13";
+            toolStripSeparator13.Size = new Size(176, 6);
             // 
             // uploadLocalCfgFileToolStripMenuItem
             // 
             uploadLocalCfgFileToolStripMenuItem.Name = "uploadLocalCfgFileToolStripMenuItem";
-            uploadLocalCfgFileToolStripMenuItem.Size = new Size(180, 22);
+            uploadLocalCfgFileToolStripMenuItem.Size = new Size(179, 22);
             uploadLocalCfgFileToolStripMenuItem.Text = "Upload local cfg file";
             uploadLocalCfgFileToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
@@ -560,10 +567,17 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
             // 
-            // toolStripSeparator13
+            // toolStripSeparator14
             // 
-            toolStripSeparator13.Name = "toolStripSeparator13";
-            toolStripSeparator13.Size = new Size(177, 6);
+            toolStripSeparator14.Name = "toolStripSeparator14";
+            toolStripSeparator14.Size = new Size(210, 6);
+            // 
+            // setCommodorePrintPathToolStripMenuItem
+            // 
+            setCommodorePrintPathToolStripMenuItem.Name = "setCommodorePrintPathToolStripMenuItem";
+            setCommodorePrintPathToolStripMenuItem.Size = new Size(213, 22);
+            setCommodorePrintPathToolStripMenuItem.Text = "Set Commodore PrintPath";
+            setCommodorePrintPathToolStripMenuItem.Click += setCommodorePrintPathToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -661,5 +675,7 @@ namespace Kolibri.net.C64Sorter
         private ToolStripMenuItem displayCfgFilesToolStripMenuItem;
         private ToolStripMenuItem uploadLocalCfgFileToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator13;
+        private ToolStripSeparator toolStripSeparator14;
+        private ToolStripMenuItem setCommodorePrintPathToolStripMenuItem;
     }
 }

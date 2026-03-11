@@ -1,0 +1,167 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>__TITLE__</title>
+
+    <style>
+        body {
+            font-family: Segoe UI, sans-serif;
+            background: #1e1e2f;
+            color: #eee;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #2c2c3e;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            vertical-align: top;
+        }
+
+        th {
+            background: #3e3e55;
+            cursor: pointer;
+        }
+
+            th:hover {
+                background: #505070;
+            }
+
+        .poster {
+            width: 70px;
+            border-radius: 6px;
+        }
+
+        .score {
+            color: #ffd369;
+            font-weight: bold;
+        }
+
+        .plot-short {
+            color: #8ecdfc;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .plot-full {
+            display: none;
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>__TITLE__</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Poster</th>
+                <th onclick="sortTable('Title')">Title</th>
+                <th onclick="sortTable('Year')">Year</th>
+                <th onclick="sortTable('Genre')">Genre</th>
+                <th onclick="sortTable('ImdbRating')">IMDb</th>
+                <th>Plot</th>
+            </tr>
+        </thead>
+        <tbody id="movieBody"></tbody>
+    </table>
+
+    <script>
+
+        //   IMPORTANT:
+        // Replace entire array, NOT just the bracket.  
+        const movies = __DATA__;
+
+        function safe(obj, prop) {
+            return obj[prop] ?? obj[prop?.toLowerCase()] ?? "";
+        }
+
+        function getShortPlot(text) {
+            if (!text) return "";
+            const words = text.split(" ");
+            return words.length <= 15 ? text : words.slice(0, 15).join(" ") + "...";
+        }
+
+        function togglePlot(id) {
+            const el = document.getElementById("plot-" + id);
+            el.style.display = el.style.display === "block" ? "none" : "block";
+        }
+
+        function renderMovies(data) {
+            const tbody = document.getElementById("movieBody");
+            tbody.innerHTML = "";
+
+            data.forEach((m, index) => {
+
+                const title = safe(m, "Title");
+                const year = safe(m, "Year");
+                const genre = safe(m, "Genre");
+                const imdb = safe(m, "ImdbRating");
+                const plot = safe(m, "Plot");
+                const poster = safe(m, "Poster");
+
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                <td>
+                    <img class="poster"
+                         src="${poster}"
+                         loading="lazy"
+                         onerror="this.style.display='none'">
+                </td>
+                <td>${title}</td>
+                <td>${year}</td>
+                <td>${genre}</td>
+                <td class="score">${imdb}</td>
+                <td>
+                    <div class="plot-short" onclick="togglePlot(${index})">
+                        ${getShortPlot(plot)}
+                    </div>
+                    <div class="plot-full" id="plot-${index}">
+                        ${plot}
+                    </div>
+                </td>
+            `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        let currentSortDir = 1;
+
+        function sortTable(field) {
+
+            movies.sort((a, b) => {
+
+                let A = a[field] ?? a[field?.toLowerCase()] ?? "";
+                let B = b[field] ?? b[field?.toLowerCase()] ?? "";
+
+                if (!isNaN(A) && !isNaN(B)) {
+                    A = Number(A);
+                    B = Number(B);
+                }
+
+                if (A < B) return -1 * currentSortDir;
+                if (A > B) return 1 * currentSortDir;
+                return 0;
+            });
+
+            currentSortDir *= -1;
+            renderMovies(movies);
+        }
+
+        renderMovies(movies);
+
+    </script>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 ﻿using com.sun.org.apache.bcel.@internal.generic;
 using MovieFileLibrary;
+using net.sf.saxon.functions;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Xml.Schema;
@@ -120,7 +121,7 @@ namespace Kolibri.net.Common.Utilities
                     if (directoryName.Contains($"({smallest})"))
                         return smallest;
 
-                        if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(biggest))
+                    if (Enumerable.Range(1900, DateTime.Now.AddYears(3).Year).Contains(biggest))
                         year = biggest;
 
                     if ((biggest - smallest) < 4)
@@ -181,7 +182,7 @@ namespace Kolibri.net.Common.Utilities
                 MovieFileLibrary.MovieFile movieFile = movieDetector.GetInfo(filePath.FullName);
                 if (movieFile.IsSuccess)
                     ret = movieFile;
-                
+
             }
             catch (Exception)
             { ret = null; }
@@ -194,20 +195,23 @@ namespace Kolibri.net.Common.Utilities
         /// </summary>
         /// <param name="movieTitleToFetch"></param>
         /// <returns></returns>
-        private static string GetMovieTitleLight(string movieTitleToFetch)
+        public static string GetMovieTitleLight(string movieTitleToFetch)
         {
-            string ret = GetMovieTitleprepp(movieTitleToFetch).Replace(".", " ").Trim(); ;
+            var ret = movieTitleToFetch;
 
             int pos = ret.IndexOf($"{GetYear(ret)}");
             if (pos > 0)
                 ret = ret.Substring(0, pos);
+
+            ret = GetMovieTitleprepp(ret).Replace(".", " ").Trim();
+
             var regExstring = @"/\[.*?\]|\(.*?\)/";
             ret = Regex.Replace(ret, regExstring, "");
             regExstring = @"/s(\d{1,2})e(\d{1,3})|(\d{1,2})x(\d{1,3})/";
             ret = Regex.Replace(ret, regExstring, "");
-
+            ret = ret.TrimEnd('(');
+            ret = ret.TrimEnd('[');
             return ret.Trim();
-
         }
 
         private static string GetMovieTitleprepp(string movieTitleToFetch)
@@ -244,11 +248,11 @@ namespace Kolibri.net.Common.Utilities
         }
         public static List<string> MoviesFileExt(bool withPunctuation = false)
         {
-            var ret= new List<string>() { 
+            var ret = new List<string>() {
                 "3g2", "3gp", "amv", "asf", "avi", "drc", "flv", "flv", "flv", "f4v",
-                "f4p", "f4a", "f4b", "gif", "gifv", "m4v", "mkv", "mng", "mov", "qt", 
-                "mp4", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe", "mpv", "mpg", "mpeg", 
-                "m2v", "MTS", "M2TS", "TS", "mxf", "nsv", "ogv", "ogg", "rm", "rmvb", 
+                "f4p", "f4a", "f4b", "gif", "gifv", "m4v", "mkv", "mng", "mov", "qt",
+                "mp4", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe", "mpv", "mpg", "mpeg",
+                "m2v", "MTS", "M2TS", "TS", "mxf", "nsv", "ogv", "ogg", "rm", "rmvb",
                 "roq", "svi", "vob", "webm", "wmv", "yuv", "ts" };
             if (withPunctuation)
                 ret = ret.Select(r => string.Concat('.', r)).ToList();
@@ -259,6 +263,35 @@ namespace Kolibri.net.Common.Utilities
         {
             var filterList = new List<string>() { "CD", ".PART", " PART", "Disk0", "Extra", "@__thumb" };
             return filterList;
+        }
+
+        public static async Task<List<string>> GetCommonMovieFiles(DirectoryInfo dir)
+        {
+
+            List<string> ret = new List<string>();
+            try
+            {
+                List<string> common = MovieUtilites.MoviesCommonFileExt(true);
+                var masks = common.Select(r => string.Concat('*', r)).ToArray();
+                var searchStr = "*." + string.Join("|*.", common);
+
+                var numFiles = FileUtilities.CountFiles(dir, "*.*", new EnumerationOptions() { RecurseSubdirectories = true });
+                foreach (var filter in masks)
+                {  var total = Directory.EnumerateFiles(dir.FullName, filter, new EnumerationOptions() { RecurseSubdirectories = true }).GetEnumerator();
+                    using (var e = await Task.Run(() => total))
+                    {
+                        while (await Task.Run(() => e.MoveNext()))
+                        {
+
+                            //     FileInfo file = new FileInfo(e.Current);
+                            ret.Add(e.Current);
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { }
+            return ret;
         }
     }
 }

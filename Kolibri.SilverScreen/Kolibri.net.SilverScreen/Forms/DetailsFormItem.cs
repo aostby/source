@@ -1,4 +1,5 @@
 ﻿
+using com.sun.corba.se.impl.orbutil;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images;
@@ -103,17 +104,32 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
-
+            SetAllLabelsToBold(this);
             //Dersom alt er initialisert, sett farger
             InitButtons();
         }
-
+        private void SetAllLabelsToBold(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (c is Label label)
+                {
+                    // Create a new Font object with the existing font family and size, but with the Bold style added.
+                    label.Font = new Font(label.Font, FontStyle.Bold);
+                }
+                // Recursively check child controls if they are in containers like Panel or GroupBox
+                if (c.HasChildren)
+                {
+                    SetAllLabelsToBold(c);
+                }
+            }
+        }
         private async void InitButtons(bool verbose = false)
         {
             try
             {
                 string path;
-                var t = await _liteDB.FindFile(_item.ImdbId);
+                var t = await _liteDB.FindFileAsync(_item.ImdbId);
                 path = t.FullName;
 
                 toolTipDetail.SetToolTip(linkLabelOpenFilepath, path);
@@ -245,7 +261,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 else if (sender.Equals(linkLabelOpenFilepath))
                 {
-                    var t = await _liteDB.FindFile(_item.ImdbId);
+                    var t = await _liteDB.FindFileAsync(_item.ImdbId);
                     var path = t.FullName;
                     if (File.Exists(path))
                     {
@@ -287,6 +303,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 PictureBox box = new PictureBox() { Image = img };
                 Form form = new Form();
+                form.Text = $"{tbTitle.Text} - {_item?.Poster}";
                 form.Size = new Size(this.Width, this.Height);
                 box.Dock = DockStyle.Fill;
                 box.SizeMode = PictureBoxSizeMode.Zoom;
@@ -310,10 +327,14 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                Form form = new Form();
+                Form form = new Form();                
                 RichTextBox plot = new RichTextBox();
-                plot.Text = tbPlot.Text;
+                plot.DetectUrls = true;
+                plot.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(plot_LinkClicked);
 
+
+                plot.Text = $"{tbPlot.Text}{(string.Join("", Enumerable.Repeat(Environment.NewLine, 3)))}{_item.ToJson() }";
+                
                 plot.Font = new Font("Microsoft San Serif", 16);
                 plot.Dock = DockStyle.Fill;
                 form.Text = tbTitle.Text.Replace(".", "." + Environment.NewLine);
@@ -324,11 +345,21 @@ namespace Kolibri.net.SilverScreen.Forms
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
-            }
-
+            } 
         }
 
-        private void buttonSearch_Click(object sender, EventArgs e)
+        private void plot_LinkClicked(object? sender, LinkClickedEventArgs e)
+        {
+            try
+            { 
+                FileUtilities.Start(new Uri(e.LinkText));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private async void buttonSearch_Click(object sender, EventArgs e)
         {
             try
             {
@@ -341,7 +372,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     try
                     {
                         var movie = _TMDB.GetMovie(item.Id);
-                        var local = _liteDB.FindItem(movie.ImdbId);
+                        var local = await _liteDB.FindItemAsync(movie.ImdbId);
                         if (local != null)
                         { imdbItems.Insert(0, local); }
                         else
@@ -464,8 +495,8 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (res == DialogResult.OK)
             {
-                _liteDB.Update(_item);
-                _liteDB.Update(_itemPath);
+                _liteDB.UpdateAsync(_item);
+                _liteDB.UpdateAsync(_itemPath);
                 Init(_item);
             }
         }
@@ -489,10 +520,10 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
                 if (srtInfo.Exists) return;
-                bool dirExists = Directory.Exists(Path.Combine(info.Directory.FullName, "Subs"));
-                var mmi = _OMDB.GetItemByImdbId(_item.ImdbId);
-                dirExists = dirExists && mmi.Type == "movie";
-                if (info.Exists && !dirExists)
+                
+                DirectoryInfo dirInfo = new DirectoryInfo(Path.Combine(info.Directory.FullName, "Subs"));
+
+                if (info.Exists && !dirInfo.Exists)
                 {
                     var jall = _subDL.SearchByIMDBid(_item.ImdbId);
                     if (jall.status == true && jall.subtitles != null && jall.subtitles.Count >= 1)
@@ -533,6 +564,10 @@ namespace Kolibri.net.SilverScreen.Forms
                         }
                     }
                 }
+                else if (dirInfo.Exists) {
+                    FileUtilities.Start(dirInfo);
+                }
+
             }
             catch (Exception ex)
             {

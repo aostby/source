@@ -1649,6 +1649,10 @@ All files (*.*)|*.*";
 
                         break;
 
+                    case 7: result = DataSetUtilities.DataSetToCSV(ds, ";");
+                        File.WriteAllText(sfd.FileName, result);
+                        break;
+
                     default:
                         //  result = Utilities.DataSetUtilities.DataSetToCSV(table, Convert.ToChar(9).ToString()); break;
                         result = data.ToString();
@@ -1705,5 +1709,29 @@ All files (*.*)|*.*";
             Process.Start("explorer.exe", folderPath);
         }
 
+        public static int CountFiles(DirectoryInfo directoryPath, string filter,  EnumerationOptions enumerationOptions)
+        {int ret = 0;
+            try
+            {
+
+                return Directory.EnumerateFiles(directoryPath.FullName, filter, enumerationOptions).Count();
+                
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Console.WriteLine("Directory not found.");
+                return ret; 
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Console.WriteLine("Access denied. Check permissions.");
+                return ret; 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return ret;
+            }
+        }
     }
 }

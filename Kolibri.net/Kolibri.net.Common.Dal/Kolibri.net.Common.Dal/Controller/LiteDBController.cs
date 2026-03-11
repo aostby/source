@@ -51,7 +51,7 @@ namespace Kolibri.net.Common.Dal.Controller
         }
 
         #region Item table funcitonss
-        public async Task< IEnumerable<Item>> FindAllItems(string type = null)
+        public async Task<IEnumerable<Item>> FindAllItems(string type = null)
         {
             IEnumerable<Item> items = null;
 
@@ -71,14 +71,13 @@ namespace Kolibri.net.Common.Dal.Controller
             else {
                 items=  _liteDB.GetCollection<Item>("Item").FindAll();
             } 
-            return items;   
+            return items ;   
             }
-        public Item FindItem(string imdbId)
+        public async Task<Item> FindItemAsync(string imdbId)
         {
             try
             {
-                var ret = _liteDB.GetCollection<Item>("Item")
-                                         .Find(x => x.ImdbId == imdbId).FirstOrDefault();
+                var ret = _liteDB.GetCollection<Item>("Item").Find(x => x.ImdbId == imdbId).FirstOrDefault();
                 return ret;
             }
             catch (Exception ex)
@@ -86,12 +85,12 @@ namespace Kolibri.net.Common.Dal.Controller
                 return null;
             }
         }
-        public Item FindItemByTitle(string title, int year, string type = null)
+        public async Task <Item> FindItemByTitle(string title, int year, string alternateTitle=null,  string type = null)
         {
             if (type != null)
             {
-                var list = FindAllItems(type).GetAwaiter().GetResult().ToList();
-                return list.FindAll(x => x.Title == title.Trim() && x.Year.StartsWith(year.ToString())).FirstOrDefault();
+                var list = await FindAllItems(type) ;
+                return list.ToList().FindAll(x => x.Title == title.Trim() && x.Year.StartsWith(year.ToString())).FirstOrDefault();
             }
             if (year < 1800)
             {
@@ -101,6 +100,13 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 var ret = _liteDB.GetCollection<Item>("Item")
                     .Find(x => x.Title == title.Trim() && x.Year == year.ToString()).FirstOrDefault();
+                if (ret == null&&!string.IsNullOrWhiteSpace(alternateTitle)) 
+                {
+                      ret = _liteDB.GetCollection<Item>("Item")
+                       .Find(x => x.Title == alternateTitle && x.Year == year.ToString()).FirstOrDefault();
+                }
+                
+
                 return ret;
             }
         }
@@ -161,7 +167,7 @@ namespace Kolibri.net.Common.Dal.Controller
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool Insert(Item item)
+        public async Task<bool> InsertAsync(Item item)
         {
             try
             {
@@ -175,26 +181,30 @@ namespace Kolibri.net.Common.Dal.Controller
             }
         }
 
-        public bool Upsert(Item item)
+        public async Task<bool> UpsertAsync(Item item)
         {
-            if (!Insert(item))
-                try
+            bool ret = false;
+            try
+            {
+                ret = await InsertAsync(item);
+                if (!ret)
                 {
-                    Update(item);
+                    ret = await UpdateAsync(item);
                 }
-                catch (Exception ex)
-                {
-                    return false;
-                }
-            return true;
+            }
+            catch (Exception ex)
+            {
+                ret = false;
+            }
+            return ret;
         }
 
-        public bool Update(Item movie)
+        public async Task<bool> UpdateAsync(Item movie)
         {
             return _liteDB.GetCollection<Item>("Item")
                 .Update(movie.ImdbId, movie);
         }
-        public bool Delete(Item item)
+        public async Task<bool> DeleteAsync(Item item)
         {
             return DeleteItem(item.ImdbId) >= 1;
         }
@@ -721,7 +731,7 @@ namespace Kolibri.net.Common.Dal.Controller
             List<FileItem> ret = new List<FileItem>();
             foreach (var item in FindItemByGenre(genre))
             {
-                var movie = FindFile(item.ImdbId);
+                var movie = FindFileAsync(item.ImdbId);
                 if (movie != null)
                     ret.Add(movie.Result);
             };
@@ -743,31 +753,23 @@ namespace Kolibri.net.Common.Dal.Controller
             ret = col.Find(Query.StartsWith("FullName", dirInfo.FullName)).ToList();
             return ret;
         }
-        public async Task<FileItem> FindFile(string imdbId)
+        public async Task<FileItem> FindFileAsync(string imdbId)
         {
             FileItem ret;
 
-            ret = _liteDB.GetCollection<FileItem>("FileItem")
+            return   _liteDB.GetCollection<FileItem>("FileItem")
                 .Find(x => x.ImdbId == imdbId).FirstOrDefault();
-
-            if (ret == null)
-            {
-                //var tmp = FindItem(imdbId);
-                //if (tmp != null && tmp.TomatoUrl != null)
-                //{
-                //    FileItem item = new FileItem(imdbId, tmp.TomatoUrl);
-                //    return item;
-                //}
-            }
-            return ret;
+ 
 
         }
-        public FileItem FindByFileName(FileInfo file)
+        public async Task<FileItem> FindByFileNameAsync(FileInfo file)
         {
+             
             var ret= _liteDB.GetCollection<FileItem>("FileItem")
-                .Find(x => x.FullName == file.FullName).FirstOrDefault(); 
-     
+                .Find(x => x.FullName.Contains(file.FullName)).FirstOrDefault();
             return ret;
+
+
         }
 
         /// <summary>
@@ -775,26 +777,24 @@ namespace Kolibri.net.Common.Dal.Controller
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public async Task< bool> Upsert(FileItem file, bool checkPath = false)
+        public async Task< bool> UpsertAsync(FileItem file, bool checkPath = false)
         {
             if (file.ImdbId == null) { return false; }
 
-            if (checkPath)
-            {
-                if (!file.ItemFileInfo.Exists)
-                { return false; }
-            }
+           
             try
             {
-                FileItem fi = await FindFile(file.ImdbId);
+                FileItem fi = await FindFileAsync(file.ImdbId);
                 if (fi == null)
                 {
                     _liteDB.GetCollection<FileItem>("FileItem")
                         .Insert(file.ImdbId, file);
                     return true;
                 }
-                else {  var success=  await  Update(file); return success; }
-
+                else
+                {
+                    return await UpdateAsync(file);
+                }
             }
             catch (Exception ex)
             {
@@ -802,7 +802,7 @@ namespace Kolibri.net.Common.Dal.Controller
             }
         }
 
-        public async Task< bool> Update(FileItem file)
+        public async Task< bool> UpdateAsync(FileItem file)
         {
             if (file.ImdbId == null) { return false; }
 
@@ -965,7 +965,7 @@ switch (searchCriteria)
                     if (string.IsNullOrEmpty(movie.FilePath))
                     {
 
-                        var t = await FindFile(movie.ImdbId);
+                        var t = await FindFileAsync(movie.ImdbId);
                         var path = t.FullName;
 
 
@@ -1000,7 +1000,7 @@ switch (searchCriteria)
                 if (string.IsNullOrEmpty(movie.FilePath))
                 {
 
-                    var t = await FindFile(movie.ImdbId);
+                    var t = await FindFileAsync(movie.ImdbId);
                     var path = t.FullName;
                     if (File.Exists(path))
                     {
@@ -1138,7 +1138,7 @@ switch (searchCriteria)
             }
         }
 
-        public List<Item> FindItems(IEnumerable<FileItem> fileItems)
+        public async Task<List<Item> >FindItemsAsync(IEnumerable<FileItem> fileItems)
         {if (fileItems == null) return null;
             List<Item> ret = new List<Item>();
 
@@ -1146,7 +1146,7 @@ switch (searchCriteria)
             {
                 try
                 {
-                    var itemItem = FindItem(item.ImdbId);
+                    var itemItem = await FindItemAsync(item.ImdbId);
                     if (itemItem != null) { ret.Add(itemItem); }
                 }
                 catch (Exception)

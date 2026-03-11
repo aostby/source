@@ -325,7 +325,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else if (_seasonEpisode != null)
                     {
-                        var t = await _liteDB.FindFile(_seasonEpisode.ImdbId);
+                        var t = await _liteDB.FindFileAsync(_seasonEpisode.ImdbId);
                         path = t.FullName;
                     }
                 
@@ -516,7 +516,7 @@ namespace Kolibri.net.SilverScreen.Forms
             if (res == DialogResult.OK)
             {
                 _liteDB.Update(_seasonEpisode);
-                _liteDB.Update(_itemPath);
+                _liteDB.UpdateAsync(_itemPath);
                 //Init(_seasonEpisode);
                 throw new NotImplementedException();
             }

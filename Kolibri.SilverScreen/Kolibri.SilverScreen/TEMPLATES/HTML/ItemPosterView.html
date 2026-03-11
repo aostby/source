@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>__TITLE__</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Segoe UI, sans-serif;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .topbar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 8px 12px;
+            width: 260px;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        button {
+            background: #394867;
+            border: none;
+            color: white;
+            padding: 8px 14px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: #576cbc;
+            }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #1f2a40;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+            }
+
+        .poster {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            cursor: pointer;
+            background: #111;
+        }
+
+        .content {
+            padding: 12px;
+        }
+
+        .title {
+            font-size: 1.05em;
+            font-weight: bold;
+        }
+
+        .meta {
+            font-size: 0.85em;
+            color: #bbb;
+            margin-top: 4px;
+        }
+
+        .rating {
+            color: #ffd369;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .plot-short {
+            color: #8ecdfc;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-top: 6px;
+        }
+
+        .plot-full {
+            display: none;
+            margin-top: 6px;
+            font-size: 0.8em;
+            color: #ddd;
+        }
+
+        .highlight {
+            outline: 3px solid #ffd369;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>__TITLE__</h1>
+
+    <div class="topbar">
+        <input type="text" id="searchBox" placeholder="Search title..." onkeyup="searchMovie()">
+        <br />
+        <button onclick="sortMovies('Title')">Sort by Title</button>
+        <button onclick="sortMovies('Year')">Sort by Year</button>
+        <button onclick="sortMovies('Genre')">Sort by Genre</button>
+        <button onclick="sortMovies('ImdbRating')">Sort by IMDb</button>
+    </div>
+
+    <div id="movieGrid" class="grid"></div>
+
+    <script>
+
+        const movies = __DATA__;
+
+        function safe(obj, prop) {
+            return obj[prop] ?? "";
+        }
+
+        function getShortPlot(text) {
+            if (!text) return "";
+            const words = text.split(" ");
+            return words.length <= 15 ? text : words.slice(0, 15).join(" ") + "...";
+        }
+
+        function togglePlot(id) {
+            const el = document.getElementById("plot-" + id);
+            el.style.display = el.style.display === "block" ? "none" : "block";
+        }
+
+        function openStream(imdbId) {
+            if (!imdbId) return;
+            const url = `https://multiembed.mov/?video_id=${imdbId}`;
+            window.open(url, "_blank");
+        }
+
+        function renderMovies(data) {
+            const grid = document.getElementById("movieGrid");
+            grid.innerHTML = "";
+
+            data.forEach((m, index) => {
+
+                const title = safe(m, "Title");
+                const year = safe(m, "Year");
+                const genre = safe(m, "Genre");
+                const rating = safe(m, "ImdbRating");
+                const plot = safe(m, "Plot");
+                const poster = safe(m, "Poster");
+                const imdbId = safe(m, "ImdbId");
+
+                const card = document.createElement("div");
+                card.className = "card";
+                card.id = "card-" + index;
+
+                card.innerHTML = `
+                <img class="poster"
+                     src="${poster}"
+                     loading="lazy"
+                     onclick="openStream('${imdbId}')"
+                     onerror="this.style.display='none'">
+                <div class="content">
+                    <div class="title">${title}</div>
+                    <div class="meta">${year} • ${genre}</div>
+                    <div class="rating">⭐ ${rating}</div>
+                    <div class="plot-short" onclick="togglePlot(${index})">
+                        ${getShortPlot(plot)}
+                    </div>
+                    <div class="plot-full" id="plot-${index}">
+                        ${plot}
+                    </div>
+                </div>
+            `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        let currentSortDir = 1;
+
+        function sortMovies(field) {
+
+            movies.sort((a, b) => {
+
+                let A = a[field] ?? "";
+                let B = b[field] ?? "";
+
+                if (!isNaN(A) && !isNaN(B)) {
+                    A = Number(A);
+                    B = Number(B);
+                }
+
+                if (A < B) return -1 * currentSortDir;
+                if (A > B) return 1 * currentSortDir;
+                return 0;
+            });
+
+            currentSortDir *= -1;
+            renderMovies(movies);
+        }
+
+        function searchMovie() {
+
+            const input = document.getElementById("searchBox").value.toLowerCase();
+
+            const cards = document.getElementsByClassName("card");
+
+            for (let i = 0; i < movies.length; i++) {
+
+                const title = safe(movies[i], "Title").toLowerCase();
+
+                if (title.includes(input) && input.length > 0) {
+
+                    cards[i].scrollIntoView({ behavior: "smooth", block: "center" });
+
+                    cards[i].classList.add("highlight");
+
+                    setTimeout(() => {
+                        cards[i].classList.remove("highlight");
+                    }, 2000);
+
+                    break;
+                }
+            }
+        }
+
+        renderMovies(movies);
+
+    </script>
+
+</body>
+</html>

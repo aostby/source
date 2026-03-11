@@ -136,7 +136,7 @@ namespace Kolibri.net.SilverScreen.Forms
                                 else
                                 {
                                     //sublist.Add(srch);
-                                    var test = _liteDB.FindByFileName(new FileInfo(srch));
+                                    var test = _liteDB.FindByFileNameAsync(new FileInfo(srch));
                                     if (test == null)
                                     {
                                         sublist.Add($"[NULL] {MovieUtilites.GetMovieTitle(srch)} -  The file is not found by LiteDB search for FilteItems using: {srch}");
@@ -456,7 +456,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     case MultimediaType.movie:
                     case MultimediaType.Movies:
 
-                        var movie = _liteDB.FindItem(tableItem.Rows[0]["ImdbId"].ToString());
+                        var movie = _liteDB.FindItemAsync(tableItem.Rows[0]["ImdbId"].ToString());
                         SetForm(movie, splitContainer2.Panel2);
                         break;
                     case MultimediaType.Series:

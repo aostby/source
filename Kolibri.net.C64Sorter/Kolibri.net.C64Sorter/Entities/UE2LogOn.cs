@@ -11,5 +11,7 @@ namespace Kolibri.net.C64Sorter.Entities
         public string Hostname { get; set; } = string.Empty;
         public string Username { get; set; } = "anonymous";
         public string Password { get; set; } = string.Empty;
+
+        public string FTPPrintPath { get; set; } = string.Empty;
     }
 }

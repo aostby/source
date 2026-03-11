@@ -600,12 +600,12 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else if (name.Contains("title.ratings"))
                     {
-                        Item item = _contr.FindItem(arr[0]);
+                        Item item = await _contr.FindItemAsync(arr[0]);
                         if (item != null)
                         {
                             item.Rated = arr[1];
                             item.ImdbVotes = arr[2];
-                            contr.Update(item);
+                            contr.UpdateAsync(item);
                             if (progress != null)
                                 SetStatusLabelText($"[UPDATE] ({counter}/{totalLength} - {lastPercentage}%) {item.ImdbId} - {item.Title}  ");
                             await Task.Delay(2);
@@ -613,7 +613,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else if (name.Contains("title.crew"))
                     {
-                        Item item = _contr.FindItem(arr[0]);
+                        Item item = await _contr.FindItemAsync(arr[0]);
                         if (item != null)
                         {
                             //item.Writer = 
@@ -630,7 +630,7 @@ namespace Kolibri.net.SilverScreen.Forms
                             lines = orglines.Take<string>(new Range(localImdbIds.Count(), orglines.Count() - localImdbIds.Count())).ToList();
 
 
-                            Item item = _contr.FindItem(arr[0]);
+                            Item item = await _contr.FindItemAsync(arr[0]);
                             if (item == null) { item = itemservice.Get(arr[0]); }
                             ;
                             if (item == null)
@@ -669,7 +669,7 @@ namespace Kolibri.net.SilverScreen.Forms
                             item.Year = arr[5];
                             item.Runtime = $"{arr[7].ToInt32()}";
                             item.Genre = arr[8];
-                            if (_contr.Insert(item))
+                            if (await _contr.InsertAsync(item))
                             {
                                 if (progress != null)
                                 {
@@ -785,12 +785,12 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 else if (name.Contains("title.ratings"))
                 {
-                    Item item = _contr.FindItem(arr[0]);
+                    Item item = await _contr.FindItemAsync(arr[0]);
                     if (item != null)
                     {
                         item.Rated = arr[1];
                         item.ImdbVotes = arr[2];
-                        contr.Update(item);
+                        contr.UpdateAsync(item);
                         if (progress != null)
                             SetStatusLabelText($"[UPDATE] ({counter}/{totalLength} - {lastPercentage}%) {item.ImdbId} - {item.Title}  ");
                         await Task.Delay(2);
@@ -798,7 +798,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 else if (name.Contains("title.crew"))
                 {
-                    Item item = _contr.FindItem(arr[0]);
+                    Item item = await _contr.FindItemAsync(arr[0]);
                     if (item != null)
                     {
                         //item.Writer = 
@@ -815,7 +815,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         lines = orglines.Take<string>(new Range(localImdbIds.Count(), orglines.Count() - localImdbIds.Count())).ToList();
 
 
-                        Item item = _contr.FindItem(arr[0]);
+                        Item item = await _contr.FindItemAsync(arr[0]);
                         if (item == null) { item = itemservice.Get(arr[0]); }
                         ;
                         if (item == null)
@@ -855,7 +855,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         item.Year = arr[5];
                         item.Runtime = $"{arr[7].ToInt32()}";
                         item.Genre = arr[8];
-                        if (_contr.Insert(item))
+                        if (await _contr.InsertAsync(item))
                         {
                             if (progress != null)
                             {

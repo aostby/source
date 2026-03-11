@@ -61,22 +61,22 @@ namespace Kolibri.net.SilverScreen.Forms
             //   MessageBox.Show(res.ToString());
         }
 
-        private void buttonExecuteChange_Click(object sender, EventArgs e)
+        private async void buttonExecuteChange_Click(object sender, EventArgs e)
         {
             StringBuilder builder = new StringBuilder();
             try
             {
                 if (string.IsNullOrEmpty(textBox1.Text)) throw new Exception("Cannot change from nothing");
 
-                using (LiteDBController controller = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
+                using (LiteDBController _liteDB = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
                 {
-                    var list = controller.FindAllFileItems();
+                    var list = _liteDB.FindAllFileItems();
                     foreach (var fItem in list)
                     {
                         if (fItem.FullName.Contains(textBox1.Text, StringComparison.OrdinalIgnoreCase))
                         {
                             fItem.FullName = fItem.FullName.Replace(textBox1.Text, textBox2.Text);
-                            controller.Upsert(fItem);
+                            await _liteDB.UpsertAsync(fItem);
                         }
                         var txt = $"{fItem.ItemFileInfo.Exists} - {fItem.FullName}";
                         builder.AppendLine(txt);
