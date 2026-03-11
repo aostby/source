@@ -152,11 +152,11 @@ namespace Kolibri.net.Common.Dal.Controller
             return results.Results;
         }
 
-        public Item GetMovie(SearchMovie searchMovie)
+        public async Task< Item> GetMovieAsync(SearchMovie searchMovie)
         {
             Movie movie = GetMovie(searchMovie.Id);
             if (movie == null) return null;
-            Item item = _liteDB.FindItem(movie.ImdbId);
+            Item item = await _liteDB.FindItemAsync(movie.ImdbId);
             if (item == null)
             {
                 item = new Item();
@@ -326,7 +326,7 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 try
                 {
-                var temp = GetMovie(item);
+                var temp = await GetMovieAsync(item);
                     if (temp != null)
                     ret.Add(temp);
 

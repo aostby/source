@@ -30,11 +30,14 @@
         {
             menuStrip1 = new MenuStrip();
             filToolStripMenuItem = new ToolStripMenuItem();
-            lukkToolStripMenuItem = new ToolStripMenuItem();
             liteDBFilepathToolStripMenuItem = new ToolStripMenuItem();
             innstillingerToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator3 = new ToolStripSeparator();
+            lukkToolStripMenuItem = new ToolStripMenuItem();
             verktøyToolStripMenuItem = new ToolStripMenuItem();
+            removeEmptyDirectoriesToolStripMenuItem = new ToolStripMenuItem();
             finnDuplikaterToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator2 = new ToolStripSeparator();
             flyttMapperToolStripMenuItem = new ToolStripMenuItem();
             flyttFilmerToolStripMenuItem = new ToolStripMenuItem();
             bakgrunnOppdateringToolStripMenuItem = new ToolStripMenuItem();
@@ -42,12 +45,12 @@
             iMDbDataFilesToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             testCircusToolStripMenuItem = new ToolStripMenuItem();
-            removeEmptyDirectoriesToolStripMenuItem = new ToolStripMenuItem();
             multiMediaToolStripMenuItem = new ToolStripMenuItem();
             movieslocalToolStripMenuItem = new ToolStripMenuItem();
             serieslocalToolStripMenuItem = new ToolStripMenuItem();
             searchToolStripMenuItem = new ToolStripMenuItem();
             genreSearchToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator4 = new ToolStripSeparator();
             windowsToolStripMenuItem = new ToolStripMenuItem();
             cascadeWindowsToolStripMenuItem = new ToolStripMenuItem();
             tileVerticalToolStripMenuItem = new ToolStripMenuItem();
@@ -57,8 +60,6 @@
             grusToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
-            toolStripSeparator2 = new ToolStripSeparator();
-            toolStripSeparator3 = new ToolStripSeparator();
             menuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
@@ -82,13 +83,6 @@
             filToolStripMenuItem.Size = new Size(31, 20);
             filToolStripMenuItem.Text = "Fil";
             // 
-            // lukkToolStripMenuItem
-            // 
-            lukkToolStripMenuItem.Name = "lukkToolStripMenuItem";
-            lukkToolStripMenuItem.Size = new Size(151, 22);
-            lukkToolStripMenuItem.Text = "Lukk";
-            lukkToolStripMenuItem.Click += lukkToolStripMenuItem_Click;
-            // 
             // liteDBFilepathToolStripMenuItem
             // 
             liteDBFilepathToolStripMenuItem.Name = "liteDBFilepathToolStripMenuItem";
@@ -103,6 +97,18 @@
             innstillingerToolStripMenuItem.Text = "Innstillinger";
             innstillingerToolStripMenuItem.Click += innstillingerToolStripMenuItem_Click;
             // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new Size(148, 6);
+            // 
+            // lukkToolStripMenuItem
+            // 
+            lukkToolStripMenuItem.Name = "lukkToolStripMenuItem";
+            lukkToolStripMenuItem.Size = new Size(151, 22);
+            lukkToolStripMenuItem.Text = "Lukk";
+            lukkToolStripMenuItem.Click += lukkToolStripMenuItem_Click;
+            // 
             // verktøyToolStripMenuItem
             // 
             verktøyToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { removeEmptyDirectoriesToolStripMenuItem, finnDuplikaterToolStripMenuItem, toolStripSeparator2, flyttMapperToolStripMenuItem, bakgrunnOppdateringToolStripMenuItem, toolStripSeparator1, testCircusToolStripMenuItem });
@@ -110,12 +116,24 @@
             verktøyToolStripMenuItem.Size = new Size(58, 20);
             verktøyToolStripMenuItem.Text = "Verktøy";
             // 
+            // removeEmptyDirectoriesToolStripMenuItem
+            // 
+            removeEmptyDirectoriesToolStripMenuItem.Name = "removeEmptyDirectoriesToolStripMenuItem";
+            removeEmptyDirectoriesToolStripMenuItem.Size = new Size(193, 22);
+            removeEmptyDirectoriesToolStripMenuItem.Text = "Slett tomme mapper";
+            removeEmptyDirectoriesToolStripMenuItem.Click += removeEmptyDirectoriesToolStripMenuItem_Click;
+            // 
             // finnDuplikaterToolStripMenuItem
             // 
             finnDuplikaterToolStripMenuItem.Name = "finnDuplikaterToolStripMenuItem";
             finnDuplikaterToolStripMenuItem.Size = new Size(193, 22);
             finnDuplikaterToolStripMenuItem.Text = "Finn duplikater";
             finnDuplikaterToolStripMenuItem.Click += finnDuplikaterToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(190, 6);
             // 
             // flyttMapperToolStripMenuItem
             // 
@@ -127,7 +145,7 @@
             // flyttFilmerToolStripMenuItem
             // 
             flyttFilmerToolStripMenuItem.Name = "flyttFilmerToolStripMenuItem";
-            flyttFilmerToolStripMenuItem.Size = new Size(180, 22);
+            flyttFilmerToolStripMenuItem.Size = new Size(131, 22);
             flyttFilmerToolStripMenuItem.Text = "Flytt filmer";
             flyttFilmerToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
@@ -164,16 +182,9 @@
             testCircusToolStripMenuItem.Text = "Test Circus";
             testCircusToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
-            // removeEmptyDirectoriesToolStripMenuItem
-            // 
-            removeEmptyDirectoriesToolStripMenuItem.Name = "removeEmptyDirectoriesToolStripMenuItem";
-            removeEmptyDirectoriesToolStripMenuItem.Size = new Size(193, 22);
-            removeEmptyDirectoriesToolStripMenuItem.Text = "Slett tomme mapper";
-            removeEmptyDirectoriesToolStripMenuItem.Click += removeEmptyDirectoriesToolStripMenuItem_Click;
-            // 
             // multiMediaToolStripMenuItem
             // 
-            multiMediaToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { movieslocalToolStripMenuItem, serieslocalToolStripMenuItem, searchToolStripMenuItem, genreSearchToolStripMenuItem });
+            multiMediaToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { movieslocalToolStripMenuItem, serieslocalToolStripMenuItem, searchToolStripMenuItem, genreSearchToolStripMenuItem, toolStripSeparator4 });
             multiMediaToolStripMenuItem.Name = "multiMediaToolStripMenuItem";
             multiMediaToolStripMenuItem.Size = new Size(80, 20);
             multiMediaToolStripMenuItem.Text = "MultiMedia";
@@ -181,30 +192,35 @@
             // movieslocalToolStripMenuItem
             // 
             movieslocalToolStripMenuItem.Name = "movieslocalToolStripMenuItem";
-            movieslocalToolStripMenuItem.Size = new Size(148, 22);
+            movieslocalToolStripMenuItem.Size = new Size(180, 22);
             movieslocalToolStripMenuItem.Text = "Movies (local)";
             movieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // serieslocalToolStripMenuItem
             // 
             serieslocalToolStripMenuItem.Name = "serieslocalToolStripMenuItem";
-            serieslocalToolStripMenuItem.Size = new Size(148, 22);
+            serieslocalToolStripMenuItem.Size = new Size(180, 22);
             serieslocalToolStripMenuItem.Text = "Series (local)";
             serieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // searchToolStripMenuItem
             // 
             searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            searchToolStripMenuItem.Size = new Size(148, 22);
+            searchToolStripMenuItem.Size = new Size(180, 22);
             searchToolStripMenuItem.Text = "Search...";
             searchToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // genreSearchToolStripMenuItem
             // 
             genreSearchToolStripMenuItem.Name = "genreSearchToolStripMenuItem";
-            genreSearchToolStripMenuItem.Size = new Size(148, 22);
+            genreSearchToolStripMenuItem.Size = new Size(180, 22);
             genreSearchToolStripMenuItem.Text = "Genre search";
             genreSearchToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(177, 6);
             // 
             // windowsToolStripMenuItem
             // 
@@ -270,16 +286,6 @@
             toolStripStatusLabelStatus.Size = new Size(39, 17);
             toolStripStatusLabelStatus.Text = "Status";
             // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(190, 6);
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(148, 6);
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -334,5 +340,6 @@
         private ToolStripMenuItem removeEmptyDirectoriesToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripSeparator toolStripSeparator2;
+        private ToolStripSeparator toolStripSeparator4;
     }
 }

@@ -1,9 +1,11 @@
-﻿using FastColoredTextBoxNS;
+﻿using com.sun.tools.@internal.ws.processor.util;
+using FastColoredTextBoxNS;
 using global::Kolibri.net.Common.FormUtilities.Forms;
 using java.awt.dnd;
 using Kolibri.net.Common.Utilities;
 using System.Data;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace Kolibri.net.Common.FormUtilities.Controller
@@ -52,6 +54,7 @@ namespace Kolibri.net.Common.FormUtilities.Controller
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgv.KeyDown += new KeyEventHandler(ShowDataTableDialog_KeyDown);
             dgv.SelectionChanged += ShowDataTableDialog_SelectionChanged;
+            dgv.CellDoubleClick += ShowDataTableDialog_CellDoubleClick;
 
 
             /*
@@ -120,6 +123,47 @@ dgv.DisableResizing;*/
 
             return form;
         }
+        private static void ShowDataTableDialog_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+
+          
+            // Ensure the user clicked a data row, not a column header
+            if (e.RowIndex >= 0)
+            {
+                // Access the full row
+                DataGridViewRow row = (sender as DataGridView).Rows[e.RowIndex]; 
+                    
+                    // Get the clicked row and column                    
+                    DataGridViewColumn clickedColumn = (sender as DataGridView).Columns[e.ColumnIndex];
+                    string cellValue = row.Cells[e.ColumnIndex].Value.ToString();
+                    
+                    // Get the column name
+                    string columnName = clickedColumn.Name;
+                    switch (columnName)
+                    {
+                        case "Path":
+                            FileUtilities.Start(new DirectoryInfo(cellValue));
+                            break;
+                        case "File":
+                            FileUtilities.OpenFolderHighlightFile(new FileInfo(cellValue));
+                            break;
+
+                        default:
+                            MessageBox.Show($"Value is: {cellValue}", columnName);
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", ex.GetType().Name);
+            }
+
+        }
+
+
         internal static void ShowDataTableDialog_SelectionChanged(object sender, EventArgs args)
         {
             DataGridView temp = sender as DataGridView;
@@ -195,22 +239,12 @@ dgv.DisableResizing;*/
                 }
 
                 if (table != null)
-                {
-                    SaveFileDialog saveFileDialog = new SaveFileDialog();
-                    saveFileDialog.FileName = table.TableName + ".xml";
-                    if (saveFileDialog.ShowDialog() == DialogResult.OK && saveFileDialog.FileName != "")
-                    {
-                        table.DataSet.WriteXml(saveFileDialog.FileName);
-                        FileUtilities.OpenFolderHighlightFile(new FileInfo(saveFileDialog.FileName));
-                    }
-
-                    // Utilities.FileUtilities.ExportToFormats(textBoxQuery.Text);
+                {  var path= FileUtilities.ExportToFormats(table); 
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-
+                MessageBox.Show(ex.Message); 
             }
             e.Handled = true;
         }

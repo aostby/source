@@ -1,6 +1,4 @@
-﻿using com.sun.org.apache.bcel.@internal.generic;
-using java.time;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Controller;
 using Kolibri.net.Common.FormUtilities.Forms;
@@ -13,6 +11,7 @@ using OMDbApiNet.Model;
 using System.Collections;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
 using TMDbLib.Objects.General;
 
@@ -101,14 +100,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 string searhText = tbSearch.Text;
                 string genre = comboBoxGenre.Text;
                 string year = comboBoxYear.Text;
-                if(year=="All")year = string.Empty;
+                if (year == "All") year = string.Empty;
 
                 if (string.IsNullOrWhiteSpace(searhText + genre + year))
                 {
                     labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - No items found for this search. Check your parameters";
                     return;
                 }
-              
+
                 if (!string.IsNullOrEmpty(genre))
                 {
                     ret = _LITEDB.FindItemByGenreNew(genre).ToList();
@@ -168,9 +167,9 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 {
                     ret = _LITEDB.FindItemByTitle(searhText).ToList();
                 }
-                
 
-                    var gen = (ret != null) ? ret.ToList() : null;
+
+                var gen = (ret != null) ? ret.ToList() : null;
 
                 if (ret != null && ret.Count() > 0)
                 {
@@ -179,7 +178,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                     else if (radioButtonYear.Checked)
                         ret = checkBoxDecending.Checked ? ret.OrderByDescending(s => s.Year).ToList() : ret.OrderBy(s => s.Year).ToList();
                     labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - Number of items found for this search: searhText: {searhText} + genre: {genre} + year: {year} = {ret.Count()}";
-                    DisplayHtml(ret, $"{searhText} {genre} {year}");
+                    DisplayHtml(checkBoxPoster.Checked, ret, $"{searhText} {genre} {year}");
                     buttonVisualize.Tag = ret;
                     buttonVisualize.Enabled = buttonVisualize.Tag != null && ret.Count() > 0;
                 }
@@ -196,7 +195,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             }
         }
 
-        private void DisplayHtml(IEnumerable<Item> liste, string title = null)
+        private async void DisplayHtml(bool poster, IEnumerable<Item> liste, string title = null)
         {
             try
             {
@@ -208,15 +207,34 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 {
                     List<string> cols = null;
                     if (checkBoxPrintable.Checked)
-                    { cols = new List<string>() { "Title", "ImdbRating", "Year","Type", "Runtime", "Plot", "ImdbId" }; } 
+                    { cols = new List<string>() { "Title", "ImdbRating", "Year", "Type", "Runtime", "Plot", "ImdbId" }; }
 
-                    var html = CreateHTML(liste, cols, title);
+                    var html = CreateHTML(poster, liste, cols, title);
                     FileUtilities.WriteStringToFile(html, _htmlFile.FullName, Encoding.UTF8);
                     splitContainer1.Panel2.Controls.Clear();
 
-                    WebBrowser browser = new WebBrowser();
+                    //Microsoft.Web.WebView2.WinForms.WebView2 browser = new Microsoft.Web.WebView2.WinForms.WebView2();
+                    //Uri url = new Uri(_htmlFile.FullName);  
+                    //browser.Source =  url;
 
-                    browser.Navigate(_htmlFile.FullName);
+                    var browser = new Microsoft.Web.WebView2.WinForms.WebView2();
+                    browser.Dock = DockStyle.Fill;
+                    splitContainer1.Panel2.Controls.Add(browser);
+
+                    await browser.EnsureCoreWebView2Async();
+
+                    browser.CoreWebView2.NewWindowRequested += (sender, args) =>
+                    {
+                        args.Handled = true;
+
+                        Process.Start(new ProcessStartInfo(args.Uri)
+                        {
+                            UseShellExecute = true
+                        });
+                    };
+
+                    browser.Source = new Uri(_htmlFile.FullName);
+
 
                     browser.Dock = DockStyle.Fill;
                     splitContainer1.Panel2.Controls.Add(browser);
@@ -234,7 +252,28 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             }
         }
 
-        private string CreateHTML(IEnumerable<Item> items, List<string> cols = null, string title = null)
+        private string CreateHTML(bool poster, IEnumerable<Item> items, List<string> cols = null, string title = null)
+        {
+            string ret = string.Empty;
+            string display = !poster ? "ItemGridView" : "ItemPosterView";
+            try
+            {
+                string json = items.ToJson();
+
+                string template = File.ReadAllText($@"TEMPLATES\HTML\{display}.html");
+                template = template.Replace(@"__DATA__", json);
+                template = template.Replace(@"__TITLE__", $"{title} ({items.Count()} items)");
+                ret = template;
+
+            }
+            catch (Exception ex)
+            {
+                ret = CreateHTML_safe(items, cols, title);
+            }
+            return ret;
+        }
+
+        private string CreateHTML_safe(IEnumerable<Item> items, List<string> cols = null, string title = null)
         {
             //_imageCache.InitImages(_LITEDB);
 
@@ -314,7 +353,7 @@ img:hover{{transform: scale(1.5)}}
                 foreach (DataRow row in dt.Rows)
                 {
                     html.Append($@"<div id=""{row["Type"]}"" style=""display:block"">");
-                    Item movie = _LITEDB.FindItemByTitle($"{row["Title"]}", $"{row["Year"]}".ToInt().GetValueOrDefault());
+                    Item movie =    _LITEDB.FindItemByTitle($"{row["Title"]}", $"{row["Year"]}".ToInt().GetValueOrDefault()).GetAwaiter().GetResult();
 
                     html.Append($"<tr>");
                     foreach (DataColumn item in row.Table.Columns)
@@ -335,7 +374,7 @@ img:hover{{transform: scale(1.5)}}
 
                                 if (movie != null)
                                 {
-                                    var file = _LITEDB.FindFile(movie.ImdbId).GetAwaiter().GetResult();
+                                    var file = _LITEDB.FindFileAsync(movie.ImdbId).GetAwaiter().GetResult();
                                     if (file != null)
                                     {
                                         info = new FileInfo(file.FullName);
@@ -438,7 +477,7 @@ img:hover{{transform: scale(1.5)}}
             }
         }
 
-        private void buttonVisualize_Click(object sender, EventArgs e)
+        private async void buttonVisualize_Click(object sender, EventArgs e)
         {
             splitContainer1.Panel2.Controls.Clear();
             try
@@ -446,7 +485,7 @@ img:hover{{transform: scale(1.5)}}
                 List<Item> items = buttonVisualize.Tag as List<Item>;
                 DataTable resultTable = DataSetUtilities.ConvertToDataTable(items);
                 DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false));
-                Form form = dgvtrls.GetMulitMediaDBDataGridViewAsForm(resultTable);
+                Form form = await dgvtrls.GetMulitMediaDBDataGridViewAsForm(resultTable);
                 splitContainer1.Panel2.Controls.Add(form);
 
                 form.Show();
@@ -461,14 +500,14 @@ img:hover{{transform: scale(1.5)}}
         {
             try
             {
-           DirectoryInfo dirInfo=     FolderUtilities.LetOppMappe(_lastPath);
+                        DirectoryInfo dirInfo = FolderUtilities.LetOppMappe(_lastPath);
                 if (dirInfo == null || !dirInfo.Exists)
-                { return; };
-                _lastPath = dirInfo.FullName;   
+                { return; }
+                _lastPath = dirInfo.FullName;
 
-            var     ret = _LITEDB.FindAllItems().Result.ToList();
+                var ret = _LITEDB.FindAllItems().Result.ToList();
 
-                ret = ret.Where(d => d.TomatoUrl.StartsWith(dirInfo.FullName, StringComparison.OrdinalIgnoreCase)).ToList();
+                ret = ret.Where(d => !string.IsNullOrWhiteSpace(d.TomatoUrl) && d.TomatoUrl.StartsWith(dirInfo.FullName, StringComparison.OrdinalIgnoreCase)).ToList();
                 if (ret != null && ret.Count() > 0)
                 {
                     if (radioButtonRating.Checked)
@@ -476,7 +515,7 @@ img:hover{{transform: scale(1.5)}}
                     else if (radioButtonYear.Checked)
                         ret = checkBoxDecending.Checked ? ret.OrderByDescending(s => s.Year).ToList() : ret.OrderBy(s => s.Year).ToList();
                     labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - Items found for this search: {dirInfo.Name}";
-                    DisplayHtml(ret, $"{labelInfo.Text}");
+                    DisplayHtml(!checkBoxPrintable.Checked, ret, $"{labelInfo.Text}");
                     buttonVisualize.Tag = ret;
                     buttonVisualize.Enabled = buttonVisualize.Tag != null && ret.Count() > 0;
                 }

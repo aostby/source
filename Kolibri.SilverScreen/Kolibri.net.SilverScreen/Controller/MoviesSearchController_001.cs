@@ -169,7 +169,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 try
                 {
                     if (!string.IsNullOrEmpty(item.ImdbId) && File.Exists(item.TomatoUrl))
-                        _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                        await   _liteDB.UpsertAsync(new FileItem(item.ImdbId, item.TomatoUrl));
                 }
                 catch (Exception ex)
                 {
@@ -197,15 +197,15 @@ namespace Kolibri.net.SilverScreen.Controller
             else
             {
                 //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
-                var test = _liteDB.FindByFileName(file);
+                var test = await _liteDB.FindByFileNameAsync(file);
                 if (test != null && _updateTriState == null||_updateTriState==false)
                 {
-                    movie = _liteDB.FindItem(test.ImdbId);
+                    movie = await _liteDB.FindItemAsync(test.ImdbId);
                     if (movie != null)
                     {
                         movie.TomatoUrl = file.FullName;
-                        _liteDB.Update(movie);
-                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                        _liteDB.UpdateAsync(movie);
+                        await _liteDB.UpsertAsync(new FileItem(movie.ImdbId, file.FullName));
                         SetStatusLabelText($"{movie.ImdbId} Lokal eksisterende {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
                         return movie;
                     }
@@ -225,23 +225,23 @@ namespace Kolibri.net.SilverScreen.Controller
                                 Movie tmdbMovie = _TMDB.GetMovie(tLibList[0].Id);
                                 if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                                 {
-                                    movie = _liteDB.FindItem(tmdbMovie.ImdbId);
+                                    movie = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
                                     if (movie == null)
-                                        movie = _OMDB.GetMovieByIMDBid(tmdbMovie.ImdbId);
+                                        movie = await _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
 
                                     if (movie != null)
                                     {
                                         movie.TomatoUrl = file.FullName;
-                                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
-                                        _liteDB.Upsert(movie);
-                                        SetStatusLabelText($"{movie.ImdbId} Fant via TMDB {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                                        await _liteDB.UpsertAsync(new FileItem(movie.ImdbId, file.FullName));
+                                        await _liteDB.UpsertAsync(movie);
+                                        SetStatusLabelText($"{movie.ImdbId} Fant via [{nameof(_TMDB)}] {movie.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
                                         return movie;
                                     }
                                 }
                             }
                             catch (Exception ex)
                             {
-                                movie = _TMDB.GetMovie(tLibList[0]);
+                                movie = await _TMDB.GetMovieAsync(tLibList[0]);
                             }
                         }
                         else
@@ -260,18 +260,18 @@ namespace Kolibri.net.SilverScreen.Controller
                                         if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                                             if (_updateTriState == null)
                                             {
-                                                movie = _liteDB.FindItem(tmdbMovie.ImdbId);
+                                                movie = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
                                             }
                                         if (movie == null)
                                         {
-                                            movie = _OMDB.GetMovieByIMDBid(tmdbMovie.ImdbId);
+                                            movie = await _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
                                         }
                                         if (movie != null)
                                         {
 
                                             movie.TomatoUrl = file.FullName;
-                                            _liteDB.Upsert(movie);
-                                            _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                                            await _liteDB.UpsertAsync(movie);
+                                            await _liteDB.UpsertAsync(new FileItem(movie.ImdbId, file.FullName));
                                             return movie;
                                         }
                                         else { }
@@ -291,12 +291,12 @@ namespace Kolibri.net.SilverScreen.Controller
                 //Sjekk om tittelen finnes i LiteDB som tittel/år
                 if (movie == null && _updateTriState == false)
                 {
-                    movie = _liteDB.FindItemByTitle(title, year);
+                    movie = await _liteDB.FindItemByTitle(title, year);
                     if (movie != null)
                     {
                         movie.TomatoUrl = file.FullName;
-                        _liteDB.Update(movie);
-                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                        _liteDB.UpdateAsync(movie);
+                        await _liteDB.UpsertAsync(new FileItem(movie.ImdbId, file.FullName));
                         return movie;
                     }
                 }
@@ -311,8 +311,8 @@ namespace Kolibri.net.SilverScreen.Controller
                     if (movie != null)
                     {
                         movie.TomatoUrl = file.FullName;
-                        _liteDB.Upsert(movie);
-                        _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                        await _liteDB.UpsertAsync(movie);
+                        await _liteDB.UpsertAsync(new FileItem(movie.ImdbId, file.FullName));
                         return movie;
                     }
                     else
@@ -330,8 +330,8 @@ namespace Kolibri.net.SilverScreen.Controller
                         {
 
                             movie.TomatoUrl = file.FullName;
-                            _liteDB.Update(movie);
-                            _liteDB.Upsert(new FileItem(movie.ImdbId, file.FullName));
+                            _liteDB.UpdateAsync(movie);
+                            await _liteDB.UpsertAsync(new FileItem(movie.ImdbId, file.FullName));
                         }
                     }
                     catch (Exception)

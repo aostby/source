@@ -1,4 +1,5 @@
 ﻿using com.sun.xml.@internal.bind.v2.model.core;
+using HtmlAgilityPack;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
@@ -6,11 +7,15 @@ using LiteDB;
 using OMDbApiNet.Model;
 using sun.security.util;
 using sun.util.resources.cldr.zh;
+using System;
 using System.Collections;
 using System.Data;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
+using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 
 namespace Kolibri.net.Common.Dal.Controller
@@ -315,6 +320,73 @@ namespace Kolibri.net.Common.Dal.Controller
             {
             }
         }
+
+        public async Task< string> GetPosterUrlAsync(string imdbId)
+        {
+            string ret = string.Empty;
+            try
+            {
+
+                Uri url = new Uri($"https://imdb.iamidiotareyoutoo.com/photo/{imdbId}");
+
+                string posterUrl = await GetImdbPoster(imdbId);
+
+                if (!string.IsNullOrEmpty(posterUrl))
+                {       Console.WriteLine("Poster URL: " + posterUrl);
+                ret = posterUrl;
+            }  else
+                    Console.WriteLine("Poster not found.");
+             
+            }
+            catch (Exception)
+            {
+            }
+            return ret; 
+        }
+
+        static async Task<string> GetImdbPoster(string imdbId)
+        {
+            string url = $"https://www.imdb.com/title/{imdbId}/";
+
+            var handler = new HttpClientHandler
+            {
+                AutomaticDecompression =
+                    System.Net.DecompressionMethods.GZip |
+                    System.Net.DecompressionMethods.Deflate
+            };
+
+            using var client = new HttpClient(handler);
+
+            // VERY IMPORTANT: IMDb blocks default .NET user agents
+            client.DefaultRequestHeaders.Add("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+            client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+
+            var html = await client.GetStringAsync(url);
+
+            var doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(html);
+
+            // IMDb poster selector (current layout)
+            var imgNodes = doc.DocumentNode
+            //    .SelectSingleNode("//img[contains(@data-testid,'hero-media__poster')]");
+            .SelectNodes("//img[contains(@src,'m.media-amazon.com')]");
+            var imgNode = imgNodes.FirstOrDefault();
+            if (imgNode == null)
+                return null;
+
+            
+            try
+            {
+                var lastAttr = imgNode.Attributes["srcSet"].Value.Split(",").LastOrDefault(x => x.Contains("amazon"));
+                return lastAttr;
+            }
+            catch (Exception)
+            { return imgNode.GetAttributeValue("src", null); 
+            }  
+        }
+
     }
 
     internal class ImagePosterDBController

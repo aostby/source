@@ -274,7 +274,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // 
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItemDelete, toolStripMenuItemSetIMDBTagOnFolder });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(194, 48);
+            contextMenuStrip1.Size = new Size(194, 70);
             // 
             // toolStripMenuItemDelete
             // 

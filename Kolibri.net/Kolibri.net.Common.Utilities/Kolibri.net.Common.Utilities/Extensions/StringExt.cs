@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Kolibri.net.Common.Utilities.Extensions
 {
@@ -44,6 +45,23 @@ namespace Kolibri.net.Common.Utilities.Extensions
             return text;
         }
 
+        /// <summary>
+        /// Converts any C# object to a JSON string.
+        /// </summary>
+        /// <typeparam name="T">The type of the object.</typeparam>
+        /// <param name="obj">The object to serialize.</param>
+        /// <returns>A JSON string.</returns>
+        public static string ToJson<T>(this T obj)
+        {
+            // You can customize options here, e.g., for pretty printing:
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            return System.Text.Json.  JsonSerializer.Serialize(obj, options);
+        }
+
         public static string JsonPrettyPrint(this string jsonString)
         {
             // Parse the JSON string into a JToken
@@ -57,5 +75,6 @@ namespace Kolibri.net.Common.Utilities.Extensions
         {
             return  StringUtilities.FirstToUpper(str);
         }
+
     }
 }

@@ -52,7 +52,7 @@ namespace Kolibri.net.SilverScreen.Forms
             Init(item);
         }
 
-        private void Init()
+        private async void Init()
         {
 
             //List < DataTable > datatableList = new List<DataTable>();
@@ -81,7 +81,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     table.Columns.Add(newColumn);
                 }
 
-                var form = dgvtrls.GetMulitMediaDBDataGridViewAsForm(SeriesUtilities.SortAndFormatSeriesTable(table));
+                var form = await dgvtrls.GetMulitMediaDBDataGridViewAsForm(SeriesUtilities.SortAndFormatSeriesTable(table));
                 
                 tabPage.Controls.Add(form.Controls[0]);
                 tabControlSeasons.TabPages.Add(tabPage);
@@ -325,7 +325,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else if (_seasonEpisode != null)
                     {
-                        var t = await _liteDB.FindFile(_seasonEpisode.ImdbId);
+                        var t = await _liteDB.FindFileAsync(_seasonEpisode.ImdbId);
                         path = t.FullName;
                     }
                 
@@ -516,7 +516,7 @@ namespace Kolibri.net.SilverScreen.Forms
             if (res == DialogResult.OK)
             {
                 _liteDB.Update(_seasonEpisode);
-                _liteDB.Update(_itemPath);
+                _liteDB.UpdateAsync(_itemPath);
                 //Init(_seasonEpisode);
                 throw new NotImplementedException();
             }

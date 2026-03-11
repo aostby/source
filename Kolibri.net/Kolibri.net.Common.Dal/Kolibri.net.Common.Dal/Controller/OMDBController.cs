@@ -116,15 +116,13 @@ namespace Kolibri.net.Common.Dal.Controller
             return ret;
         }
         /// <summary>
-        /// Hennt en film fra db. Dersom DB ikke har filmen, kan den hentes ut vha OMDB klient. Insert setter filmen inn i DB om den blir funnet online
+        /// Hent en film fra db. Dersom DB ikke har filmen, kan den hentes ut vha OMDB klient. Insert setter filmen inn i DB om den blir funnet online
         /// </summary>
         /// <param name="imdbId">IMDB id for filmen</param>
         /// <param name="insert"> Insert setter filmen inn i DB om den blir funnet online</param>
         /// <returns></returns>
-        public Item GetMovieByIMDBid(string imdbId, bool insert = false)
-        {
-
-            
+        public async Task<Item> GetMovieByIMDBidAsync(string imdbId, bool insert = false)
+        {  
             Item ret = null;
             try
             {
@@ -133,7 +131,7 @@ namespace Kolibri.net.Common.Dal.Controller
 
                     if (_liteDB != null)
                     {
-                        ret = _liteDB.FindItem(imdbId);
+                        ret = await _liteDB.FindItemAsync(imdbId);
                         if (ret == null)
                             ret = _client.GetItemById(imdbId);
                     }
@@ -145,7 +143,7 @@ namespace Kolibri.net.Common.Dal.Controller
                             if (insert && ret != null && _liteDB != null)
                             {
                                 string title = ret.Title;
-                                _liteDB.Upsert(ret);
+                                await _liteDB.UpsertAsync(ret);
                             }
                         }
                         catch (Exception ex)

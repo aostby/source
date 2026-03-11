@@ -106,7 +106,10 @@ namespace Kolibri.SilverScreen.Forms
                 Form newMDIChild = null;
                 if (sender.Equals(movieslocalToolStripMenuItem))
                 {
-                    newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
+                    if (MessageBox.Show("Want new form?", "DEVELOP", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        newMDIChild = new MyMoviesForm(_userSettings);
+                    else
+                        newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
                 }
                 else if (sender.Equals(serieslocalToolStripMenuItem))
                 {
@@ -279,8 +282,7 @@ namespace Kolibri.SilverScreen.Forms
         }
 
         private async void filmerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
+        { 
             var dInfo = FileUtilities.LetOppMappe(_userSettings.UserFilePaths.MoviesSourcePath, $"Let opp mappe ({Kolibri.net.SilverScreen.Controls.Constants.MultimediaType.Movies})");
             if (dInfo != null && dInfo.Exists)
             {
@@ -335,7 +337,7 @@ namespace Kolibri.SilverScreen.Forms
 
         private void removeEmptyDirectoriesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-         
+
             try
             {
                 DirectoryInfo folder = FileUtilities.LetOppMappe(null, "Let opp mappen med tomme undermapper");
@@ -352,6 +354,8 @@ namespace Kolibri.SilverScreen.Forms
                 SetStatusLabel($"Exception occured when trying to remove directories from folder.");
             }
         }
+
+       
     }
-     
+
 }

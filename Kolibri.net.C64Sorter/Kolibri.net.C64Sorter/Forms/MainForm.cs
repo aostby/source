@@ -711,7 +711,7 @@ namespace Kolibri.net.C64Sorter
                     {
                         var listing = FTPControllerC64.GetDirectoryListing($"ftp://{_ue2logon.Hostname}/", _ue2logon.Username, _ue2logon.Password);
                         var tmp = listing.FindAll(x => x.Name.StartsWith("Temp", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                        if (tmp != null&&fileInfo!=null)
+                        if (tmp != null && fileInfo != null)
                         {
                             var ftpUrl = _client.FtpUpload(_ue2logon.Hostname, fileInfo.FullName);
                             SetStatusLabel($"{fileInfo.Name} uploaded to {ftpUrl}");
@@ -959,6 +959,20 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
             }
         }
 
-
+        private void setCommodorePrintPathToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var newMDIChild = new FTPTreeviewForm(_ue2logon);
+                if (newMDIChild.ShowDialog() == DialogResult.OK)
+                {
+                    Init();
+                }
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
+            }
+        }
     }
 }

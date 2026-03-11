@@ -823,7 +823,7 @@ namespace Kolibri.net.Common.Utilities
             }
 
             TimeSpan duration = TimeSpan.FromMinutes(totalMinutes);
-            return  string.Format("{0:%d} days, {0:%h} hours, {0:%m} minutes", duration);
+            return  string.Format("{0:%d} days, {0:%h} hours, {0:%m} minutes", duration).Replace("0 days, ", string.Empty);
 
         }
 

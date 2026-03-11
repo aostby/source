@@ -136,7 +136,7 @@ namespace Kolibri.net.SilverScreen.Forms
                                 else
                                 {
                                     //sublist.Add(srch);
-                                    var test = _liteDB.FindByFileName(new FileInfo(srch));
+                                    var test = _liteDB.FindByFileNameAsync(new FileInfo(srch));
                                     if (test == null)
                                     {
                                         sublist.Add($"[NULL] {MovieUtilites.GetMovieTitle(srch)} -  The file is not found by LiteDB search for FilteItems using: {srch}");
@@ -441,11 +441,11 @@ namespace Kolibri.net.SilverScreen.Forms
                 Init();
             }
         }
-        private void ShowGridView(DataTable tableItem)
+        private async void ShowGridView(DataTable tableItem)
         {
             try
             {
-                Form view = _dgvController.GetMulitMediaDBDataGridViewAsForm(tableItem);
+                Form view = await _dgvController.GetMulitMediaDBDataGridViewAsForm(tableItem);
                 (view.Controls[0] as DataGridView).SelectionChanged += DataGridView_LocalSelectionChanged;
                 SetForm(view, splitContainer2.Panel1);
 
@@ -456,7 +456,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     case MultimediaType.movie:
                     case MultimediaType.Movies:
 
-                        var movie = _liteDB.FindItem(tableItem.Rows[0]["ImdbId"].ToString());
+                        var movie = _liteDB.FindItemAsync(tableItem.Rows[0]["ImdbId"].ToString());
                         SetForm(movie, splitContainer2.Panel2);
                         break;
                     case MultimediaType.Series:
@@ -567,14 +567,23 @@ namespace Kolibri.net.SilverScreen.Forms
                 SetLabelText(ex.Message);
             }
         }
-        private void SetLabelText(string text)
-        {
+        private void SetLabelText(string message)
+        {   
             try
             {
-                toolStripStatusLabelStatus.GetCurrentParent().BringToFront();
-                toolStripStatusLabelStatus.Text = text;
+                Task.Delay(1).GetAwaiter().GetResult();
+                if (InvokeRequired)
+                    Invoke(new System.Windows.Forms.MethodInvoker(
+                        delegate { SetLabelText(message); }
+                    ));
+                else
+                {
+                    toolStripStatusLabelStatus.Text = message;
+                    Thread.Sleep(3);
+                }
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            { }
         }
 
         private void radioButtonFilter_CheckedChanged(object sender, EventArgs e)

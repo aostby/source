@@ -85,9 +85,9 @@ namespace Kolibri.net.SilverScreen.Forms
             label6.Location = new Point(12, 515);
             label6.Margin = new Padding(4, 0, 4, 0);
             label6.Name = "label6";
-            label6.Size = new Size(41, 15);
+            label6.Size = new Size(165, 15);
             label6.TabIndex = 34;
-            label6.Text = "Actors";
+            label6.Text = "Actors (double click for more)";
             // 
             // label5
             // 
@@ -141,7 +141,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // tbPlot
             // 
-            tbPlot.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            tbPlot.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
             tbPlot.Location = new Point(12, 623);
             tbPlot.Margin = new Padding(4, 3, 4, 3);
             tbPlot.Name = "tbPlot";

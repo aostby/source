@@ -57,17 +57,17 @@ namespace Kolibri.net.SilverScreen.IMDBForms
        
         }
 
-        private void Init(string imdbId=null) {
+        private async void Init(string imdbId=null) {
             linkLabelOpenFilePath.Visible = false;
             if (!string.IsNullOrWhiteSpace(imdbId))
             { 
-               var tmp =  _liteDB.FindFile(imdbId);
+               var tmp =  _liteDB.FindFileAsync(imdbId);
                 if (tmp != null) { linkLabelOpenFilePath.Tag = tmp.GetAwaiter().GetResult().FullName; linkLabelOpenFilePath.Visible = true;
 
                     this.Text = $"{this.Text} - {Path.GetFileNameWithoutExtension(tmp.GetAwaiter().GetResult().FullName)}";
                 }
                 else {
-                   var tmpM=  _liteDB.FindItem(imdbId);
+                   var tmpM= await _liteDB.FindItemAsync(imdbId);
                     if (tmpM == null)
                     {
                         this.BackColor = Color.LightSalmon;

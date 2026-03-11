@@ -1,21 +1,10 @@
-﻿
-
-using com.sun.security.ntlm;
-using Kolibri.net.C64Sorter.Controllers;
+﻿using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
-using System;
-using System.Collections.Generic;
+using Kolibri.net.Common.Utilities.Extensions;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Kolibri.net.C64Sorter.Forms
 {
@@ -27,8 +16,9 @@ namespace Kolibri.net.C64Sorter.Forms
         private string _FtpRootUrl = string.Empty;
         private string _hostname = string.Empty;
         private UE2LogOn _ue2logon = null;
+ 
 
-        [Obsolete("Use constructor with UE2LogOn instead",true)]
+        [Obsolete("Use constructor with UE2LogOn instead", true)]
         public FTPTreeviewForm(string hostname)
         {
             InitializeComponent();
@@ -57,7 +47,7 @@ namespace Kolibri.net.C64Sorter.Forms
             treeView1.Nodes.Add(rootNode);
             treeView1.ImageList = imageListIcons;
             this.treeView1.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView1_BeforeExpand);
-            this.Text = $"Host:{_FtpRootUrl} User: {_FtpUser}";
+            this.Text = $"Host:{_FtpRootUrl} User: {_FtpUser}    (Right click root to refresh)";
             SetStatusLabel(this.Text);
 
 
@@ -65,7 +55,7 @@ namespace Kolibri.net.C64Sorter.Forms
             {
                 var defaultIcon = Icons.GetFolderIcon();
                 imageListIcons.Images.Add("default", defaultIcon);
-                imageListIcons.Images.Add(nameof(MessageBoxIcon.Question).ToLower(), SystemIcons.Question);  
+                imageListIcons.Images.Add(nameof(MessageBoxIcon.Question).ToLower(), SystemIcons.Question);
                 var fileList = FileUtilities.GetFiles(new DirectoryInfo(@".\Resources\"), "*.ico", false);
                 foreach (var file in fileList)
                 {
@@ -104,7 +94,7 @@ namespace Kolibri.net.C64Sorter.Forms
             return directoryNode;
         }
 
-    
+
         private void treeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             TreeNode expandingNode = e.Node;
@@ -114,7 +104,7 @@ namespace Kolibri.net.C64Sorter.Forms
             {
                 expandingNode.Nodes.Clear(); // Clear the dummy node
 
-                string currentPath = ( expandingNode.Tag as FtpItemDetail).FullPath;
+                string currentPath = (expandingNode.Tag as FtpItemDetail).FullPath;
                 var items = Controllers.FTPControllerC64.GetDirectoryListing(currentPath, _FtpUser, _FtpPass);
 
                 // Add directories first, then files
@@ -136,7 +126,7 @@ namespace Kolibri.net.C64Sorter.Forms
                     }
                     else
                     {
-                        key =nameof(MessageBoxIcon.Question).ToLower();
+                        key = nameof(MessageBoxIcon.Question).ToLower();
                         fileNode.ImageKey = key;
                         fileNode.SelectedImageKey = fileNode.ImageKey;
                     }
@@ -187,7 +177,8 @@ namespace Kolibri.net.C64Sorter.Forms
                             client.SendCommand("RUN");
                             return;
                         }
-                        else if (test.Contains("cfg", StringComparison.OrdinalIgnoreCase)) {
+                        else if (test.Contains("cfg", StringComparison.OrdinalIgnoreCase))
+                        {
                             Uri tst = new Uri((clickedNode.Tag as FtpItemDetail).FullPath);
                             var res = MessageBox.Show($@"So, now whats weird, you need to go to {Environment.NewLine}{tst}{Environment.NewLine} and run the .cfg file. 
 Not only that, you need to load it from flash after that. Want to load for flash after you've loaded? Hit OK.
@@ -205,11 +196,11 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
                             return;
                         }
 
-                            DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
+                        DiskImageType type = (DiskImageType)Enum.Parse(typeof(DiskImageType), test.ToUpper());
                         url = ApiUrls.MountImageOnDevice(_hostname, "a", clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/"), type, DiskMode.ReadWrite);
                         url = url.Replace($"http://{_hostname}/", string.Empty);
                         url = $"v1/drives/a:mount?image={clickedNode.FullPath.Replace(_FtpRootUrl, string.Empty).Replace("\\", "/")}";
-                     
+
                         await client.MachineReset();
                         await client.MachineReboot();
                         Thread.Sleep(3000);
@@ -252,6 +243,37 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
                 }
             }
 
+        }
+
+        private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            try
+            {
+                if (e.Button == MouseButtons.Right && e.Node != null && e.Node == treeView1.Nodes[0])
+                { string text = e.Node.Text;
+                    treeView1.Nodes.Clear();
+                    Init();
+                    SetStatusLabel($"Reinitializing {text}");
+                }
+                else if (e.Button == MouseButtons.Right && e.Node != null && (e.Node.Tag as FtpItemDetail)!=null && (e.Node.Tag as FtpItemDetail).IsDirectory)
+                {
+                    string text =(e.Node.Tag as FtpItemDetail)?.FullPath;
+                   
+
+                    var res= MessageBox.Show($"{text}", "Do you want this to be set as your PrintPath?", MessageBoxButtons.YesNo);
+                    if (res == DialogResult.Yes) {
+                        _ue2logon.FTPPrintPath = text;
+                        string filename =   UltmateEliteClient.AppsettingsPath.FullName;
+                        File.WriteAllText(filename, _ue2logon.JsonSerializeObject());
+                        this.DialogResult = DialogResult.OK;
+                    }
+                    
+                }
+            }
+            catch (Exception ftpex)
+            {
+                SetStatusLabel(ftpex.Message);
+            }
         }
     }
 }

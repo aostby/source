@@ -46,7 +46,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
 
 
-        private void Init()
+        private async void Init()
         {
 
             this.Cursor = Cursors.WaitCursor;
@@ -90,7 +90,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     string tit = SeriesUtilities.GetSeriesTitle(item);
                     Item omdb = null;
                     if (item.Contains("{"))
-                        omdb = _liteDB.FindItem(item.ImdbIdFromDirectoryName());
+                        omdb = await _liteDB.FindItemAsync(item.ImdbIdFromDirectoryName());
                     if (omdb == null) { omdb = _liteDB.FindItemByTitle(tit).FirstOrDefault(); }
 
 
@@ -230,7 +230,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
             try
             {
-                var yearItem = _liteDB.FindItem(textBoxSearchValue.Text);
+                var yearItem = _liteDB.FindItemAsync(textBoxSearchValue.Text);
                 string year = "";
                 if (!string.IsNullOrWhiteSpace(textBoxYearValue.Text)) { year = textBoxYearValue.Text; }
                 IMDBForms.MovieForm form = new IMDBForms.MovieForm(_settings, new FileInfo(textBoxSearchValue.Text), year);
@@ -263,7 +263,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             buttonImdbIdSearch.Enabled = textBoxSearchValue.Text.StartsWith("tt", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        private void buttonImdbIdSearch_Click(object sender, EventArgs e)
+        private async void buttonImdbIdSearch_Click(object sender, EventArgs e)
         {
             try
             {
@@ -286,7 +286,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     }
                     else
                     {
-                        if (_liteDB.Upsert(item))
+                        if (await _liteDB.UpsertAsync(item))
                         {
                             string text = $"Oppdaterte lokal database med {item.Title} - {item.ImdbId} ({item.Year})";
                             SetStatusLabelText(text);
@@ -369,14 +369,14 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             }
         }
 
-        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        private async void dataGridView1_SelectionChanged(object sender, EventArgs e)
         {
             labelPath.Text = "Path: ";
             try
             {
                 if (dataGridView1.Focused)
                 {
-                    var item = _liteDB.FindItem(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
+                    var item = await _liteDB.FindItemAsync(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
                     pictureBoxCurrent.Image = (Bitmap)ImageUtilities.GetImageFromUrl(item.Poster);
                     labelPath.Text = item.TomatoUrl.ToString();
                 }
@@ -398,7 +398,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 textBoxYearValue.Text = string.Empty;
                 if (sender.Equals(toolStripMenuItemNavn))
                 {
-                    var item = _liteDB.FindItem(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
+                    var item = await _liteDB.FindItemAsync(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
                     if (item != null)
                     {
                         textBoxSearchValue.Text = item.Title;
@@ -429,12 +429,12 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                                     var destination = dirInfo.FullName + $" {{imdb-{ret}}}";
                                     Directory.Move(dirInfo.FullName, destination);
                                     string tit = dataGridView1.SelectedRows[0].Cells["Title"].Value.ToString();
-                                    var item = _liteDB.FindItem(tit);
+                                    var item = await _liteDB.FindItemAsync(tit);
                                     if (item != null)
                                     {
                                         item.TomatoUrl = destination;
-                                        _liteDB.Upsert(item);
-                                        _liteDB.Upsert(new FileItem(item.ImdbId, item.TomatoUrl));
+                                        await _liteDB.UpsertAsync(item);
+                                        await _liteDB.UpsertAsync(new FileItem(item.ImdbId, item.TomatoUrl));
                                     }
                                 }
 
@@ -452,8 +452,8 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     {
                         var ktv = test[0];
                         ktv.Item.TomatoUrl = dirInfo.FullName;
-                        _liteDB.Upsert(ktv.Item);
-                        _liteDB.Upsert(new FileItem(ktv.Item.ImdbId, ktv.Item.TomatoUrl));
+                        await _liteDB.UpsertAsync(ktv.Item);
+                        await _liteDB.UpsertAsync(new FileItem(ktv.Item.ImdbId, ktv.Item.TomatoUrl));
 
                     }
                     else
@@ -472,7 +472,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
         }
 
-        private void buttonExecuteChange_Click(object sender, EventArgs e)
+        private async void buttonExecuteChange_Click(object sender, EventArgs e)
         {
             StringBuilder builder = new StringBuilder();
             try
@@ -487,16 +487,16 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     {
                         fItem.FullName = fItem.FullName.Replace(textBox1.Text, textBox2.Text);
                         fItem.ItemFileInfo.Refresh();
-                        _liteDB.Upsert(fItem);
+                        await _liteDB.UpsertAsync(fItem);
                         if (Directory.Exists(fItem.FullName))
                         {
-                            Item item = _liteDB.FindItem(fItem.ImdbId);
+                            Item item = await _liteDB.FindItemAsync(fItem.ImdbId);
                             if (item != null && item.Type == "series")
                             {
                                 SetStatusLabelText($"Updating path for {fItem.FullName}");
 
                                 item.TomatoUrl = fItem.ItemFileInfo.FullName;
-                                _liteDB.Upsert(item);
+                                await _liteDB.UpsertAsync(item);
                             }
                         }
 
@@ -526,7 +526,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             }
         }
 
-        private void buttonFindAndUpdateByIMDBID_Click(object sender, EventArgs e)
+        private async void buttonFindAndUpdateByIMDBID_Click(object sender, EventArgs e)
         {
             string whatsup = string.Empty;
             StringBuilder builder = new StringBuilder();
@@ -539,11 +539,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     whatsup = string.Empty;
                     if (folder.Contains($"-tt")&&folder.Contains("{"))
                     {
-                        whatsup = folder;
-
-                        if (folder.Contains("Game")) {
-                            string watch = "out";
-                        }
+                        whatsup = folder; 
 
                         string imdbid = folder.Substring(0,folder.IndexOf("}")).Split("-").LastOrDefault();
                         
@@ -551,14 +547,15 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         
                        
                         if (Directory.Exists(fItem.FullName))
-                        { _liteDB.Upsert(fItem);
-                            Item item = _liteDB.FindItem(imdbid);
+                        {
+                            await _liteDB.UpsertAsync(fItem);
+                            Item item = await _liteDB.FindItemAsync(imdbid);
                             if (item != null && item.Type == "series")
                             {
                                 SetStatusLabelText($"Updating path for {fItem.FullName}");
 
                                 item.TomatoUrl =fItem.FullName;
-                                _liteDB.Upsert(item);
+                                await _liteDB.UpsertAsync(item);
                             }
                         }
                         var txt = $"{Directory.Exists( folder)} - {fItem.FullName}";

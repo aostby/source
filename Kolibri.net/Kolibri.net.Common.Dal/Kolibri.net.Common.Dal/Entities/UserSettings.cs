@@ -50,7 +50,12 @@ namespace Kolibri.net.Common.Dal.Entities
         [Description(nameof(XPlexToken))]
         [DisplayName(nameof(XPlexToken))]
         public string XPlexToken { get; set; } = null;
-        
+
+        [BrowsableAttribute(true)]
+        [Description(nameof(XPlexServerName)+" Name of your server in your local network.")]
+        [DisplayName(nameof(XPlexServerName))]
+        public string XPlexServerName { get; set; } = null;
+
         [BrowsableAttribute(true)]
         [Description(nameof(SUBDLkey))]
         [DisplayName(nameof(SUBDLkey))]
