@@ -4,19 +4,25 @@ using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet;
 using OMDbApiNet.Model;
+using System.Reflection.PortableExecutable;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using TMDbLib.Objects.TvShows;
+using static System.Net.WebRequestMethods;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 namespace Kolibri.net.Common.Dal.Controller
 {
     public class PlexController
     {
         private string _plexBaseUrl;
         private string _plexToken;
+        private XDocument _playlists;
+
         private readonly HttpClient _http;
 
         // imdbId -> PlexMovie
         private readonly Dictionary<string, OMDbApiNet.Model.Item> _cache = new();
-                
+
         private bool _initialized;
         private UserSettings _settings;
         private ImageCacheDB _icdb;
@@ -41,11 +47,12 @@ namespace Kolibri.net.Common.Dal.Controller
             this._settings = settings;
 
             _plexBaseUrl = $"http://{_settings.XPlexServerName}:32400";
-            _plexBaseUrl =_plexBaseUrl.TrimEnd('/');
+            _plexBaseUrl = _plexBaseUrl.TrimEnd('/');
             _plexToken = _settings.XPlexToken;
             _http = new HttpClient();
             try
-            {  _http.DefaultRequestHeaders.Add("X-Plex-Token", _plexToken); 
+            {
+                _http.DefaultRequestHeaders.Add("X-Plex-Token", _plexToken);
                 _icdb = new ImageCacheDB(_settings);
             }
             catch (Exception ex) { _icdb = null; }
@@ -67,11 +74,11 @@ namespace Kolibri.net.Common.Dal.Controller
             }
             return true;
         }
- 
+
 
         public async Task<OMDbApiNet.Model.Item?> FindByTitleAsync(string title, int? year = null)
         {
-            OMDbApiNet.Model.Item ret= null;
+            OMDbApiNet.Model.Item ret = null;
 
             if (!_initialized)
                 await InitializeAsync();
@@ -84,13 +91,15 @@ namespace Kolibri.net.Common.Dal.Controller
             if (matches.Count() == 1)
             {
                 ret = matches.FirstOrDefault();
-                if (ret!=null&& ret.Year!=null&& ret.Year.Equals(year?.ToString())) {
+                if (ret != null && ret.Year != null && ret.Year.Equals(year?.ToString()))
+                {
                     return ret;
                 }
 
             }
 
-                if (matches.Count() < 0) {
+            if (matches.Count() < 0)
+            {
                 matches = _cache.Values
                     .Where(m =>
                         string.Equals(m.Title.Split(" ").FirstOrDefault(), title.Split(" ").FirstOrDefault(), StringComparison.OrdinalIgnoreCase));
@@ -98,9 +107,9 @@ namespace Kolibri.net.Common.Dal.Controller
             }
             if (matches.Count() == 0)
             {
-                matches =_cache.Values
+                matches = _cache.Values
                     .Where(m =>
-                        string.Equals(m.Title.StartsWith( title.Split(" ").FirstOrDefault()), StringComparison.OrdinalIgnoreCase));
+                        string.Equals(m.Title.StartsWith(title.Split(" ").FirstOrDefault()), StringComparison.OrdinalIgnoreCase));
 
             }
 
@@ -109,10 +118,10 @@ namespace Kolibri.net.Common.Dal.Controller
                 matches = matches.Where(m =>
                     int.TryParse(m.Year, out var y) && y == year.Value);
             }
-            if (matches.Count() ==1)
+            if (matches.Count() == 1)
             {
                 // If multiple matches, return the first (or refine further)
-                  ret = matches.First();
+                ret = matches.First();
                 if (ret != null && _icdb != null)
                     ret.Poster = await _icdb.GetPosterUrlAsync(ret.ImdbId);
             }
@@ -147,6 +156,22 @@ namespace Kolibri.net.Common.Dal.Controller
             }
 
             _initialized = true;
+        }
+
+
+        /// <summary>
+        /// Find all "movie" libraries automatically
+        /// </summary>
+        public async Task<List<string>> GetPlaylistsAsync()
+        {
+            if (_playlists == null)
+            {
+                var xml = await _http.GetStringAsync($"{_plexBaseUrl}/playlists");
+                _playlists = XDocument.Parse(xml);
+            }
+            return _playlists.Descendants("Playlist")
+                .Select(d => d.Attribute("title").Value)
+                .ToList();
         }
 
         /// <summary>
@@ -212,7 +237,9 @@ namespace Kolibri.net.Common.Dal.Controller
                             Runtime = StringUtilities.FormatMinutesAsHoursAndMinutes(Convert.ToInt32(TimeSpan.FromMilliseconds($"{(video.Attribute("duration")?.Value)}".ToLong(0)).TotalMinutes)),
                             Genre = string.Join(",", video.Elements("Genre").Select(g => g.Attribute("tag")?.Value).ToArray()),
                             Website = $"https://www.imdb.com/title/{imdbId}",
-                            Poster = (thumb == null) ? "N/A" : thumb
+                            Poster = (thumb == null) ? "N/A" : thumb,
+                            TomatoRating = video.Attribute("ratingKey")?.Value,
+
                         };
                     }
                     catch (Exception)
@@ -231,5 +258,43 @@ namespace Kolibri.net.Common.Dal.Controller
             if (!_initialized) await InitializeAsync();
             return _cache.Values.ToList();
         }
-    } 
+
+        public async void AddElementToPlaylist(string playlistName, string imdbId)
+        {
+            try
+            {
+                var machineIdentityXml = XDocument.Parse(await _http.GetStringAsync($"{_plexBaseUrl}/identity"));
+                var machineIdentity = machineIdentityXml.Root.Attribute("machineIdentifier")?.Value;
+
+
+                // 1. Finn Playlist ID basert på navn
+
+                var xml = _playlists;
+
+                var playlist = xml.Descendants("Playlist")
+                    .FirstOrDefault(p => p.Attribute("title")?.Value == playlistName);
+
+
+                string playlistKey = playlist.Attribute("ratingKey").Value;
+
+                var item = await FindByImdbAsync(imdbId);
+                 
+
+                string itemUri = Uri.EscapeDataString($"server://{machineIdentity}/com.plexapp.plugins.library/library/metadata/{item.TomatoRating}");
+
+                string url = $"{_plexBaseUrl}/playlists/{playlistKey}/items?uri={itemUri}&X-Plex-Token={_settings.XPlexToken}";
+
+                var resp = await _http.PutAsync(url, null);
+
+                if (resp.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Element lagt til i spillelisten!");
+                }
+
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+    }
 }

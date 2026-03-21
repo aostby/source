@@ -36,6 +36,7 @@
             labelPath = new Label();
             pictureBoxCurrent = new PictureBox();
             groupBoxChangePath = new GroupBox();
+            buttonFindAndUpdateByIMDBID = new Button();
             labelTo = new Label();
             labelFrom = new Label();
             textBox2 = new TextBox();
@@ -59,7 +60,7 @@
             toolStripMenuItemNavn = new ToolStripMenuItem();
             toolStripMenuItemImdbId = new ToolStripMenuItem();
             toolStripMenuItemSearchThisFolder = new ToolStripMenuItem();
-            buttonFindAndUpdateByIMDBID = new Button();
+            buttonUpdateImdbFolders = new Button();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -97,6 +98,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(buttonUpdateImdbFolders);
             splitContainer1.Panel1.Controls.Add(groupBoxDetails);
             splitContainer1.Panel1.Controls.Add(groupBoxChangePath);
             splitContainer1.Panel1.Controls.Add(labelFilsti);
@@ -156,12 +158,22 @@
             groupBoxChangePath.TabStop = false;
             groupBoxChangePath.Text = "ChangePath";
             // 
+            // buttonFindAndUpdateByIMDBID
+            // 
+            buttonFindAndUpdateByIMDBID.Location = new Point(10, 84);
+            buttonFindAndUpdateByIMDBID.Name = "buttonFindAndUpdateByIMDBID";
+            buttonFindAndUpdateByIMDBID.Size = new Size(105, 23);
+            buttonFindAndUpdateByIMDBID.TabIndex = 5;
+            buttonFindAndUpdateByIMDBID.Text = "Find And Update By IMDBId";
+            buttonFindAndUpdateByIMDBID.UseVisualStyleBackColor = true;
+            buttonFindAndUpdateByIMDBID.Click += buttonFindAndUpdateByIMDBID_Click;
+            // 
             // labelTo
             // 
             labelTo.AutoSize = true;
             labelTo.Location = new Point(15, 58);
             labelTo.Name = "labelTo";
-            labelTo.Size = new Size(19, 15);
+            labelTo.Size = new Size(20, 15);
             labelTo.TabIndex = 4;
             labelTo.Text = "To";
             // 
@@ -372,15 +384,15 @@
             toolStripMenuItemSearchThisFolder.Text = "Søk etter denne mappen";
             toolStripMenuItemSearchThisFolder.Click += ContextMenuEvent_Click;
             // 
-            // buttonFindAndUpdateByIMDBID
+            // buttonUpdateImdbFolders
             // 
-            buttonFindAndUpdateByIMDBID.Location = new Point(10, 84);
-            buttonFindAndUpdateByIMDBID.Name = "buttonFindAndUpdateByIMDBID";
-            buttonFindAndUpdateByIMDBID.Size = new Size(105, 23);
-            buttonFindAndUpdateByIMDBID.TabIndex = 5;
-            buttonFindAndUpdateByIMDBID.Text = "Find And Update By IMDBId";
-            buttonFindAndUpdateByIMDBID.UseVisualStyleBackColor = true;
-            buttonFindAndUpdateByIMDBID.Click += buttonFindAndUpdateByIMDBID_Click;
+            buttonUpdateImdbFolders.Location = new Point(93, 33);
+            buttonUpdateImdbFolders.Name = "buttonUpdateImdbFolders";
+            buttonUpdateImdbFolders.Size = new Size(172, 23);
+            buttonUpdateImdbFolders.TabIndex = 8;
+            buttonUpdateImdbFolders.Text = "Finn med IMDB foldernavn";
+            buttonUpdateImdbFolders.UseVisualStyleBackColor = true;
+            buttonUpdateImdbFolders.Click += buttonUpdateImdbFolders_Click;
             // 
             // OMDBSearchForSeriesForm
             // 
@@ -445,5 +457,6 @@
         private Label labelPath;
         private PictureBox pictureBoxCurrent;
         private Button buttonFindAndUpdateByIMDBID;
+        private Button buttonUpdateImdbFolders;
     }
 }

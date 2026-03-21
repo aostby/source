@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using javax.swing.text;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Images;
@@ -25,7 +26,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private readonly UserSettings _userSettings;
         private IEnumerable<FileItem> _fileItems;
-        private List<string> _searchFiles;
+        private List<Item> _searchFiles;
         private List<string> _currentSearch = new List<string>();
         private MoviesSearchController _searchController;
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
@@ -54,9 +55,10 @@ namespace Kolibri.net.SilverScreen.Forms
             _searchController = new MoviesSearchController(_userSettings, plex: _plex, progress: progress);
             _searchController.ProgressUpdated += OnProgressUpdated;
 
-            _searchFiles = new List<string>();
+            _searchFiles = new List<Item>();
             textBoxSource.Text = GetCurentPath();
             this.Text = $" - {_userSettings.LiteDBFilePath}";
+            SetLabelText(this.Text);
             var res = await GetPathSearchFiles();
             _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
             _dgvController = new DataGrivViewControls(MultimediaType.Movies, _liteDB);
@@ -126,7 +128,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 _currentSearch = new List<string>();
             }
-            _searchFiles = _currentSearch;
+            
             return dInfo;
         }
 
@@ -146,7 +148,13 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private async void buttonOpenFolder_Click(object sender, EventArgs e)
         {
-            _searchFiles = new List<string>();
+           buttonOpenFolder.Enabled = false;
+            radioButtonShowGrid.Checked = true;         
+            groupBoxValg.Enabled = false;
+            
+            Thread.Sleep(3);
+
+            _searchFiles = new List<Item>();
             DirectoryInfo dInfo = null;
             try
             {
@@ -160,24 +168,27 @@ namespace Kolibri.net.SilverScreen.Forms
             dInfo = FileUtilities.LetOppMappe(dInfo.FullName, $"Let opp mappe ({Assembly.GetEntryAssembly().GetName().Name})");
             if (dInfo != null && dInfo.Exists)
             {
+                SetLabelText($@"Searching for files in {dInfo.Name} ({dInfo.FullName})");
                 _ = await GetPathSearchFiles(dInfo);
                 _= await SetCurrentPath(dInfo, true);
-                radioButtonShowGrid.Checked = true;
+                groupBoxValg.Enabled = !groupBoxValg.Enabled;
                 button1_Click(null, null);
             }
+            groupBoxValg.Enabled = true;
+            buttonOpenFolder.Enabled = true;
         }
 
-        private async Task<DirectoryInfo> SetCurrentPath(DirectoryInfo dInfo, bool? tristate=null)
+        private async Task<DirectoryInfo> SetCurrentPath(DirectoryInfo dInfo, bool? tristate = null)
         {
-      await GetPathSearchFiles(dInfo);  
+            await GetPathSearchFiles(dInfo);
 
             _userSettings.UserFilePaths.MoviesSourcePath = dInfo.FullName;
             _liteDB.Update(_userSettings);
- 
-            textBoxSource.Text = dInfo.FullName;
-            SetLabelText($"Path - set to {dInfo.FullName}");  
 
-            await _searchController.SearchForMovies(dInfo, tristate);
+            textBoxSource.Text = dInfo.FullName;
+            SetLabelText($"Path - set to {dInfo.FullName}");
+
+            _searchFiles= await _searchController.SearchForMovies(dInfo, tristate);
             if (!string.IsNullOrWhiteSpace(_searchController.CurrentLog.ToString()))
             {
                 SetLabelText($"Log contains {_searchController.CurrentLog.ToString().Split(Environment.NewLine).Length} lines");
@@ -187,7 +198,7 @@ namespace Kolibri.net.SilverScreen.Forms
             _fileItems = _liteDB.FindAllFileItems(dInfo);
 
             var count = _fileItems.Count();
-            var diff = _searchFiles.Count - count;
+            var diff =   count -_searchFiles.Count;
             labelNumItemsDB.Text = $"{count} found in LiteDB [{dInfo.Name}] (diff: {diff} - folder: {_searchFiles.Count})";
             labelNumItemsDB.Tag = dInfo;
 
@@ -269,9 +280,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         item?.TomatoUrl = test?.FullName;
                     }
                 }
-                catch (Exception) { }
-
-            
+                catch (Exception) { } 
 
                 form = new MovieForm(_userSettings, mm as Item, fi);
             }
@@ -439,7 +448,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 try
                 {
                     List<string> filepaths = _fileItems.Select(f => f.FullName).ToList();
-                    List<string> difflist = _currentSearch.Except(filepaths).ToList();
+                    List<string> difflist = _currentSearch.Except(_searchFiles.Select(x => x.TomatoUrl).ToList()).ToList();
                 //    var liste = difflist.FindAll(x => x.Contains("CD", StringComparison.OrdinalIgnoreCase));
                 //    difflist = difflist.Except(liste).ToList();
 
@@ -449,19 +458,18 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else if (difflist.Count >= 10) {
                     
-                    }
-
+                    } 
 
                     if (radioButtonShowDiff.Checked)
                     {
                         System.Data.DataTable datatable = new System.Data.DataTable();
-                        datatable.Columns.Add("FullName", typeof(String));
-                        datatable.Columns.Add("File", typeof(String));
-                        for (int i = 0; i < difflist.Count(); i++) { datatable.Rows.Add(difflist[i], difflist[i]); }
+                       
+                        datatable.Columns.Add("File", typeof(String)); datatable.Columns.Add("FullName", typeof(String));
+                        for (int i = 0; i < difflist.Count(); i++) {  datatable.Rows.Add(Path.GetFileName(difflist[i]) ,difflist[i]); }
                         Form form = new Form();
                         if (datatable.Rows.Count > 0)
                         {
-                            form = Common.FormUtilities.Controller.OutputFormController.DataTableForm("Diff list", datatable, datatable.Columns[0], new Size(50, 50));
+                            form = Common.FormUtilities.Controller.OutputFormController.DataTableForm("Diff list", datatable, datatable.Columns[1], new Size(50, 50));
                         }
                         SetForm(form);
                     }

@@ -9,6 +9,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
 using System.Data;
 using TMDbLib.Objects.Movies;
+using static TMDbLib.Objects.General.WatchProvider;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -23,9 +24,9 @@ namespace Kolibri.net.SilverScreen.Forms
         internal SubDLSubtitleController _subDL;
         internal ImageCacheDB _imageCache;
 
-        [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); } 
+        [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
 
-        public DetailsFormItem(string imdbId,  LiteDBController contr,OMDBController omdb = null
+        public DetailsFormItem(string imdbId, LiteDBController contr, OMDBController omdb = null
             , TMDBController tmdb = null
             , SubDLSubtitleController subDL = null
             , ImageCacheDB imagecache = null
@@ -45,17 +46,17 @@ namespace Kolibri.net.SilverScreen.Forms
         private Item? GetItemFromDB(string imdbId)
         {
             var ret = new Item();
-            
+
             MySQLController.GetData(_liteDB.ConnectionString.ToString(), imdbId);
             return ret;
 
         }
 
         public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr
-            , OMDBController omdb=null
+            , OMDBController omdb = null
             , TMDBController tmdb = null
-            , SubDLSubtitleController subDL=null  
-            , ImageCacheDB imagecache=null
+            , SubDLSubtitleController subDL = null
+            , ImageCacheDB imagecache = null
             )
         {
             InitializeComponent();
@@ -63,10 +64,13 @@ namespace Kolibri.net.SilverScreen.Forms
             _item = item;
             this.FormBorderStyle = FormBorderStyle.None;
             _OMDB = omdb;
-            _TMDB=tmdb;
-            _subDL = subDL; 
-            _imageCache = imagecache;  
+            _TMDB = tmdb;
+            _subDL = subDL;
+            _imageCache = imagecache;
+
             Init(_item);
+            //Dersom alt er initialisert, sett farger
+            InitButtons();
         }
 
         private void Init(Item item)
@@ -89,8 +93,9 @@ namespace Kolibri.net.SilverScreen.Forms
             tbActors.Text = item.Actors;
             tbPlot.Text = item.Plot;
             tbMetascore.Text = item.Metascore;
-  
+
             pbPoster.ImageLocation = item.Poster;
+
             try
             {
                 UserSettings settings = _liteDB.GetUserSettings();
@@ -98,15 +103,15 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (_OMDB == null) { try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
                 if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { } }
                 if (_subDL == null) { try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { } }
-                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } };
+                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } }
+                ;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
             SetAllLabelsToBold(this);
-            //Dersom alt er initialisert, sett farger
-            InitButtons();
+
         }
         private void SetAllLabelsToBold(Control parent)
         {
@@ -157,19 +162,26 @@ namespace Kolibri.net.SilverScreen.Forms
 
             }
             catch (Exception ex) { labelFileExists.ForeColor = Color.Salmon; }
-            buttonSearch.Image = Icons.GetFolderIcon().ToBitmap();
+            buttonSimilar.Image = Icons.GetFolderIcon().ToBitmap();
             buttonSubtitleSearch.Image = Icons.GetFolderIcon().ToBitmap();
             if (_imageCache != null)
             {
                 try
                 {
-                    if (_imageCache.FindImageAsync(nameof(buttonSearch)) == null) {await _imageCache.InsertImageAsync(nameof(buttonSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://github.com/JuzerShakir/Investigate_TMDb_Movies/raw/master/logo.jpg")); }
-                    if (_imageCache.FindImageAsync(nameof(buttonSubtitleSearch)) == null) { await _imageCache.InsertImageAsync(nameof(buttonSubtitleSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://subdl.com/logo/fav.png")); }
+                    ImagePoster image = await _imageCache.FindImageAsync(nameof(buttonSimilar));
+                    if (image == null) { await _imageCache.InsertImageAsync(nameof(buttonSimilar), (Bitmap)ImageUtilities.GetImageFromUrl("https://github.com/JuzerShakir/Investigate_TMDb_Movies/raw/master/logo.jpg")); }
+                    else
+                    {
+                        buttonSimilar.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
+                    }
 
-                    ImagePoster image = await _imageCache.FindImageAsync(nameof(buttonSearch));
-                    buttonSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
                     image = await _imageCache.FindImageAsync(nameof(buttonSubtitleSearch));
-                    buttonSubtitleSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
+                    if (image == null)
+                    { await _imageCache.InsertImageAsync(nameof(buttonSubtitleSearch), (Bitmap)ImageUtilities.GetImageFromUrl("https://subdl.com/logo/fav.png")); }
+                    else
+                    {
+                        buttonSubtitleSearch.Image = ImageUtilities.FixedSize(image.Image, 16, 16);
+                    }
                 }
                 catch (Exception) { }
             }
@@ -201,7 +213,8 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else buttonSubtitleSearch.BackColor = Control.DefaultBackColor;
                 }
-                else {
+                else
+                {
                     if (srtInfo.Length > 1000)
                     {
                         buttonSubtitleSearch.BackColor = Color.LightGreen;
@@ -327,14 +340,14 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                Form form = new Form();                
+                Form form = new Form();
                 RichTextBox plot = new RichTextBox();
                 plot.DetectUrls = true;
                 plot.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(plot_LinkClicked);
 
 
-                plot.Text = $"{tbPlot.Text}{(string.Join("", Enumerable.Repeat(Environment.NewLine, 3)))}{_item.ToJson() }";
-                
+                plot.Text = $"{tbPlot.Text}{(string.Join("", Enumerable.Repeat(Environment.NewLine, 3)))}{_item.ToJson()}";
+
                 plot.Font = new Font("Microsoft San Serif", 16);
                 plot.Dock = DockStyle.Fill;
                 form.Text = tbTitle.Text.Replace(".", "." + Environment.NewLine);
@@ -345,21 +358,19 @@ namespace Kolibri.net.SilverScreen.Forms
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
-            } 
+            }
         }
 
         private void plot_LinkClicked(object? sender, LinkClickedEventArgs e)
         {
             try
-            { 
+            {
                 FileUtilities.Start(new Uri(e.LinkText));
             }
-            catch (Exception)
-            {
-            }
+            catch (Exception) { }
         }
 
-        private async void buttonSearch_Click(object sender, EventArgs e)
+        private async void buttonSimilar_Click(object sender, EventArgs e)
         {
             try
             {
@@ -394,8 +405,6 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (ds.Tables[0].Columns.Contains("ReleaseDate"))
                 {
                     cols = new List<string> { "OriginalTitle", "ReleaseDate", "Title", "OriginalLanguage", "Overview", "VoteAverage", "VoteCount", "Id", "MediaType", "Popularity" };
-
-
                 }
 
                 DataTable dt = new DataView(ds.Tables[0]).ToTable(false, cols.ToArray());
@@ -441,32 +450,19 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     catch (Exception picex)
                     {
-
                         row["Image"] = DBNull.Value;
                     }
-
-
                 }
 
-
-
                 Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet($"{_item.Title} - {theList.Count()} first", dt.DataSet, this.Parent.Size);
-
-
-
-
             }
-            catch (Exception ex)
-            {
-            }
-
+            catch (Exception ex) { }
         }
 
         private void buttonRediger_Click(object sender, EventArgs e)
         {
             Form form = new Form();
             form.Size = new Size(500, 500);
-
 
             Button button = new Button();
             button.DialogResult = DialogResult.OK;
@@ -476,7 +472,6 @@ namespace Kolibri.net.SilverScreen.Forms
             button.Dock = DockStyle.Bottom;
             button.BringToFront();
             form.Controls.Add(button);
-
 
             PropertyGrid propertyGrid1 = new PropertyGrid();
             propertyGrid1.CommandsVisibleIfAvailable = true;
@@ -492,7 +487,6 @@ namespace Kolibri.net.SilverScreen.Forms
 
             var res = form.ShowDialog();
 
-
             if (res == DialogResult.OK)
             {
                 _liteDB.UpdateAsync(_item);
@@ -500,6 +494,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 Init(_item);
             }
         }
+
         private void Button_Click(object? sender, EventArgs e)
         {
             (sender as Button).DialogResult = System.Windows.Forms.DialogResult.OK;
@@ -508,7 +503,7 @@ namespace Kolibri.net.SilverScreen.Forms
         }
 
         private void buttonSubtitleSearch_Click(object sender, EventArgs e)
-        { 
+        {
 
             try
             {
@@ -516,11 +511,15 @@ namespace Kolibri.net.SilverScreen.Forms
                     throw new NoNullAllowedException($"SubDL krever en API Key, og din er tom. Vennligst legg inn en nøkkel for å kunne søke etter undertekster");
 
 
-                FileInfo info = _itemPath.ItemFileInfo; 
+                FileInfo info = _itemPath.ItemFileInfo;
 
                 FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
-                if (srtInfo.Exists) return;
-                
+                if (srtInfo.Exists)
+                {
+                    FileUtilities.Start(srtInfo.Directory);
+                    return;
+                }
+
                 DirectoryInfo dirInfo = new DirectoryInfo(Path.Combine(info.Directory.FullName, "Subs"));
 
                 if (info.Exists && !dirInfo.Exists)
@@ -564,7 +563,8 @@ namespace Kolibri.net.SilverScreen.Forms
                         }
                     }
                 }
-                else if (dirInfo.Exists) {
+                else if (dirInfo.Exists)
+                {
                     FileUtilities.Start(dirInfo);
                 }
 
@@ -572,6 +572,33 @@ namespace Kolibri.net.SilverScreen.Forms
             catch (Exception ex)
             {
                 MessageBox.Show($"List contained no elements for this path.{Environment.NewLine}{ex.Message}. Try searching for elements and try again", _itemPath.FullName);
+            }
+        }
+
+        private async void buttonPosterFix_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                PlexController plex = new PlexController(_liteDB.GetUserSettings());
+
+                if (_item != null && _item.Type.StartsWith("movie", StringComparison.OrdinalIgnoreCase))
+                {
+
+                    if (  !HTMLUtilities.DoesUrlExists(_item.Poster))
+                    {
+                        var pItem = await plex.FindByImdbAsync(_item.ImdbId);
+                        if (pItem != null)
+                        {
+                            _item.Poster = pItem.Poster;
+                            await _liteDB.UpsertAsync(_item);
+                            var txt = $"{_item.Title} - {_item.Poster} ";
+                        }
+                    } 
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
     }

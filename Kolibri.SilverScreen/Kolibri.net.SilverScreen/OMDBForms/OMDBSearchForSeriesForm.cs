@@ -10,7 +10,8 @@ using OMDbApiNet.Model;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
- 
+using System.Threading.Tasks;
+
 
 namespace Kolibri.net.SilverScreen.OMDBForms
 {
@@ -276,10 +277,9 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     {
                         using (TMDBController contr = new TMDBController(_liteDB, _settings.TMDBkey))
                         {
-                            var t = Task.Run(() => contr.FindById(textBoxSearchValue.Text)).GetAwaiter().GetResult();
+                            var t = await contr.FindById(textBoxSearchValue.Text);
                             if (t != null)
                             {
-
                                 Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog($"{t.GetType().Name} - {textBoxSearchValue.Text}", t.JsonSerializeObject(), this.Size);
                             }
                         }
@@ -532,20 +532,20 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             StringBuilder builder = new StringBuilder();
             try
             {
-                if (_sourceSeriesFolders.Count==0) throw new Exception("Cannot change - no folders found!!!"); 
-                
+                if (_sourceSeriesFolders.Count == 0) throw new Exception("Cannot change - no folders found!!!");
+
                 foreach (var folder in _sourceSeriesFolders)
                 {
                     whatsup = string.Empty;
-                    if (folder.Contains($"-tt")&&folder.Contains("{"))
+                    if (folder.Contains($"-tt") && folder.Contains("{"))
                     {
-                        whatsup = folder; 
+                        whatsup = folder;
 
-                        string imdbid = folder.Substring(0,folder.IndexOf("}")).Split("-").LastOrDefault();
-                        
-                       FileItem fItem = new FileItem(imdbid,  folder.Substring(0, folder.LastIndexOf("}")+1));   
-                        
-                       
+                        string imdbid = folder.Substring(0, folder.IndexOf("}")).Split("-").LastOrDefault();
+
+                        FileItem fItem = new FileItem(imdbid, folder.Substring(0, folder.LastIndexOf("}") + 1));
+
+
                         if (Directory.Exists(fItem.FullName))
                         {
                             await _liteDB.UpsertAsync(fItem);
@@ -554,22 +554,70 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                             {
                                 SetStatusLabelText($"Updating path for {fItem.FullName}");
 
-                                item.TomatoUrl =fItem.FullName;
+                                item.TomatoUrl = fItem.FullName;
                                 await _liteDB.UpsertAsync(item);
+                               
                             }
                         }
-                        var txt = $"{Directory.Exists( folder)} - {fItem.FullName}";
+                        var txt = $"{Directory.Exists(folder)} - {fItem.FullName}";
                         builder.AppendLine(txt);
                     }
-                  
+
                 }
 
                 Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Report filepaths", builder.ToString(), this.Size);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(whatsup +" :"+ ex.Message, ex.GetType().Name);
+                MessageBox.Show(whatsup + " :" + ex.Message, ex.GetType().Name);
             }
+        }
+
+        private async void buttonUpdateImdbFolders_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Source.Exists)
+                {
+                  var list =   Source.GetDirectories("*{imdb-*");
+                    if (list.Count() >= 1)
+                    {
+
+                        using (OMDBController omdbC = new OMDBController(_settings.OMDBkey, rottenTomatoRatings: true))
+                        {
+                         
+                            foreach (var dir in list)
+                            {
+                                var imdbid = dir.FullName.ImdbIdFromDirectoryName();
+                                // item = _liteDB.FindItem(textBoxManual.Text); //Ikke hent lokal kopi, poenget med manuelt søk er å hente ny versjon fra OMDB
+                                if (imdbid != null)
+                                {
+                                    var item = await _liteDB.FindItemAsync(imdbid);
+                                    if (item == null)
+                                    {
+
+                                   item=     omdbC.GetItemByImdbId(imdbid);
+                                        if (item != null)
+                                        {
+                                            item.TomatoUrl = dir.FullName;
+                                            await _liteDB.UpsertAsync(item);
+                                            SetStatusLabelText($"Updating path for {item.Title} - {dir.Name}");
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+                SetStatusLabelText($"Finished searching path   {Source.Name}");
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Data;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Dal.Controller;
 using System.Text;
+using Kolibri.net.Common.Utilities;
 
 
 namespace Kolibri.net.SilverScreen.Forms
@@ -53,10 +54,7 @@ namespace Kolibri.net.SilverScreen.Forms
             System.Net.ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
             //var sdk = new PlexAPI(ip: "192.168.1.2",accessToken:_userSettings.XPlexToken);
-            //var res = await sdk.Server.GetServerCapabilitiesAsync();
-
-
-
+            //var res = await sdk.Server.GetServerCapabilitiesAsync(); 
 
             //   MessageBox.Show(res.ToString());
         }
@@ -82,12 +80,52 @@ namespace Kolibri.net.SilverScreen.Forms
                         builder.AppendLine(txt);
                     }
                 }
-                Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Report filepaths",builder.ToString(), this.Size);
+                Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Report filepaths", builder.ToString(), this.Size);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+        }
+
+        private async void buttonFixUrl_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+                PlexController plex = new PlexController(_userSettings);
+                StringBuilder builder = new StringBuilder();
+                LiteDBController liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
+ 
+               
+                    var list = await liteDB.FindAllItems();
+                    foreach (var item in list.ToList())
+                    {
+                        if (item != null && item.Type.StartsWith("movie", StringComparison.OrdinalIgnoreCase))
+                        {
+
+                            if (string.IsNullOrWhiteSpace(item.Poster)|| item.Poster.Contains(_userSettings.XPlexServerName)&&!HTMLUtilities.DoesUrlExists(item.Poster))
+                            {
+                                var pItem = await plex.FindByImdbAsync(item.ImdbId);
+                                if (pItem != null)
+                                {
+                                    item.Poster = pItem.Poster;
+                                    await         liteDB.UpsertAsync(item);
+                                    var txt = $"{item.Title} - {item.Poster} ";
+                                    builder.AppendLine(txt);
+                                }
+                            }
+                        }
+                    
+                }
+                Kolibri.net.Common.FormUtilities.Forms.OutputDialogs.ShowRichTextBoxDialog("Report filepaths", builder.ToString(), this.Size);
+                liteDB.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+
         }
     }
 }

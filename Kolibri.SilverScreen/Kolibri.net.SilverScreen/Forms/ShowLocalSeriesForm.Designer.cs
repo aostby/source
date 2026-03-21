@@ -1,6 +1,6 @@
 ﻿using Kolibri.net.Common.Utilities;
 
-namespace Kolibri.Common.VisualizeOMDbItem
+namespace Kolibri.net.Common.VisualizeOMDbItem
 {
     partial class ShowLocalSeriesForm
     {
@@ -274,7 +274,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
             // 
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItemDelete, toolStripMenuItemSetIMDBTagOnFolder });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(194, 70);
+            contextMenuStrip1.Size = new Size(194, 48);
             // 
             // toolStripMenuItemDelete
             // 

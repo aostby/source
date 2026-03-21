@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using javax.swing.text;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
@@ -15,14 +16,14 @@ namespace Kolibri.net.SilverScreen.Controller
     {
         public event EventHandler<string> ProgressUpdated;
         public StringBuilder CurrentLog { get; set; } = new StringBuilder();
+
         private LiteDBController _liteDB;
         private TMDBController _TMDB;
         private OMDBController _OMDB;
-        private PlexController _plex;
+        private PlexController _plex; 
+     
 
-        private DirectoryInfo _currentDirectory = null;
-
-        private List<DirectoryInfo> cleandirs = new List<DirectoryInfo>();
+        private List<DirectoryInfo> _cleanDirsAfterSearch = new List<DirectoryInfo>();
 
 
         /// <summary>
@@ -99,65 +100,50 @@ namespace Kolibri.net.SilverScreen.Controller
         }
 
         #region Movie Item
-        public async Task<bool> SearchForMovies(DirectoryInfo dir, bool? updateTriState = null)
-        {  int count = 0;
+        public async Task<List<Item>> SearchForMovies(DirectoryInfo dir, bool? updateTriState = null)
+        {
+            int count = 0;
             _updateTriState = updateTriState;
             ClearIfTristateTrue(dir);
 
             CurrentLog.Clear();
             _progress?.Report(count);
-            bool complete = false;
-            if (!Init(dir, updateTriState)) return false;
 
-            var currentItemList = new List<Item>();
-            
-            //List<string> common = MovieUtilites.MoviesCommonFileExt(true);
-            //var masks = common.Select(r => string.Concat('*', r)).ToArray();
-            //var searchStr = "*." + string.Join("|*.", common); 
-            
-            //  var numFiles = FileUtilities.CountFiles(dir, "*.*", new EnumerationOptions() { RecurseSubdirectories = true });
+            List<Item> ret = new List<Item>();
+            if (!Init(dir, updateTriState)) return ret;
+
+
             var numFiles = await MovieUtilites.GetCommonMovieFiles(dir);
-            foreach (var filter in numFiles)
+            foreach (var filePath in numFiles)
             {
                 _progress?.Report(ProgressBarHelper.CalculatePercent(count, numFiles.Count));
                 try
-                { 
-               //     var total = Directory.EnumerateFiles(dir.FullName, filter, new EnumerationOptions() { RecurseSubdirectories = true }).GetEnumerator();
-                    using (var e = await Task.Run(() => numFiles.GetEnumerator()))
-                    {
-                        while (await Task.Run(() => e.MoveNext()))
-                        {
-                            count = count + 1; 
+                {
+                    count = count + 1;
 
-                            int year; string title;string fileTitle;
-                            FileInfo file = new FileInfo(e.Current);
-                            Item item =await GetItem(file, e.Current.ImdbIdFromDirectoryName());
-                            if (item == null)
-                            { 
-                                GetTitleAndYear(file, out year, out title, out fileTitle);
-                                  item = await GetItem(file, year, title, fileTitle);
-                                if (item != null)
-                                    currentItemList.Add(item);
-                                else
-                                    SetStatusLabelText($"{title} ikke funnet! {file.FullName}.", "NOTFOUND");
-                                _progress?.Report(ProgressBarHelper.CalculatePercent(count, numFiles.Count));
-                                await AddToUnwantedExtraFiles(file.Directory);
-                            } 
-                        }
+                    int year; string title; string fileTitle;
+                    FileInfo file = new FileInfo(filePath); 
+
+                    GetTitleAndYear(file, out year, out title, out fileTitle);
+                    var item = await GetItem(file, year, title, fileTitle);
+                    if (item != null)
+                        ret.Add(item);
+                    else
+                    {
+                        SetStatusLabelText($"{title} ikke funnet! {file.FullName}.", "NOTFOUND");
                     }
-                   
+                    _progress?.Report(ProgressBarHelper.CalculatePercent(count, numFiles.Count));
+                    await AddToUnwantedExtraFiles(file.Directory);
+
                 }
                 catch (Exception ex)
                 {
                 }
-               
             }
-            _progress?.Report(100);
-
-            SetStatusLabelText($"Søket fullført.", "FINISHED");
-            complete = true;            
-            _ = await RemoveUnwantedExtraFilesExecute();
-            return complete;
+            _progress?.Report(100); 
+            await RemoveUnwantedExtraFilesExecute();
+                SetStatusLabelText($"Søket fullført.", "FINISHED");     
+            return ret;
         }
 
         private static void GetTitleAndYear(FileInfo file,out int year, out string title, out string fileNameAsTitle )
@@ -208,15 +194,16 @@ namespace Kolibri.net.SilverScreen.Controller
         private async Task<bool> AddToUnwantedExtraFiles(DirectoryInfo dirInfo)
         {
             bool ret = true;
-            if (cleandirs == null) cleandirs = new List<DirectoryInfo>();
+            if (_cleanDirsAfterSearch == null) _cleanDirsAfterSearch = new List<DirectoryInfo>();
+
             if (dirInfo != null && Directory.Exists(dirInfo.FullName))
-            { cleandirs.Add(dirInfo); }
+            { _cleanDirsAfterSearch.Add(dirInfo); }
             return ret;
         }
         private async Task<bool> RemoveUnwantedExtraFilesExecute()
         {
             bool ret = true;
-            foreach (DirectoryInfo dir in cleandirs.Distinct())
+            foreach (DirectoryInfo dir in _cleanDirsAfterSearch.Distinct())
             {
                 try
                 {
@@ -250,7 +237,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 { SetStatusLabelText(ex.Message); ret = false; }
 
             }
-            cleandirs.Clear();
+            _cleanDirsAfterSearch.Clear();
             return ret;
 
         }
@@ -261,10 +248,7 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 SetStatusLabelText("Trenger både _TMDB pg _OMDB for å fortsette, sjekk innstillinger/settings.", "ERROR");
                 return false;
-            }
-
-            _currentDirectory = dir;
-           
+            } 
             _updateTriState = updateTriState;
             return true;
         }
@@ -277,21 +261,24 @@ namespace Kolibri.net.SilverScreen.Controller
             {
              ret= await  _liteDB.FindItemAsync(imdbid);
 
-                if (_updateTriState != null)
+                if (_updateTriState != null&&ret!=null&& string.IsNullOrEmpty(ret.TomatoUrl))
                 {
-                    if (!$"{ret.TomatoUrl}".Equals(file.FullName))
+                  
+                    if (!$"{ret.TomatoUrl}".Equals(file.FullName)&&!file.FullName.Equals(ret.TomatoUrl))
                     {
                         ret.TomatoUrl = file.FullName;
                         await _liteDB.UpdateAsync(ret);
                         await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                        SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_liteDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS"); 
                     }
-                    SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_liteDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                  
                   
                 }
 
             }
-            catch (Exception)
-            { 
+            catch (Exception ex)
+            {
+                SetStatusLabelText($"{ex.Message} - {file.FullName}.", "ERROR");
             } 
             return ret;
         
@@ -307,13 +294,19 @@ namespace Kolibri.net.SilverScreen.Controller
         /// <returns></returns>
         private async Task<Item> GetItem(FileInfo file, int year, string title ,string alternativeSearchTitle=null)
         {
-            Item movie = null;
-
             if (string.IsNullOrEmpty(title))
             {
                 return null;
             }
-            
+            //Item item = await GetItem(file, filePath.ImdbIdFromDirectoryName());
+            Item movie =   await GetItem(file, file.Name.ImdbIdFromDirectoryName());
+            if (movie != null && !string.IsNullOrEmpty(movie.TomatoUrl) && File.Exists(movie.TomatoUrl))
+            {
+                return movie;
+            }
+
+
+
             //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
             movie = await _liteDB.FindItemByTitle(title, year, alternativeSearchTitle);
             if (_updateTriState == null && movie != null)
@@ -325,7 +318,8 @@ namespace Kolibri.net.SilverScreen.Controller
                 movie = await SearchLiteDB(file, year, title);
             }
 
-            if (movie != null && !string.IsNullOrEmpty(movie.TomatoUrl) && File.Exists(movie.TomatoUrl)){
+            if (movie != null && !string.IsNullOrEmpty(movie.TomatoUrl) && File.Exists(movie.TomatoUrl))
+            {
                 return movie;
             }
 

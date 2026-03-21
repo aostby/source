@@ -2,20 +2,11 @@
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities;
 using Kolibri.net.Common.Utilities;
-using Microsoft.Extensions.Configuration;
-using Kolibri.net.Common.FormUtilities;
-using Kolibri.net.Common.Utilities;
-using static Kolibri.net.SilverScreen.Controls.Constants;
-using Kolibri.net.SilverScreen.Forms;
-using sun.tools.tree;
-using java.awt.print;
-using Kolibri.Common.VisualizeOMDbItem;
-using OMDbApiNet.Model;
-using java.nio.file;
-using com.sun.org.apache.bcel.@internal;
+using Kolibri.net.Common.VisualizeOMDbItem;
 using Kolibri.net.SilverScreen.Controller;
-using Microsoft.VisualBasic;
-using System;
+using Kolibri.net.SilverScreen.Forms;
+using Microsoft.Extensions.Configuration;
+using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.SilverScreen.Forms
 {
@@ -106,10 +97,10 @@ namespace Kolibri.SilverScreen.Forms
                 Form newMDIChild = null;
                 if (sender.Equals(movieslocalToolStripMenuItem))
                 {
-                    if (MessageBox.Show("Want new form?", "DEVELOP", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                   // if (MessageBox.Show("Want new form?", "DEVELOP", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         newMDIChild = new MyMoviesForm(_userSettings);
-                    else
-                        newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
+                    //else
+                    //    newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
                 }
                 else if (sender.Equals(serieslocalToolStripMenuItem))
                 {

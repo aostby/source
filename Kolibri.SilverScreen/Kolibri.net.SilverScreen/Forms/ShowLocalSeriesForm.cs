@@ -16,7 +16,7 @@ using System.DirectoryServices;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Kolibri.Common.VisualizeOMDbItem
+namespace Kolibri.net.Common.VisualizeOMDbItem
 {
     public partial class ShowLocalSeriesForm : Form
     {
@@ -330,21 +330,25 @@ namespace Kolibri.Common.VisualizeOMDbItem
                     plotContentLabel.Text = result.Plot;
                     try
                     {
-                        var path = await _liteDB.FindFileAsync(result.ImdbId);
-
+                        string? path =    result.TomatoUrl;
+                        if (!Path.Exists(path))
+                        {
+                            var tmp = await _liteDB.FindFileAsync(result.ImdbId);
+                            path = tmp?.FullName;
+                        }
                         if (path == null)
                         {
                             movieList.Items[e.ItemIndex].BackColor = Color.LightSalmon;
                         }
                         else
                         {
-                            if (Path.Exists(path.FullName))
+                            if (Path.Exists(path))
                                 movieList.Items[e.ItemIndex].BackColor = Color.LightGreen;
                             else {
 
-                                if(path.Equals!=null&& path.ItemFileInfo.Directory.Parent.GetFiles($"*{result.ImdbId}*").Count() == 1)
+                                if(!string.IsNullOrEmpty(path)&& new DirectoryInfo( path).Parent.GetFiles($"*{result.ImdbId}*").Count() == 1)
                                 {
-                                    var folder = path.ItemFileInfo.Directory.Parent.GetDirectories($"*{result.ImdbId}*").FirstOrDefault();
+                                    var folder = new DirectoryInfo( path).Parent.GetDirectories($"*{result.ImdbId}*").FirstOrDefault();
                                     if (folder != null && folder.Exists)
                                     {
                                         result.TomatoUrl = folder.FullName;
@@ -403,7 +407,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 }
                 catch (Exception) { }
 
-                                        var folder = FolderUtilities.LetOppMappe(path, $"Finn hovedmappe for ");
+                                                var folder = FolderUtilities.LetOppMappe(path, $"Finn hovedmappe for ");
                 if (folder != null)
                 {
                     string imdbid = folder.FullName.ImdbIdFromDirectoryName();
@@ -534,8 +538,7 @@ namespace Kolibri.Common.VisualizeOMDbItem
                 {
                     try
                     {
-                            
-                        item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
+                                item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
                         var file = await  tmp.FindFileAsync(item.ImdbId);
                         if (file != null)
                         {
@@ -568,11 +571,21 @@ namespace Kolibri.Common.VisualizeOMDbItem
                         }
                         else
                         {
+                            string dir = string.Empty;
                             var files = new DirectoryInfo(_userSettings.UserFilePaths.SeriesSourcePath).GetFiles(item.Title.Replace(" ", "*"));
-                            var dir = files.FirstOrDefault().DirectoryName;
+                            if (files.Count() <= 0 && Path.Exists(item.TomatoUrl))
+                                dir = item.TomatoUrl;
+                            else 
+                                dir = files.FirstOrDefault().DirectoryName;
 
 
-                            if (dir != null) { var folder = FolderUtilities.LetOppMappe(dir, "Searching for missing folder"); }
+                            if (dir != null) {var folder = FolderUtilities.LetOppMappe(dir, "Searching for missing folder");
+                                if (folder.Exists) {
+                                    _=await _liteDB.UpsertAsync(new FileItem(item.ImdbId, folder.FullName));
+                                
+                                }
+                            
+                            }
                             else
                             {
                                 throw new FileNotFoundException($"{item.Title}");
