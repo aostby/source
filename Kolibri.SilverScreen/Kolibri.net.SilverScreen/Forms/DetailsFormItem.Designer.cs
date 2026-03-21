@@ -52,10 +52,11 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonDeleteItem = new Button();
             labelFileExists = new Label();
             labelQuality = new Label();
-            buttonSearch = new Button();
+            buttonSimilar = new Button();
             toolTipDetail = new ToolTip(components);
             buttonRediger = new Button();
             buttonSubtitleSearch = new Button();
+            buttonPosterFix = new Button();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
             SuspendLayout();
             // 
@@ -282,18 +283,18 @@ namespace Kolibri.net.SilverScreen.Forms
             labelQuality.Text = "HQ";
             toolTipDetail.SetToolTip(labelQuality, "Filmkvalitet");
             // 
-            // buttonSearch
+            // buttonSimilar
             // 
-            buttonSearch.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSearch.Location = new Point(415, 398);
-            buttonSearch.Name = "buttonSearch";
-            buttonSearch.Size = new Size(75, 23);
-            buttonSearch.TabIndex = 46;
-            buttonSearch.Text = "Search";
-            buttonSearch.TextAlign = ContentAlignment.MiddleRight;
-            toolTipDetail.SetToolTip(buttonSearch, "Se etter lignende filmer");
-            buttonSearch.UseVisualStyleBackColor = true;
-            buttonSearch.Click += buttonSearch_Click;
+            buttonSimilar.ImageAlign = ContentAlignment.MiddleLeft;
+            buttonSimilar.Location = new Point(415, 398);
+            buttonSimilar.Name = "buttonSimilar";
+            buttonSimilar.Size = new Size(75, 23);
+            buttonSimilar.TabIndex = 46;
+            buttonSimilar.Text = "Similar";
+            buttonSimilar.TextAlign = ContentAlignment.MiddleRight;
+            toolTipDetail.SetToolTip(buttonSimilar, "Se etter lignende filmer");
+            buttonSimilar.UseVisualStyleBackColor = true;
+            buttonSimilar.Click += buttonSimilar_Click;
             // 
             // buttonRediger
             // 
@@ -317,14 +318,25 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonSubtitleSearch.UseVisualStyleBackColor = true;
             buttonSubtitleSearch.Click += buttonSubtitleSearch_Click;
             // 
+            // buttonPosterFix
+            // 
+            buttonPosterFix.Location = new Point(259, 421);
+            buttonPosterFix.Name = "buttonPosterFix";
+            buttonPosterFix.Size = new Size(75, 23);
+            buttonPosterFix.TabIndex = 49;
+            buttonPosterFix.Text = "Poster";
+            buttonPosterFix.UseVisualStyleBackColor = true;
+            buttonPosterFix.Click += buttonPosterFix_Click;
+            // 
             // DetailsFormItem
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(504, 754);
+            Controls.Add(buttonPosterFix);
             Controls.Add(buttonSubtitleSearch);
             Controls.Add(buttonRediger);
-            Controls.Add(buttonSearch);
+            Controls.Add(buttonSimilar);
             Controls.Add(labelQuality);
             Controls.Add(labelFileExists);
             Controls.Add(buttonDeleteItem);
@@ -381,9 +393,10 @@ namespace Kolibri.net.SilverScreen.Forms
         private System.Windows.Forms.Button buttonDeleteItem;
         private System.Windows.Forms.Label labelFileExists;
         private System.Windows.Forms.Label labelQuality;
-        private Button buttonSearch;
+        private Button buttonSimilar;
         private ToolTip toolTipDetail;
         private Button buttonRediger;
         private Button buttonSubtitleSearch;
+        private Button buttonPosterFix;
     }
 }

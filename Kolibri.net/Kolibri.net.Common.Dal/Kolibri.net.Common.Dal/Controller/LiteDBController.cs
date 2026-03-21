@@ -100,7 +100,7 @@ namespace Kolibri.net.Common.Dal.Controller
             {
                 var ret = _liteDB.GetCollection<Item>("Item")
                     .Find(x => x.Title == title.Trim() && x.Year == year.ToString()).FirstOrDefault();
-                if (ret == null&&!string.IsNullOrWhiteSpace(alternateTitle)) 
+                if (ret == null&&!string.IsNullOrWhiteSpace(alternateTitle)&&!alternateTitle.Equals(title)) 
                 {
                       ret = _liteDB.GetCollection<Item>("Item")
                        .Find(x => x.Title == alternateTitle && x.Year == year.ToString()).FirstOrDefault();

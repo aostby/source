@@ -1,11 +1,9 @@
-using com.sun.corba.se.spi.ior;
 using FastColoredTextBoxNS;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
-using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Data;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
 
 namespace Kolibri.net.Common.FormUtilities

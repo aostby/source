@@ -3,6 +3,7 @@ using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.SilverScreen.DapperImdbData.Service;
+using Kolibri.net.SilverScreen.Forms;
 using OMDbApiNet.Model;
 using System;
 using System.Collections;
@@ -211,11 +212,12 @@ namespace Kolibri.net.SilverScreen.Controls
                     var res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.InputBox("Set imdbid for this title", "set value", ref val);
                     if (res == DialogResult.OK)
                     {
-                        var OMDB = new OMDBController(_liteDB.GetUserSettings().OMDBkey, _liteDB);
+                        var OMDB =  new OMDBController(_liteDB.GetUserSettings().OMDBkey, _liteDB);
                         var orgfile = await _liteDB.FindFileAsync(val);
                         var fetched = OMDB.GetItemByImdbId(val);
                         if (fetched != null)
                         {
+                            dgv.SelectedRows[0].Cells["ImdbId"].Value = val;
                             fetched.TomatoUrl = orgfile?.FullName;
                             if (await _liteDB.UpsertAsync(fetched))
                             {
@@ -626,6 +628,15 @@ namespace Kolibri.net.SilverScreen.Controls
                     var info = await _liteDB.FindFileAsync(imdbid);
                     if (info != null)
                     {
+                        var item = await _liteDB.FindItemAsync(info.ImdbId);
+                        if (item != null) {
+                            var form = new DetailsFormItem(item, _liteDB);
+                            form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                            form.ShowDialog();
+                            return;
+                        }
+
+
                         FileInfo file = new FileInfo(info.FullName);
                         if (file.Exists) { FileUtilities.OpenFolderMarkFile(file); }
                         else

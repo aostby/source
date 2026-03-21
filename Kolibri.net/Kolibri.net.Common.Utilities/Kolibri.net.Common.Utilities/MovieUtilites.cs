@@ -219,8 +219,8 @@ namespace Kolibri.net.Common.Utilities
 
             var regExstring = @"([\[].*?[\]]|[\(].*?[\)])";
             var ret = Regex.Replace(movieTitleToFetch, regExstring, "");
-            return ret.Trim();
-
+       ret=    ret.Trim().TrimEnd('-').Trim();
+            return ret;
         }
         #endregion
 

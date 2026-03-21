@@ -89,5 +89,30 @@ namespace Kolibri.net.Common.Utilities
 
         }
 
+      
+        public static bool DoesUrlExists(String url)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    //Do only Head request to avoid download full file
+                    var response =   Task.Run(async () =>   await  client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url)));
+
+                    if (response.Result.IsSuccessStatusCode)
+                    {
+                        //Url is available is we have a SuccessStatusCode
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
     }
 }

@@ -28,477 +28,473 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            components = new System.ComponentModel.Container();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WatchlistForm));
-            this.gridMovies = new System.Windows.Forms.DataGridView();
-            this.cmsOptions = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.miMovieDetails = new System.Windows.Forms.ToolStripMenuItem();
-            this.miChangeStatus = new System.Windows.Forms.ToolStripMenuItem();
-            this.miDeleteMovie = new System.Windows.Forms.ToolStripMenuItem();
-            this.bsMovies = new System.Windows.Forms.BindingSource(this.components);
-            this.lblFound = new System.Windows.Forms.Label();
-            this.chbWatched = new System.Windows.Forms.CheckBox();
-            this.chbNotWatched = new System.Windows.Forms.CheckBox();
-            this.tbTitle = new System.Windows.Forms.TextBox();
-            this.btnExcel = new System.Windows.Forms.Button();
-            this.btnShare = new System.Windows.Forms.Button();
-            this.btnWa = new System.Windows.Forms.Button();
-            this.btnPrint = new System.Windows.Forms.Button();
-            this.btnClipboard = new System.Windows.Forms.Button();
-            this.btnLoadWatchlist = new System.Windows.Forms.Button();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.btnChart = new System.Windows.Forms.Button();
-            this.chart = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.btnGrid = new System.Windows.Forms.Button();
-            this.Image = new System.Windows.Forms.DataGridViewImageColumn();
-            this.Title = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Plot = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.imdbRating = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Metascore = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Genre = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Actors = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Year = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Trailer = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Runtime = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Poster = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Watched = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ImdbId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.gridMovies)).BeginInit();
-            this.cmsOptions.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bsMovies)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart)).BeginInit();
-            this.SuspendLayout();
+            gridMovies = new DataGridView();
+            Image = new DataGridViewImageColumn();
+            Title = new DataGridViewTextBoxColumn();
+            Plot = new DataGridViewTextBoxColumn();
+            imdbRating = new DataGridViewTextBoxColumn();
+            Metascore = new DataGridViewTextBoxColumn();
+            Genre = new DataGridViewTextBoxColumn();
+            Actors = new DataGridViewTextBoxColumn();
+            Year = new DataGridViewTextBoxColumn();
+            Trailer = new DataGridViewTextBoxColumn();
+            Runtime = new DataGridViewTextBoxColumn();
+            Poster = new DataGridViewTextBoxColumn();
+            Watched = new DataGridViewTextBoxColumn();
+            ImdbId = new DataGridViewTextBoxColumn();
+            cmsOptions = new ContextMenuStrip(components);
+            miMovieDetails = new ToolStripMenuItem();
+            miChangeStatus = new ToolStripMenuItem();
+            miDeleteMovie = new ToolStripMenuItem();
+            bsMovies = new BindingSource(components);
+            lblFound = new Label();
+            chbWatched = new CheckBox();
+            chbNotWatched = new CheckBox();
+            tbTitle = new TextBox();
+            btnExcel = new Button();
+            btnShare = new Button();
+            btnWa = new Button();
+            btnPrint = new Button();
+            btnClipboard = new Button();
+            btnLoadWatchlist = new Button();
+            openFileDialog1 = new OpenFileDialog();
+            btnChart = new Button();
+            chart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            btnGrid = new Button();
+            buttonPlex = new Button();
+            ((System.ComponentModel.ISupportInitialize)gridMovies).BeginInit();
+            cmsOptions.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)bsMovies).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)chart).BeginInit();
+            SuspendLayout();
             // 
             // gridMovies
             // 
-            this.gridMovies.AllowUserToAddRows = false;
-            this.gridMovies.AllowUserToDeleteRows = false;
-            this.gridMovies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.gridMovies.AutoGenerateColumns = false;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.gridMovies.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.gridMovies.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gridMovies.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Image,
-            this.Title,
-            this.Plot,
-            this.imdbRating,
-            this.Metascore,
-            this.Genre,
-            this.Actors,
-            this.Year,
-            this.Trailer,
-            this.Runtime,
-            this.Poster,
-            this.Watched,
-            this.ImdbId});
-            this.gridMovies.ContextMenuStrip = this.cmsOptions;
-            this.gridMovies.DataSource = this.bsMovies;
-            this.gridMovies.Location = new System.Drawing.Point(16, 37);
-            this.gridMovies.Margin = new System.Windows.Forms.Padding(4);
-            this.gridMovies.Name = "gridMovies";
-            this.gridMovies.ReadOnly = true;
-            this.gridMovies.RowHeadersVisible = false;
-            this.gridMovies.RowHeadersWidth = 51;
-            this.gridMovies.RowTemplate.Height = 100;
-            this.gridMovies.Size = new System.Drawing.Size(1628, 417);
-            this.gridMovies.TabIndex = 0;
-            this.gridMovies.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.gridMovies_CellFormatting);
-            this.gridMovies.CellMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gridMovies_CellMouseDoubleClick);
-            this.gridMovies.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gridMovies_CellMouseDown);
+            gridMovies.AllowUserToAddRows = false;
+            gridMovies.AllowUserToDeleteRows = false;
+            gridMovies.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            gridMovies.AutoGenerateColumns = false;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 238);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            gridMovies.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            gridMovies.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            gridMovies.Columns.AddRange(new DataGridViewColumn[] { Image, Title, Plot, imdbRating, Metascore, Genre, Actors, Year, Trailer, Runtime, Poster, Watched, ImdbId });
+            gridMovies.ContextMenuStrip = cmsOptions;
+            gridMovies.DataSource = bsMovies;
+            gridMovies.Location = new Point(14, 35);
+            gridMovies.Margin = new Padding(4);
+            gridMovies.Name = "gridMovies";
+            gridMovies.ReadOnly = true;
+            gridMovies.RowHeadersVisible = false;
+            gridMovies.RowHeadersWidth = 51;
+            gridMovies.RowTemplate.Height = 100;
+            gridMovies.Size = new Size(1424, 391);
+            gridMovies.TabIndex = 0;
+            gridMovies.CellFormatting += gridMovies_CellFormatting;
+            gridMovies.CellMouseDoubleClick += gridMovies_CellMouseDoubleClick;
+            gridMovies.CellMouseDown += gridMovies_CellMouseDown;
+            // 
+            // Image
+            // 
+            Image.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            Image.DataPropertyName = "Image";
+            Image.HeaderText = "Image";
+            Image.MinimumWidth = 6;
+            Image.Name = "Image";
+            Image.ReadOnly = true;
+            Image.Resizable = DataGridViewTriState.True;
+            Image.SortMode = DataGridViewColumnSortMode.Automatic;
+            Image.Width = 61;
+            // 
+            // Title
+            // 
+            Title.DataPropertyName = "Title";
+            Title.HeaderText = "Title";
+            Title.MinimumWidth = 6;
+            Title.Name = "Title";
+            Title.ReadOnly = true;
+            Title.Resizable = DataGridViewTriState.True;
+            Title.Width = 210;
+            // 
+            // Plot
+            // 
+            Plot.DataPropertyName = "Plot";
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            Plot.DefaultCellStyle = dataGridViewCellStyle2;
+            Plot.HeaderText = "Plot";
+            Plot.MinimumWidth = 6;
+            Plot.Name = "Plot";
+            Plot.ReadOnly = true;
+            Plot.Width = 400;
+            // 
+            // imdbRating
+            // 
+            imdbRating.DataPropertyName = "imdbRating";
+            imdbRating.HeaderText = "IMDb Rating";
+            imdbRating.MinimumWidth = 6;
+            imdbRating.Name = "imdbRating";
+            imdbRating.ReadOnly = true;
+            imdbRating.Width = 50;
+            // 
+            // Metascore
+            // 
+            Metascore.DataPropertyName = "Metascore";
+            Metascore.HeaderText = "Metascore";
+            Metascore.MinimumWidth = 6;
+            Metascore.Name = "Metascore";
+            Metascore.ReadOnly = true;
+            Metascore.Width = 80;
+            // 
+            // Genre
+            // 
+            Genre.DataPropertyName = "Genre";
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            Genre.DefaultCellStyle = dataGridViewCellStyle3;
+            Genre.HeaderText = "Genre";
+            Genre.MinimumWidth = 6;
+            Genre.Name = "Genre";
+            Genre.ReadOnly = true;
+            Genre.Width = 150;
+            // 
+            // Actors
+            // 
+            Actors.DataPropertyName = "Actors";
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            Actors.DefaultCellStyle = dataGridViewCellStyle4;
+            Actors.HeaderText = "Actors";
+            Actors.MinimumWidth = 6;
+            Actors.Name = "Actors";
+            Actors.ReadOnly = true;
+            Actors.Width = 210;
+            // 
+            // Year
+            // 
+            Year.DataPropertyName = "Year";
+            Year.HeaderText = "Year";
+            Year.MinimumWidth = 6;
+            Year.Name = "Year";
+            Year.ReadOnly = true;
+            Year.Width = 50;
+            // 
+            // Trailer
+            // 
+            Trailer.DataPropertyName = "Trailer";
+            Trailer.HeaderText = "Trailer";
+            Trailer.MinimumWidth = 6;
+            Trailer.Name = "Trailer";
+            Trailer.ReadOnly = true;
+            Trailer.Width = 125;
+            // 
+            // Runtime
+            // 
+            Runtime.DataPropertyName = "Runtime";
+            Runtime.HeaderText = "Runtime";
+            Runtime.MinimumWidth = 6;
+            Runtime.Name = "Runtime";
+            Runtime.ReadOnly = true;
+            Runtime.Width = 125;
+            // 
+            // Poster
+            // 
+            Poster.DataPropertyName = "Poster";
+            Poster.HeaderText = "Poster";
+            Poster.MinimumWidth = 6;
+            Poster.Name = "Poster";
+            Poster.ReadOnly = true;
+            Poster.Resizable = DataGridViewTriState.True;
+            Poster.SortMode = DataGridViewColumnSortMode.NotSortable;
+            Poster.Visible = false;
+            Poster.Width = 125;
+            // 
+            // Watched
+            // 
+            Watched.DataPropertyName = "Watched";
+            Watched.HeaderText = "Watched";
+            Watched.MinimumWidth = 6;
+            Watched.Name = "Watched";
+            Watched.ReadOnly = true;
+            Watched.Visible = false;
+            Watched.Width = 70;
+            // 
+            // ImdbId
+            // 
+            ImdbId.DataPropertyName = "ImdbId";
+            ImdbId.HeaderText = "ImdbId";
+            ImdbId.MinimumWidth = 6;
+            ImdbId.Name = "ImdbId";
+            ImdbId.ReadOnly = true;
+            ImdbId.Width = 125;
             // 
             // cmsOptions
             // 
-            this.cmsOptions.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.cmsOptions.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miMovieDetails,
-            this.miChangeStatus,
-            this.miDeleteMovie});
-            this.cmsOptions.Name = "cmsOptions";
-            this.cmsOptions.Size = new System.Drawing.Size(227, 76);
-            this.cmsOptions.Opening += new System.ComponentModel.CancelEventHandler(this.cmsOptions_Opening);
+            cmsOptions.ImageScalingSize = new Size(20, 20);
+            cmsOptions.Items.AddRange(new ToolStripItem[] { miMovieDetails, miChangeStatus, miDeleteMovie });
+            cmsOptions.Name = "cmsOptions";
+            cmsOptions.Size = new Size(191, 70);
+            cmsOptions.Opening += cmsOptions_Opening;
             // 
             // miMovieDetails
             // 
-            this.miMovieDetails.Name = "miMovieDetails";
-            this.miMovieDetails.Size = new System.Drawing.Size(226, 24);
-            this.miMovieDetails.Text = "Show Movie Details";
-            this.miMovieDetails.Click += new System.EventHandler(this.miMovieDetails_Click);
+            miMovieDetails.Name = "miMovieDetails";
+            miMovieDetails.Size = new Size(190, 22);
+            miMovieDetails.Text = "Show Movie Details";
+            miMovieDetails.Click += miMovieDetails_Click;
             // 
             // miChangeStatus
             // 
-            this.miChangeStatus.Name = "miChangeStatus";
-            this.miChangeStatus.Size = new System.Drawing.Size(226, 24);
-            this.miChangeStatus.Text = "Change to watched";
-            this.miChangeStatus.Click += new System.EventHandler(this.miChangeStatus_Click);
+            miChangeStatus.Name = "miChangeStatus";
+            miChangeStatus.Size = new Size(190, 22);
+            miChangeStatus.Text = "Change to watched";
+            miChangeStatus.Click += miChangeStatus_Click;
             // 
             // miDeleteMovie
             // 
-            this.miDeleteMovie.Name = "miDeleteMovie";
-            this.miDeleteMovie.Size = new System.Drawing.Size(226, 24);
-            this.miDeleteMovie.Text = "Delete movie from list";
-            this.miDeleteMovie.Click += new System.EventHandler(this.miDeleteMovie_Click);
+            miDeleteMovie.Name = "miDeleteMovie";
+            miDeleteMovie.Size = new Size(190, 22);
+            miDeleteMovie.Text = "Delete movie from list";
+            miDeleteMovie.Click += miDeleteMovie_Click;
             // 
             // bsMovies
             // 
-            this.bsMovies.CurrentChanged += new System.EventHandler(this.bsMovies_CurrentChanged);
+            bsMovies.CurrentChanged += bsMovies_CurrentChanged;
             // 
             // lblFound
             // 
-            this.lblFound.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblFound.AutoSize = true;
-            this.lblFound.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblFound.Location = new System.Drawing.Point(1377, 12);
-            this.lblFound.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblFound.MinimumSize = new System.Drawing.Size(267, 16);
-            this.lblFound.Name = "lblFound";
-            this.lblFound.Size = new System.Drawing.Size(267, 17);
-            this.lblFound.TabIndex = 68;
-            this.lblFound.Text = "0 / 0";
-            this.lblFound.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblFound.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblFound.AutoSize = true;
+            lblFound.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblFound.Location = new Point(1205, 11);
+            lblFound.Margin = new Padding(4, 0, 4, 0);
+            lblFound.MinimumSize = new Size(234, 15);
+            lblFound.Name = "lblFound";
+            lblFound.Size = new Size(234, 15);
+            lblFound.TabIndex = 68;
+            lblFound.Text = "0 / 0";
+            lblFound.TextAlign = ContentAlignment.TopRight;
             // 
             // chbWatched
             // 
-            this.chbWatched.AutoSize = true;
-            this.chbWatched.BackColor = System.Drawing.Color.LightGreen;
-            this.chbWatched.Location = new System.Drawing.Point(16, 7);
-            this.chbWatched.Margin = new System.Windows.Forms.Padding(4);
-            this.chbWatched.Name = "chbWatched";
-            this.chbWatched.Size = new System.Drawing.Size(83, 20);
-            this.chbWatched.TabIndex = 69;
-            this.chbWatched.Text = "Watched";
-            this.chbWatched.UseVisualStyleBackColor = false;
-            this.chbWatched.CheckedChanged += new System.EventHandler(this.chbWatched_CheckedChanged);
+            chbWatched.AutoSize = true;
+            chbWatched.BackColor = Color.LightGreen;
+            chbWatched.Location = new Point(14, 7);
+            chbWatched.Margin = new Padding(4);
+            chbWatched.Name = "chbWatched";
+            chbWatched.Size = new Size(73, 19);
+            chbWatched.TabIndex = 69;
+            chbWatched.Text = "Watched";
+            chbWatched.UseVisualStyleBackColor = false;
+            chbWatched.CheckedChanged += chbWatched_CheckedChanged;
             // 
             // chbNotWatched
             // 
-            this.chbNotWatched.AutoSize = true;
-            this.chbNotWatched.BackColor = System.Drawing.Color.LightPink;
-            this.chbNotWatched.Location = new System.Drawing.Point(117, 7);
-            this.chbNotWatched.Margin = new System.Windows.Forms.Padding(4);
-            this.chbNotWatched.Name = "chbNotWatched";
-            this.chbNotWatched.Size = new System.Drawing.Size(103, 20);
-            this.chbNotWatched.TabIndex = 70;
-            this.chbNotWatched.Text = "Not watched";
-            this.chbNotWatched.UseVisualStyleBackColor = false;
-            this.chbNotWatched.CheckedChanged += new System.EventHandler(this.chbWatched_CheckedChanged);
+            chbNotWatched.AutoSize = true;
+            chbNotWatched.BackColor = Color.LightPink;
+            chbNotWatched.Location = new Point(102, 7);
+            chbNotWatched.Margin = new Padding(4);
+            chbNotWatched.Name = "chbNotWatched";
+            chbNotWatched.Size = new Size(94, 19);
+            chbNotWatched.TabIndex = 70;
+            chbNotWatched.Text = "Not watched";
+            chbNotWatched.UseVisualStyleBackColor = false;
+            chbNotWatched.CheckedChanged += chbWatched_CheckedChanged;
             // 
             // tbTitle
             // 
-            this.tbTitle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.tbTitle.BackColor = System.Drawing.Color.LemonChiffon;
-            this.tbTitle.ForeColor = System.Drawing.Color.DarkGray;
-            this.tbTitle.Location = new System.Drawing.Point(16, 479);
-            this.tbTitle.Margin = new System.Windows.Forms.Padding(4);
-            this.tbTitle.MinimumSize = new System.Drawing.Size(184, 20);
-            this.tbTitle.Name = "tbTitle";
-            this.tbTitle.Size = new System.Drawing.Size(297, 22);
-            this.tbTitle.TabIndex = 71;
-            this.tbTitle.Text = "Title...";
-            this.tbTitle.TextChanged += new System.EventHandler(this.tbTitle_TextChanged);
-            this.tbTitle.Enter += new System.EventHandler(this.tbTitle_Enter);
-            this.tbTitle.Leave += new System.EventHandler(this.tbTitle_Leave);
+            tbTitle.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            tbTitle.BackColor = Color.LemonChiffon;
+            tbTitle.ForeColor = Color.DarkGray;
+            tbTitle.Location = new Point(14, 449);
+            tbTitle.Margin = new Padding(4);
+            tbTitle.MinimumSize = new Size(162, 20);
+            tbTitle.Name = "tbTitle";
+            tbTitle.Size = new Size(260, 23);
+            tbTitle.TabIndex = 71;
+            tbTitle.Text = "Title...";
+            tbTitle.TextChanged += tbTitle_TextChanged;
+            tbTitle.Enter += tbTitle_Enter;
+            tbTitle.Leave += tbTitle_Leave;
             // 
             // btnExcel
             // 
-            this.btnExcel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExcel.Location = new System.Drawing.Point(1176, 480);
-            this.btnExcel.Margin = new System.Windows.Forms.Padding(4);
-            this.btnExcel.Name = "btnExcel";
-            this.btnExcel.Size = new System.Drawing.Size(99, 28);
-            this.btnExcel.TabIndex = 72;
-            this.btnExcel.Text = "Make excel";
-            this.btnExcel.UseVisualStyleBackColor = true;
-            this.btnExcel.Click += new System.EventHandler(this.btnExcel_Click);
+            btnExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnExcel.Location = new Point(1029, 450);
+            btnExcel.Margin = new Padding(4);
+            btnExcel.Name = "btnExcel";
+            btnExcel.Size = new Size(87, 26);
+            btnExcel.TabIndex = 72;
+            btnExcel.Text = "Make excel";
+            btnExcel.UseVisualStyleBackColor = true;
+            btnExcel.Click += btnExcel_Click;
             // 
             // btnShare
             // 
-            this.btnShare.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnShare.Location = new System.Drawing.Point(1317, 480);
-            this.btnShare.Margin = new System.Windows.Forms.Padding(4);
-            this.btnShare.Name = "btnShare";
-            this.btnShare.Size = new System.Drawing.Size(172, 28);
-            this.btnShare.TabIndex = 73;
-            this.btnShare.Text = "Share watchlist to friend";
-            this.btnShare.UseVisualStyleBackColor = true;
-            this.btnShare.Click += new System.EventHandler(this.btnShare_Click);
+            btnShare.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnShare.Location = new Point(1152, 450);
+            btnShare.Margin = new Padding(4);
+            btnShare.Name = "btnShare";
+            btnShare.Size = new Size(150, 26);
+            btnShare.TabIndex = 73;
+            btnShare.Text = "Share watchlist to friend";
+            btnShare.UseVisualStyleBackColor = true;
+            btnShare.Click += btnShare_Click;
             // 
             // btnWa
             // 
-            this.btnWa.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnWa.Location = new System.Drawing.Point(1497, 480);
-            this.btnWa.Margin = new System.Windows.Forms.Padding(4);
-            this.btnWa.Name = "btnWa";
-            this.btnWa.Size = new System.Drawing.Size(147, 28);
-            this.btnWa.TabIndex = 74;
-            this.btnWa.Text = "Send to WhatsApp";
-            this.btnWa.UseVisualStyleBackColor = true;
-            this.btnWa.Click += new System.EventHandler(this.btnWa_Click);
+            btnWa.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnWa.Location = new Point(1310, 450);
+            btnWa.Margin = new Padding(4);
+            btnWa.Name = "btnWa";
+            btnWa.Size = new Size(129, 26);
+            btnWa.TabIndex = 74;
+            btnWa.Text = "Send to WhatsApp";
+            btnWa.UseVisualStyleBackColor = true;
+            btnWa.Click += btnWa_Click;
             // 
             // btnPrint
             // 
-            this.btnPrint.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPrint.Location = new System.Drawing.Point(893, 480);
-            this.btnPrint.Margin = new System.Windows.Forms.Padding(4);
-            this.btnPrint.Name = "btnPrint";
-            this.btnPrint.Size = new System.Drawing.Size(111, 28);
-            this.btnPrint.TabIndex = 75;
-            this.btnPrint.Text = "Print watchlist";
-            this.btnPrint.UseVisualStyleBackColor = true;
-            this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
+            btnPrint.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnPrint.Location = new Point(781, 450);
+            btnPrint.Margin = new Padding(4);
+            btnPrint.Name = "btnPrint";
+            btnPrint.Size = new Size(97, 26);
+            btnPrint.TabIndex = 75;
+            btnPrint.Text = "Print watchlist";
+            btnPrint.UseVisualStyleBackColor = true;
+            btnPrint.Click += btnPrint_Click;
             // 
             // btnClipboard
             // 
-            this.btnClipboard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClipboard.Location = new System.Drawing.Point(689, 480);
-            this.btnClipboard.Margin = new System.Windows.Forms.Padding(4);
-            this.btnClipboard.Name = "btnClipboard";
-            this.btnClipboard.Size = new System.Drawing.Size(196, 28);
-            this.btnClipboard.TabIndex = 76;
-            this.btnClipboard.Text = "Copy watchlist to clipboard";
-            this.btnClipboard.UseVisualStyleBackColor = true;
-            this.btnClipboard.Click += new System.EventHandler(this.btnClipboard_Click);
+            btnClipboard.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnClipboard.Location = new Point(603, 450);
+            btnClipboard.Margin = new Padding(4);
+            btnClipboard.Name = "btnClipboard";
+            btnClipboard.Size = new Size(172, 26);
+            btnClipboard.TabIndex = 76;
+            btnClipboard.Text = "Copy watchlist to clipboard";
+            btnClipboard.UseVisualStyleBackColor = true;
+            btnClipboard.Click += btnClipboard_Click;
             // 
             // btnLoadWatchlist
             // 
-            this.btnLoadWatchlist.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLoadWatchlist.Location = new System.Drawing.Point(1048, 480);
-            this.btnLoadWatchlist.Margin = new System.Windows.Forms.Padding(4);
-            this.btnLoadWatchlist.Name = "btnLoadWatchlist";
-            this.btnLoadWatchlist.Size = new System.Drawing.Size(120, 28);
-            this.btnLoadWatchlist.TabIndex = 77;
-            this.btnLoadWatchlist.Text = "Load watchlist";
-            this.btnLoadWatchlist.UseVisualStyleBackColor = true;
-            this.btnLoadWatchlist.Click += new System.EventHandler(this.btnLoadWatchlist_Click);
+            btnLoadWatchlist.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnLoadWatchlist.Location = new Point(917, 450);
+            btnLoadWatchlist.Margin = new Padding(4);
+            btnLoadWatchlist.Name = "btnLoadWatchlist";
+            btnLoadWatchlist.Size = new Size(105, 26);
+            btnLoadWatchlist.TabIndex = 77;
+            btnLoadWatchlist.Text = "Load watchlist";
+            btnLoadWatchlist.UseVisualStyleBackColor = true;
+            btnLoadWatchlist.Click += btnLoadWatchlist_Click;
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.FileName = "openFileDialog1";
+            openFileDialog1.FileName = "openFileDialog1";
             // 
             // btnChart
             // 
-            this.btnChart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnChart.Location = new System.Drawing.Point(341, 479);
-            this.btnChart.Margin = new System.Windows.Forms.Padding(4);
-            this.btnChart.Name = "btnChart";
-            this.btnChart.Size = new System.Drawing.Size(196, 28);
-            this.btnChart.TabIndex = 78;
-            this.btnChart.Text = "Show chart by Rating";
-            this.btnChart.UseVisualStyleBackColor = true;
-            this.btnChart.Click += new System.EventHandler(this.btnChart_Click);
+            btnChart.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnChart.Location = new Point(298, 449);
+            btnChart.Margin = new Padding(4);
+            btnChart.Name = "btnChart";
+            btnChart.Size = new Size(172, 26);
+            btnChart.TabIndex = 78;
+            btnChart.Text = "Show chart by Rating";
+            btnChart.UseVisualStyleBackColor = true;
+            btnChart.Click += btnChart_Click;
             // 
             // chart
             // 
             chartArea1.Name = "ChartArea1";
-            this.chart.ChartAreas.Add(chartArea1);
+            chart.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
-            this.chart.Legends.Add(legend1);
-            this.chart.Location = new System.Drawing.Point(16, 37);
-            this.chart.Margin = new System.Windows.Forms.Padding(4);
-            this.chart.Name = "chart";
+            chart.Legends.Add(legend1);
+            chart.Location = new Point(14, 35);
+            chart.Margin = new Padding(4);
+            chart.Name = "chart";
             series1.ChartArea = "ChartArea1";
             series1.Legend = "Legend1";
             series1.Name = "IMDb Rating";
-            this.chart.Series.Add(series1);
-            this.chart.Size = new System.Drawing.Size(1628, 417);
-            this.chart.TabIndex = 79;
-            this.chart.Text = "chart1";
+            chart.Series.Add(series1);
+            chart.Size = new Size(1424, 391);
+            chart.TabIndex = 79;
+            chart.Text = "chart1";
             title1.Name = "Title";
             title1.Text = "Best movies by rating";
-            this.chart.Titles.Add(title1);
+            chart.Titles.Add(title1);
             // 
             // btnGrid
             // 
-            this.btnGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnGrid.Location = new System.Drawing.Point(341, 480);
-            this.btnGrid.Margin = new System.Windows.Forms.Padding(4);
-            this.btnGrid.Name = "btnGrid";
-            this.btnGrid.Size = new System.Drawing.Size(196, 28);
-            this.btnGrid.TabIndex = 80;
-            this.btnGrid.Text = "Back to watchlist";
-            this.btnGrid.UseVisualStyleBackColor = true;
-            this.btnGrid.Click += new System.EventHandler(this.btnGrid_Click);
+            btnGrid.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnGrid.Location = new Point(298, 450);
+            btnGrid.Margin = new Padding(4);
+            btnGrid.Name = "btnGrid";
+            btnGrid.Size = new Size(172, 26);
+            btnGrid.TabIndex = 80;
+            btnGrid.Text = "Back to watchlist";
+            btnGrid.UseVisualStyleBackColor = true;
+            btnGrid.Click += btnGrid_Click;
             // 
-            // Image
+            // buttonPlex
             // 
-            this.Image.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.Image.DataPropertyName = "Image";
-            this.Image.HeaderText = "Image";
-            this.Image.MinimumWidth = 6;
-            this.Image.Name = "Image";
-            this.Image.ReadOnly = true;
-            this.Image.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Image.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.Image.Width = 75;
-            // 
-            // Title
-            // 
-            this.Title.DataPropertyName = "Title";
-            this.Title.HeaderText = "Title";
-            this.Title.MinimumWidth = 6;
-            this.Title.Name = "Title";
-            this.Title.ReadOnly = true;
-            this.Title.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Title.Width = 210;
-            // 
-            // Plot
-            // 
-            this.Plot.DataPropertyName = "Plot";
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.Plot.DefaultCellStyle = dataGridViewCellStyle2;
-            this.Plot.HeaderText = "Plot";
-            this.Plot.MinimumWidth = 6;
-            this.Plot.Name = "Plot";
-            this.Plot.ReadOnly = true;
-            this.Plot.Width = 400;
-            // 
-            // imdbRating
-            // 
-            this.imdbRating.DataPropertyName = "imdbRating";
-            this.imdbRating.HeaderText = "IMDb Rating";
-            this.imdbRating.MinimumWidth = 6;
-            this.imdbRating.Name = "imdbRating";
-            this.imdbRating.ReadOnly = true;
-            this.imdbRating.Width = 50;
-            // 
-            // Metascore
-            // 
-            this.Metascore.DataPropertyName = "Metascore";
-            this.Metascore.HeaderText = "Metascore";
-            this.Metascore.MinimumWidth = 6;
-            this.Metascore.Name = "Metascore";
-            this.Metascore.ReadOnly = true;
-            this.Metascore.Width = 80;
-            // 
-            // Genre
-            // 
-            this.Genre.DataPropertyName = "Genre";
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.Genre.DefaultCellStyle = dataGridViewCellStyle3;
-            this.Genre.HeaderText = "Genre";
-            this.Genre.MinimumWidth = 6;
-            this.Genre.Name = "Genre";
-            this.Genre.ReadOnly = true;
-            this.Genre.Width = 150;
-            // 
-            // Actors
-            // 
-            this.Actors.DataPropertyName = "Actors";
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.Actors.DefaultCellStyle = dataGridViewCellStyle4;
-            this.Actors.HeaderText = "Actors";
-            this.Actors.MinimumWidth = 6;
-            this.Actors.Name = "Actors";
-            this.Actors.ReadOnly = true;
-            this.Actors.Width = 210;
-            // 
-            // Year
-            // 
-            this.Year.DataPropertyName = "Year";
-            this.Year.HeaderText = "Year";
-            this.Year.MinimumWidth = 6;
-            this.Year.Name = "Year";
-            this.Year.ReadOnly = true;
-            this.Year.Width = 50;
-            // 
-            // Trailer
-            // 
-            this.Trailer.DataPropertyName = "Trailer";
-            this.Trailer.HeaderText = "Trailer";
-            this.Trailer.MinimumWidth = 6;
-            this.Trailer.Name = "Trailer";
-            this.Trailer.ReadOnly = true;
-            this.Trailer.Width = 125;
-            // 
-            // Runtime
-            // 
-            this.Runtime.DataPropertyName = "Runtime";
-            this.Runtime.HeaderText = "Runtime";
-            this.Runtime.MinimumWidth = 6;
-            this.Runtime.Name = "Runtime";
-            this.Runtime.ReadOnly = true;
-            this.Runtime.Width = 125;
-            // 
-            // Poster
-            // 
-            this.Poster.DataPropertyName = "Poster";
-            this.Poster.HeaderText = "Poster";
-            this.Poster.MinimumWidth = 6;
-            this.Poster.Name = "Poster";
-            this.Poster.ReadOnly = true;
-            this.Poster.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Poster.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.Poster.Visible = false;
-            this.Poster.Width = 125;
-            // 
-            // Watched
-            // 
-            this.Watched.DataPropertyName = "Watched";
-            this.Watched.HeaderText = "Watched";
-            this.Watched.MinimumWidth = 6;
-            this.Watched.Name = "Watched";
-            this.Watched.ReadOnly = true;
-            this.Watched.Visible = false;
-            this.Watched.Width = 70;
-            // 
-            // ImdbId
-            // 
-            this.ImdbId.DataPropertyName = "ImdbId";
-            this.ImdbId.HeaderText = "ImdbId";
-            this.ImdbId.MinimumWidth = 6;
-            this.ImdbId.Name = "ImdbId";
-            this.ImdbId.ReadOnly = true;
-            this.ImdbId.Width = 125;
+            buttonPlex.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonPlex.Location = new Point(498, 451);
+            buttonPlex.Margin = new Padding(4);
+            buttonPlex.Name = "buttonPlex";
+            buttonPlex.Size = new Size(97, 26);
+            buttonPlex.TabIndex = 81;
+            buttonPlex.Text = "Copy to Plex";
+            buttonPlex.UseVisualStyleBackColor = true;
+            buttonPlex.Click += buttonPlex_Click;
             // 
             // WatchlistForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1660, 523);
-            this.Controls.Add(this.btnLoadWatchlist);
-            this.Controls.Add(this.btnClipboard);
-            this.Controls.Add(this.btnPrint);
-            this.Controls.Add(this.btnWa);
-            this.Controls.Add(this.btnShare);
-            this.Controls.Add(this.btnExcel);
-            this.Controls.Add(this.tbTitle);
-            this.Controls.Add(this.chbNotWatched);
-            this.Controls.Add(this.chbWatched);
-            this.Controls.Add(this.lblFound);
-            this.Controls.Add(this.btnChart);
-            this.Controls.Add(this.btnGrid);
-            this.Controls.Add(this.gridMovies);
-            this.Controls.Add(this.chart);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4);
-            this.MinimumSize = new System.Drawing.Size(1675, 560);
-            this.Name = "WatchlistForm";
-            this.Text = "Watchlist";
-            this.Load += new System.EventHandler(this.WatchlistForm_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.WatchlistForm_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.gridMovies)).EndInit();
-            this.cmsOptions.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.bsMovies)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1452, 490);
+            Controls.Add(buttonPlex);
+            Controls.Add(btnLoadWatchlist);
+            Controls.Add(btnClipboard);
+            Controls.Add(btnPrint);
+            Controls.Add(btnWa);
+            Controls.Add(btnShare);
+            Controls.Add(btnExcel);
+            Controls.Add(tbTitle);
+            Controls.Add(chbNotWatched);
+            Controls.Add(chbWatched);
+            Controls.Add(lblFound);
+            Controls.Add(btnChart);
+            Controls.Add(btnGrid);
+            Controls.Add(gridMovies);
+            Controls.Add(chart);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            KeyPreview = true;
+            Margin = new Padding(4);
+            MinimumSize = new Size(1468, 527);
+            Name = "WatchlistForm";
+            Text = "Watchlist";
+            Load += WatchlistForm_Load;
+            KeyDown += WatchlistForm_KeyDown;
+            ((System.ComponentModel.ISupportInitialize)gridMovies).EndInit();
+            cmsOptions.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)bsMovies).EndInit();
+            ((System.ComponentModel.ISupportInitialize)chart).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 
@@ -537,5 +533,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Poster;
         private System.Windows.Forms.DataGridViewTextBoxColumn Watched;
         private System.Windows.Forms.DataGridViewTextBoxColumn ImdbId;
+        private Button buttonPlex;
     }
 }

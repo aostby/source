@@ -1,6 +1,7 @@
 ﻿using com.sun.codemodel.@internal.util;
 using DGVPrinterHelper;
 using ExcelDataReader;
+using javax.xml.crypto;
 using Kolibri.net.Common.Dal.Controller;
 using MoviesFromImdb.Controller;
 using System.ComponentModel;
@@ -19,6 +20,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private IMDBDAL _IMDBDAL;
         private string _watchListName = "MyMovies";
 
+        private LiteDBController _liteDB { get; }
+
         public WatchlistForm(LiteDBController liteDB, string watchListName)
         {
             InitializeComponent();
@@ -33,6 +36,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
 
             FillUpGrid();
+            _liteDB = liteDB;
+
+            this.Text += $" {_watchListName}";
         }
 
         public void FillUpGrid()
@@ -48,19 +54,20 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 bsMovies.DataSource = dsMovies.Tables[0];
                 gridMovies.SuspendLayout();
                 gridMovies.DataSource = bsMovies;
-                
-                List<string> list = new List<string>() { "Title", "Plot", "ImdbRating"};
+
+                List<string> list = new List<string>() { "Title", "Plot", "ImdbRating" };
 
                 for (int i = 0; i < gridMovies.Columns.Count; i++)
                 {
                     if (!list.Contains(gridMovies.Columns[i].Name))
                     { //gridMovies.Columns[i].Visible = false; //
 
-                        if (gridMovies.Name.Equals("ImdbId", StringComparison.OrdinalIgnoreCase)) {
+                        if (gridMovies.Name.Equals("ImdbId", StringComparison.OrdinalIgnoreCase))
+                        {
                             gridMovies.Columns[i].Visible = false;
                         }
 
-                     }
+                    }
 
                     if (gridMovies.Columns[i] is DataGridViewImageColumn)
                     {
@@ -68,13 +75,13 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         gridMovies.Columns[i].Visible = true;
                     }
                 }
-                gridMovies.ResumeLayout(); 
+                gridMovies.ResumeLayout();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
- 
+
         }
 
         private void cmsOptions_Opening(object sender, CancelEventArgs e)
@@ -455,6 +462,30 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             catch (Exception)
             { }
+        }
+
+        private async void buttonPlex_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                PlexController plex = new PlexController(_liteDB.GetUserSettings());
+                var test = await plex.GetPlaylistsAsync();
+                var pl = test.FindAll(x => x.Equals($"{_watchListName}", StringComparison.OrdinalIgnoreCase)).First();
+                if (!string.IsNullOrEmpty(pl))
+                {
+
+                    foreach (DataGridViewRow row in gridMovies.Rows)
+                    {
+                        string imdbId = gridMovies["ImdbId", row.Index].Value.ToString();
+                        plex.AddElementToPlaylist(pl, imdbId);
+                    }
+                }
+                else { throw new Exception($"No playlist in Plex is called {tbTitle.Text}"); }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"'{_watchListName}' is not a playlist in your plex Server? {ex.Message}", ex.GetType().Name);
+            }
         }
     }
 }
