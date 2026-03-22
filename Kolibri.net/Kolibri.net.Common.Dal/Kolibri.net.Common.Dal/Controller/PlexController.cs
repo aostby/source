@@ -160,9 +160,14 @@ namespace Kolibri.net.Common.Dal.Controller
 
 
         /// <summary>
+        ///  /// <summary>
         /// Find all "movie" libraries automatically
+        /// playlist type can be audio or video
         /// </summary>
-        public async Task<List<string>> GetPlaylistsAsync()
+        /// </summary>
+        /// <param name="playlistType">audio or video</param>
+        /// <returns></returns>
+        public async Task<List<string>> GetPlaylistsAsync(string playlistType = "video")
         {
             if (_playlists == null)
             {
@@ -170,7 +175,8 @@ namespace Kolibri.net.Common.Dal.Controller
                 _playlists = XDocument.Parse(xml);
             }
             return _playlists.Descendants("Playlist")
-                .Select(d => d.Attribute("title").Value)
+                .Where( a=> a.Attribute("playlistType").Value.Equals(playlistType))
+                .Select(d =>  d.Attribute("title").Value)
                 .ToList();
         }
 
@@ -259,7 +265,7 @@ namespace Kolibri.net.Common.Dal.Controller
             return _cache.Values.ToList();
         }
 
-        public async void AddElementToPlaylist(string playlistName, string imdbId)
+        public async Task<bool> AddElementToPlaylist(string playlistName, string imdbId)
         {
             try
             {
@@ -289,11 +295,14 @@ namespace Kolibri.net.Common.Dal.Controller
                 if (resp.IsSuccessStatusCode)
                 {
                     Console.WriteLine("Element lagt til i spillelisten!");
+                    return true;
                 }
+                else { return false; }
 
             }
             catch (Exception ex)
             {
+                return false;
             }
         }
     }

@@ -57,6 +57,7 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonRediger = new Button();
             buttonSubtitleSearch = new Button();
             buttonPosterFix = new Button();
+            buttonPlaylist = new Button();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
             SuspendLayout();
             // 
@@ -328,11 +329,22 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonPosterFix.UseVisualStyleBackColor = true;
             buttonPosterFix.Click += buttonPosterFix_Click;
             // 
+            // buttonPlaylist
+            // 
+            buttonPlaylist.Location = new Point(337, 420);
+            buttonPlaylist.Name = "buttonPlaylist";
+            buttonPlaylist.Size = new Size(75, 23);
+            buttonPlaylist.TabIndex = 50;
+            buttonPlaylist.Text = "Playlist";
+            buttonPlaylist.UseVisualStyleBackColor = true;
+            buttonPlaylist.Click += buttonPlaylist_Click;
+            // 
             // DetailsFormItem
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(504, 754);
+            Controls.Add(buttonPlaylist);
             Controls.Add(buttonPosterFix);
             Controls.Add(buttonSubtitleSearch);
             Controls.Add(buttonRediger);
@@ -398,5 +410,6 @@ namespace Kolibri.net.SilverScreen.Forms
         private Button buttonRediger;
         private Button buttonSubtitleSearch;
         private Button buttonPosterFix;
+        private Button buttonPlaylist;
     }
 }
