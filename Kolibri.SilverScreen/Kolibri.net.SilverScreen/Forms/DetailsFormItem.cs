@@ -2,6 +2,7 @@
 using com.sun.corba.se.impl.orbutil;
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
@@ -584,7 +585,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (_item != null && _item.Type.StartsWith("movie", StringComparison.OrdinalIgnoreCase))
                 {
 
-                    if (  !HTMLUtilities.DoesUrlExists(_item.Poster))
+                    if (!HTMLUtilities.DoesUrlExists(_item.Poster))
                     {
                         var pItem = await plex.FindByImdbAsync(_item.ImdbId);
                         if (pItem != null)
@@ -593,12 +594,42 @@ namespace Kolibri.net.SilverScreen.Forms
                             await _liteDB.UpsertAsync(_item);
                             var txt = $"{_item.Title} - {_item.Poster} ";
                         }
-                    } 
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+        private async void buttonPlaylist_Click(object sender, EventArgs e)
+        {
+            PlexController plex = new PlexController(_liteDB.GetUserSettings());
+            object value = string.Empty;
+            var pls = await plex.GetPlaylistsAsync();
+            var res = InputDialogs.ChooseListBox($"Playlist to put {_item.Title} in ", "To add item to playlist, choose one",
+                         pls.ToList()
+                         , ref value, false);
+            if (res == DialogResult.OK)
+            {
+                try
+                {
+                    var pl = (value as ListViewItem).Text; 
+
+                    string imdbId = _item.ImdbId;
+                    if (!await plex.AddElementToPlaylist(pl, imdbId))
+                    {
+                        throw new Exception($"Item not added to Playlist {pl} ({_item.Title})");
+                    }
+                    else {
+                        MessageBox.Show($"Item added to Playlist {pl} ({_item.Title})", pl);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, ex.GetType().Name);
+                }
             }
         }
     }
