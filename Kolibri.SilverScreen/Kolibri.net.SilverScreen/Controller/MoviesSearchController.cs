@@ -352,7 +352,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     {
                         if (_updateTriState != null)
                         {
-                            if (!ret.TomatoUrl.GetHashCode().Equals(test.FullName.GetHashCode()))
+                            if (!$"ret.TomatoUrl".GetHashCode().Equals(test.FullName.GetHashCode()))
                             {
                                 ret.TomatoUrl = file.FullName;
                                 await _liteDB.UpdateAsync(ret);

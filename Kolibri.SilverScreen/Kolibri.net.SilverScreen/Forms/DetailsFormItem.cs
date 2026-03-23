@@ -490,6 +490,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (res == DialogResult.OK)
             {
+                if (!string.IsNullOrEmpty(_item.ImdbRating)) { _item.ImdbRating= _item.ImdbRating.Replace(",", "."); }
                 _liteDB.UpdateAsync(_item);
                 _liteDB.UpdateAsync(_itemPath);
                 Init(_item);
