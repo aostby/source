@@ -42,7 +42,6 @@ namespace Kolibri.net.SilverScreen.Forms
             _userSettings = userSettings;
             InitializeComponent();
             StartUp();
-          
         }
 
        
@@ -59,7 +58,7 @@ namespace Kolibri.net.SilverScreen.Forms
             textBoxSource.Text = GetCurentPath();
             this.Text = $" - {_userSettings.LiteDBFilePath}";
             SetLabelText(this.Text);
-            var res = await GetPathSearchFiles();
+            var res = new DirectoryInfo(_userSettings.UserFilePaths.MoviesSourcePath); //await GetPathSearchFiles();
             _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
             _dgvController = new DataGrivViewControls(MultimediaType.Movies, _liteDB);
 
@@ -77,10 +76,9 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             radioButtonShowGrid.Checked = true;
             _fileItems = _liteDB.FindAllFileItems(res);
-
             _fileItems = _fileItems.Where(x => x.ItemFileInfo.Exists);
 
-             button1_Click(null, null);
+             buttonVelg_Click(null, null);
 
            
         }
@@ -152,7 +150,7 @@ namespace Kolibri.net.SilverScreen.Forms
             radioButtonShowGrid.Checked = true;         
             groupBoxValg.Enabled = false;
             
-            Thread.Sleep(3);
+            Thread.Sleep(1);
 
             _searchFiles = new List<Item>();
             DirectoryInfo dInfo = null;
@@ -169,10 +167,10 @@ namespace Kolibri.net.SilverScreen.Forms
             if (dInfo != null && dInfo.Exists)
             {
                 SetLabelText($@"Searching for files in {dInfo.Name} ({dInfo.FullName})");
-                _ = await GetPathSearchFiles(dInfo);
+              //  _ = await GetPathSearchFiles(dInfo);
                 _= await SetCurrentPath(dInfo, true);
                 groupBoxValg.Enabled = !groupBoxValg.Enabled;
-                button1_Click(null, null);
+                buttonVelg_Click(null, null);
             }
             groupBoxValg.Enabled = true;
             buttonOpenFolder.Enabled = true;
@@ -397,7 +395,7 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
-        private async  void button1_Click(object sender, EventArgs e)
+        private async  void buttonVelg_Click(object sender, EventArgs e)
         {
             if (radioButtonShowGrid.Checked)
             {

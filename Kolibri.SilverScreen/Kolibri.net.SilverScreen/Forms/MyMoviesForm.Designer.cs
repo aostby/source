@@ -164,7 +164,7 @@
             buttonVelg.TabIndex = 1;
             buttonVelg.Text = "Velg";
             buttonVelg.UseVisualStyleBackColor = true;
-            buttonVelg.Click += button1_Click;
+            buttonVelg.Click += buttonVelg_Click;
             // 
             // radioButtonShowGrid
             // 
