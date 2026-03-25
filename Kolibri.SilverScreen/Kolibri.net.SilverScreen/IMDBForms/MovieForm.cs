@@ -162,6 +162,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         FileItem file = f.Result;
 
                         linkLabelOpenFilePath.BackColor = file == null ? Color.IndianRed : (file != null && file.ItemFileInfo.Exists ? Control.DefaultBackColor : Color.Yellow);
+                        toolTip1.SetToolTip(linkLabelOpenFilePath, $"{file?.ItemFileInfo?.FullName}");
                         if (false)
                         {
                             try

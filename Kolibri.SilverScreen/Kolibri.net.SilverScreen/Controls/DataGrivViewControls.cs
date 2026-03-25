@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using javax.swing.text;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
@@ -49,6 +50,7 @@ namespace Kolibri.net.SilverScreen.Controls
         public async Task< Form> GetMulitMediaDBDataGridViewAsForm(DataTable table, MultimediaType type)
         {
             DataGridView view = null;
+           
             if (!type.Equals(MultimediaType.Series))
             { view = GetMovieItemDataGridView(table); }
             else
@@ -240,6 +242,18 @@ namespace Kolibri.net.SilverScreen.Controls
                                             fetched.TomatoUrl = destination;
                                             await _liteDB.UpsertAsync(fetched);
                                             await _liteDB.UpsertAsync(new FileItem(fetched.ImdbId, fetched.TomatoUrl));
+                                            try
+                                            {
+                                                destination = Path.ChangeExtension(info.FullName, "srt");
+                                                if (Path.Exists(destination))
+                                                {
+                                                    File.Move(destination, Path.ChangeExtension(fetched.TomatoUrl, "srt"));
+                                                }
+                                            }
+                                            catch (Exception ex)
+                                            { }
+                                        
+
                                         }
                                         catch (Exception ex)
                                         {
@@ -285,6 +299,7 @@ namespace Kolibri.net.SilverScreen.Controls
                 List<string> visibleColumns = Constants.VisibleTMDBColumns;
 
                 DataGridView dgv = new DataGridView();
+                dgv.SuspendLayout();
                 dgv.DataSource = tableItem;
                 refresh(dgv, tableItem);
                 dgv.Dock = DockStyle.Fill;
@@ -313,6 +328,7 @@ namespace Kolibri.net.SilverScreen.Controls
 
                 }
                 catch (Exception) { }
+                dgv.ResumeLayout();
                 ret = dgv;
             }
             catch (Exception)

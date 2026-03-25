@@ -147,7 +147,10 @@ dgv.DisableResizing;*/
                             FileUtilities.Start(new DirectoryInfo(cellValue));
                             break;
                         case "File":
-                            FileUtilities.OpenFolderHighlightFile(new FileInfo(cellValue));
+                            if (File.Exists(cellValue)) 
+                                FileUtilities.OpenFolderHighlightFile(new FileInfo(cellValue));
+                            else
+                                FileUtilities.OpenFolderHighlightFile(new FileInfo(row.Cells["FullName"].Value.ToString()));
                             break;
 
                         default:
