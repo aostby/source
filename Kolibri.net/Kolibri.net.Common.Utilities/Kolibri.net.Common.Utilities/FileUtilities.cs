@@ -970,11 +970,7 @@ namespace Kolibri.net.Common.Utilities
             var executable = new StringBuilder(1024);
             FindExecutable(path, string.Empty, executable);
             return executable.ToString();
-        }
-
-
-
-
+        } 
 
         public static void OpenFolderMarkFile(FileInfo info)
         {
