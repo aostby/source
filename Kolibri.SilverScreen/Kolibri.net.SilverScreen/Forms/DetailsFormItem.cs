@@ -420,7 +420,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
 
         private async void tbActors_Clicked(object sender, EventArgs e)
-        {
+        {this.Cursor = Cursors.WaitCursor;  
             try
             {
                 var t = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
@@ -458,6 +458,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet($"{_item.Title} - {theList.Count()} first", dt.DataSet, this.Parent.Size);
             }
             catch (Exception ex) { }
+            this.Cursor = Cursors.Default;
         }
 
         private void buttonRediger_Click(object sender, EventArgs e)

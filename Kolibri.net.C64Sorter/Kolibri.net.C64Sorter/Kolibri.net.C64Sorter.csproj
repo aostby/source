@@ -10,7 +10,7 @@
     <ApplicationIcon>commodore_watermark.ico</ApplicationIcon>
 
     <Version Condition="'$(RELEASE_VERSION)' != ''">$(RELEASE_VERSION)</Version>
-    <VersionPrefix Condition="'$(RELEASE_VERSION)' == ''">2.0.1</VersionPrefix>
+    <VersionPrefix Condition="'$(RELEASE_VERSION)' == ''">3.14.4</VersionPrefix>
     <VersionSuffix Condition="'$(RELEASE_VERSION)' == ''">$([System.DateTime]::UtcNow.ToString(`yyyyMMdd-HHmm`))</VersionSuffix>
  
     <AssemblyName>$(MSBuildProjectName)-$(VersionPrefix)</AssemblyName>
@@ -49,6 +49,7 @@
 
   <ItemGroup>
     <PackageReference Include="LibVLCSharp.WinForms" Version="3.9.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.9" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21" />
   </ItemGroup>
 

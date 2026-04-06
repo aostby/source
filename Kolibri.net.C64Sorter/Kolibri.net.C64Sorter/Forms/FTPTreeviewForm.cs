@@ -5,6 +5,7 @@ using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using System.ComponentModel;
 using System.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Kolibri.net.C64Sorter.Forms
 {
@@ -15,8 +16,7 @@ namespace Kolibri.net.C64Sorter.Forms
         private string _FtpPass = string.Empty;
         private string _FtpRootUrl = string.Empty;
         private string _hostname = string.Empty;
-        private UE2LogOn _ue2logon = null;
- 
+        private UE2LogOn _ue2logon = null; 
 
         [Obsolete("Use constructor with UE2LogOn instead", true)]
         public FTPTreeviewForm(string hostname)
@@ -26,18 +26,22 @@ namespace Kolibri.net.C64Sorter.Forms
             _FtpRootUrl = $"ftp://{hostname}";
             Init();
         }
-        public FTPTreeviewForm(UE2LogOn ue2logon)
+
+        public FTPTreeviewForm(UE2LogOn ue2logon, string title = null)
         {
             InitializeComponent();
             _ue2logon = ue2logon;
             _hostname = _ue2logon.Hostname;
             _FtpRootUrl = $"ftp://{_hostname}";
-            Init();
+
+            if(!string.IsNullOrEmpty(title))
+               this.Text = title;   
+            Init(title);
         }
 
 
         // Initial load (e.g., in Form_Load event)
-        private void Init()
+        private void Init(string title = null)
         {
             treeView1.Nodes.Clear();
             var tmp = new FtpItemDetail() { Name = _FtpRootUrl, FullPath = _FtpRootUrl, IsDirectory = true };
@@ -49,8 +53,7 @@ namespace Kolibri.net.C64Sorter.Forms
             this.treeView1.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView1_BeforeExpand);
             this.Text = $"Host:{_FtpRootUrl} User: {_FtpUser}    (Right click root to refresh)";
             SetStatusLabel(this.Text);
-
-
+            if (title != null) { SetStatusLabel($"{title} - {this.Text}"); }
             try
             {
                 var defaultIcon = Icons.GetFolderIcon();

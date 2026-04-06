@@ -1,4 +1,5 @@
 ﻿using com.sun.org.apache.bcel.@internal.generic;
+using Kolibri.net.Common.Utilities.Extensions;
 using MovieFileLibrary;
 using net.sf.saxon.functions;
 using System.Data;
@@ -291,6 +292,26 @@ namespace Kolibri.net.Common.Utilities
                 }
             }
             catch (Exception ex) { }
+            return ret;
+        }
+
+        public static Color ColorFromRating(string imdbRating)
+        {
+            int rating = 0;
+            var ret = Color.Red;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(imdbRating)) return ret;
+                if (imdbRating.IsNumeric() && imdbRating.Substring(0, 1).ToInt32() > 0)
+                    rating = imdbRating.Substring(0, 1).ToInt32();
+                if (rating >= 3 && rating <= 4) { ret = Color.Red; }
+                if (rating >= 4 && rating <= 5) { ret = Color.LightSalmon; }
+                else if (rating >= 5 && rating <= 6) { ret = Color.LightGreen; }
+                else if (rating >= 7 && rating <= 8) { ret = Color.LimeGreen; }
+                else if (rating >= 9) { ret = Color.Green; }
+            }
+            catch (Exception) { }
+
             return ret;
         }
     }

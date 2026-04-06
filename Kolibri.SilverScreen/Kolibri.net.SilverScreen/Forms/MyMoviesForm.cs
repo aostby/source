@@ -42,13 +42,11 @@ namespace Kolibri.net.SilverScreen.Forms
             _userSettings = userSettings;
             InitializeComponent();
             StartUp();
-        }
-
-       
+        } 
 
         private async void StartUp()
         {
-            _plex = new PlexController(_userSettings); 
+            _plex = new PlexController(_userSettings);
 
             var progress = ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
             _searchController = new MoviesSearchController(_userSettings, plex: _plex, progress: progress);
@@ -58,7 +56,7 @@ namespace Kolibri.net.SilverScreen.Forms
             textBoxSource.Text = GetCurentPath();
             this.Text = $" - {_userSettings.LiteDBFilePath}";
             SetLabelText(this.Text);
-            var res = new DirectoryInfo(_userSettings.UserFilePaths.MoviesSourcePath); //await GetPathSearchFiles();
+
             _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
             _dgvController = new DataGrivViewControls(MultimediaType.Movies, _liteDB);
 
@@ -75,20 +73,22 @@ namespace Kolibri.net.SilverScreen.Forms
                 _TMDB = null;
             }
             radioButtonShowGrid.Checked = true;
-            _fileItems = _liteDB.FindAllFileItems(res);
-            _fileItems = _fileItems.Where(x => x.ItemFileInfo.Exists);
 
-             buttonVelg_Click(null, null);
-
-           
+            //var res = new DirectoryInfo(_userSettings.UserFilePaths.MoviesSourcePath); //await GetPathSearchFiles();
+            //_fileItems = _liteDB.FindAllFileItems(res);
+            //_fileItems = _fileItems.Where(x => x.ItemFileInfo.Exists);
+            var list = await _liteDB.FindAllItems();
+            
+            _fileItems = list.ToList().Where(x => !string.IsNullOrEmpty(x.TomatoUrl)&&x.TomatoUrl.StartsWith(_userSettings.UserFilePaths.MoviesSourcePath) ).Select(data => new FileItem(data.ImdbId, data.TomatoUrl)).ToList();
+            
+            buttonVelg_Click(null, null);
         }
         
 
-        private void SetLabelText(string message)
+        private async void SetLabelText(string message)
         {
             try
             {
-                Task.Delay(1).GetAwaiter().GetResult();
                 if (InvokeRequired)
                     Invoke(new System.Windows.Forms.MethodInvoker(
                         delegate { SetLabelText(message); }
@@ -96,7 +96,6 @@ namespace Kolibri.net.SilverScreen.Forms
                 else
                 {
                     toolStripStatusLabelStatus.Text = message;
-                    Thread.Sleep(3);
                 }
             }
             catch (Exception ex)
@@ -148,9 +147,7 @@ namespace Kolibri.net.SilverScreen.Forms
         {
            buttonOpenFolder.Enabled = false;
             radioButtonShowGrid.Checked = true;         
-            groupBoxValg.Enabled = false;
-            
-            Thread.Sleep(1);
+            groupBoxValg.Enabled = false; 
 
             _searchFiles = new List<Item>();
             DirectoryInfo dInfo = null;
@@ -402,7 +399,11 @@ namespace Kolibri.net.SilverScreen.Forms
                 var list = await _liteDB.FindItemsAsync(_fileItems);
                 if (list != null && list.Count > 0)
                 {
-                    ShowGridForDBItems(list);
+                    if (checkBox1.Checked) 
+                    { TreeViewItemsForm form = new TreeViewItemsForm(list);
+                        form.CurrentItemChanged += OnCurrentItemChanged;
+                        SetForm(form, splitContainer1.Panel1); }
+                    else { ShowGridForDBItems(list); }
                 }
                 else
                 {
@@ -490,6 +491,29 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 catch (Exception ex)
                 { SetLabelText($"Error occured. {ex.GetType()} - {ex.Message}"); }
+            }
+        }
+
+        private void OnCurrentItemChanged(object? sender, EventArgs e)
+        {
+            
+            if (isProcessing) return;
+            isProcessing = true;
+            try
+            {
+                var tvi = (sender as TreeViewItemsForm);
+                if (tvi.Visible && tvi.CurrentItem!=null)
+                {
+                    SetForm(tvi.CurrentItem, splitContainer1.Panel2);
+                }
+            }
+            catch (Exception ex)
+            {
+                SetLabelText(ex.Message);
+            }
+            finally
+            {
+                isProcessing = false;
             }
         }
 

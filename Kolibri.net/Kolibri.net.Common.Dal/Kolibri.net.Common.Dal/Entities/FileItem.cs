@@ -1,9 +1,11 @@
-﻿using LiteDB;
+﻿using java.nio.file;
+using LiteDB;
 
 namespace Kolibri.net.Common.Dal.Entities
 {   public class FileItem
     {
         private FileInfo _fileInfo;
+        private Lazy<FileInfo> _lazyFileInfo; 
 
         [Obsolete("Constructor only, do not use")]
         public FileItem() { }
@@ -11,6 +13,7 @@ namespace Kolibri.net.Common.Dal.Entities
         {
             ImdbId = imdbid;
             FullName = fullFileName;
+            _lazyFileInfo = new Lazy<FileInfo>(() => new FileInfo(FullName));
         }
 
         /// <summary>
@@ -22,19 +25,20 @@ namespace Kolibri.net.Common.Dal.Entities
         /// </summary>
         public string FullName { get; set; }
 
-        /// <summary>
-        /// Helper attribute, same as FullName, but as a FileInfo object. Ignored by database
-        /// </summary>
-        [BsonIgnoreAttribute]
+                /// <summary>
+                /// Helper attribute, same as FullName, but as a FileInfo object. Ignored by database
+                /// </summary>
+                [BsonIgnoreAttribute]
         public FileInfo ItemFileInfo
         {
             get
-            {   // Initialize only if null (explicit lazy load)
-                //if (_fileInfo == null)
-                //{
-                    _fileInfo = new FileInfo(FullName);
-                //}
-                return _fileInfo;
+            {
+                if (_lazyFileInfo == null )
+                {
+                    _lazyFileInfo = new Lazy<FileInfo>(() => new FileInfo(FullName));
+                }
+
+                return _lazyFileInfo.Value;
             }
         }
 

@@ -11,6 +11,12 @@ namespace Kolibri.net.SilverScreen.IMDBForms
     {
         [JsonProperty("title")]
         public string Title { get; set; }
+
+
+        [JsonProperty("Year")]
+        public string Year { get; set; }
+
+
         [JsonProperty("rank")]
         public string Rank { get; set; }
         

@@ -43,6 +43,7 @@
             radioButtonShowGrid = new RadioButton();
             splitContainer1 = new SplitContainer();
             checkBoxDetailType = new CheckBox();
+            checkBox1 = new CheckBox();
             statusStrip1.SuspendLayout();
             groupBoxValg.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -53,13 +54,13 @@
             // 
             textBoxSource.Location = new Point(12, 12);
             textBoxSource.Name = "textBoxSource";
-            textBoxSource.Size = new Size(704, 23);
+            textBoxSource.Size = new Size(662, 23);
             textBoxSource.TabIndex = 3;
             // 
             // buttonOpenFolder
             // 
             buttonOpenFolder.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonOpenFolder.Location = new Point(722, 12);
+            buttonOpenFolder.Location = new Point(596, 37);
             buttonOpenFolder.Name = "buttonOpenFolder";
             buttonOpenFolder.Size = new Size(75, 23);
             buttonOpenFolder.TabIndex = 2;
@@ -108,9 +109,9 @@
             groupBoxValg.Controls.Add(radioButtonShowLog);
             groupBoxValg.Controls.Add(buttonVelg);
             groupBoxValg.Controls.Add(radioButtonShowGrid);
-            groupBoxValg.Location = new Point(621, 41);
+            groupBoxValg.Location = new Point(677, -2);
             groupBoxValg.Name = "groupBoxValg";
-            groupBoxValg.Size = new Size(577, 41);
+            groupBoxValg.Size = new Size(521, 41);
             groupBoxValg.TabIndex = 7;
             groupBoxValg.TabStop = false;
             groupBoxValg.Text = "Velg handling";
@@ -158,7 +159,7 @@
             // buttonVelg
             // 
             buttonVelg.Anchor = AnchorStyles.Right;
-            buttonVelg.Location = new Point(493, 13);
+            buttonVelg.Location = new Point(437, 13);
             buttonVelg.Name = "buttonVelg";
             buttonVelg.Size = new Size(75, 23);
             buttonVelg.TabIndex = 1;
@@ -192,18 +193,31 @@
             checkBoxDetailType.AutoSize = true;
             checkBoxDetailType.Checked = true;
             checkBoxDetailType.CheckState = CheckState.Checked;
-            checkBoxDetailType.Location = new Point(12, 57);
+            checkBoxDetailType.Location = new Point(456, 38);
             checkBoxDetailType.Name = "checkBoxDetailType";
             checkBoxDetailType.Size = new Size(134, 19);
             checkBoxDetailType.TabIndex = 9;
             checkBoxDetailType.Text = "Utvidet detaljvisning";
             checkBoxDetailType.UseVisualStyleBackColor = true;
             // 
+            // checkBox1
+            // 
+            checkBox1.AutoSize = true;
+            checkBox1.Checked = true;
+            checkBox1.CheckState = CheckState.Checked;
+            checkBox1.Location = new Point(456, 60);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(80, 19);
+            checkBox1.TabIndex = 10;
+            checkBox1.Text = "Trevisning";
+            checkBox1.UseVisualStyleBackColor = true;
+            // 
             // MyMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1201, 769);
+            Controls.Add(checkBox1);
             Controls.Add(checkBoxDetailType);
             Controls.Add(splitContainer1);
             Controls.Add(groupBoxValg);
@@ -241,5 +255,6 @@
         private RadioButton radioButtonShowDiff;
         private RadioButton radioButtonEditDiff;
         private RadioButton radioButtonDuplicates;
+        private CheckBox checkBox1;
     }
 }
