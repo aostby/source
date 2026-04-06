@@ -60,7 +60,7 @@ namespace Kolibri.net.C64Sorter.Controllers
         public static FileInfo DownloadFileFTP(UE2LogOn logon, DirectoryInfo destinationPath, string ftpfilepath)
         {
             FileInfo ret = null;
-            string inputfilepath = Path.Combine(UltmateEliteClient.ResourcesPath.FullName,  Path.GetFileName(ftpfilepath)); // @"C:\Temp\FileName.exe";
+            string inputfilepath = Path.Combine(destinationPath.FullName,  Path.GetFileName(ftpfilepath)); // @"C:\Temp\FileName.exe";
            // string ftphost = "xxx.xx.x.xxx";
             //string ftpfilepath = "/Updater/Dir1/FileName.exe";
 

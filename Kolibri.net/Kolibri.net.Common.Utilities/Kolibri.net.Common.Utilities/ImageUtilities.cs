@@ -10,6 +10,9 @@ namespace Kolibri.net.Common.Utilities
 {
     public class ImageUtilities
     {
+
+        public static Dictionary<string, string> _cache = new();
+
         public static Bitmap Crop(Bitmap bmp)
         {
             int w = bmp.Width;
@@ -251,7 +254,8 @@ namespace Kolibri.net.Common.Utilities
             {
                 using (Stream stream = httpWebReponse.GetResponseStream())
                 {
-                    return Image.FromStream(stream);
+                    var res=  Image.FromStream(stream);
+                    return res;
                 }
             }
         }

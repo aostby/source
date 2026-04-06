@@ -53,18 +53,23 @@ namespace Kolibri.net.Common.FormUtilities.Forms
 
                 foreach (SyndicationItem item in feed.Items)
                 {
-                    // Main item (Title)
-                    ListViewItem lvi = new ListViewItem(item.Title.Text);
+                    try
+                    {
+                        // Main item (Title)
+                        ListViewItem lvi = new ListViewItem(item.Title.Text);
 
-                    // Sub-items (Date and Summary) shown under/beside based on View mode
-                    lvi.SubItems.Add(item.PublishDate.ToString("MMM dd, yyyy"));
-                    lvi.SubItems.Add(item.Summary?.Text ?? "Click to read more...");
-                    lvi.Tag = item;
+                        // Sub-items (Date and Summary) shown under/beside based on View mode
+                        lvi.SubItems.Add(item.PublishDate.ToString("MMM dd, yyyy"));
+                        lvi.SubItems.Add(item.Summary?.Text ?? "Click to read more...");
+                        lvi.Tag = item;
 
-                    // Assign the description to show on hover
-                    lvi.ToolTipText = item.Summary?.Text ?? "No description available.";
+                        // Assign the description to show on hover
+                        lvi.ToolTipText = item.Summary?.Text ?? "No description available.";
 
-                    listView1.Items.Add(lvi);
+                        listView1.Items.Add(lvi);
+                    }
+                    catch (Exception ex)
+                    { }
                 }
                 listView1.EndUpdate();
             }

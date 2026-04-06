@@ -38,6 +38,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
                 movies = movies.Replace("ImdbRating", "Rank");
                 movies = movies.Replace("ReleaseDate", "Year");
+                movies = movies.Replace("Released", "Year");
+                
                 movies = movies.Replace("imdbRating", "Rank");
                 var result = JsonConvert.DeserializeObject<List<Top100IMDb>>(movies);
 

@@ -28,6 +28,17 @@ namespace Kolibri.net.Common.Utilities
             return ret;
         }
 
+        public static void OpenDirectory(DirectoryInfo directory) 
+        {
+            if (directory == null || !directory.Exists) return;
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+            {
+                FileName =directory.FullName,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+
 
         public static DirectoryInfo GetCurrentDirectory()
         {

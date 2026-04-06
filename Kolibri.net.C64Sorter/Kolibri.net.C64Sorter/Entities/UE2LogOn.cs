@@ -13,5 +13,7 @@ namespace Kolibri.net.C64Sorter.Entities
         public string Password { get; set; } = string.Empty;
 
         public string FTPPrintPath { get; set; } = string.Empty;
+        public string LocalPrintPath { get; set; } = @"C:\TEMP\UE2\LocalPrintPath";
+
     }
 }

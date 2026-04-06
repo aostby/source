@@ -145,13 +145,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 tbRated.Text = item.ImdbRating;
                 tbRated.BackColor = Color.Red;
 
-                if (item.ImdbRating.IsNumeric() && item.ImdbRating.Substring(0, 1).ToInt32() > 0)
-                    rating = item.ImdbRating.Substring(0, 1).ToInt32();
-                if (rating >= 3 && rating <= 4) { tbRated.BackColor = Color.Red; }
-                if (rating >= 4 && rating <= 5) { tbRated.BackColor = Color.LightSalmon; }
-                else if (rating >= 5 && rating <= 6) { tbRated.BackColor = Color.LightGreen; }
-                else if (rating >= 7 && rating <= 8) { tbRated.BackColor = Color.LimeGreen; }
-                else if (rating >= 9) { tbRated.BackColor = Color.Green; }
+                tbRated.BackColor = MovieUtilites.ColorFromRating(item.ImdbRating);
 
                 tbRuntime.Text = item.Runtime;
                 tbGenre.Text = item.Genre;

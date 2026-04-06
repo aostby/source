@@ -270,8 +270,15 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private void btnTop100_Click(object sender, EventArgs e)
         {
-            Top100IMDbForm frm = new Top100IMDbForm(_liteDB);
-            frm.ShowDialog();
+            try
+            {
+                Top100IMDbForm frm = new Top100IMDbForm(_liteDB);
+                frm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
         }
         private void btnRecommend_Click(object sender, EventArgs e)
         {
@@ -331,13 +338,19 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     var found = _liteDB.FindItemByTitle(title, year) != null;
                     if (found)
                     {
-                        Top100IMDbForm frm = new Top100IMDbForm(_liteDB, title, year);
-                        if(frm!=null) frm.ShowDialog();
+                        try
+                        {
+                            Top100IMDbForm frm = new Top100IMDbForm(_liteDB, title, year);
+                            if (frm != null) frm.ShowDialog();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, ex.GetType().Name);
+                        }
                     }
                 }
-                catch (Exception ex) { } 
+                catch (Exception ex) { }
             }
-
         }
         private string TrailerUrl(string imdbId = null)
         {

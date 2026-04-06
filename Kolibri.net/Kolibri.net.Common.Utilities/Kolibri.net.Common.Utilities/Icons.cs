@@ -1,177 +1,146 @@
 ﻿using Microsoft.Win32;
 using System.Reflection;
 using System.Runtime.InteropServices;
+    using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-
+using System.Xml.Linq;
+using static Kolibri.net.Common.Utilities.FolderUtilities.PInvoke;
 namespace Kolibri.net.Common.Images
 {
     public static partial class Icons
     {
-        #region Custom exceptions class
 
-        public class IconNotFoundException : Exception
-        {
-            public IconNotFoundException(string fileName, int index)
-                : base(string.Format("Icon with Id = {0} wasn't found in file {1}", index, fileName))
-            {
-            }
-        }
 
-        public class UnableToExtractIconsException : Exception
-        {
-            public UnableToExtractIconsException(string fileName, int firstIconIndex, int iconCount)
-                : base(string.Format("Tryed to extract {2} icons starting from the one with id {1} from the \"{0}\" file but failed", fileName, firstIconIndex, iconCount))
-            {
-            }
-        }
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHGetStockIconInfo(
+            SHSTOCKICONID siid,
+            uint uFlags,
+            ref SHSTOCKICONINFO psii);
 
-        #endregion
 
-        #region DllImports
 
-        /// <summary>
-        /// Contains information about a file object. 
-        /// </summary>
-        struct SHFILEINFO
-        {
-            /// <summary>
-            /// Handle to the icon that represents the file. You are responsible for
-            /// destroying this handle with DestroyIcon when you no longer need it. 
-            /// </summary>
-            public IntPtr hIcon;
-
-            /// <summary>
-            /// Index of the icon image within the system image list.
-            /// </summary>
-            public IntPtr iIcon;
-
-            /// <summary>
-            /// Array of values that indicates the attributes of the file object.
-            /// For information about these values, see the IShellFolder::GetAttributesOf
-            /// method.
-            /// </summary>
-            public uint dwAttributes;
-
-            /// <summary>
-            /// String that contains the name of the file as it appears in the Microsoft
-            /// Windows Shell, or the path and file name of the file that contains the
-            /// icon representing the file.
-            /// </summary>
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-            public string szDisplayName;
-
-            /// <summary>
-            /// String that describes the type of file.
-            /// </summary>
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
-            public string szTypeName;
-        };
-
-        [Flags]
-        enum FileInfoFlags : int
-        {
-            /// <summary>
-            /// Retrieve the handle to the icon that represents the file and the index 
-            /// of the icon within the system image list. The handle is copied to the 
-            /// hIcon member of the structure specified by psfi, and the index is copied 
-            /// to the iIcon member.
-            /// </summary>
-            SHGFI_ICON = 0x000000100,
-            /// <summary>
-            /// Indicates that the function should not attempt to access the file 
-            /// specified by pszPath. Rather, it should act as if the file specified by 
-            /// pszPath exists with the file attributes passed in dwFileAttributes.
-            /// </summary>
-            SHGFI_USEFILEATTRIBUTES = 0x000000010,
-
-            SHGFI_OPENICON = 0x000000002,
-            SHGFI_SMALLICON = 0x000000001,
-            SHGFI_LARGEICON = 0x000000000,
-            FILE_ATTRIBUTE_DIRECTORY = 0x00000010,
-        }
-
-        /// <summary>
-        ///     Creates an array of handles to large or small icons extracted from
-        ///     the specified executable file, dynamic-link library (DLL), or icon
-        ///     file. 
-        /// </summary>
-        /// <param name="lpszFile">
-        ///     Name of an executable file, DLL, or icon file from which icons will
-        ///     be extracted.
-        /// </param>
-        /// <param name="nIconIndex">
-        ///     <para>
-        ///         Specifies the zero-based index of the first icon to extract. For
-        ///         example, if this value is zero, the function extracts the first
-        ///         icon in the specified file.
-        ///     </para>
-        ///     <para>
-        ///         If this value is �1 and <paramref name="phiconLarge"/> and
-        ///         <paramref name="phiconSmall"/> are both NULL, the function returns
-        ///         the total number of icons in the specified file. If the file is an
-        ///         executable file or DLL, the return value is the number of
-        ///         RT_GROUP_ICON resources. If the file is an .ico file, the return
-        ///         value is 1. 
-        ///     </para>
-        ///     <para>
-        ///         Windows 95/98/Me, Windows NT 4.0 and later: If this value is a 
-        ///         negative number and either <paramref name="phiconLarge"/> or 
-        ///         <paramref name="phiconSmall"/> is not NULL, the function begins by
-        ///         extracting the icon whose resource identifier is equal to the
-        ///         absolute value of <paramref name="nIconIndex"/>. For example, use -3
-        ///         to extract the icon whose resource identifier is 3. 
-        ///     </para>
-        /// </param>
-        /// <param name="phIconLarge">
-        ///     An array of icon handles that receives handles to the large icons
-        ///     extracted from the file. If this parameter is NULL, no large icons
-        ///     are extracted from the file.
-        /// </param>
-        /// <param name="phIconSmall">
-        ///     An array of icon handles that receives handles to the small icons
-        ///     extracted from the file. If this parameter is NULL, no small icons
-        ///     are extracted from the file. 
-        /// </param>
-        /// <param name="nIcons">
-        ///     Specifies the number of icons to extract from the file. 
-        /// </param>
-        /// <returns>
-        ///     If the <paramref name="nIconIndex"/> parameter is -1, the
-        ///     <paramref name="phIconLarge"/> parameter is NULL, and the
-        ///     <paramref name="phiconSmall"/> parameter is NULL, then the return
-        ///     value is the number of icons contained in the specified file.
-        ///     Otherwise, the return value is the number of icons successfully
-        ///     extracted from the file. 
-        /// </returns>
-        [DllImport("Shell32", CharSet = CharSet.Auto)]
-        extern static int ExtractIconEx(
-            [MarshalAs(UnmanagedType.LPTStr)]
-            string lpszFile,
-            int nIconIndex,
-            IntPtr[] phIconLarge,
-            IntPtr[] phIconSmall,
-            int nIcons);
-
-        [DllImport("Shell32", CharSet = CharSet.Auto)]
-        extern static IntPtr SHGetFileInfo(
+        [DllImport("shell32.dll")]
+        private static extern IntPtr SHGetFileInfo(
             string pszPath,
-            int dwFileAttributes,
+            uint dwFileAttributes,
             out SHFILEINFO psfi,
-            int cbFileInfo,
-            FileInfoFlags uFlags);
-
-        [DllImport("Shell32", CharSet = CharSet.Auto)]
-        extern static IntPtr SHGetFileInfo(
-            string pszPath,
-            int dwFileAttributes,
-            out SHFILEINFO psfi,
-            int cbFileInfo,
+            uint cbFileInfo,
             uint uFlags);
 
+        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+        private static extern uint ExtractIconEx(
+        string szFileName,
+        int nIconIndex,
+        IntPtr[] phiconLarge,
+        IntPtr[] phiconSmall,
+        uint nIcons);
 
 
-        #endregion
+
+
+        static Dictionary<(string file, int index), string> KnownIcons = new Dictionary<(string file, int index), string>
+        {
+
+            {("imageres.dll",0) , "Explorer" },
+{("imageres.dll",1) , "Explorer Default Document" },
+{("imageres.dll",10) , "Drive Network Drive disconnected" },
+{("imageres.dll",107) , "os drive folder icon" },
+{("imageres.dll",11) , "Drive CD-ROM Drive" },
+{("imageres.dll",12) , "Drive RAM Drive" },
+{("imageres.dll",13) , "Global Entire network" },
+{("imageres.dll",15) , "Explorer Networked Computer" },
+{("imageres.dll",16) , "Explorer Printer(s)" },
+{("imageres.dll",17) , "Desktop Network Neighborhood" },
+{("imageres.dll",179) , "compressed file/folder overlay icon" },
+{("imageres.dll",18) , "Explorer Workgroup" },
+{("imageres.dll",19) , "Startmenu Programs" },
+{("imageres.dll",2) , "Explorer Default Application" },
+{("imageres.dll",20) , "Startmenu Recent documents" },
+{("imageres.dll",21) , "Startmenu Settings" },
+{("imageres.dll",22) , "Startmenu Find" },
+{("imageres.dll",23) , "Startmenu Help" },
+{("imageres.dll",24) , "Startmenu Run" },
+{("imageres.dll",25) , "Startmenu Suspend" },
+{("imageres.dll",26) , "Startmenu Docking" },
+{("imageres.dll",27) , "Startmenu Shutdown" },
+{("imageres.dll",28) , "Overlay Sharing" },
+{("imageres.dll",29) , "Overlay Shortcut" },
+{("imageres.dll",3) , "Folder" },
+{("imageres.dll",31) , "Desktop Recycle bin empty" },
+{("imageres.dll",32) , "Desktop Recycle bin full" },
+{("imageres.dll",33) , "Explorer Dial-up Networking" },
+{("imageres.dll",34) , "Explorer Desktop" },
+{("imageres.dll",35) , "Startmenu Settings/Control Panel" },
+{("imageres.dll",36) , "Startmenu Programs/Program folder" },
+{("imageres.dll",37) , "Startmenu Settings/Printers" },
+{("imageres.dll",39) , "Startmenu Settings/Taskbar" },
+{("imageres.dll",4) ,"Open Folder" },
+{("imageres.dll",40) , "Explorer Audio CD" },
+{("imageres.dll",42) , "Explorer Saved search (.fnd)" },
+{("imageres.dll",43) , "Explorer und Startmenu Favorites" },
+{("imageres.dll",44) , "Startmenu Log Off" },
+{("imageres.dll",5) , "Drive 5.25 inch floppy" },
+{("imageres.dll",51   ) , "network folder icon" },
+{("imageres.dll",6) , "Drive 3.5 inch floppy" },
+{("imageres.dll",7) , "Drive Removable Drive" },
+{("imageres.dll",77) , "UAC (administrator) overlay icon" },
+{("imageres.dll",8) , "Drive Hard Drive" },
+{("imageres.dll",9) , "Drive Network Drive" },
+{("shell32.dll", 167) , "Warning" },
+{("shell32.dll", 168) , "Error"}
+
+
+        };
+        public static void ApplyNames(List<SystemIconInfo> icons, bool largeIcons)
+        {
+            var stockMap = GetStockIconNames(largeIcons);
+
+            foreach (var icon in icons)
+            {
+                // 1. Try known dictionary
+                var key = (Path.GetFileName(icon.SourceFile).ToLower(), icon.Index);
+                if (KnownIcons.TryGetValue(key, out var friendly))
+                {
+                    icon.FriendlyName = friendly;
+                    continue;
+                }
+
+                // 2. Try stock icon match (by hash)
+                string hash = GetIconHash(icon.Icon);
+
+                if (stockMap.TryGetValue(hash, out var stockName))
+                {
+                    icon.StockName = stockName;
+                }
+            }
+        }
+
+        public static Dictionary<string, string> GetStockIconNames(bool large)
+        {
+            var dict = new Dictionary<string, string>();
+
+            foreach (SHSTOCKICONID id in Enum.GetValues(typeof(SHSTOCKICONID)))
+            {
+                var info = new SHSTOCKICONINFO();
+                info.cbSize = (uint)Marshal.SizeOf(info);
+
+                uint flags = SHGSI_ICON | (large ? SHGSI_LARGEICON : SHGSI_SMALLICON);
+
+                SHGetStockIconInfo(id, flags, ref info);
+
+                if (info.hIcon != IntPtr.Zero)
+                {
+                    using var icon = (Icon)Icon.FromHandle(info.hIcon).Clone();
+
+                    string hash = GetIconHash(icon);
+                    dict[hash] = id.ToString().Replace("SIID_", "");
+                }
+            }
+
+            return dict;
+        }
+
 
         /// <summary>
         /// Metode som legger ett icon oppå ett annet
@@ -337,7 +306,7 @@ namespace Kolibri.net.Common.Images
             }
         }
 
-        #endregion 
+        #endregion
 
         internal static Icon GetFolderIcon(DirectoryInfo di, SystemIconSize size, FolderType folderType)
         {
@@ -463,6 +432,42 @@ namespace Kolibri.net.Common.Images
         /// <param name="size"></param>
         /// <returns></returns>
         public static Icon IconFromExtension(string extension, SystemIconSize size)
+        {
+            if (string.IsNullOrWhiteSpace(extension))
+                throw new ArgumentException(nameof(extension));
+
+            // Ensure proper format
+            if (!extension.StartsWith("."))
+                extension = "." + extension;
+
+            // Fake filename (this is the trick)
+            string fakeFileName = "file" + extension;
+
+            SHFILEINFO shinfo;
+
+            uint flags = SHGFI_ICON | SHGFI_USEFILEATTRIBUTES |
+                         (size == SystemIconSize.Small ? SHGFI_SMALLICON : SHGFI_LARGEICON);
+
+            IntPtr result = SHGetFileInfo(
+                fakeFileName,
+                FILE_ATTRIBUTE_NORMAL,
+                out shinfo,
+                (uint)Marshal.SizeOf(typeof(SHFILEINFO)),
+                flags);
+
+            if (result == IntPtr.Zero || shinfo.hIcon == IntPtr.Zero)
+                return null;
+
+            // Clone the icon to avoid handle issues
+            Icon icon = (Icon)Icon.FromHandle(shinfo.hIcon).Clone();
+
+            // Clean up native handle
+            DestroyIcon(shinfo.hIcon);
+
+            return icon;
+        }
+
+        public static Icon IconFromExtension_old(string extension, SystemIconSize size)
         {
             // Add the '.' to the extension if needed
             if (extension[0] != '.') extension = '.' + extension;
@@ -612,6 +617,82 @@ namespace Kolibri.net.Common.Images
             return newIcon;
         }
 
+        public static List<SystemIconInfo> GetAllSystemIcons(bool largeIcons = true)
+        {
+            var results = new List<SystemIconInfo>();
+
+            string systemDir = Environment.GetFolderPath(Environment.SpecialFolder.System);
+
+            string[] sources =
+            {
+            Path.Combine(systemDir, "shell32.dll"),
+            Path.Combine(systemDir, "imageres.dll"),
+            Path.Combine(systemDir, "moricons.dll"),
+Path.Combine(systemDir, "wmploc.DLL"),
+Path.Combine(systemDir, "netshell.dll"),
+Path.Combine(systemDir, "mmcndmgr.dll"),
+Path.Combine(systemDir, "ieframe.dll "),
+Path.Combine(systemDir, "compstui.dll"),
+Path.Combine(systemDir, "DDORes.dll"),
+Path.Combine(systemDir, "pnidui.dll"),
+
+
+
+        };
+
+            foreach (var file in sources)
+            {
+                if (!File.Exists(file))
+                    continue;
+
+                uint count = (uint)ExtractIconEx(file, -1, null, null, 0);
+
+                for (int i = 0; i < count; i++)
+                {
+                    IntPtr[] large = new IntPtr[1];
+                    IntPtr[] small = new IntPtr[1];
+
+                    uint extracted = (uint)ExtractIconEx(file, i, large, small, 1);
+
+                    IntPtr handle = largeIcons ? large[0] : small[0];
+
+                    if (extracted == 0 || handle == IntPtr.Zero)
+                        continue;
+
+                    try
+                    {
+                        Icon icon = (Icon)Icon.FromHandle(handle).Clone();
+
+                        results.Add(new SystemIconInfo
+                        {
+                            SourceFile = file,
+                            Index = i,
+                            Icon = icon,
+                            
+                        });
+                    }
+                    finally
+                    {
+                        DestroyIcon(handle);
+                    }
+                }
+            }
+            ApplyNames(results, largeIcons);
+
+            return results
+                    .GroupBy(o => GetIconHash(o.Icon))
+                    .Select(g => g.First())
+                    .ToList();
+        }
+        public static string GetIconHash(Icon icon)
+        {if (icon == null)                return null;          
+            using var bmp = icon.ToBitmap();
+            using var ms = new MemoryStream();
+            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            return Convert.ToBase64String(ms.ToArray());
+        }
+
+
         /// <summary>
         /// This class suppresses stack walks for unmanaged code permission. 
         /// (System.Security.SuppressUnmanagedCodeSecurityAttribute is applied to this class.) 
@@ -624,6 +705,22 @@ namespace Kolibri.net.Common.Images
         {
             [DllImport("shell32.dll", EntryPoint = "ExtractAssociatedIcon", CharSet = CharSet.Auto)]
             internal static extern IntPtr ExtractAssociatedIcon(HandleRef hInst, StringBuilder iconPath, ref int index);
+        }
+        public class SystemIconInfo
+        {
+            public string SourceFile { get; set; }
+            public int Index { get; set; }
+            public Icon Icon { get; set; }
+
+            public string FriendlyName { get; set; } // from dictionary
+            public string StockName { get; set; }    // from SHGetStockIconInfo
+
+            public string Name =>
+                FriendlyName 
+                ?? StockName
+                ?? $"{Path.GetFileName(SourceFile)} #{Index}";
+
+            public string Id => $"{Path.GetFileName(SourceFile)}:{Index}";
         }
     }
 }

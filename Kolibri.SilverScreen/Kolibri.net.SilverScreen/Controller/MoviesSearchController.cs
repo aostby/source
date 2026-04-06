@@ -86,7 +86,9 @@ namespace Kolibri.net.SilverScreen.Controller
             }
         }
 
-        private void SetStatusLabelText(string message, string type = "INFO")
+    
+
+        private async void SetStatusLabelText(string message, string type = "INFO")
         {
             try
             {
@@ -352,7 +354,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     {
                         if (_updateTriState != null)
                         {
-                            if (!$"ret.TomatoUrl".GetHashCode().Equals(test.FullName.GetHashCode()))
+                            if (!$"{ret.TomatoUrl}".ToUpper().GetHashCode().Equals(test.FullName.ToUpper().GetHashCode()))
                             {
                                 ret.TomatoUrl = file.FullName;
                                 await _liteDB.UpdateAsync(ret);

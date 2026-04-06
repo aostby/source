@@ -1,23 +1,31 @@
+﻿using com.sun.nio.zipfs;
 using FastColoredTextBoxNS;
 using File_Organizer;
+using java.time;
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.C64Sorter.Forms;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
+using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
+using sun.security.util;
 using System.Data;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
+using static net.sf.saxon.functions.DynamicContextAccessor;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Kolibri.net.C64Sorter
 {
     public partial class MainForm : Form
     {
         private UE2LogOn _ue2logon = new UE2LogOn();
-        private DirectoryInfo _sSelectedFolder;
+        private DirectoryInfo _sSelectedFolder=new DirectoryInfo( Application.StartupPath);
         private string _searchText = string.Empty;
         private Controllers.UltmateEliteClient _client = null;
 
@@ -26,7 +34,7 @@ namespace Kolibri.net.C64Sorter
             InitializeComponent();
             Init();
         }
-        private async void Init()
+        private async Task Init()
         {
             this.KeyPreview = true; // This makes the form receive key events first.
 
@@ -230,16 +238,14 @@ namespace Kolibri.net.C64Sorter
                 {
                     _sSelectedFolder = new DirectoryInfo(fbd.SelectedPath);
                     var filetype = $"{(sender as ToolStripMenuItem).Tag}";
-
-                    var list = _sSelectedFolder.GetFiles($"*.{filetype}", SearchOption.TopDirectoryOnly);
-
-                    var infos = list.Where(file => file.Extension.Contains(filetype, StringComparison.OrdinalIgnoreCase)).ToList();
-                    SetStatusLabel($"Printing {_sSelectedFolder.Name}");
-                    if (infos.Count >= 1)
+                    if (sender.Equals(rtfStripMenuItem))
                     {
-                        PrinterController.PrintImage(infos);
+                        CreateRTF(_sSelectedFolder, filetype);
                     }
-                    else SetStatusLabel($"No files found ({filetype}).");
+                    else
+                    {
+                        PrintImages(filetype);
+                    }
 
                 }
                 else throw new FileNotFoundException("file wasnt found");
@@ -250,6 +256,84 @@ namespace Kolibri.net.C64Sorter
             }
             SetStatusLabel($"Printing completed.");
         }
+
+        private void PrintImages(string filetype)
+        {
+            var list = _sSelectedFolder.GetFiles($"*.{filetype}", SearchOption.TopDirectoryOnly);
+
+            var infos = list.Where(file => file.Extension.Contains(filetype, StringComparison.OrdinalIgnoreCase)).ToList();
+            SetStatusLabel($"Printing {_sSelectedFolder.Name}");
+            if (infos.Count >= 1)
+            {
+                PrinterController.PrintImage(infos);
+            }
+            else SetStatusLabel($"No files found ({filetype}).");
+        }
+
+        private void CreateRTF(DirectoryInfo source, string fileext = "PNG")
+        {
+            try
+            {
+
+                if (string.IsNullOrEmpty(fileext)) fileext = "PNG";
+                string folder = source.FullName;
+                FileInfo output = new FileInfo($@"{Path.Combine(source.FullName)}\{fileext}_{FileUtilities.SafeFileName(DateTime.Now.ToString("G"))}.rtf");
+
+                var rtf = new StringBuilder();
+                rtf.Append(@"{\rtf1\ansi\deff0");
+
+                foreach (var file in Directory.GetFiles(folder, $"*.{fileext.TrimStart('.')}"))
+                {
+                    byte[] imgBytes = File.ReadAllBytes(file);
+                    string hex = BitConverter.ToString(imgBytes).Replace("-", "");
+
+                    using (Image img = Image.FromFile(file))
+                    {
+                        float dpiX = img.HorizontalResolution;
+                        float dpiY = img.VerticalResolution;
+
+                        int widthPx = img.Width;
+                        int heightPx = img.Height;
+
+                        // Convert pixels → twips (1 inch = 1440 twips)
+                        int widthTwips = (int)((widthPx / dpiX) * 1440);
+                        int heightTwips = (int)((heightPx / dpiY) * 1440);
+
+                        // A4 page size in twips (minus margins if needed)
+                        int maxWidth = 12240;
+                        int maxHeight = 15840;
+
+                        float scale = Math.Min((float)maxWidth / widthTwips,
+                                               (float)maxHeight / heightTwips);
+
+                        int finalW = (int)(widthTwips * scale);
+                        int finalH = (int)(heightTwips * scale);
+
+                        rtf.Append(@"{\pard\qc");
+                        rtf.Append(@"{\pict\pngblip");
+                        rtf.Append($@"\picwgoal{finalW}\pichgoal{finalH} ");
+                        rtf.Append(hex);
+                        rtf.Append("}");
+                        rtf.Append(@"\par}");
+                        rtf.Append(@"\page");
+                    }
+                }
+
+                rtf.Append("}");
+
+                File.WriteAllText(output.FullName, rtf.ToString());
+                FileUtilities.OpenFolderHighlightFile(output);
+                SetStatusLabel($"Printing completed.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+
+        }
+
+
+
 
         private void toolStripMenuItemFTP_Click(object sender, EventArgs e)
         {
@@ -504,16 +588,9 @@ namespace Kolibri.net.C64Sorter
             string filename = UltmateEliteClient.AppsettingsPath.FullName;
             try
             {
-                UE2LogOn logon = new UE2LogOn();
-                string hostname = _ue2logon.Hostname;
-                string username = _ue2logon.Username;
-                string password = _ue2logon.Password;
-
-                try
-                {
-                    logon = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(filename));
-                }
-                catch (Exception) { }
+                UE2LogOn logon= GetLogonSettings(filename);
+                string hostname=logon.Hostname, username=logon.Username, password=logon.Password;
+               
 
                 var choice = InputDialogs.InputBox("IP or HostName", "Please input a value", ref hostname);
                 if (choice == DialogResult.OK)
@@ -537,6 +614,21 @@ namespace Kolibri.net.C64Sorter
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+        }
+
+        private UE2LogOn GetLogonSettings            (string filename )
+        {
+            UE2LogOn logon = new UE2LogOn();
+string        hostname = _ue2logon.Hostname;
+            string         username = _ue2logon.Username;
+            string       password = _ue2logon.Password;
+            try
+            {    
+
+                logon = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(filename));
+            }
+            catch (Exception) { }
+            return logon;
         }
 
         private async void aboutC64SorterToolStripMenuItem_Click(object sender, EventArgs e)
@@ -895,7 +987,7 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
             }
         }
 
-        [Obsolete("LibVLC er for komprimerte formater, finn ut hvordan propriet�r udp for UE2 kan l�ses")]
+        [Obsolete("LibVLC er for komprimerte formater, finn ut hvordan proprietær udp for UE2 kan løses")]
         private void uE2VideoStreamToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -959,14 +1051,33 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
             }
         }
 
-        private void setCommodorePrintPathToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void setCommodorePrintPathToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                var newMDIChild = new FTPTreeviewForm(_ue2logon);
-                if (newMDIChild.ShowDialog() == DialogResult.OK)
+                if (sender.Equals(setCommodorePrintPathToolStripMenuItem))
                 {
-                    Init();
+
+                    var newMDIChild = new FTPTreeviewForm(_ue2logon, "Right click to Set Commodore PrintPath.");
+                    if (newMDIChild.ShowDialog() == DialogResult.OK)
+                    {
+                        //Task.Run(async ()=> { await Init(); });
+                        await Init();
+                        SetStatusLabel($"Path is set to {_ue2logon.FTPPrintPath}");
+                    }
+                }
+                else if (sender.Equals(setLocalPrintPathToolStripMenuItem))
+                {
+                    var folder = FolderUtilities.LetOppMappe(_ue2logon.LocalPrintPath, "Set local working path for Commodore print files");
+                    if (folder.Exists)
+                    {
+
+                        _ue2logon.LocalPrintPath = folder.FullName;
+                        string filename = UltmateEliteClient.AppsettingsPath.FullName;
+                        File.WriteAllText(filename, _ue2logon.JsonSerializeObject());
+                        SetStatusLabel($"Path is set to {_ue2logon.LocalPrintPath}");
+
+                    }
                 }
             }
             catch (Exception ex)
@@ -974,5 +1085,78 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
                 SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
             }
         }
+
+        private void getCommodorePrintFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+                FileInfo info = null;
+                DirectoryInfo destination = new DirectoryInfo(_ue2logon.LocalPrintPath);
+                if (!destination.Exists) { destination.Create(); }
+
+                var lines = Controllers.FTPControllerC64.GetDirectoryListing(_ue2logon.FTPPrintPath, _ue2logon.Username, _ue2logon.Password);
+
+                // 2. Process each item (Simplified parsing example)
+                foreach (var line in lines)
+                {
+                    // Note: Parsing depends heavily on server format (Unix vs Windows)
+
+                    string currentLocalPath = Path.Combine(_ue2logon.LocalPrintPath, line.Name);
+                    Uri currentRemoteUrl = new Uri(_ue2logon.FTPPrintPath + line.Name.Trim().Insert(0, "/"));
+
+
+                    info = Controllers.FTPControllerC64.DownloadFileFTP(_ue2logon, destination, currentRemoteUrl.AbsolutePath);
+                    SetStatusLabel($"Downloaded {info.FullName}");
+
+                }
+
+                FileUtilities.OpenFolderHighlightFile(info);
+            }
+            catch (Exception ex)
+            {
+                SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
+            }
+        }
+        public static void DownloadFtpDirectory(string url, NetworkCredential credentials, string localPath)
+        {
+            // 1. List files and folders
+            var request = (FtpWebRequest)WebRequest.Create(url);
+            request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
+            request.Credentials = credentials;
+
+            List<string> lines = new List<string>();
+            using (var response = (FtpWebResponse)request.GetResponse())
+            using (var reader = new StreamReader(response.GetResponseStream()))
+            {
+                while (!reader.EndOfStream) lines.Add(reader.ReadLine());
+            }
+
+            // 2. Process each item (Simplified parsing example)
+            foreach (string line in lines)
+            {
+                // Note: Parsing depends heavily on server format (Unix vs Windows)
+                string[] tokens = line.Split(new[] { ' ' }, 9, StringSplitOptions.RemoveEmptyEntries);
+                string name = tokens[8];
+                string permissions = tokens[0];
+                string currentLocalPath = Path.Combine(localPath, name);
+                string currentRemoteUrl = url + name;
+
+                if (permissions.StartsWith("d")) // Directory
+                {
+                    if (!Directory.Exists(currentLocalPath)) Directory.CreateDirectory(currentLocalPath);
+                    DownloadFtpDirectory(currentRemoteUrl + "/", credentials, currentLocalPath);
+                }
+                else // File
+                {
+                    using (var fileStream = new FileStream(currentLocalPath, FileMode.Create))
+                    using (var ftpStream = ((FtpWebResponse)((FtpWebRequest)WebRequest.Create(currentRemoteUrl)).GetResponse()).GetResponseStream())
+                    {
+                        ftpStream.CopyTo(fileStream);
+                    }
+                }
+            }
+        }
     }
 }
+ 

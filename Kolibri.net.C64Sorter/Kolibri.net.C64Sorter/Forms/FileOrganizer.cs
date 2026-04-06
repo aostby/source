@@ -8,7 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.FormUtilities;
+using Kolibri.net.C64Sorter.Controllers;
 namespace File_Organizer
 {
     public partial class FileOrganizer : Form
@@ -21,8 +23,9 @@ namespace File_Organizer
         {
             InitializeComponent();
             string userName = Environment.UserName;
-            sSelectedFolder = @"C:\Users\" + userName + @"\Downloads";
-            
+            sSelectedFolder =  Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            // @"C:\Users\" + userName + @"\Downloads";
+
             files = Directory.GetFiles(sSelectedFolder);
             fileCount.Text = files.Length.ToString();
             currentFolder.Text = sSelectedFolder;
@@ -56,7 +59,9 @@ namespace File_Organizer
 
             files = Directory.GetFiles(sSelectedFolder);
             fileCount.Text = files.Length.ToString();
-            MessageBox.Show("Yaaaay, organized files! xD");
+            //MessageBox.Show("Yaaaay, organized files! xD");
+            FolderUtilities.OpenDirectory(new DirectoryInfo(sSelectedFolder));
+            
         }
 
         /// <summary>
