@@ -3,13 +3,13 @@ using System.Data;
 
 namespace File_Organizer
 {
-    public partial class ExtensionOrganizer : Form
+    public partial class AmigaExtensionOrganizer : Form
     {
         string sSelectedFolder;
         string[] files;
         DirectoryInfo dir;
 
-        public ExtensionOrganizer()
+        public AmigaExtensionOrganizer()
         {
             InitializeComponent();
             string userName = Environment.UserName;
@@ -66,9 +66,34 @@ namespace File_Organizer
                 if (sender.Equals(buttonExtensionSort)) { mode = "E"; destination = new DirectoryInfo(Path.Combine(path.FullName)); }
                 else if (sender.Equals(buttonAlphabetizeSort)) { mode = "A"; destination = new DirectoryInfo(Path.Combine(path.FullName)); }
                 else if (sender.Equals(buttonFlattenC64files)) { destination = new DirectoryInfo(Path.Combine(path.FullName)); }
-               
+                else if (sender.Equals(buttonUnZip))
+                {
+                    var ext = AmigaUtilities.AmigaCommonFileExt;
+                    destination = new DirectoryInfo(Path.Combine(path.FullName));
+                    var res = MessageBox.Show("Create backup first!!!\r\nDreams64 require special folder handling, and since alot of folders contains files other than games, make sure youre on the right folder (maybe not demos and such?!).\r\nWant to continue moving files to another structure?", $"{path} Are U sure?", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+                    if (res == DialogResult.OK)
+                    {
+                        var list = Kolibri.net.Common.Utilities.FileUtilities.GetFiles(path, AmigaUtilities.AmigaCommonFileExt(true), SearchOption.AllDirectories);
 
-                var fList = FileUtilities.GetFiles(path, AmigaUtilities.AmigaCommonFileExt(true), level);
+
+                        var groupedFiles = list
+                            .GroupBy(file => Path.GetExtension(file).ToLower())
+                            .Select(group => new
+                            {
+                                Extension = group.Key,
+                                Count = group.Count(),
+                                Files = group.ToList()
+                            });
+                        foreach (var item in groupedFiles)
+                        {
+                            AmigaUtilities.ProcessArchiveFolder(path.FullName, destination.FullName);
+                        }
+                    }
+                    return;
+                    throw new NotImplementedException("D64Dreams requires special handelding");
+                }
+
+                var fList = FileUtilities.GetFiles(path, AmigaUtilities.AmigaCommonFileExt  (true), level);
                 if (fList.Count == 0)
                     SetLabelText($"No C64 extensions found in this path \\{path.Name}");
 

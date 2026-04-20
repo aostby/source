@@ -27,6 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Forms\AmigaExtensionOrganizer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\ExtensionOrganizer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -41,6 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Forms\AmigaExtensionOrganizer.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

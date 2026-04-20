@@ -33,7 +33,7 @@ namespace File_Organizer
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            sSelectedFolder = getPath();
+            sSelectedFolder = GetPath();
             currentFolder.Text = sSelectedFolder;
             files = Directory.GetFiles(sSelectedFolder);
             fileCount.Text = files.Length.ToString();
@@ -41,16 +41,16 @@ namespace File_Organizer
 
         private void Button1_Click_1(object sender, EventArgs e)
         {
-            organizar();
+            Organizer();
         }
 
-        private void organizar()
+        private void Organizer()
         {
             foreach (string name in files)
             {
-                if (getFolderNameByExtension(name) != "")
+                if (GetFolderNameByExtension(name) != "")
                 {
-                    string pastaDestino = sSelectedFolder + @"\" + getFolderNameByExtension(name) + @"\" + Path.GetFileName(name);
+                    string pastaDestino = sSelectedFolder + @"\" + GetFolderNameByExtension(name) + @"\" + Path.GetFileName(name);
                     new System.IO.FileInfo(pastaDestino).Directory.Create();
                     File.Move(name, pastaDestino);
                 }
@@ -69,7 +69,7 @@ namespace File_Organizer
         /// </summary>
         /// <param name="fileName">Directory of a file</param>
         /// <returns>Folder Name by filetype</returns>
-        private string getFolderNameByExtension(string fileName)
+        private string GetFolderNameByExtension(string fileName)
         {
 
             string ext = Path.GetExtension(fileName);
@@ -124,7 +124,7 @@ namespace File_Organizer
             return folderName;
         }
 
-        public string getPath()
+        public string GetPath()
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             // fbd.Description = "Custom Description";
