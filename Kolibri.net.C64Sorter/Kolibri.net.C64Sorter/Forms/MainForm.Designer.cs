@@ -39,12 +39,13 @@ namespace Kolibri.net.C64Sorter
             toolStripMenuItemRemoveEmptyDirs = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             toolStripMenuItem1 = new ToolStripMenuItem();
+            setLocalPrintPathToolStripMenuItem = new ToolStripMenuItem();
+            setCommodorePrintPathToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator14 = new ToolStripSeparator();
+            getCommodorePrintFilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator15 = new ToolStripSeparator();
             pNGFilesToolStripMenuItem = new ToolStripMenuItem();
             rtfStripMenuItem = new ToolStripMenuItem();
-            toolStripSeparator14 = new ToolStripSeparator();
-            setCommodorePrintPathToolStripMenuItem = new ToolStripMenuItem();
-            getCommodorePrintFilesToolStripMenuItem = new ToolStripMenuItem();
-            setLocalPrintPathToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             toolStripMenuItemFTPClient = new ToolStripMenuItem();
             toolStripSeparator7 = new ToolStripSeparator();
@@ -56,6 +57,8 @@ namespace Kolibri.net.C64Sorter
             d64FoldersToolStripMenuItem = new ToolStripMenuItem();
             searchToolStripMenuItem = new ToolStripMenuItem();
             browseLocalFilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator16 = new ToolStripSeparator();
+            amigaZIPArchivesSorterToolStripMenuItem = new ToolStripMenuItem();
             ultimateEliteIIToolStripMenuItem = new ToolStripMenuItem();
             machineToolStripMenuItem = new ToolStripMenuItem();
             ue2MenutoolStripMenuItem = new ToolStripMenuItem();
@@ -103,7 +106,6 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
-            toolStripSeparator15 = new ToolStripSeparator();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -165,6 +167,39 @@ namespace Kolibri.net.C64Sorter
             toolStripMenuItem1.Size = new Size(213, 22);
             toolStripMenuItem1.Text = "Print...";
             // 
+            // setLocalPrintPathToolStripMenuItem
+            // 
+            setLocalPrintPathToolStripMenuItem.Name = "setLocalPrintPathToolStripMenuItem";
+            setLocalPrintPathToolStripMenuItem.Size = new Size(214, 22);
+            setLocalPrintPathToolStripMenuItem.Text = "Set Local PrintPath";
+            setLocalPrintPathToolStripMenuItem.Click += setCommodorePrintPathToolStripMenuItem_Click;
+            setLocalPrintPathToolStripMenuItem.MouseHover += setMouseHover;
+            // 
+            // setCommodorePrintPathToolStripMenuItem
+            // 
+            setCommodorePrintPathToolStripMenuItem.Name = "setCommodorePrintPathToolStripMenuItem";
+            setCommodorePrintPathToolStripMenuItem.Size = new Size(214, 22);
+            setCommodorePrintPathToolStripMenuItem.Text = "Set Commodore PrintPath";
+            setCommodorePrintPathToolStripMenuItem.Click += setCommodorePrintPathToolStripMenuItem_Click;
+            setCommodorePrintPathToolStripMenuItem.MouseHover += setMouseHover;
+            // 
+            // toolStripSeparator14
+            // 
+            toolStripSeparator14.Name = "toolStripSeparator14";
+            toolStripSeparator14.Size = new Size(211, 6);
+            // 
+            // getCommodorePrintFilesToolStripMenuItem
+            // 
+            getCommodorePrintFilesToolStripMenuItem.Name = "getCommodorePrintFilesToolStripMenuItem";
+            getCommodorePrintFilesToolStripMenuItem.Size = new Size(214, 22);
+            getCommodorePrintFilesToolStripMenuItem.Text = "Get Commodore PrintFiles";
+            getCommodorePrintFilesToolStripMenuItem.Click += getCommodorePrintFilesToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator15
+            // 
+            toolStripSeparator15.Name = "toolStripSeparator15";
+            toolStripSeparator15.Size = new Size(211, 6);
+            // 
             // pNGFilesToolStripMenuItem
             // 
             pNGFilesToolStripMenuItem.Name = "pNGFilesToolStripMenuItem";
@@ -179,32 +214,6 @@ namespace Kolibri.net.C64Sorter
             rtfStripMenuItem.Size = new Size(214, 22);
             rtfStripMenuItem.Text = "as RTF";
             rtfStripMenuItem.Click += PrintFilesToolStripMenuItem_Click;
-            // 
-            // toolStripSeparator14
-            // 
-            toolStripSeparator14.Name = "toolStripSeparator14";
-            toolStripSeparator14.Size = new Size(211, 6);
-            // 
-            // setCommodorePrintPathToolStripMenuItem
-            // 
-            setCommodorePrintPathToolStripMenuItem.Name = "setCommodorePrintPathToolStripMenuItem";
-            setCommodorePrintPathToolStripMenuItem.Size = new Size(214, 22);
-            setCommodorePrintPathToolStripMenuItem.Text = "Set Commodore PrintPath";
-            setCommodorePrintPathToolStripMenuItem.Click += setCommodorePrintPathToolStripMenuItem_Click;
-            // 
-            // getCommodorePrintFilesToolStripMenuItem
-            // 
-            getCommodorePrintFilesToolStripMenuItem.Name = "getCommodorePrintFilesToolStripMenuItem";
-            getCommodorePrintFilesToolStripMenuItem.Size = new Size(214, 22);
-            getCommodorePrintFilesToolStripMenuItem.Text = "Get Commodore PrintFiles";
-            getCommodorePrintFilesToolStripMenuItem.Click += getCommodorePrintFilesToolStripMenuItem_Click;
-            // 
-            // setLocalPrintPathToolStripMenuItem
-            // 
-            setLocalPrintPathToolStripMenuItem.Name = "setLocalPrintPathToolStripMenuItem";
-            setLocalPrintPathToolStripMenuItem.Size = new Size(214, 22);
-            setLocalPrintPathToolStripMenuItem.Text = "Set Local PrintPath";
-            setLocalPrintPathToolStripMenuItem.Click += setCommodorePrintPathToolStripMenuItem_Click;
             // 
             // toolStripSeparator3
             // 
@@ -232,7 +241,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // organizeFilesToolStripMenuItem
             // 
-            organizeFilesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { singleFileCategorizerToolStripMenuItem, extensionOrganizerToolStripMenuItem, showContentsToolStripMenuItem, browseLocalFilesToolStripMenuItem });
+            organizeFilesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { singleFileCategorizerToolStripMenuItem, extensionOrganizerToolStripMenuItem, showContentsToolStripMenuItem, browseLocalFilesToolStripMenuItem, toolStripSeparator16, amigaZIPArchivesSorterToolStripMenuItem });
             organizeFilesToolStripMenuItem.Name = "organizeFilesToolStripMenuItem";
             organizeFilesToolStripMenuItem.Size = new Size(92, 20);
             organizeFilesToolStripMenuItem.Text = "Organize Files";
@@ -285,6 +294,18 @@ namespace Kolibri.net.C64Sorter
             browseLocalFilesToolStripMenuItem.Size = new Size(212, 22);
             browseLocalFilesToolStripMenuItem.Text = "Browse local files";
             browseLocalFilesToolStripMenuItem.Click += browseLocalFilesToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator16
+            // 
+            toolStripSeparator16.Name = "toolStripSeparator16";
+            toolStripSeparator16.Size = new Size(209, 6);
+            // 
+            // amigaZIPArchivesSorterToolStripMenuItem
+            // 
+            amigaZIPArchivesSorterToolStripMenuItem.Name = "amigaZIPArchivesSorterToolStripMenuItem";
+            amigaZIPArchivesSorterToolStripMenuItem.Size = new Size(212, 22);
+            amigaZIPArchivesSorterToolStripMenuItem.Text = "Amiga ZIP archives sorter";
+            amigaZIPArchivesSorterToolStripMenuItem.Click += organizeFilesToolStripMenuItem_Click;
             // 
             // ultimateEliteIIToolStripMenuItem
             // 
@@ -604,11 +625,6 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
             // 
-            // toolStripSeparator15
-            // 
-            toolStripSeparator15.Name = "toolStripSeparator15";
-            toolStripSeparator15.Size = new Size(211, 6);
-            // 
             // MainForm
             // 
             AllowDrop = true;
@@ -711,5 +727,7 @@ namespace Kolibri.net.C64Sorter
         private ToolStripMenuItem getCommodorePrintFilesToolStripMenuItem;
         private ToolStripMenuItem setLocalPrintPathToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator15;
+        private ToolStripSeparator toolStripSeparator16;
+        private ToolStripMenuItem amigaZIPArchivesSorterToolStripMenuItem;
     }
 }

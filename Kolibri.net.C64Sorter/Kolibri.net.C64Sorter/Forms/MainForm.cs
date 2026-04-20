@@ -25,7 +25,7 @@ namespace Kolibri.net.C64Sorter
     public partial class MainForm : Form
     {
         private UE2LogOn _ue2logon = new UE2LogOn();
-        private DirectoryInfo _sSelectedFolder=new DirectoryInfo( Application.StartupPath);
+        private DirectoryInfo _sSelectedFolder = new DirectoryInfo(Application.StartupPath);
         private string _searchText = string.Empty;
         private Controllers.UltmateEliteClient _client = null;
 
@@ -144,6 +144,10 @@ namespace Kolibri.net.C64Sorter
                 {
                     newMDIChild = new ExtensionOrganizer();
                 }
+                else if (sender.Equals(amigaZIPArchivesSorterToolStripMenuItem))
+                {
+                    newMDIChild = new AmigaExtensionOrganizer();
+                }
                 newMDIChild.MdiParent = this;
                 newMDIChild.Show();
             }
@@ -229,26 +233,39 @@ namespace Kolibri.net.C64Sorter
 
         private void PrintFilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            string filetype = ".png";
+
             try
             {
-                FolderBrowserDialog fbd = new FolderBrowserDialog();
-                fbd.Description = $"Look up folder with with files in it";
-
-                if (fbd.ShowDialog() == DialogResult.OK)
+                if (sender == null)
                 {
-                    _sSelectedFolder = new DirectoryInfo(fbd.SelectedPath);
-                    var filetype = $"{(sender as ToolStripMenuItem).Tag}";
-                    if (sender.Equals(rtfStripMenuItem))
+                    _sSelectedFolder = new DirectoryInfo(_ue2logon.LocalPrintPath);
+                }
+                else
+                {
+                    FolderBrowserDialog fbd = new FolderBrowserDialog();
+                    fbd.Description = $"Look up folder with with files in it";
+
+                    if (fbd.ShowDialog() == DialogResult.OK)
                     {
-                        CreateRTF(_sSelectedFolder, filetype);
-                    }
-                    else
-                    {
-                        PrintImages(filetype);
+                        _sSelectedFolder = new DirectoryInfo(fbd.SelectedPath);
                     }
 
                 }
+
+                if (sender != null) { filetype = $"{(sender as ToolStripMenuItem).Tag}"; }
+                if (sender == null || sender.Equals(rtfStripMenuItem))
+                {
+                    var ret = CreateRTF(_sSelectedFolder, filetype);
+                    if (ret != null) FileUtilities.Start(ret);
+                }
+                else if (sender != null)
+                {
+                    PrintImages(filetype);
+                }
                 else throw new FileNotFoundException("file wasnt found");
+
+
             }
             catch (Exception ex)
             {
@@ -270,19 +287,24 @@ namespace Kolibri.net.C64Sorter
             else SetStatusLabel($"No files found ({filetype}).");
         }
 
-        private void CreateRTF(DirectoryInfo source, string fileext = "PNG")
+        private FileInfo CreateRTF(DirectoryInfo source, string fileext = "PNG")
         {
+            FileInfo ret = null;
             try
             {
 
                 if (string.IsNullOrEmpty(fileext)) fileext = "PNG";
                 string folder = source.FullName;
-                FileInfo output = new FileInfo($@"{Path.Combine(source.FullName)}\{fileext}_{FileUtilities.SafeFileName(DateTime.Now.ToString("G"))}.rtf");
+                var files = Directory.GetFiles(folder, $"*.{fileext.TrimStart('.')}");
+                if (files is null || files.Length <= 0)
+                { throw new FileNotFoundException($"No {fileext} files found in {folder}"); }
+
+                ret = new FileInfo($@"{Path.Combine(source.FullName)}\{fileext}_{FileUtilities.SafeFileName(DateTime.Now.ToString("G"))}.rtf");
 
                 var rtf = new StringBuilder();
                 rtf.Append(@"{\rtf1\ansi\deff0");
 
-                foreach (var file in Directory.GetFiles(folder, $"*.{fileext.TrimStart('.')}"))
+                foreach (var file in files)
                 {
                     byte[] imgBytes = File.ReadAllBytes(file);
                     string hex = BitConverter.ToString(imgBytes).Replace("-", "");
@@ -321,14 +343,16 @@ namespace Kolibri.net.C64Sorter
 
                 rtf.Append("}");
 
-                File.WriteAllText(output.FullName, rtf.ToString());
-                FileUtilities.OpenFolderHighlightFile(output);
+                File.WriteAllText(ret.FullName, rtf.ToString());
+                FileUtilities.OpenFolderHighlightFile(ret);
                 SetStatusLabel($"Printing completed.");
+                return ret;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+            return ret;
 
         }
 
@@ -588,9 +612,9 @@ namespace Kolibri.net.C64Sorter
             string filename = UltmateEliteClient.AppsettingsPath.FullName;
             try
             {
-                UE2LogOn logon= GetLogonSettings(filename);
-                string hostname=logon.Hostname, username=logon.Username, password=logon.Password;
-               
+                UE2LogOn logon = GetLogonSettings(filename);
+                string hostname = logon.Hostname, username = logon.Username, password = logon.Password;
+
 
                 var choice = InputDialogs.InputBox("IP or HostName", "Please input a value", ref hostname);
                 if (choice == DialogResult.OK)
@@ -616,14 +640,14 @@ namespace Kolibri.net.C64Sorter
             }
         }
 
-        private UE2LogOn GetLogonSettings            (string filename )
+        private UE2LogOn GetLogonSettings(string filename)
         {
             UE2LogOn logon = new UE2LogOn();
-string        hostname = _ue2logon.Hostname;
-            string         username = _ue2logon.Username;
-            string       password = _ue2logon.Password;
+            string hostname = _ue2logon.Hostname;
+            string username = _ue2logon.Username;
+            string password = _ue2logon.Password;
             try
-            {    
+            {
 
                 logon = JsonConvert.DeserializeObject<UE2LogOn>(File.ReadAllText(filename));
             }
@@ -1069,7 +1093,8 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
                 else if (sender.Equals(setLocalPrintPathToolStripMenuItem))
                 {
                     var folder = FolderUtilities.LetOppMappe(_ue2logon.LocalPrintPath, "Set local working path for Commodore print files");
-                    if (folder.Exists)
+                    if (folder == null) { SetStatusLabel($"Path is not changed, still  {_ue2logon.LocalPrintPath}"); }
+                    else if (folder.Exists)
                     {
 
                         _ue2logon.LocalPrintPath = folder.FullName;
@@ -1105,13 +1130,19 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
                     string currentLocalPath = Path.Combine(_ue2logon.LocalPrintPath, line.Name);
                     Uri currentRemoteUrl = new Uri(_ue2logon.FTPPrintPath + line.Name.Trim().Insert(0, "/"));
 
-
                     info = Controllers.FTPControllerC64.DownloadFileFTP(_ue2logon, destination, currentRemoteUrl.AbsolutePath);
                     SetStatusLabel($"Downloaded {info.FullName}");
-
+                }
+                if (info is null || !info.Exists)
+                {
+                    MessageBox.Show($"No files found at {_ue2logon.FTPPrintPath}");
+                }
+                else
+                {
+                    FileUtilities.OpenFolderHighlightFile(info);
+                    PrintFilesToolStripMenuItem_Click(null, null);
                 }
 
-                FileUtilities.OpenFolderHighlightFile(info);
             }
             catch (Exception ex)
             {
@@ -1157,6 +1188,21 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
                 }
             }
         }
+
+        private void setMouseHover(object sender, EventArgs e)
+        {
+            if (sender.Equals(setCommodorePrintPathToolStripMenuItem))
+            {
+                setCommodorePrintPathToolStripMenuItem.ToolTipText = _ue2logon.FTPPrintPath;
+            }
+
+            else if (sender.Equals(setLocalPrintPathToolStripMenuItem))
+            {
+                setLocalPrintPathToolStripMenuItem.ToolTipText = _ue2logon.LocalPrintPath;
+            }
+        }
+
+       
     }
 }
  
