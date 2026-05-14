@@ -1,5 +1,4 @@
-﻿using javax.swing.text;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
@@ -78,6 +77,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 else if (!string.IsNullOrEmpty(_settings.XPlexToken))
                 {
                     _plex = new PlexController(_settings);
+                     Task.Run(() => { _=  _plex.GetAllItemsAsync(); });
                 }
             }
             catch (Exception ex)

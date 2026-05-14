@@ -1,5 +1,4 @@
-﻿using Saxon.Api;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Xml;
 using System.Xml.XPath;
@@ -138,27 +137,23 @@ namespace Kolibri.net.Common.Utilities
             string inputXml;
             string xsltString;
             string ret = string.Empty;
-      using (StreamReader sr = new StreamReader(xsltInfo.FullName))
+            using (StreamReader sr = new StreamReader(xsltInfo.FullName))
             {
                 // Read the stream to a string, and write the string to the console.
                 xsltString = sr.ReadToEnd();
             }
-            if (xsltString.Contains(@"version=""2.0"""))
-                ret = transform20Xml(info, xsltInfo);
+
+
             // Open the text file using a stream reader.
-
-            else
+            using (StreamReader sr = new StreamReader(info.FullName))
             {
-                // Open the text file using a stream reader.
-                using (StreamReader sr = new StreamReader(info.FullName))
-                {
-                    // Read the stream to a string, and write the string to the console.
-                    inputXml = sr.ReadToEnd();
-                }
-
-
-                ret = TransformXML(inputXml, xsltString);
+                // Read the stream to a string, and write the string to the console.
+                inputXml = sr.ReadToEnd();
             }
+
+
+            ret = TransformXML(inputXml, xsltString);
+
             info = new FileInfo(Path.Combine(Environment.SpecialFolder.LocalApplicationData.ToString(), "TestBench", info.Name.Replace(info.Extension, "." + fileExtension)));
             if (!info.Directory.Exists)
                 info.Directory.Create();
@@ -167,24 +162,5 @@ namespace Kolibri.net.Common.Utilities
                 Process.Start(info.FullName);
             return info;
         }
-
-
-        #region xslt 2.0
-        public static string transform20Xml(FileInfo sourceUri, FileInfo xsltUri)
-        {
-            Processor processor = new Processor(false);
-            XdmNode input = processor.NewDocumentBuilder().Build(new System.Uri(sourceUri.FullName));
-            XsltTransformer transformer = processor.NewXsltCompiler().Compile(new Uri(xsltUri.FullName)).Load();
-            transformer.InitialContextNode = input;
- 
-            transformer.BaseOutputUri = new Uri(xsltUri.FullName);
-            Serializer serializer = processor.NewSerializer();
-            StringWriter sw = new StringWriter();
-            serializer.SetOutputWriter(sw);
-            transformer.Run(serializer);
-            return sw.ToString();
-        }
-        #endregion
-
     }
 }

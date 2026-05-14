@@ -1,6 +1,3 @@
-
-using com.sun.org.apache.xpath.@internal.operations;
-using com.sun.tools.javac.comp;
 using Kolibri.net.SilverScreen.DapperImdbData.Repository;
 
 using OMDbApiNet.Model;

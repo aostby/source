@@ -1,6 +1,4 @@
-﻿using com.sun.org.apache.bcel.@internal.generic;
-using javax.print.attribute.standard;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
@@ -8,9 +6,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
 using OMDbApiNet.Model;
 using System.Data;
-using System.Data.SqlClient;
 using System.Text;
-using System.Threading.Tasks;
 
 
 namespace Kolibri.net.SilverScreen.OMDBForms
@@ -596,7 +592,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                                     if (item == null)
                                     {
 
-                                   item=     omdbC.GetItemByImdbId(imdbid);
+                                        item = omdbC.GetItemByImdbId(imdbid);
                                         if (item != null)
                                         {
                                             item.TomatoUrl = dir.FullName;
@@ -604,7 +600,16 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                                             SetStatusLabelText($"Updating path for {item.Title} - {dir.Name}");
                                         }
                                     }
+                                    else
+                                    {
+                                        SetStatusLabelText($"Updating path   {dir.Name}");
+                                        item.TomatoUrl = dir.FullName;
+                                        await _liteDB.UpsertAsync(item);
+                                        await _liteDB.UpsertAsync(new FileItem(item.ImdbId, dir.FullName));
+                                        SetStatusLabelText($"Updating path for {item.Title} - {dir.Name}");
+                                    }
                                 }
+                                
 
                             }
                         }

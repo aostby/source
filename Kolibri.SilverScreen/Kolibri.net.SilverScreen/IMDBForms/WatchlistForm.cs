@@ -1,12 +1,9 @@
-﻿using com.sun.codemodel.@internal.util;
-using DGVPrinterHelper;
+﻿using DGVPrinterHelper;
 using ExcelDataReader;
-using javax.xml.crypto;
 using Kolibri.net.Common.Dal.Controller;
 using MoviesFromImdb.Controller;
 using System.ComponentModel;
 using System.Data;
-using System.Linq;
 using System.Text;
 using Excel = Microsoft.Office.Interop.Excel;
 

@@ -1,11 +1,7 @@
-﻿using com.sun.tools.corba.se.idl;
-using com.sun.xml.@internal.bind.v2.model.core;
-using Kolibri.net.Common.Dal.Entities;
+﻿using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities.Extensions;
 using LiteDB;
 using OMDbApiNet.Model;
-using System.Collections;
-using System.Security.Policy;
 using TMDbLib.Objects.TvShows;
 using Season = OMDbApiNet.Model.Season;
 

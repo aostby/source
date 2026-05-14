@@ -1,21 +1,14 @@
-﻿using com.sun.tools.corba.se.idl;
-using Kolibri.net.Common.Images;
+﻿using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using OMDbApiNet.Model;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using static net.sf.saxon.functions.DynamicContextAccessor;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class TreeViewItemsForm : Form
     {
+        private ContextMenuStrip _cms;
         private List<OMDbApiNet.Model.Item> _items;
         private string groupBoxOrderbyText = "Order by";
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -51,6 +44,15 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private void Init()
         {
+            _cms = new ContextMenuStrip();
+            _cms.Items.Add("Expand all", null, (s, e) =>
+            {
+                treeView1.ExpandAll();
+            });
+            _cms.Items.Add("Collapse all", null, (s, e) =>
+            {
+                treeView1.CollapseAll();
+            });
 
             groupBoxOrderbyText = groupBoxOrder.Text;
             treeView1.ImageList = imageListIcons;
@@ -167,11 +169,18 @@ namespace Kolibri.net.SilverScreen.Forms
                 foreach (var item in group.OrderBy(i => i.Title))
                 {
                     var imgKey = Path.GetExtension($"{item.TomatoUrl}".ToLower());
+                    string info = $"Item Details: {item.Title} ({item.Year})\r\n" +
+              "----------------\r\n" +
+              $"- Rating: {item.ImdbRating}\r\n" +
+              $"- Year: {item.Year}\r\n"+
+              $"- Genre: {item.Genre}\r\n" +
+              $"- URL: {item.TomatoUrl}";
+
                     var node = new TreeNode($"{item.Title} ({item.Year})")
                     {
                         Tag = item,
                         ImageKey = imgKey,
-                        ToolTipText = $"{item.TomatoUrl}"
+                        ToolTipText = info
                     };
                     node.ImageKey = imgKey;
                     parent.Nodes.Add(node);
@@ -287,7 +296,6 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                 }
             }
-
             catch (Exception ex)
             {
             }
@@ -299,22 +307,13 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 var contr = treeView1;
 
-            if (e.Button == MouseButtons.Right)
-            {// Create menu items programmatically (alternatively, use a designer-created menu)
-                ContextMenuStrip cms = new ContextMenuStrip();
-                cms.Items.Add("Option 1");
-                cms.Items.Add("Option 2");
-
-                // Show the menu at a specific location (e.g., relative to a button's location)
-                // You may need to convert screen coordinates if necessary
-                //  cms.Show(buttonShowMenu, new System.Drawing.Point(0, buttonShowMenu.Height));
-                cms.Show(treeView1, new System.Drawing.Point(e.X, e.Y));
+                if (e.Button == MouseButtons.Right)
+                {
+                    _cms.Show(treeView1, new System.Drawing.Point(e.X, e.Y));
                 }
             }
             catch (Exception ex)
             {
-
-                
             }
         }
     }

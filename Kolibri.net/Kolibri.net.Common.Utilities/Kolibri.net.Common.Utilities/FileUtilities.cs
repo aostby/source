@@ -1,5 +1,4 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
-using java.awt;
 using Newtonsoft.Json;
 using Ookii.Dialogs.WinForms;
 using System.Collections;

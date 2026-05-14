@@ -1,5 +1,4 @@
-﻿using com.sun.xml.@internal.fastinfoset.util;
-using java.text;
+﻿ 
 using System.Globalization;
 using System.IO.Compression;
 using System.Text;

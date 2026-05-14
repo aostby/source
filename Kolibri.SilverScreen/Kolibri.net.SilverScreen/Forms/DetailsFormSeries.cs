@@ -1,21 +1,10 @@
-﻿using com.sun.org.apache.xpath.@internal.functions;
-using com.sun.tools.corba.se.idl;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
-using Kolibri.net.Common.Images;
-using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controls;
-using OMDbApiNet;
 using OMDbApiNet.Model;
 using System.Data;
-using System.Windows.Forms.VisualStyles;
-using TMDbLib.Objects.Find;
-using TMDbLib.Objects.Movies;
-using TMDbLib.Objects.TvShows;
-using static com.sun.tools.javac.util.Name;
-using Cast = TMDbLib.Objects.TvShows.Cast;
 
 namespace Kolibri.net.SilverScreen.Forms
 {

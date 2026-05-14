@@ -1,15 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using java.util;
-using Kolibri.net.Common.Dal.Entities;
+﻿using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities.Extensions;
-using Newtonsoft.Json;
 using OMDbApiNet;
 using OMDbApiNet.Model;
+using System.Diagnostics;
 
 namespace Kolibri.net.Common.Dal.Controller
 {

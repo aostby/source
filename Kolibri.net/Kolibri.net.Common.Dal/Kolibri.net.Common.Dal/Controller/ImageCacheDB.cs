@@ -1,22 +1,10 @@
-﻿using com.sun.xml.@internal.bind.v2.model.core;
-using HtmlAgilityPack;
-using Kolibri.net.Common.Dal.Entities;
+﻿using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using LiteDB;
 using OMDbApiNet.Model;
-using sun.security.util;
-using sun.util.resources.cldr.zh;
-using System;
-using System.Collections;
 using System.Data;
-using System.Net.Http;
 using System.Reflection;
-using System.Runtime.Caching;
-using System.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Web;
-using System.Xml;
 
 namespace Kolibri.net.Common.Dal.Controller
 {
