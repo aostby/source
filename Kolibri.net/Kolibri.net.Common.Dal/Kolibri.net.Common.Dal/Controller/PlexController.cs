@@ -1,15 +1,8 @@
-﻿using com.sun.tools.@internal.ws.processor.model;
-using Kolibri.net.Common.Dal.Entities;
+﻿using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
-using OMDbApiNet;
 using OMDbApiNet.Model;
-using System.Reflection.PortableExecutable;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using TMDbLib.Objects.TvShows;
-using static System.Net.WebRequestMethods;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 namespace Kolibri.net.Common.Dal.Controller
 {
     public class PlexController

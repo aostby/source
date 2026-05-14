@@ -1,16 +1,11 @@
-﻿using javax.swing.text;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
-using Kolibri.net.SilverScreen.DapperImdbData.Service;
 using Kolibri.net.SilverScreen.Forms;
 using OMDbApiNet.Model;
-using System;
-using System.Collections;
 using System.ComponentModel;
 using System.Data;
-using System.Windows.Forms;
 using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Controls

@@ -40,6 +40,7 @@
             reduserBildestørrelseToolStripMenuItem = new ToolStripMenuItem();
             hjelpToolStripMenuItem = new ToolStripMenuItem();
             brukermanualToolStripMenuItem = new ToolStripMenuItem();
+            finnDuplikaterToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -96,7 +97,7 @@
             // 
             // bilderToolStripMenuItem
             // 
-            bilderToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { sorterBilderToolStripMenuItem, reduserBildestørrelseToolStripMenuItem });
+            bilderToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { sorterBilderToolStripMenuItem, reduserBildestørrelseToolStripMenuItem, finnDuplikaterToolStripMenuItem });
             bilderToolStripMenuItem.Name = "bilderToolStripMenuItem";
             bilderToolStripMenuItem.Size = new Size(49, 20);
             bilderToolStripMenuItem.Text = "Bilder";
@@ -125,9 +126,16 @@
             // brukermanualToolStripMenuItem
             // 
             brukermanualToolStripMenuItem.Name = "brukermanualToolStripMenuItem";
-            brukermanualToolStripMenuItem.Size = new Size(180, 22);
+            brukermanualToolStripMenuItem.Size = new Size(148, 22);
             brukermanualToolStripMenuItem.Text = "Brukermanual";
             brukermanualToolStripMenuItem.Click += brukermanualToolStripMenuItem_Click;
+            // 
+            // finnDuplikaterToolStripMenuItem
+            // 
+            finnDuplikaterToolStripMenuItem.Name = "finnDuplikaterToolStripMenuItem";
+            finnDuplikaterToolStripMenuItem.Size = new Size(189, 22);
+            finnDuplikaterToolStripMenuItem.Text = "Finn duplikater";
+            finnDuplikaterToolStripMenuItem.Click += finnDuplikaterToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -159,5 +167,6 @@
         private ToolStripMenuItem listExtensionsToolStripMenuItem;
         private ToolStripMenuItem hjelpToolStripMenuItem;
         private ToolStripMenuItem brukermanualToolStripMenuItem;
+        private ToolStripMenuItem finnDuplikaterToolStripMenuItem;
     }
 }

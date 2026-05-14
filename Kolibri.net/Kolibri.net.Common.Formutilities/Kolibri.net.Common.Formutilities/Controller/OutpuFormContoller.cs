@@ -1,11 +1,8 @@
-﻿using com.sun.tools.@internal.ws.processor.util;
-using FastColoredTextBoxNS;
+﻿using FastColoredTextBoxNS;
 using global::Kolibri.net.Common.FormUtilities.Forms;
-using java.awt.dnd;
 using Kolibri.net.Common.Utilities;
 using System.Data;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
 
 namespace Kolibri.net.Common.FormUtilities.Controller

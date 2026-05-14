@@ -1,4 +1,5 @@
 ﻿using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.SortPictures.Properties;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Kolibri.SortPictures.Forms
 {
     public partial class MainForm : Form
     {
-        private DirectoryInfo searchPath;
+        private DirectoryInfo _searchPath;
         public MainForm()
         {
             InitializeComponent();
@@ -53,31 +54,33 @@ namespace Kolibri.SortPictures.Forms
             DirectoryInfo folder = null;
             try
             {
-                var dlg1 = new Kolibri.net.Common.Utilities.FolderUtilities.FolderBrowserDialogEx();
-                dlg1.Description = $"Select a folder for your operattion ({(sender as ToolStripMenuItem).Text}):";
-                dlg1.ShowNewFolderButton = true;
-                dlg1.ShowEditBox = true;
-                dlg1.ShowFullPathInEditBox = true;
-                dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
 
-                if (searchPath != null && searchPath.Exists) { dlg1.SelectedPath = searchPath.FullName; }
+                var dlg1 = FolderUtilities.LetOppMappe((sender as ToolStripMenuItem).Text, $"Select a folder for your operattion ({(sender as ToolStripMenuItem).Text}");
+                //dlg1.Description = $"Select a folder for your operattion ({(sender as ToolStripMenuItem).Text}):";
+                //dlg1.ShowNewFolderButton = true;
+                //dlg1.ShowEditBox = true;
+                //dlg1.ShowFullPathInEditBox = true;
+                //dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
+
+                if (_searchPath != null && _searchPath.Exists) { dlg1 = new DirectoryInfo(_searchPath.FullName); }
 
 
                 // Show the FolderBrowserDialog.
-                DialogResult result = dlg1.ShowDialog();
-                if (result == DialogResult.OK)
+                //DialogResult result = dlg1.ShowDialog();
+                //if (result == DialogResult.OK)
+                if (dlg1 != null && dlg1.Exists)
                 {
                     Cursor = Cursors.WaitCursor;
-                    searchPath = new DirectoryInfo(dlg1.SelectedPath);
+                    _searchPath = new DirectoryInfo(dlg1.FullName);
 
                     if (sender.Equals(fjernTommeMapperToolStripMenuItem))
                     {
-                        DirectoryInfo dinfo = new DirectoryInfo(dlg1.SelectedPath);
+                        DirectoryInfo dinfo = new DirectoryInfo(dlg1.FullName);
                         Kolibri.net.Common.Utilities.FileUtilities.DeleteEmptyDirs(dinfo);
                     }
                     else if (sender.Equals(listExtensionsToolStripMenuItem))
                     {
-                        var liste = FolderUtilities.SearchAccessibleFilesNoDistinct(dlg1.SelectedPath);
+                        var liste = FolderUtilities.SearchAccessibleFilesNoDistinct(dlg1.FullName);
 
                         ListBox mylist = new ListBox();
                         mylist.DataSource = liste;
@@ -111,7 +114,7 @@ namespace Kolibri.SortPictures.Forms
                 if (index != System.Windows.Forms.ListBox.NoMatches)
                 {
                     Cursor = Cursors.WaitCursor;
-                    var liste = FileUtilities.GetFiles(searchPath, $"*{(sender as ListBox).Items[index].ToString()}", true);
+                    var liste = FileUtilities.GetFiles(_searchPath, $"*{(sender as ListBox).Items[index].ToString()}", true);
                     Cursor = Cursors.Default;
                     ListBox mylist = new ListBox();
                     mylist.DataSource = liste;
@@ -189,9 +192,25 @@ namespace Kolibri.SortPictures.Forms
             WebBrowser browsercontrol = new WebBrowser();
             form.Controls.Add(browsercontrol);
             browsercontrol.Navigate(url);
-            browsercontrol.Dock = DockStyle.Fill;   
+            browsercontrol.Dock = DockStyle.Fill;
             form.Size = this.Size;
             form.ShowDialog();
+        }
+
+        private void finnDuplikaterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dlg1 = FolderUtilities.LetOppMappe((sender as ToolStripMenuItem).Text, $"Select a folder for your operation ({(sender as ToolStripMenuItem).Text}");
+            if (_searchPath != null && _searchPath.Exists) { dlg1 = new DirectoryInfo(_searchPath.FullName); }
+            if (dlg1 != null && dlg1.Exists)
+            {
+                // Usage with a collection
+                var photoPaths = Directory.GetFiles(dlg1.FullName, "*.*", SearchOption.AllDirectories);
+                var duplicates = photoPaths
+                    .GroupBy(path => FileExt.GetFileHash(path))
+                    .Where(group => group.Count() > 1)
+                    .Select(group => group.ToList())
+                    .ToList();
+            }
         }
     }
 }

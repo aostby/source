@@ -1,6 +1,4 @@
-﻿        
-using IKVM.ByteCode.Decoding;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Images;
@@ -8,13 +6,9 @@ using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
 using OMDbApiNet.Model;
-using sun.java2d.pipe;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Data;
-using System.DirectoryServices;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace Kolibri.net.Common.VisualizeOMDbItem
 {
@@ -819,7 +813,7 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
                             }
                             else {
                                 MessageBox.Show($"{item.TomatoUrl} ({item.Title})", "Sorry, the filepath does not exist");
-                             res= MessageBox.Show($"Wanna look up this folder?", "Wanna fix it? ({item.Title})", MessageBoxButtons.YesNo, MessageBoxIcon.Question); }
+                             res= MessageBox.Show($"Wanna look up this folder?", $"Wanna fix it? ({item.Title})", MessageBoxButtons.YesNo, MessageBoxIcon.Question); }
                             if (res == DialogResult.Yes)
                             {
 

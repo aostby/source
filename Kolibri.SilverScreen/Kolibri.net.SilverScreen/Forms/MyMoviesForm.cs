@@ -1,5 +1,4 @@
-﻿using javax.swing.text;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Images;
@@ -165,7 +164,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 SetLabelText($@"Searching for files in {dInfo.Name} ({dInfo.FullName})");
               //  _ = await GetPathSearchFiles(dInfo);
-                _= await SetCurrentPath(dInfo, true);
+                _= await SetCurrentPath(dInfo, null);
                 groupBoxValg.Enabled = !groupBoxValg.Enabled;
                 buttonVelg_Click(null, null);
             }
@@ -437,7 +436,12 @@ namespace Kolibri.net.SilverScreen.Forms
 
                     Form form = Common.FormUtilities.Controller.OutputFormController.DataTableForm($"Dupes {ds.Tables[0].Rows.Count}", ds.Tables[0], ds.Tables[0].Columns[0], new Size(50, 50));
                     SetForm(form);
-                }return; 
+                }
+                else {
+                    SetForm(Common.FormUtilities.Controller.OutputFormController.RichTextBoxForm("Dupes list", "No dupes found.", new Size(50, 50)));
+                }
+                
+                return; 
             }
 
 
@@ -470,11 +474,23 @@ namespace Kolibri.net.SilverScreen.Forms
                         {
                             form = Common.FormUtilities.Controller.OutputFormController.DataTableForm("Diff list", datatable, datatable.Columns[1], new Size(50, 50));
                         }
+                        else {
+                            form = Common.FormUtilities.Controller.OutputFormController.RichTextBoxForm("Diff list", "No diff found", new Size(50, 50));
+                        }
                         SetForm(form);
                     }
                     else
                     {
+                        if (difflist != null && difflist.Count == 0)
                         {
+
+
+                            SetForm(Common.FormUtilities.Controller.OutputFormController.RichTextBoxForm("Diff list", "No diff found to edit", new Size(50, 50)));
+
+                        }
+                        else
+                        {
+
                             Random random = new Random();
                             foreach (string productName in difflist.OrderBy(item => random.Next()).Take(10))
                             {

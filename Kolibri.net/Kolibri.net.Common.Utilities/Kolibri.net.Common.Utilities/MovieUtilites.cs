@@ -1,10 +1,8 @@
-﻿using com.sun.org.apache.bcel.@internal.generic;
-using Kolibri.net.Common.Utilities.Extensions;
+﻿using Kolibri.net.Common.Utilities.Extensions;
 using MovieFileLibrary;
-using net.sf.saxon.functions;
+
 using System.Data;
 using System.Text.RegularExpressions;
-using System.Xml.Schema;
 
 namespace Kolibri.net.Common.Utilities
 {

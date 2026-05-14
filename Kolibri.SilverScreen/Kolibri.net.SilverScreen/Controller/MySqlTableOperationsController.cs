@@ -1,22 +1,10 @@
-﻿using com.sun.org.apache.bcel.@internal.generic;
-using com.sun.xml.@internal.bind.v2.model.core;
-using Dapper;
-using java.awt.print;
+﻿using Dapper;
 using Kolibri.net.Common.Dal.Controller;
-using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
-using LiteDB;
-using MySql;
 using MySql.Data.MySqlClient;
 using OMDbApiNet.Model;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Kolibri.net.SilverScreen.Controller
 {

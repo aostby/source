@@ -1,6 +1,4 @@
-﻿
-using com.sun.corba.se.impl.orbutil;
-using Kolibri.net.Common.Dal.Controller;
+﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Images;
@@ -10,7 +8,6 @@ using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
 using System.Data;
 using TMDbLib.Objects.Movies;
-using static TMDbLib.Objects.General.WatchProvider;
 
 namespace Kolibri.net.SilverScreen.Forms
 {

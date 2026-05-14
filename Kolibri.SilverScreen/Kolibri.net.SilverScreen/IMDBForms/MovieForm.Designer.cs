@@ -1,7 +1,4 @@
-﻿using javax.swing.text;
-using Kolibri.net.Common.Utilities;
-
-namespace Kolibri.net.SilverScreen.IMDBForms
+﻿namespace Kolibri.net.SilverScreen.IMDBForms
 {
     partial class MovieForm
     {

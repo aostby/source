@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -100,7 +101,7 @@ namespace Kolibri.net.Common.Utilities.Extensions
         /// </summary>
         /// <param name="path">full filsti for en directory</param>
         /// <returns>imdbid hvis funnet, null ellers</returns>
-        public static string ImdbIdFromDirectoryName(this string path) 
+        public static string ImdbIdFromDirectoryName(this string path)
         {
             string ret = null;
             try
@@ -109,16 +110,29 @@ namespace Kolibri.net.Common.Utilities.Extensions
                 Regex rex = new Regex(pattern);
                 var t = rex.Match(path);
                 if (t.Success && t.Value.Contains("imdb-"))
-                    ret= t.Value.Split("-").Last().TrimEnd('}');  
+                    ret = t.Value.Split("-").Last().TrimEnd('}');
 
             }
             catch (Exception)
             {
-                ret = null;    
+                ret = null;
             }
 
             return ret;
         }
-
+        /// <summary>
+        /// Finner HASH for en fil
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static string GetFileHash(this string filePath)
+        {
+            using (var sha256 = SHA256.Create())
+            using (var stream = File.OpenRead(filePath))
+            {
+                var hash = sha256.ComputeHash(stream);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
+        }
     }
 }

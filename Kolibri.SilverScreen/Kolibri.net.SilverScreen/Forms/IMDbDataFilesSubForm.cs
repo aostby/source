@@ -1,20 +1,10 @@
-﻿using com.sun.org.apache.bcel.@internal.generic;
-using Kolibri.net.Common.Dal.Entities;
+﻿using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
 using Kolibri.net.SilverScreen.Entities;
-using OMDbApiNet.Model;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using percentCalc = Kolibri.net.Common.FormUtilities.Tools.ProgressBarHelper;
 
 namespace Kolibri.net.SilverScreen.Forms

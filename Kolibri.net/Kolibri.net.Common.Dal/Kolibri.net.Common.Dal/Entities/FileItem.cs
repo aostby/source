@@ -1,5 +1,4 @@
-﻿using java.nio.file;
-using LiteDB;
+﻿using LiteDB;
 
 namespace Kolibri.net.Common.Dal.Entities
 {   public class FileItem
