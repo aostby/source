@@ -1,24 +1,18 @@
-﻿using com.sun.nio.zipfs;
-using FastColoredTextBoxNS;
+﻿using FastColoredTextBoxNS;
 using File_Organizer;
-using java.time;
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.C64Sorter.Forms;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
-using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
-using sun.security.util;
 using System.Data;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using static net.sf.saxon.functions.DynamicContextAccessor;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Kolibri.net.C64Sorter
 {

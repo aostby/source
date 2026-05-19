@@ -28,7 +28,14 @@ namespace Kolibri.net.SilverScreen.Controller
         /// true =Alt 
         /// false = Kun filinformasjon
         /// </summary>
-        private readonly bool? _updateTriState;
+        /// 
+        /// <summary>
+        /// Oppdatering (tristate): 
+        /// Indeterminate = Ingenting
+        /// Checked =Alt 
+        /// Unchecked = Kun filinformasjon og manglende
+        /// </summary>
+        private readonly CheckState _updateTriState;
 
         private UserSettings _settings { get; }
         /// <summary>
@@ -38,8 +45,8 @@ namespace Kolibri.net.SilverScreen.Controller
         /// <param name="liteDB">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="tmdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
         /// <param name="omdb">hvis oppgitt, brukes denne, hvis ikke intansieres den på bakgrunn av userSettings, hvis mulig</param>
-        /// <param name="updateTriState">null = Ingenting, true=alt, false= kun filinfromasjon</param>
-        public MoviesSearchController_001(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, bool? updateTriState = null)
+        /// <param name="updateTriState">Indeterminate = Ingenting, Checked=alt, Unchecked= kun filinfromasjon</param>
+        public MoviesSearchController_001(UserSettings userSettings, LiteDBController liteDB = null, TMDBController tmdb = null, OMDBController omdb = null, CheckState updateTriState = CheckState.Indeterminate)
         {
             CurrentLog = new StringBuilder();
             _settings = userSettings;
@@ -91,7 +98,7 @@ namespace Kolibri.net.SilverScreen.Controller
             List<string> common = MovieUtilites.MoviesCommonFileExt(true);
             var masks = common.Select(r => string.Concat('*', r)).ToArray();
             var searchStr = "*." + string.Join("|*.", common);
-            if (_updateTriState == true)
+            if (_updateTriState == CheckState.Checked)
             {
                 //Slett items
                 try
@@ -198,7 +205,7 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
                 var test = await _liteDB.FindByFileNameAsync(file);
-                if (test != null && _updateTriState == null||_updateTriState==false)
+                if (test != null && _updateTriState !=CheckState.Checked)
                 {
                     movie = await _liteDB.FindItemAsync(test.ImdbId);
                     if (movie != null)
@@ -289,7 +296,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 }
 
                 //Sjekk om tittelen finnes i LiteDB som tittel/år
-                if (movie == null && _updateTriState == false)
+                if (movie == null && _updateTriState == CheckState.Unchecked)
                 {
                     movie = await _liteDB.FindItemByTitle(title, year);
                     if (movie != null)

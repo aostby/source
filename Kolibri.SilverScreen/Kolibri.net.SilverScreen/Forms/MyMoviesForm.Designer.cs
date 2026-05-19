@@ -44,6 +44,7 @@
             splitContainer1 = new SplitContainer();
             checkBoxDetailType = new CheckBox();
             checkBox1 = new CheckBox();
+            checkBoxTristate = new CheckBox();
             statusStrip1.SuspendLayout();
             groupBoxValg.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -212,11 +213,23 @@
             checkBox1.Text = "Trevisning";
             checkBox1.UseVisualStyleBackColor = true;
             // 
+            // checkBoxTristate
+            // 
+            checkBoxTristate.AutoSize = true;
+            checkBoxTristate.Location = new Point(600, 61);
+            checkBoxTristate.Name = "checkBoxTristate";
+            checkBoxTristate.Size = new Size(188, 19);
+            checkBoxTristate.TabIndex = 11;
+            checkBoxTristate.Text = "Ingen endring, alt,  manglende";
+            checkBoxTristate.ThreeState = true;
+            checkBoxTristate.UseVisualStyleBackColor = true;
+            // 
             // MyMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1201, 769);
+            Controls.Add(checkBoxTristate);
             Controls.Add(checkBox1);
             Controls.Add(checkBoxDetailType);
             Controls.Add(splitContainer1);
@@ -256,5 +269,6 @@
         private RadioButton radioButtonEditDiff;
         private RadioButton radioButtonDuplicates;
         private CheckBox checkBox1;
+        private CheckBox checkBoxTristate;
     }
 }

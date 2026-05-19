@@ -287,7 +287,8 @@ namespace Kolibri.net.Common.Utilities
 
                         }
                     }
-                }
+                }//Filter
+                ret = ret.Where(cdr => !cdr?.Contains("@__thumb") == true).ToList();
             }
             catch (Exception ex) { }
             return ret;

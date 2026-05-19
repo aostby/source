@@ -4,10 +4,12 @@ using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
+using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Text;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Kolibri.net.SilverScreen.Controller
 {
@@ -26,12 +28,12 @@ namespace Kolibri.net.SilverScreen.Controller
 
 
         /// <summary>
-        /// Oppdatering: 
-        /// null = Ingenting
-        /// true =Alt 
-        /// false = Kun filinformasjon
+        /// Oppdatering (tristate): 
+        /// Indeterminate = Ingenting
+        /// Checked =Alt 
+        /// Unchecked = Kun filinformasjon og manglende
         /// </summary>
-        private bool? _updateTriState;
+        private CheckState _updateTriState = CheckState.Indeterminate;
 
         private UserSettings _settings { get; }
      
@@ -49,7 +51,7 @@ namespace Kolibri.net.SilverScreen.Controller
         {
             CurrentLog = new StringBuilder();
             _settings = userSettings;
-            _updateTriState = null;
+            
             if (progress == null) _progress = new Progress<int>();
             else _progress = progress;
 
@@ -102,32 +104,47 @@ namespace Kolibri.net.SilverScreen.Controller
         }
 
         #region Movie Item
-        public async Task<List<Item>> SearchForMovies(DirectoryInfo dir, bool? updateTriState = null)
+
+        /// <summary>
+        /// Tristate Ingenting, manglende, alt
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <param name="tristate"></param>
+        /// <returns></returns>
+        public async Task<List<Item>> SearchForMovies(DirectoryInfo dir, CheckState tristate = CheckState.Indeterminate)
         {
             int count = 0;
-            _updateTriState = updateTriState;
-            ClearIfTristateTrue(dir);
-
             CurrentLog.Clear();
             _progress?.Report(count);
 
             List<Item> ret = new List<Item>();
-            if (!Init(dir, updateTriState)) return ret;
+            
+            //Sjekk at vi har alt av verdier
+            if (!Init(dir, tristate)) return ret;
+            ClearIfTristateTrue(dir);
 
 
             var numFiles = await MovieUtilites.GetCommonMovieFiles(dir);
             foreach (var filePath in numFiles)
             {
+                Item item=null; int year; string title=null; string fileTitle;
                 _progress?.Report(ProgressBarHelper.CalculatePercent(count, numFiles.Count));
                 try
                 {
                     count = count + 1;
-
-                    int year; string title; string fileTitle;
-                    FileInfo file = new FileInfo(filePath); 
-
-                    GetTitleAndYear(file, out year, out title, out fileTitle);
-                    var item = await GetItem(file, year, title, fileTitle);
+                    
+                    FileInfo file = new FileInfo(filePath);
+                    var temp = await _liteDB.FindByFileNameAsync(file);
+                    if (temp != null && tristate == CheckState.Unchecked)
+                    {
+                        item = await _liteDB.FindItemAsync(temp.ImdbId);
+                    }
+                    else
+                    {
+                        GetTitleAndYear(file, out year, out title, out fileTitle);
+                        item = await GetItem(file, year, title, fileTitle);
+                      
+                    }
                     if (item != null)
                         ret.Add(item);
                     else
@@ -169,7 +186,7 @@ namespace Kolibri.net.SilverScreen.Controller
 
         private void ClearIfTristateTrue(DirectoryInfo dir)
         {
-            if (_updateTriState==true)
+            if (_updateTriState==CheckState.Checked)
             {
                 //Slett items
                 try
@@ -177,7 +194,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     foreach (FileItem fi in _liteDB.FindAllFileItems(dir))
                     {
                       
-                        if (_updateTriState == true)
+                        if (_updateTriState == CheckState.Checked)
                         {
                             if (!fi.ItemFileInfo.Exists)
                             {
@@ -244,7 +261,7 @@ namespace Kolibri.net.SilverScreen.Controller
 
         }
          
-        private bool Init(DirectoryInfo dir, bool? updateTriState)
+        private bool Init(DirectoryInfo dir, CheckState updateTriState)
         {
             if (_TMDB == null || _OMDB == null)
             {
@@ -263,7 +280,7 @@ namespace Kolibri.net.SilverScreen.Controller
             {
              ret= await  _liteDB.FindItemAsync(imdbid);
 
-                if (_updateTriState != null&&ret!=null&& string.IsNullOrEmpty(ret.TomatoUrl))
+                if (_updateTriState != CheckState.Indeterminate &&ret!=null&& string.IsNullOrEmpty(ret.TomatoUrl))
                 {
                   
                     if (!$"{ret.TomatoUrl}".Equals(file.FullName)&&!file.FullName.Equals(ret.TomatoUrl))
@@ -300,22 +317,39 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 return null;
             }
-            //Item item = await GetItem(file, filePath.ImdbIdFromDirectoryName());
+            //Let etter filmen vha imdb tag i filnavn
             Item movie =   await GetItem(file, file.Name.ImdbIdFromDirectoryName());
-            if (movie != null && !string.IsNullOrEmpty(movie.TomatoUrl) && File.Exists(movie.TomatoUrl))
+            if (movie != null)
             {
-                return movie;
+                if (!string.IsNullOrEmpty(movie.TomatoUrl) && File.Exists(movie.TomatoUrl))
+                {
+                    return movie;
+                }
+                else if (_updateTriState != CheckState.Unchecked)
+                {
+                    if (!$"{movie.TomatoUrl}".ToUpper().GetHashCode().Equals(file.FullName.ToUpper().GetHashCode()))
+                    {
+                        movie.TomatoUrl = file.FullName;
+                        await _liteDB.UpdateAsync(movie);
+                        await _liteDB.UpsertAsync(new FileItem(movie.ImdbId, file.FullName));
+                    }
+                    return movie;
+                }
+                else if (_updateTriState == CheckState.Unchecked) 
+                {
+                    return movie;
+                }
             }
 
 
 
             //Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
             movie = await _liteDB.FindItemByTitle(title, year, alternativeSearchTitle);
-            if (_updateTriState == null && movie != null)
+            if (movie != null && _updateTriState == CheckState.Unchecked)
             {
                 return movie;
             }
-            if (movie == null || !file.FullName.Equals(movie.TomatoUrl))
+            if (movie == null )
             {     //Finn ved hjelp av LiteDB eller PLEX
                 movie = await SearchLiteDB(file, year, title);
             }
@@ -352,7 +386,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     ret = await _liteDB.FindItemAsync(test.ImdbId);
                     if (ret != null)
                     {
-                        if (_updateTriState != null)
+                        if (_updateTriState != CheckState.Indeterminate)
                         {
                             if (!$"{ret.TomatoUrl}".ToUpper().GetHashCode().Equals(test.FullName.ToUpper().GetHashCode()))
                             {
@@ -366,7 +400,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         }
                     }
                     else {
-                        if (ret != null && _updateTriState==false) return ret;
+                        if (ret != null && _updateTriState== CheckState.Unchecked||_updateTriState==CheckState.Indeterminate) return ret;
                     }
                 }
                 //plex
@@ -514,7 +548,7 @@ namespace Kolibri.net.SilverScreen.Controller
             Item ret = null;
 
             //Sjekk om tittelen finnes i LiteDB som tittel/år
-            if (ret == null && _updateTriState == false)
+            if (ret == null && (_updateTriState==CheckState. Checked||_updateTriState==CheckState.Unchecked))
             {
                 ret = await _liteDB.FindItemByTitle(title, year);
                 if (ret != null)

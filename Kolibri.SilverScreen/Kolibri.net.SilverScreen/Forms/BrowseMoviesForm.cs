@@ -158,6 +158,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                     if (!string.IsNullOrEmpty(searhText) && ret != null && ret.Count() > 0)
                     {
                         ret = ret.FindAll(a => a.Title.ToUpper().Contains(searhText.ToUpper())).ToList();
+
+                        if (ret == null) { ret = ret.FindAll(a => a.Actors.ToUpper().Contains(searhText.ToUpper())).ToList(); }
                     }
 
 
@@ -166,6 +168,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 if (ret == null && !string.IsNullOrEmpty(searhText))
                 {
                     ret = _LITEDB.FindItemByTitle(searhText).ToList();
+                    if (ret == null||ret.Count<=0) { ret = ret.FindAll(a => a.Actors.ToUpper().Contains(searhText.ToUpper())).ToList(); }
                 }
 
 

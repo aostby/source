@@ -428,7 +428,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 {
                     var progress = ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
                     MoviesSearchController searchController = new MoviesSearchController(_userSettings, progress: progress);
-                   await searchController.SearchForMovies(dInfo, tristate);
+                   await searchController.SearchForMovies(dInfo, CheckState.Checked);
                     if (!string.IsNullOrWhiteSpace(searchController.CurrentLog.ToString())) {
                         OutputDialogs.ShowRichTextBox($"CurrentLog", searchController.CurrentLog.ToString(),this.Size);
                     }
@@ -512,7 +512,7 @@ namespace Kolibri.net.SilverScreen.Forms
             var dInfo = FileUtilities.LetOppMappe(GetCurentPath(), $"Let opp mappe ({_type})");
             if (dInfo != null && dInfo.Exists)
             {
-                SetCurrentPath(dInfo);
+                SetCurrentPath(dInfo,true);
             }
         }
         private void SetForm(Object mm, SplitterPanel setPanel)

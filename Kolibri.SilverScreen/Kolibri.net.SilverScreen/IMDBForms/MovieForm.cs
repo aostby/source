@@ -48,8 +48,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             InitializeComponent();
             Init();
             tbSearch.Text = item.Title;
-            tbYearParameter.Text = item.Year.EndsWith('–') ? item.Year.TrimEnd('–') : item.Year;
-            if (item.Type.Equals("series") & item.Year.Contains('–'))
+            tbYearParameter.Text = item.Year!=null ? (item.Year.EndsWith('–') ? item.Year.TrimEnd('–') : item.Year):string.Empty;
+            if (item.Type.Equals("series") && item.Year.Contains('–'))
             {
                 tbYearParameter.Text = item.Year.Substring(0, item.Year.IndexOf('–'));
             }

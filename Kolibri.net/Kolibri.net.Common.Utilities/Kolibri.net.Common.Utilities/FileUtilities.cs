@@ -802,9 +802,9 @@ namespace Kolibri.net.Common.Utilities
             //                          .Contains(Path.GetExtension(file) ));
 
             var searchFiles = Directory.EnumerateFiles(path.FullName, "*.*", searchOption)
-    .Where(file => extensions
-        .Select(e => e.ToLowerInvariant())
-        .Contains(Path.GetExtension(file).ToLowerInvariant()));
+                            .Where(file => extensions
+                            .Select(e => e.ToLowerInvariant())
+                            .Contains(Path.GetExtension(file).ToLowerInvariant()));
             return searchFiles.ToList<string>();
         }
 
@@ -826,7 +826,7 @@ namespace Kolibri.net.Common.Utilities
             {
                 var temp = directoryInfoApplikasjon.GetFiles(sp, searchAllDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 
-                if (temp != null)
+                if (temp != null && temp.Count() > 0)
                 {
                     foreach (var item in temp)
                     {
