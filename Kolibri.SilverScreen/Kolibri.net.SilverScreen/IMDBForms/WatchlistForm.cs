@@ -38,7 +38,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             this.Text += $" {_watchListName}";
         }
 
-        public void FillUpGrid()
+        public async  void FillUpGrid()
         {
             try
             {
@@ -478,6 +478,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     }
                 }
                 else { throw new Exception($"No playlist in Plex is called {tbTitle.Text}"); }
+                MessageBox.Show($"'{_watchListName}' copied to a playlist in your plex Server");
             }
             catch (Exception ex)
             {

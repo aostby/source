@@ -19,14 +19,17 @@ namespace MoviesFromImdb.Controller
     {
         private UserSettings _userSettings;
         private   LiteDBController _liteDB = null;
+        private ImageCacheDB _imageCache;
 
         public IMDBDAL(LiteDBController liteDB) {
             _liteDB = liteDB;
+            _imageCache = new ImageCacheDB(liteDB.GetUserSettings());
         }
         public IMDBDAL(UserSettings userSettings)
         {
             _userSettings = userSettings;
             _liteDB = new LiteDBController(userSettings.LiteDBFileInfo, false, false);
+            _imageCache = new ImageCacheDB(_liteDB.GetUserSettings());
         }
 
 
@@ -44,7 +47,12 @@ namespace MoviesFromImdb.Controller
                     try
                     {
                         int pos = row.Table.Columns.IndexOf("Poster");
-                        var pic = ImageUtilities.GetImageFromUrl(row[pos].ToString());
+                        var id = row.Table.Columns.IndexOf("ImdbId");
+                        var url = string.Empty;// _imageCache.GetPosterUrlAsync($"{row[id]}").Result;
+                        if (string.IsNullOrWhiteSpace(url)) {
+                            url = row[pos].ToString();
+                        }
+                        var pic = ImageUtilities.GetImageFromUrl(url);
                         pos = row.Table.Columns.IndexOf("Image");
                         row[pos] = pic;
 

@@ -144,6 +144,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private async void buttonOpenFolder_Click(object sender, EventArgs e)
         {
+            SetForm(new Form());Thread.SpinWait(5);
            buttonOpenFolder.Enabled = false;
             radioButtonShowGrid.Checked = true;         
             groupBoxValg.Enabled = false; 
@@ -164,7 +165,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 SetLabelText($@"Searching for files in {dInfo.Name} ({dInfo.FullName})");
               //  _ = await GetPathSearchFiles(dInfo);
-                _= await SetCurrentPath(dInfo, null);
+                _= await SetCurrentPath(dInfo, checkBoxTristate.CheckState);
                 groupBoxValg.Enabled = !groupBoxValg.Enabled;
                 buttonVelg_Click(null, null);
             }
@@ -172,7 +173,7 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonOpenFolder.Enabled = true;
         }
 
-        private async Task<DirectoryInfo> SetCurrentPath(DirectoryInfo dInfo, bool? tristate = null)
+        private async Task<DirectoryInfo> SetCurrentPath(DirectoryInfo dInfo, CheckState tristate = CheckState.Indeterminate)
         {
             await GetPathSearchFiles(dInfo);
 

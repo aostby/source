@@ -5,9 +5,6 @@ using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.Common.Utilities;
 using LibVLCSharp.Shared;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Web;
-using static sun.security.ec.ECDSAOperations;
 
 namespace Kolibri.net.C64Sorter.Forms
 {

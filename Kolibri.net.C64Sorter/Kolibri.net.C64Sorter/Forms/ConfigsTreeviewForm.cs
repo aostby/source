@@ -1,5 +1,4 @@
 ﻿using FastColoredTextBoxNS;
-using javax.xml.crypto;
 using Kolibri.net.C64Sorter.Controllers;
 using Kolibri.net.C64Sorter.Entities;
 using Kolibri.net.Common.Images;
@@ -8,9 +7,7 @@ using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
-using System.Dynamic;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;

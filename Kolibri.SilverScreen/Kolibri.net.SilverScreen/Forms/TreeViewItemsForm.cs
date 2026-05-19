@@ -169,12 +169,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 foreach (var item in group.OrderBy(i => i.Title))
                 {
                     var imgKey = Path.GetExtension($"{item.TomatoUrl}".ToLower());
-                    string info = $"Item Details: {item.Title} ({item.Year})\r\n" +
-              "----------------\r\n" +
-              $"- Rating: {item.ImdbRating}\r\n" +
-              $"- Year: {item.Year}\r\n"+
-              $"- Genre: {item.Genre}\r\n" +
-              $"- URL: {item.TomatoUrl}";
+                    string info = GetTooltipInfo(item);
 
                     var node = new TreeNode($"{item.Title} ({item.Year})")
                     {
@@ -189,6 +184,18 @@ namespace Kolibri.net.SilverScreen.Forms
                 treeView1.Nodes.Add(parent);
             }
         }
+
+        private string GetTooltipInfo(Item item)
+        {
+            string ret = $"Item Details: {item.Title} ({item.Year})\r\n" +
+              "----------------\r\n" +
+              $"- Rating: {item.ImdbRating}\r\n" +
+              $"- Year: {item.Year}\r\n" +
+              $"- Genre: {item.Genre}\r\n" +
+              $"- URL: {item.TomatoUrl}";
+            return ret;
+        }
+
         private void BuildByGenre()
         {
             var genreDict = new Dictionary<string, List<OMDbApiNet.Model.Item>>();
@@ -217,12 +224,12 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 foreach (var item in kvp.Value.OrderBy(t => t.Title))
                 {
-
+ string info = GetTooltipInfo(item);
                     var node = new TreeNode($"{item.Title} ({item.Year})")
-                    {
+                    { 
                         Tag = item,
                         ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower()),
-                        ToolTipText = $"{item.TomatoUrl}"
+                        ToolTipText = $"{info}"
                     };
 
                     parent.Nodes.Add(node);
@@ -243,11 +250,12 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 foreach (var item in group.OrderBy(t => t.Title))
                 {
+                    string info = GetTooltipInfo(item);
                     parent.Nodes.Add(new TreeNode($"{item.Title} ({item.Year})")
                     {
                         Tag = item,
                         ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower()),
-                        ToolTipText = $"{item.TomatoUrl}"
+                        ToolTipText = $"{info}"
                     });
                 }
 
@@ -266,12 +274,13 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 foreach (var item in group.OrderByDescending(r => r.ImdbRating))
                 {
+                    string info = GetTooltipInfo(item);
                     parent.Nodes.Add(new TreeNode($"{item.Title} ({item.Year}) - {item.ImdbRating}")
                     {
                         Tag = item,
                         ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower())
                     ,
-                        ToolTipText = $"{item.TomatoUrl}"
+                        ToolTipText = $"{info}"
                     });
                 }
 
