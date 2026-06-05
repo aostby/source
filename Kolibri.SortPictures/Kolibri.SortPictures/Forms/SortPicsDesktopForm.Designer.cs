@@ -62,6 +62,7 @@
             toolTipSortPics = new ToolTip(components);
             labelKilde = new Label();
             labelDestinasjon = new Label();
+            checkBoxAsk = new CheckBox();
             groupBoxSettings.SuspendLayout();
             groupBoxPWSetting.SuspendLayout();
             groupBoxDirs.SuspendLayout();
@@ -198,7 +199,7 @@
             checkBoxMTP.Location = new Point(14, 23);
             checkBoxMTP.Margin = new Padding(4, 3, 4, 3);
             checkBoxMTP.Name = "checkBoxMTP";
-            checkBoxMTP.Size = new Size(284, 19);
+            checkBoxMTP.Size = new Size(285, 19);
             checkBoxMTP.TabIndex = 5;
             checkBoxMTP.Text = "Kilden er MTP (mobiltelefon via usb eller SD kort)";
             toolTipSortPics.SetToolTip(checkBoxMTP, "Fungerer dårlig å hente bilder rett fra mobiltlf, men prøv å sjekke av for denne om du vil");
@@ -313,6 +314,7 @@
             // 
             // groupBoxCpyOrMove
             // 
+            groupBoxCpyOrMove.Controls.Add(checkBoxAsk);
             groupBoxCpyOrMove.Controls.Add(radioButtonFlytt);
             groupBoxCpyOrMove.Controls.Add(radioButtonKopier);
             groupBoxCpyOrMove.Location = new Point(225, 52);
@@ -433,6 +435,18 @@
             labelDestinasjon.TabIndex = 12;
             labelDestinasjon.Text = "Destinasjon";
             // 
+            // checkBoxAsk
+            // 
+            checkBoxAsk.AutoSize = true;
+            checkBoxAsk.Checked = true;
+            checkBoxAsk.CheckState = CheckState.Checked;
+            checkBoxAsk.Location = new Point(6, 69);
+            checkBoxAsk.Name = "checkBoxAsk";
+            checkBoxAsk.Size = new Size(143, 19);
+            checkBoxAsk.TabIndex = 2;
+            checkBoxAsk.Text = "Spør ved samme navn";
+            checkBoxAsk.UseVisualStyleBackColor = true;
+            // 
             // SortPicsDesktopForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -504,5 +518,6 @@
             private System.Windows.Forms.ToolTip toolTipSortPics;
         private Label labelKilde;
         private Label labelDestinasjon;
+        private CheckBox checkBoxAsk;
     }
     }

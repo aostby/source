@@ -3,6 +3,8 @@ using Kolibri.net.Common.Utilities;
 using OMDbApiNet.Model;
 using System.ComponentModel;
 using System.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using ToolTip = System.Windows.Forms.ToolTip;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -11,6 +13,11 @@ namespace Kolibri.net.SilverScreen.Forms
         private ContextMenuStrip _cms;
         private List<OMDbApiNet.Model.Item> _items;
         private string groupBoxOrderbyText = "Order by";
+
+        private ToolTip nodeImageToolTip;
+        private TreeNode lastHoveredNode = null;
+
+
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Item CurrentItem { get; set; }
 
@@ -56,6 +63,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             groupBoxOrderbyText = groupBoxOrder.Text;
             treeView1.ImageList = imageListIcons;
+
             try
             {
                 var defaultIcon = Icons.GetFolderIcon();
@@ -93,8 +101,23 @@ namespace Kolibri.net.SilverScreen.Forms
             groupBoxOrder.Text = $"{groupBoxOrderbyText} (Items count: {_items.Count})";
             treeView1.Nodes.Clear();
             treeView1.BeginUpdate();
-            treeView1.ShowNodeToolTips = true;
+            treeView1.ShowNodeToolTips = checkBoxToolTip.Checked? false:true;
+            treeView1.MouseLeave += treeView1_MouseLeave;
 
+            if (checkBoxToolTip.Checked)
+            {
+
+                // 2. Setup the Owner-Drawn ToolTip
+                treeView1.MouseMove += MyTreeView_MouseMove;
+                nodeImageToolTip = new ToolTip
+                {
+                    OwnerDraw = true,
+                    InitialDelay = 500,
+                    ReshowDelay = 100
+                };
+                nodeImageToolTip.Popup += NodeImageToolTip_Popup;
+                nodeImageToolTip.Draw += NodeImageToolTip_Draw;
+            }
             if (_items == null || !_items.Any())
                 return;
 
@@ -187,12 +210,19 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private string GetTooltipInfo(Item item)
         {
-            string ret = $"Item Details: {item.Title} ({item.Year})\r\n" +
-              "----------------\r\n" +
-              $"- Rating: {item.ImdbRating}\r\n" +
-              $"- Year: {item.Year}\r\n" +
-              $"- Genre: {item.Genre}\r\n" +
-              $"- URL: {item.TomatoUrl}";
+            string ret = string.Empty;
+            try
+            {
+                ret = checkBoxToolTip.Checked ? string.Empty : $"Item Details: ";
+                ret += $"{item.Title} ({item.Year})\r\n" +
+                          "----------------\r\n" +
+                          $"- Rating: {item.ImdbRating}\r\n" +
+                          $"- Year: {item.Year}\r\n" +
+                          $"- Genre: {item.Genre}\r\n" +
+                          $"- URL: {item.TomatoUrl}";
+            }
+            catch (Exception) { }
+
             return ret;
         }
 
@@ -224,9 +254,9 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 foreach (var item in kvp.Value.OrderBy(t => t.Title))
                 {
- string info = GetTooltipInfo(item);
+                    string info = GetTooltipInfo(item);
                     var node = new TreeNode($"{item.Title} ({item.Year})")
-                    { 
+                    {
                         Tag = item,
                         ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower()),
                         ToolTipText = $"{info}"
@@ -278,9 +308,8 @@ namespace Kolibri.net.SilverScreen.Forms
                     parent.Nodes.Add(new TreeNode($"{item.Title} ({item.Year}) - {item.ImdbRating}")
                     {
                         Tag = item,
-                        ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower())
-                    ,
-                        ToolTipText = $"{info}"
+                        ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower()),
+                        ToolTipText = $"{info}",
                     });
                 }
 
@@ -325,6 +354,110 @@ namespace Kolibri.net.SilverScreen.Forms
             {
             }
         }
+
+        private void treeView1_MouseLeave(object sender, EventArgs e)
+        {
+            try
+            {
+
+         
+            // Get the current mouse coordinates on the screen
+            Point screenPoint = Control.MousePosition;
+
+            // Convert those screen coordinates to the TreeView's client area
+            Point clientPoint = treeView1.PointToClient(screenPoint);
+
+            // Check if the client coordinates fall strictly inside the TreeView's boundaries
+            if (!treeView1.ClientRectangle.Contains(clientPoint))
+            {
+                { nodeImageToolTip.Hide(treeView1); return; }
+                }
+            }
+            catch (Exception)
+            {
+ 
+            }
+        }
+
+
+        private void MyTreeView_MouseMove(object sender, MouseEventArgs e)
+        {if (!checkBoxToolTip.Checked) { nodeImageToolTip.Hide(treeView1); return; } else { treeView1.ShowNodeToolTips = false; }
+
+
+            try
+            {
+
+
+                // Find the node directly underneath the cursor
+                TreeNode currentNode = treeView1.GetNodeAt(e.Location);
+
+                // Only update if the cursor has moved to a completely different node
+                if (currentNode != lastHoveredNode)
+                {
+                    lastHoveredNode = currentNode;
+                    nodeImageToolTip.Hide(treeView1);
+                    string info = GetTooltipInfo(currentNode.Tag as Item);
+                    if (currentNode != null && currentNode.Tag is Item)
+                    {
+                        // Force show the tooltip relative to the current mouse position
+                        nodeImageToolTip.Show(info, treeView1, e.X + 15, e.Y + 15);
+                    }
+                }
+            }
+            catch (Exception ex)
+            { }
+        }
+
+        private void NodeImageToolTip_Popup(object sender, PopupEventArgs e)
+        {
+            try
+            {
+                // Allocate space for the image (e.g., 64x64) + text layout dimensions
+                e.ToolTipSize = new Size(520, 174);
+            }
+
+            catch (Exception)
+            {  }
+        }
+        private void NodeImageToolTip_Draw(object sender, DrawToolTipEventArgs e)
+        {
+            try
+            {
+
+
+                // Draw the background border and fill
+                e.Graphics.Clear(Color.FromArgb(245, 245, 245));
+                using (Pen borderPen = new Pen(Color.DarkGray, 1))
+                {
+                    e.Graphics.DrawRectangle(borderPen, 0, 0, e.Bounds.Width - 1, e.Bounds.Height - 1);
+                }
+
+                // Safely extract the image assigned to the active node being tracked
+                if (lastHoveredNode?.Tag is Item item)
+                {
+                    var nodeImg = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
+                    try
+                    {
+                        nodeImg = ImageUtilities.GetImageFromUrl(item.Poster);
+                    }
+                    catch (Exception)
+                    { }
+
+                    // Draw the node image aligned on the left
+                    e.Graphics.DrawImage(nodeImg, new Rectangle(5, 5, 120, 165));
+
+                    // Draw the node description text to the right of the image
+                    using (Font textFont = new Font("Segoe UI", 9, FontStyle.Bold))
+                    {
+                        e.Graphics.DrawString(e.ToolTipText, textFont, Brushes.Black, new PointF(135, 28));
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
     }
 }
  

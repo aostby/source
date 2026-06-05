@@ -81,31 +81,17 @@ namespace Kolibri.SortPictures.Forms
             if (checkBoxMTP.Checked)
             {
                 try
-                {
-                    //CommonOpenFileDialog cofd = new CommonOpenFileDialog();
-                    //cofd.IsFolderPicker = true;
-                    //cofd.ShowDialog();
-                    //folder = new DirectoryInfo(cofd.FileName);
+                { 
 
                     var dlg1 =   FileUtilities.LetOppMappe(text, text                         );
-                    //dlg1.Description = "Select a folder to extract to:";
-                    //dlg1.ShowNewFolderButton = true;
-                    //dlg1.ShowEditBox = true;
-                    ////dlg1.NewStyle = false;
-                    //dlg1.SelectedPath = textBoxSource.Text;
-                    //dlg1.ShowFullPathInEditBox = true;
-                    //dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
-
+               
                     // Show the FolderBrowserDialog.
                     var  result = dlg1.Exists;
 
                     if (result) {
                         textBoxSource.Text = dlg1.FullName;
                     }
-                    //if (result == DialogResult.OK)
-                    //{
-                    //    textBoxSource.Text = dlg1.SelectedPath;
-                    //}
+                
                 }
                 catch (Exception)
                 {
@@ -166,7 +152,7 @@ namespace Kolibri.SortPictures.Forms
                 MessageBox.Show("Kildefilsti ble ikke funnet!", "Kan ikke utføre handling");
             }
 
-            var allowedExtensions = new[] { ".jpg", ".tiff", ".bmp", ".png" };
+            var allowedExtensions = new[] { ".jpg", ".tiff", ".bmp", ".png" ,".dng"};
 
             var liste = Directory.EnumerateFiles(dinfo.FullName, "*.*", checkBoxSubdirs.Checked ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
             .Where(s => allowedExtensions.Any(s.ToLower().EndsWith));
@@ -198,28 +184,29 @@ namespace Kolibri.SortPictures.Forms
                 if (!dirDest.Exists) dirDest.Create();
                 string filename = imgFile.Name;
                 info = new FileInfo(Path.Combine(dirDest.FullName, imgFile.Name));
-                try
-                {
-                    string text = string.Empty;
-
-                    if (radioButtonPreviewFile.Checked)
+               
+                    try
                     {
-                        try
-                        {
-                            Image image;
-                            using (FileStream stream = new FileStream(imgFile.FullName, FileMode.Open, FileAccess.Read))
-                            {
-                                image = Image.FromStream(stream);
-                            }
-                            m_picbox.Image = image;
-                            groupBoxPreview.Text = $"{stdtxt} ({imgFile.FullName})";
+                        string text = string.Empty;
 
-                            Application.DoEvents();
-                        }
-                        catch (Exception)
+                        if (radioButtonPreviewFile.Checked)
                         {
+                            try
+                            {
+                                Image image;
+                                using (FileStream stream = new FileStream(imgFile.FullName, FileMode.Open, FileAccess.Read))
+                                {
+                                    image = Image.FromStream(stream);
+                                }
+                                m_picbox.Image = image;
+                                groupBoxPreview.Text = $"{stdtxt} ({imgFile.FullName})";
+
+                                Application.DoEvents();
+                            }
+                            catch (Exception)
+                            {
+                            }
                         }
-                    }
 
                     if (radioButtonKopier.Checked)
                     {
@@ -231,10 +218,21 @@ namespace Kolibri.SortPictures.Forms
                     {
                         try
                         {
-                            text = $"Flytter filen {info.Name} fra {imgFile.DirectoryName} til {info.DirectoryName}";
-                            //if (File.Exists(info.FullName)) { File.Delete(info.FullName); }
-                            System.IO.File.Move(imgFile.FullName, info.FullName, true);
 
+                            if (checkBoxAsk.Checked && info.Exists &&
+                            !FileUtilities.AreFilesDuplicate(imgFile.FullName, info.FullName)
+                            )
+                            {
+                                text = $"Hopper over fil {imgFile.FullName}\r\n{info.FullName}";
+
+                                MessageBox.Show(text, $"{info.Name} - Ikke samme fil!");
+
+                            }
+                            else
+                            {
+                                text = $"Flytter filen {info.Name} fra {imgFile.DirectoryName} ; til {info.DirectoryName}";
+                                System.IO.File.Move(imgFile.FullName, info.FullName, true);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -243,17 +241,19 @@ namespace Kolibri.SortPictures.Forms
 
                     }
 
-                    this.toolStripStatusLabelFilnavn.Text = text;
-                    m_log.AppendText(text + Environment.NewLine);
-                    this.Refresh();
-                    try { m_log.ScrollToCaret(); } catch (Exception) { }
-                }
-                catch (Exception ex)
-                {
-                    string msg = $"{info} {ex.Message}".Trim();
-                    m_log.AppendText($"{msg}\r\n");
-                    this.toolStripStatusLabelFilnavn.Text = msg;
-                }
+                        this.toolStripStatusLabelFilnavn.Text = text;
+                        m_log.AppendText(text + Environment.NewLine);
+                        this.Refresh();
+                        try { m_log.ScrollToCaret(); } catch (Exception) { }
+                    }
+
+                    catch (Exception ex)
+                    {
+                        string msg = $"{info} {ex.Message}".Trim();
+                        m_log.AppendText($"{msg}\r\n");
+                        this.toolStripStatusLabelFilnavn.Text = msg;
+                    } 
+
                 Application.DoEvents();
             }
 
@@ -269,6 +269,7 @@ namespace Kolibri.SortPictures.Forms
                     UseShellExecute = true
                 });
             }
+                
             catch (Exception) { }
 
             this.toolStripStatusLabelFilnavn.Text = $"Fullført! {files.Count()} files";

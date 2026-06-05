@@ -224,8 +224,9 @@ namespace Kolibri.net.Common.Utilities
 
             fbdEX.SelectedPath = initalPath;
             //  SendKeys.SendWait("{TAB}{TAB}{DOWN}{UP}");
-            SendKeys.Send("{TAB}{TAB}{RIGHT}");
-            if (fbdEX.ShowDialog() == DialogResult.OK)
+                            SendKeys.Send("{TAB}{TAB}{RIGHT}");
+            var res= fbdEX.ShowDialog();
+            if (res== DialogResult.OK)
             {
                 return new DirectoryInfo(fbdEX.SelectedPath);
 

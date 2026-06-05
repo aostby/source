@@ -479,9 +479,9 @@ namespace Kolibri.net.SilverScreen.Controller
                                 if (test == null || (!$"{ret.TomatoUrl}".Equals(test.FullName)))
                                 {
                                     ret.TomatoUrl = file.FullName;
-                                     await _liteDB.UpsertAsync(ret);
-                            var testes=        await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
-                                  
+                                    await _liteDB.UpsertAsync(ret);
+                                    var testes = await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+
                                 }
                                 SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_TMDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "NEW");
                                 return ret;
@@ -513,7 +513,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                     }
                                 if (ret == null)
                                 {
-                                    ret = await  _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
+                                    ret = await _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
                                 }
                                 if (ret != null)
                                 {

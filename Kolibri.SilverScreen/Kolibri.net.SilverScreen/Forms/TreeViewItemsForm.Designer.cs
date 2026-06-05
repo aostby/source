@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             treeView1 = new TreeView();
             groupBoxOrder = new GroupBox();
+            checkBoxToolTip = new CheckBox();
             radioButtonActor = new RadioButton();
             radioButtonRating = new RadioButton();
             radioButtonYear = new RadioButton();
@@ -52,6 +53,7 @@
             // 
             // groupBoxOrder
             // 
+            groupBoxOrder.Controls.Add(checkBoxToolTip);
             groupBoxOrder.Controls.Add(radioButtonActor);
             groupBoxOrder.Controls.Add(radioButtonRating);
             groupBoxOrder.Controls.Add(radioButtonYear);
@@ -63,6 +65,16 @@
             groupBoxOrder.TabIndex = 1;
             groupBoxOrder.TabStop = false;
             groupBoxOrder.Text = "Order by";
+            // 
+            // checkBoxToolTip
+            // 
+            checkBoxToolTip.AutoSize = true;
+            checkBoxToolTip.Location = new Point(353, 17);
+            checkBoxToolTip.Name = "checkBoxToolTip";
+            checkBoxToolTip.Size = new Size(70, 19);
+            checkBoxToolTip.TabIndex = 5;
+            checkBoxToolTip.Text = "Vis bilde";
+            checkBoxToolTip.UseVisualStyleBackColor = true;
             // 
             // radioButtonActor
             // 
@@ -151,5 +163,6 @@
         private RadioButton radioButtonRating;
         private ImageList imageListIcons;
         private RadioButton radioButtonActor;
+        private CheckBox checkBoxToolTip;
     }
 }

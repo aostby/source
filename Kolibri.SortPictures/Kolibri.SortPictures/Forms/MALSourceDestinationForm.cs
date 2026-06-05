@@ -1,27 +1,19 @@
 ﻿using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+ 
 using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+ 
 namespace Kolibri.SortPictures.Forms
 {
     public partial class MALSourceDestinationForm : Form
     {
         private string m_formtype = "Picture";
 
-        public string Formtype
-        {
-            get { return m_formtype; }
-            set { m_formtype = value; }
-        }
+        //public string Formtype
+        //{
+        //    get { return m_formtype; }
+        //    set { m_formtype = value; }
+        //}
         public DirectoryInfo SourcePath { get { return new DirectoryInfo(textBoxSource.Text); } }
         public DirectoryInfo DestinationPath { get { return new DirectoryInfo(textBoxDestination.Text); } }
 
