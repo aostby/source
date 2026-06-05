@@ -50,7 +50,7 @@ namespace Kolibri.SortPictures.Forms
                 _panelButtons = (Panel)this.Controls.Find("flowLayoutPanelButtons", true).FirstOrDefault();
                 _panelButtons.Controls.Add(button);
 
-                _filefilter = FileUtilities.PictureFileExt().ToArray();
+                _filefilter = ImageUtilities.PictureFileExt().ToArray();
 
             }
 

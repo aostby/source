@@ -1,6 +1,8 @@
 ﻿using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.Utilities.Controller;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.SortPictures.Properties;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -55,14 +57,17 @@ namespace Kolibri.SortPictures.Forms
             try
             {
 
-                var dlg1 = FolderUtilities.LetOppMappe((sender as ToolStripMenuItem).Text, $"Select a folder for your operattion ({(sender as ToolStripMenuItem).Text}");
+                    var dlg1 = FolderUtilities.LetOppMappe((sender as ToolStripMenuItem).Text, $"Select a folder for your operation ({(sender as ToolStripMenuItem).Text}");
                 //dlg1.Description = $"Select a folder for your operattion ({(sender as ToolStripMenuItem).Text}):";
                 //dlg1.ShowNewFolderButton = true;
                 //dlg1.ShowEditBox = true;
                 //dlg1.ShowFullPathInEditBox = true;
                 //dlg1.RootFolder = System.Environment.SpecialFolder.MyComputer;
 
-                if (_searchPath != null && _searchPath.Exists) { dlg1 = new DirectoryInfo(_searchPath.FullName); }
+                if (!dlg1.Exists){
+                    if(_searchPath != null && _searchPath.Exists) { dlg1 = new DirectoryInfo(_searchPath.FullName); } 
+                }
+                
 
 
                 // Show the FolderBrowserDialog.
@@ -75,8 +80,9 @@ namespace Kolibri.SortPictures.Forms
 
                     if (sender.Equals(fjernTommeMapperToolStripMenuItem))
                     {
-                        DirectoryInfo dinfo = new DirectoryInfo(dlg1.FullName);
+                        DirectoryInfo dinfo = new DirectoryInfo(dlg1.FullName);                       
                         Kolibri.net.Common.Utilities.FileUtilities.DeleteEmptyDirs(dinfo);
+                        MessageBox.Show("Finished removing empty folders.", dinfo.Name);
                     }
                     else if (sender.Equals(listExtensionsToolStripMenuItem))
                     {
@@ -197,20 +203,29 @@ namespace Kolibri.SortPictures.Forms
             form.ShowDialog();
         }
 
-        private void finnDuplikaterToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void finnDuplikaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            List<List<string>> duplicates = null; ;
             var dlg1 = FolderUtilities.LetOppMappe((sender as ToolStripMenuItem).Text, $"Select a folder for your operation ({(sender as ToolStripMenuItem).Text}");
             if (_searchPath != null && _searchPath.Exists) { dlg1 = new DirectoryInfo(_searchPath.FullName); }
             if (dlg1 != null && dlg1.Exists)
             {
-                // Usage with a collection
-                var photoPaths = Directory.GetFiles(dlg1.FullName, "*.*", SearchOption.AllDirectories);
-                var duplicates = photoPaths
-                    .GroupBy(path => FileExt.GetFileHash(path))
-                    .Where(group => group.Count() > 1)
-                    .Select(group => group.ToList())
-                    .ToList();
+                this.Cursor = Cursors.WaitCursor; // Endrer kun for dette vinduet
+                ImageDuplicateFinder finder = new();
+                var found = await finder.FindDuplicatesAsync(dlg1.FullName);
+                if (found != null && found.Count >= 1)
+                {
+                    var form = new Kolibri.net.Common.Formutilities.DuplicatesForm(found);
+                    form.MdiParent = this;
+                    form.Show();
+                }
+                else {
+                    MessageBox.Show("No dupes found.", dlg1.Name);
+                    
+                }
+                this.Cursor = Cursors.Default;
             }
+
         }
     }
 }

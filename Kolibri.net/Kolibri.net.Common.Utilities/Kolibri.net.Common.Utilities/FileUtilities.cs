@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
+using Kolibri.net.Common.Utilities.Extensions;
 using Newtonsoft.Json;
 using Ookii.Dialogs.WinForms;
 using System.Collections;
@@ -12,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Kolibri.net.Common.Utilities
 {
@@ -211,6 +213,82 @@ namespace Kolibri.net.Common.Utilities
             return ret;
         }
         #endregion
+
+        public static List<List<string>> FindDuplicateFiles(DirectoryInfo info) 
+        {
+            List<List<string>> duplicates = new List<List<string>>(); ;
+            
+            
+            if (info != null && info.Exists)
+            {
+                // Usage with a collection
+                var allPaths = Directory.GetFiles(info.FullName, "*.*", SearchOption.AllDirectories);
+                duplicates = allPaths
+                    .GroupBy(path => FileExt.GetFileHash(path))
+                    .Where(group => group.Count() > 1)
+                    .Select(group => group.ToList())
+                    .ToList();
+            }
+            return duplicates;
+        }
+        public static bool AreFilesDuplicate(string path1, string path2)
+        {
+            // 1. Check if paths point to the exact same file
+            if (string.Equals(path1, path2, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // 2. Validate that both files exist
+            if (!File.Exists(path1) || !File.Exists(path2))
+            {
+                return false;
+            }
+
+            // 3. Fast exit: If sizes differ, they cannot be duplicates
+            FileInfo file1 = new FileInfo(path1);
+            FileInfo file2 = new FileInfo(path2);
+
+            if (file1.Length != file2.Length)
+            {
+                return false;
+            }
+
+            // 4. Content comparison using buffered streams
+            const int bufferSize = 4096; // 4KB buffer
+            byte[] buffer1 = new byte[bufferSize];
+            byte[] buffer2 = new byte[bufferSize];
+
+            using (FileStream fs1 = file1.OpenRead())
+            using (FileStream fs2 = file2.OpenRead())
+            {
+                int bytesRead1;
+                int bytesRead2;
+
+                while ((bytesRead1 = fs1.Read(buffer1, 0, bufferSize)) > 0)
+                {
+                    // Read the corresponding block from the second file
+                    bytesRead2 = fs2.Read(buffer2, 0, bufferSize);
+
+                    // If block read sizes differ or bytes don't match, exit early
+                    if (bytesRead1 != bytesRead2)
+                    {
+                        return false;
+                    }
+
+                    // Span-optimized sequence comparison (.NET Core / .NET 5+)
+                    if (!buffer1.AsSpan(0, bytesRead1).SequenceEqual(buffer2.AsSpan(0, bytesRead2)))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+
+
         public static string FilePathToFileUrl(string filePath)
         {
             StringBuilder uri = new StringBuilder();
@@ -1034,13 +1112,7 @@ namespace Kolibri.net.Common.Utilities
             return ret;
         }
 
-        public static List<string> PictureFileExt()
-        {
-
-            return new List<string>() { "JPEG", "JPG", "PNG", "GIF", "WEBP", "TIFF", "PSD", "RAW", "BMP", "HEIF", "INDD", "SVG", "AI", "EPS", "PDF" };
-        }
-
-
+ 
 
         /// <summary>
         ///  Stream.Read doesn't guarantee that it will read everything it's asked for. If you're reading from a network stream, for example, it may read one packet's worth and then return, even if there will be more data soon. BinaryReader.Read will keep going until the end of the stream or your specified size, but you still have to know the size to start with.

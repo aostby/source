@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             textBoxSource = new TextBox();
             buttonOpenFolder = new Button();
             statusStrip1 = new StatusStrip();
@@ -45,6 +46,7 @@
             checkBoxDetailType = new CheckBox();
             checkBox1 = new CheckBox();
             checkBoxTristate = new CheckBox();
+            toolTipHover = new ToolTip(components);
             statusStrip1.SuspendLayout();
             groupBoxValg.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -270,5 +272,6 @@
         private RadioButton radioButtonDuplicates;
         private CheckBox checkBox1;
         private CheckBox checkBoxTristate;
+        private ToolTip toolTipHover;
     }
 }

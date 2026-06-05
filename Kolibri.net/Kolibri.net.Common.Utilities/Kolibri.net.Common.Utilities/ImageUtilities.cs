@@ -12,6 +12,19 @@ namespace Kolibri.net.Common.Utilities
     {
 
         public static Dictionary<string, string> _cache = new();
+        public static List<string> PictureFileExt(bool withPunctuation = false)
+        {
+
+            var ret = new List<string>() { "AI", "BMP", "EPS", "GIF", "HEIF", "INDD", "JPEG", "JPG", 
+                "PDF", "PNG", "PSD", "RAW", "SVG", "TIFF", "WEBP", "WEBP", "JPEG", };
+
+            if (withPunctuation)
+                ret = ret.Select(r => string.Concat('.', r)).ToList();
+
+            return ret.Distinct().ToList();
+
+        }
+
 
         public static Bitmap Crop(Bitmap bmp)
         {
