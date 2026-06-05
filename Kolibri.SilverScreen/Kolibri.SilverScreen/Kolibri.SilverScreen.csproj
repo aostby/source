@@ -26,6 +26,8 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.8" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj" />
+    <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.DialogHelpers\Kolibri.net.Common.DialogHelpers.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.DialogHelpers\Kolibri.net.Common.DialogHelpers.csproj" />
     <ProjectReference Include="..\Kolibri.net.SilverScreen\Kolibri.net.SilverScreen.csproj" />

@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11304.174 d18.0
+VisualStudioVersion = 18.1.11304.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.SilverScreen", "Kolibri.SilverScreen\Kolibri.SilverScreen.csproj", "{EC235213-A435-47D4-8740-29BBFB657964}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReferencedProjects", "ReferencedProjects", "{83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Utilities", "..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj", "{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Dal", "..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj", "{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.Formutilities", "..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj", "{C3F0725D-7F46-41A2-8081-D052A2AC1471}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.Common.DialogHelpers", "..\Kolibri.net\Kolibri.net.Common.DialogHelpers\Kolibri.net.Common.DialogHelpers.csproj", "{E333BFF5-A403-4555-B60E-797AA1BDD58C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kolibri.net.SilverScreen", "Kolibri.net.SilverScreen\Kolibri.net.SilverScreen.csproj", "{34B81EBC-4861-4A07-8246-63FE7EDEBD32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.Dal", "..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj", "{45B27616-AA76-26CC-0797-D6436847347C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.DialogHelpers", "..\..\Kolibri.net\Kolibri.net.Common.DialogHelpers\Kolibri.net.Common.DialogHelpers.csproj", "{5D673AB5-19C5-83ED-6891-322D03BD3E35}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.Formutilities", "..\..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj", "{A999BEAD-B4CD-9503-509C-E060A67348E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kolibri.net.Common.Utilities", "..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj", "{3130BF4A-1A77-28B7-AAB5-221300379A4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,35 +27,35 @@ Global
 		{EC235213-A435-47D4-8740-29BBFB657964}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC235213-A435-47D4-8740-29BBFB657964}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC235213-A435-47D4-8740-29BBFB657964}.Release|Any CPU.Build.0 = Release|Any CPU
-		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C3F0725D-7F46-41A2-8081-D052A2AC1471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3F0725D-7F46-41A2-8081-D052A2AC1471}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3F0725D-7F46-41A2-8081-D052A2AC1471}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3F0725D-7F46-41A2-8081-D052A2AC1471}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E333BFF5-A403-4555-B60E-797AA1BDD58C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E333BFF5-A403-4555-B60E-797AA1BDD58C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E333BFF5-A403-4555-B60E-797AA1BDD58C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E333BFF5-A403-4555-B60E-797AA1BDD58C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{34B81EBC-4861-4A07-8246-63FE7EDEBD32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{34B81EBC-4861-4A07-8246-63FE7EDEBD32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34B81EBC-4861-4A07-8246-63FE7EDEBD32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34B81EBC-4861-4A07-8246-63FE7EDEBD32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45B27616-AA76-26CC-0797-D6436847347C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45B27616-AA76-26CC-0797-D6436847347C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45B27616-AA76-26CC-0797-D6436847347C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45B27616-AA76-26CC-0797-D6436847347C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D673AB5-19C5-83ED-6891-322D03BD3E35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D673AB5-19C5-83ED-6891-322D03BD3E35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D673AB5-19C5-83ED-6891-322D03BD3E35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D673AB5-19C5-83ED-6891-322D03BD3E35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A999BEAD-B4CD-9503-509C-E060A67348E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A999BEAD-B4CD-9503-509C-E060A67348E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A999BEAD-B4CD-9503-509C-E060A67348E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A999BEAD-B4CD-9503-509C-E060A67348E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3130BF4A-1A77-28B7-AAB5-221300379A4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3130BF4A-1A77-28B7-AAB5-221300379A4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3130BF4A-1A77-28B7-AAB5-221300379A4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3130BF4A-1A77-28B7-AAB5-221300379A4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{242EEFC6-6308-4EA5-97FE-841BFC0C8F7E} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
-		{1F8ED979-432F-428C-AC7B-AE1D2565E1FF} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
-		{C3F0725D-7F46-41A2-8081-D052A2AC1471} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
-		{E333BFF5-A403-4555-B60E-797AA1BDD58C} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
+		{45B27616-AA76-26CC-0797-D6436847347C} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
+		{5D673AB5-19C5-83ED-6891-322D03BD3E35} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
+		{A999BEAD-B4CD-9503-509C-E060A67348E5} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
+		{3130BF4A-1A77-28B7-AAB5-221300379A4F} = {83F5C4C6-A178-4B3C-BB55-85BA8F8A102A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {218DD4C4-42AE-4145-8970-E8FDAA82FBC0}

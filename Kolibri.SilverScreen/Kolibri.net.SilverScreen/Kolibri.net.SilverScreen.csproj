@@ -22,6 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj" />
+    <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj" />
+    <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj" />
     <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
