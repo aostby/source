@@ -31,18 +31,19 @@ namespace Kolibri.Desktop.Forms
         }
         private void MysqlTables_Click(object sender, EventArgs e)
         {
-                    var dlg1 = FolderUtilities.LetOppMappe((sender as ToolStripMenuItem).Text, $"Select a folder for your operation ({(sender as ToolStripMenuItem).Text}");
+            var dlg1 = FolderUtilities.LetOppMappe((sender as ToolStripMenuItem).Text, $"Select a folder for your operation ({(sender as ToolStripMenuItem).Text}");
             if (dlg1 != null)
             {
                 string dbconnectionstring = "Server=localhost;Database=rapt;User Id = asoes; Password=OU812;";
                 Kolibri.net.Common.Dal.Controller.MySQLController contr = new(dbconnectionstring);
-                var test = contr.GetTableMySQL(dbconnectionstring);
-                var jall = new ConvertDBTableToDapperClassesController(dbconnectionstring);
-                foreach (var item in jall.GetTableNames())
+                var test = contr.GetData( contr.GetMySQLTables( ));
+                var dapperContr = new ConvertDBTableToDapperClassesController(dbconnectionstring);
+                foreach (var item in dapperContr.GetTableNames())
                 {
-                    var jasså = jall.GetClassForTable(item);
-                    var nah = DataSetUtilities.DataTableToEntityClass(jasså);
-                    File.WriteAllText(Path.Combine(dlg1.FullName, item+".cs"), nah);
+                    var jasså = dapperContr.GetDDLClassForTable(item);
+                    // var nah = DataSetUtilities.DataTableToEntityClass(jasså);
+                    // File.WriteAllText(Path.Combine(dlg1.FullName, item + ".cs"), nah);
+                    dapperContr.GetClassForTable(item, dlg1, "testa");
                 }
                 FileUtilities.Start(dlg1);
             }
