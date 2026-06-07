@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/ReferencedProjects/">
+    <Project Path="../../Kolibri.net/Kolibri.net.Common.Dal/Kolibri.net.Common.Dal/Kolibri.net.Common.Dal.csproj" />
+    <Project Path="../../Kolibri.net/Kolibri.net.Common.Formutilities/Kolibri.net.Common.Formutilities/Kolibri.net.Common.Formutilities.csproj" />
+    <Project Path="../../Kolibri.net/Kolibri.net.Common.Utilities/Kolibri.net.Common.Utilities/Kolibri.net.Common.Utilities.csproj" />
+  </Folder>
+  <Project Path="Kolibri.Desktop/Kolibri.Desktop.csproj" />
+</Solution>
