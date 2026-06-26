@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Images;
+﻿using Kolibri.net.Common.Dal.Controller;
+using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using OMDbApiNet.Model;
 using System.ComponentModel;
@@ -134,6 +135,68 @@ namespace Kolibri.net.SilverScreen.Forms
                 BuildByActor();
 
             treeView1.EndUpdate();
+            try
+            {
+                if (CurrentItem == null) return;
+
+                // Start søket fra rot-nivået i TreeView-en
+                TreeNode foundNode = this.FindNodeByTag(this.treeView1.Nodes, CurrentItem.ImdbId);
+
+                if (foundNode != null)
+                {
+                    treeView1.SelectedNode = foundNode; // Markerer noden
+                    foundNode.EnsureVisible();        // Ruller og åpner mapper automatisk
+                    foundNode.Expand();
+                    treeView1.Focus(); // Setter aktivt fokus så den lyser opp
+
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        // Rekursiv hjelpefunksjon
+        private TreeNode FindNodeByTag(TreeNodeCollection nodes, object targetId)
+        {
+            try
+            {  foreach (TreeNode node in nodes)
+                {
+                    // Bruker .Equals() så det fungerer uavhengig av om ID er string, int, Guid osv.
+                    if (node.Tag != null && (node.Tag as Item).ImdbId.Equals(CurrentItem.ImdbId))
+                    {
+                        return node;
+                    }
+
+                    // Søk i undernoder (barn) hvis de finnes
+                    if (node.Nodes.Count > 0)
+                    {
+                        TreeNode childMatch = FindNodeByTag(node.Nodes, targetId);
+
+                        if (childMatch != null)
+                        {
+                            try
+                            {
+                                childMatch.Parent.ExpandAll();
+                                childMatch.Expand();
+                               
+
+                            }
+                            catch (Exception)
+                            {
+                            }
+                          
+
+                            return childMatch;
+                        }
+                    }
+                }
+                return null; // Fant ingenting
+            }
+            catch (Exception EX)
+            {
+                return null;
+            }
         }
 
         private void BuildByActor()
@@ -219,6 +282,7 @@ namespace Kolibri.net.SilverScreen.Forms
                           $"- Rating: {item.ImdbRating}\r\n" +
                           $"- Year: {item.Year}\r\n" +
                           $"- Genre: {item.Genre}\r\n" +
+                          $"- folder: {(Path.GetDirectoryName( item.TomatoUrl))}\r\n" +
                           $"- URL: {item.TomatoUrl}";
             }
             catch (Exception) { }
@@ -435,7 +499,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 // Safely extract the image assigned to the active node being tracked
                 if (lastHoveredNode?.Tag is Item item)
                 {
-                    var nodeImg = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
+                    var nodeImg = ImageUtilities.Base64ToImage(ImageUtilities.DefaultBrokenImage);
                     try
                     {
                         nodeImg = ImageUtilities.GetImageFromUrl(item.Poster);

@@ -54,8 +54,8 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
         {
             if (_default == null) _default = rightLayout;
 
-            pictureBox.Image = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
-            searchBtn.BackgroundImage = ImageUtilities.Base64ToImage(ImageUtilities.SearchGlassImage());
+            pictureBox.Image = ImageUtilities.Base64ToImage(ImageUtilities.DefaultBrokenImage);
+            searchBtn.BackgroundImage = ImageUtilities.Base64ToImage(ImageUtilities.DefaultSearchGlassImage);
             var img = Icons.GetFolderIcon().ToBitmap();
             img.RotateFlip(RotateFlipType.Rotate270FlipX);
             buttonLookUp.BackgroundImage = img;
@@ -134,7 +134,7 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
             }
             catch
             {
-                img = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
+                img = ImageUtilities.Base64ToImage(ImageUtilities.DefaultBrokenImage);
             }
             return await Task.FromResult<Image>(img);
         }
@@ -268,7 +268,7 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
             {
                 Item result = new Item() { Title = $"NotFound {searchTxt.Text}" };
 
-                pictureBox.Image = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
+                pictureBox.Image = ImageUtilities.Base64ToImage(ImageUtilities.DefaultBrokenImage);
                 titleContentLabel.Text = result.Title;
                 imdbContentLabel.Text = result.ImdbId;
                 directorContentLabel.Text = result.Director;
@@ -328,7 +328,7 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
                         if (!Path.Exists(path))
                         {
                             var tmp = await _liteDB.FindFileAsync(result.ImdbId);
-                            path = tmp?.FullName;
+                            path = tmp?.ItemFileInfo.FullName;
                         }
                         if (path == null)
                         {
@@ -533,11 +533,12 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
                     try
                     {
                                 item = getMovieDetails(_currentItem.ImdbId).GetAwaiter().GetResult();
-                        var file = await  tmp.FindFileAsync(item.ImdbId);
+                        var fileItem = await  tmp.FindFileAsync(item.ImdbId);
+                        var file = new FileInfo(fileItem.ItemFileInfo.FullName);
                         if (file != null)
                         {
-                            if (file.ItemFileInfo.Exists)
-                                FileUtilities.OpenFolderHighlightFile(file.ItemFileInfo);
+                            if (file.Exists)
+                                FileUtilities.OpenFolderHighlightFile(file);
                             else if (Directory.Exists(file.FullName))
                             {
                                 var path = new DirectoryInfo(file.FullName).GetDirectories(item.Title, SearchOption.AllDirectories).FirstOrDefault();

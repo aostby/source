@@ -105,7 +105,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 {
                     foreach (FileItem fi in _liteDB.FindAllFileItems(dir))
                     {
-                        SetStatusLabelText($"Sletter {fi.FullName} fra databasen.", "DELETE");
+                        SetStatusLabelText($"Sletter {fi.ItemFileInfo.FullName} fra databasen.", "DELETE");
                         _liteDB.DeleteItem(fi.ImdbId);
                         _liteDB.Delete(fi);
                     }

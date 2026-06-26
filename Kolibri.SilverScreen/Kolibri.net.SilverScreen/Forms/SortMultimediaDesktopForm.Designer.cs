@@ -41,12 +41,18 @@
             buttonDestination = new Button();
             buttonSource = new Button();
             groupBox2 = new GroupBox();
+            checkBoxFilename = new CheckBox();
             linkLabelMovieFolder = new LinkLabel();
             buttonMovieFolderMoveFiles = new Button();
             buttonMovieFolder = new Button();
+            groupBoxFilenameToFolder = new GroupBox();
+            linkLabel1 = new LinkLabel();
+            buttonSetSourceFolder = new Button();
+            buttonMovieFilesMoveFolders = new Button();
             statusStrip1.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
+            groupBoxFilenameToFolder.SuspendLayout();
             SuspendLayout();
             // 
             // statusStrip1
@@ -79,7 +85,7 @@
             groupBox1.Controls.Add(buttonOpenDirD);
             groupBox1.Controls.Add(buttonDestination);
             groupBox1.Controls.Add(buttonSource);
-            groupBox1.Location = new Point(12, 108);
+            groupBox1.Location = new Point(12, 183);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(832, 140);
             groupBox1.TabIndex = 9;
@@ -164,6 +170,7 @@
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(checkBoxFilename);
             groupBox2.Controls.Add(linkLabelMovieFolder);
             groupBox2.Controls.Add(buttonMovieFolderMoveFiles);
             groupBox2.Controls.Add(buttonMovieFolder);
@@ -173,6 +180,16 @@
             groupBox2.TabIndex = 10;
             groupBox2.TabStop = false;
             groupBox2.Text = "Large movefolder with many moviefiles - create folders and move Directories based on movie year (from foldername)";
+            // 
+            // checkBoxFilename
+            // 
+            checkBoxFilename.AutoSize = true;
+            checkBoxFilename.Location = new Point(471, 26);
+            checkBoxFilename.Name = "checkBoxFilename";
+            checkBoxFilename.Size = new Size(333, 19);
+            checkBoxFilename.TabIndex = 11;
+            checkBoxFilename.Text = "Single file move - use year from filename, not folder name";
+            checkBoxFilename.UseVisualStyleBackColor = true;
             // 
             // linkLabelMovieFolder
             // 
@@ -205,11 +222,54 @@
             buttonMovieFolder.UseVisualStyleBackColor = true;
             buttonMovieFolder.Click += buttonMovieFolder_Click;
             // 
+            // groupBoxFilenameToFolder
+            // 
+            groupBoxFilenameToFolder.Controls.Add(buttonMovieFilesMoveFolders);
+            groupBoxFilenameToFolder.Controls.Add(linkLabel1);
+            groupBoxFilenameToFolder.Controls.Add(buttonSetSourceFolder);
+            groupBoxFilenameToFolder.Location = new Point(12, 98);
+            groupBoxFilenameToFolder.Name = "groupBoxFilenameToFolder";
+            groupBoxFilenameToFolder.Size = new Size(832, 79);
+            groupBoxFilenameToFolder.TabIndex = 12;
+            groupBoxFilenameToFolder.TabStop = false;
+            groupBoxFilenameToFolder.Text = "Large movefolder with many moviefiles - Create Folder For file";
+            // 
+            // linkLabel1
+            // 
+            linkLabel1.AutoSize = true;
+            linkLabel1.Location = new Point(11, 48);
+            linkLabel1.Name = "linkLabel1";
+            linkLabel1.Size = new Size(73, 15);
+            linkLabel1.TabIndex = 10;
+            linkLabel1.TabStop = true;
+            linkLabel1.Text = "MovieFolder";
+            // 
+            // buttonSetSourceFolder
+            // 
+            buttonSetSourceFolder.Location = new Point(6, 22);
+            buttonSetSourceFolder.Name = "buttonSetSourceFolder";
+            buttonSetSourceFolder.Size = new Size(368, 23);
+            buttonSetSourceFolder.TabIndex = 6;
+            buttonSetSourceFolder.Text = "Let opp kilde";
+            buttonSetSourceFolder.UseVisualStyleBackColor = true;
+            buttonSetSourceFolder.Click += buttonMovieFolder_Click;
+            // 
+            // buttonMovieFilesMoveFolders
+            // 
+            buttonMovieFilesMoveFolders.Location = new Point(380, 26);
+            buttonMovieFilesMoveFolders.Name = "buttonMovieFilesMoveFolders";
+            buttonMovieFilesMoveFolders.Size = new Size(85, 23);
+            buttonMovieFilesMoveFolders.TabIndex = 11;
+            buttonMovieFilesMoveFolders.Text = "button2";
+            buttonMovieFilesMoveFolders.UseVisualStyleBackColor = true;
+            buttonMovieFilesMoveFolders.Click += buttonMovieFilesMoveFolders_Click;
+            // 
             // SortMultimediaDesktopForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(882, 519);
+            Controls.Add(groupBoxFilenameToFolder);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
             Controls.Add(statusStrip1);
@@ -222,6 +282,8 @@
             groupBox1.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
+            groupBoxFilenameToFolder.ResumeLayout(false);
+            groupBoxFilenameToFolder.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -243,5 +305,11 @@
         private Button buttonMovieFolderMoveFiles;
         private Button buttonMovieFolder;
         private LinkLabel linkLabelMovieFolder;
+        private CheckBox checkBoxFilename;
+        private GroupBox groupBoxFilenameToFolder;
+        private LinkLabel linkLabel1;
+        private Button button1;
+        private Button buttonSetSourceFolder;
+        private Button buttonMovieFilesMoveFolders;
     }
 }

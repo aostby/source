@@ -1,10 +1,13 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.FormUtilities;
 using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
+using Kolibri.net.SilverScreen.Controller;
+using LiteDB;
 using OMDbApiNet.Model;
 using System.Data;
 using TMDbLib.Objects.Movies;
@@ -21,27 +24,37 @@ namespace Kolibri.net.SilverScreen.Forms
         internal TMDBController _TMDB;
         internal SubDLSubtitleController _subDL;
         internal ImageCacheDB _imageCache;
+        internal PlexController _plexController;
+
 
         [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
 
         public DetailsFormItem(string imdbId, LiteDBController contr, OMDBController omdb = null
             , TMDBController tmdb = null
             , SubDLSubtitleController subDL = null
-            , ImageCacheDB imagecache = null
+            , ImageCacheDB imagecache = null, PlexController plex = null
             )
         {
             InitializeComponent();
             _liteDB = contr;
-            _item = GetItemFromDB(imdbId);
+            _plexController = new PlexController(_liteDB.GetUserSettings());
+            
             this.FormBorderStyle = FormBorderStyle.None;
             _OMDB = omdb;
             _TMDB = tmdb;
             _subDL = subDL;
             _imageCache = imagecache;
+            _plexController = plex; 
+            if(_plexController==null)
+                _plexController = new PlexController(_liteDB.GetUserSettings());
+
+            _item =  _liteDB.FindItemAsync(imdbId).GetAwaiter().GetResult();    
+            if( _item == null )                 _item = GetItemFromMySqlDB(imdbId);
+
             Init(_item);
         }
 
-        private Item? GetItemFromDB(string imdbId)
+        private Item? GetItemFromMySqlDB(string imdbId)
         {
             var ret = new Item();
 
@@ -50,11 +63,12 @@ namespace Kolibri.net.SilverScreen.Forms
 
         }
 
-        public DetailsFormItem(OMDbApiNet.Model.Item item, LiteDBController contr
+        public DetailsFormItem(OMDbApiNet.Model.Item item,
+            LiteDBController contr
             , OMDBController omdb = null
             , TMDBController tmdb = null
             , SubDLSubtitleController subDL = null
-            , ImageCacheDB imagecache = null
+            , ImageCacheDB imagecache = null, PlexController plex = null
             )
         {
             InitializeComponent();
@@ -65,23 +79,29 @@ namespace Kolibri.net.SilverScreen.Forms
             _TMDB = tmdb;
             _subDL = subDL;
             _imageCache = imagecache;
+            _plexController = plex;
+            if (_plexController == null)
+                _plexController = new PlexController(_liteDB.GetUserSettings());
+
+
 
             Init(_item);
             //Dersom alt er initialisert, sett farger
             InitButtons();
         }
 
-        private void Init(Item item)
+        private void Init(Item item, bool SearchForPoster=true)
         {
             tbTitle.Text = item.Title;
             tbYear.Text = item.Year;
             tbRated.Text = item.ImdbRating;
-            tbRated.BackColor = Color.Red;
+            tbRated.BackColor = Color.Green;
             int rating = 0;
             if (item.ImdbRating.IsNumeric() && item.ImdbRating.Substring(0, 1).ToInt32() > 0)
                 rating = item.ImdbRating.Substring(0, 1).ToInt32();
-            if (rating >= 3 && rating <= 4) { tbRated.BackColor = Color.Red; }
-            if (rating >= 4 && rating <= 5) { tbRated.BackColor = Color.LightSalmon; }
+            if (rating <= 2) { tbRated.BackColor = Color.Red; }
+            else if (rating >= 3 && rating <= 4) { tbRated.BackColor = Color.Red; }
+            else if (rating >= 4 && rating <= 5) { tbRated.BackColor = Color.LightSalmon; }
             else if (rating >= 5 && rating <= 6) { tbRated.BackColor = Color.LightGreen; }
             else if (rating >= 7 && rating <= 8) { tbRated.BackColor = Color.LimeGreen; }
             else if (rating >= 9) { tbRated.BackColor = Color.Green; }
@@ -91,8 +111,22 @@ namespace Kolibri.net.SilverScreen.Forms
             tbActors.Text = item.Actors;
             tbPlot.Text = item.Plot;
             tbMetascore.Text = item.Metascore;
+            
+                pbPoster.ImageLocation = item.Poster;
 
-            pbPoster.ImageLocation = item.Poster;
+            try
+            {
+                if (SearchForPoster&&_plexController!=null&&!HTMLUtilities.DoesUrlExists(item.Poster))
+                {// TODO - Finn Poster?? Hva hvis plex ikke finner den...
+                    buttonPosterFix_Click(null, null);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+
 
             try
             {
@@ -101,14 +135,16 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (_OMDB == null) { try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
                 if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { } }
                 if (_subDL == null) { try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { } }
-                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } }
-                ;
+                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } };
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
             SetAllLabelsToBold(this);
+//            if (item != null) {
+//                Set(item.Title)
+//;                    }
 
         }
         private void SetAllLabelsToBold(Control parent)
@@ -133,13 +169,13 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 string path;
                 var t = await _liteDB.FindFileAsync(_item.ImdbId);
-                path = t.FullName;
+                path = t.ItemFileInfo.FullName;
 
                 toolTipDetail.SetToolTip(linkLabelOpenFilepath, path);
                 FileInfo info = new FileInfo(path);
                 _itemPath = new FileItem(_item.ImdbId, info.FullName);
-                if (!info.Exists) { labelFileExists.ForeColor = Color.Salmon; toolTipDetail.SetToolTip(labelFileExists, info.Exists.ToString()); }
-                if (info.Directory.Exists) { labelFileExists.ForeColor = Color.Green; }
+                if (!info.Exists) { linkLabelOpenFilepath.LinkColor = Color.Salmon; toolTipDetail.SetToolTip(linkLabelOpenFilepath, info.Exists.ToString()); }
+                if (info.Directory.Exists) { linkLabelOpenFilepath.LinkColor = Color.Green; }
                 try
                 {
                     //The size of the current file in bytes
@@ -153,13 +189,15 @@ namespace Kolibri.net.SilverScreen.Forms
 
                     toolTipDetail.SetToolTip(labelQuality, $"{labelQuality.Text} - {ByteUtilities.GetByteSize(info.Length)}");
 
+                    tbAdded.Text =  t.DateAdded.ToShortDateString();
+
                 }
                 catch (Exception)
                 {
                 }
 
             }
-            catch (Exception ex) { labelFileExists.ForeColor = Color.Salmon; }
+            catch (Exception ex) { linkLabelOpenFilepath.LinkColor = Color.Salmon; }
             buttonSimilar.Image = Icons.GetFolderIcon().ToBitmap();
             buttonSubtitleSearch.Image = Icons.GetFolderIcon().ToBitmap();
             if (_imageCache != null)
@@ -193,9 +231,9 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                 }
 
-                FileInfo info = _itemPath.ItemFileInfo;
+                FileInfo info =  _itemPath.ItemFileInfo;
 
-                FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
+                FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.ItemFileInfo.FullName, ".srt"));
                 if (!srtInfo.Exists)
                 {
                     bool dirExists = Directory.Exists(Path.Combine(info.Directory.FullName, "Subs"));
@@ -267,13 +305,16 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (sender.Equals(linkTrailer))
                 {
                     Uri link = new Uri($"https://www.imdb.com/title/{_item.ImdbId}/");
+                //    https://www.themoviedb.org/movie/{movie_id}
+
+
                     // System.Diagnostics.Process.Start(link);
                     FileUtilities.Start(link);
                 }
                 else if (sender.Equals(linkLabelOpenFilepath))
                 {
                     var t = await _liteDB.FindFileAsync(_item.ImdbId);
-                    var path = t.FullName;
+                    var path = t.ItemFileInfo.FullName;
                     if (File.Exists(path))
                     {
                         FileUtilities.OpenFolderHighlightFile(new FileInfo(path));
@@ -288,6 +329,13 @@ namespace Kolibri.net.SilverScreen.Forms
             catch (Exception ex)
             { }
         }
+        private void buttonDeleteReference_Click(object sender, EventArgs e)
+        {
+            var fi = new FileItem(_item.ImdbId, "");
+            var deletd = _liteDB.Delete(fi);            
+            MessageBox.Show($"Deletion of item {_item.ImdbId} {_item.Title} success: {deletd == 1}", _item.Title);
+        }
+
         private void buttonDeleteItem_Click(object sender, EventArgs e)
         {
             var deletd = _liteDB.DeleteItem(_item.ImdbId);
@@ -342,7 +390,6 @@ namespace Kolibri.net.SilverScreen.Forms
                 RichTextBox plot = new RichTextBox();
                 plot.DetectUrls = true;
                 plot.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(plot_LinkClicked);
-
 
                 plot.Text = $"{tbPlot.Text}{(string.Join("", Enumerable.Repeat(Environment.NewLine, 3)))}{_item.ToJson()}";
 
@@ -417,47 +464,24 @@ namespace Kolibri.net.SilverScreen.Forms
 
 
         private async void tbActors_Clicked(object sender, EventArgs e)
-        {this.Cursor = Cursors.WaitCursor;  
+        {
+            this.Cursor = Cursors.WaitCursor;
             try
             {
-                var t = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
-                var theList = t.Cast.OrderBy(x => x.Order).Take(10);
+                TMDbLib.Objects.Movies.Credits credits = await _liteDB.GetCredits(_item.ImdbId);
+                if (credits == null)
+                    credits = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
 
-                var ds = DataSetUtilities.AutoGenererDataSet(theList.ToList<Cast>());
 
-                DataTable dt = new DataView(ds.Tables[0], null, "Order ASC", DataViewRowState.CurrentRows).ToTable(true, "Character", "Name", "Gender", "KnownForDepartment", "OriginalName", "ProfilePath");
-                dt.TableName = DataSetUtilities.LegalTableName("Actors");
 
-                if (dt.DataSet == null)
-                {
-                    DataSet tmp = new DataSet();
-                    tmp.Tables.Add(dt);
-                }
-
-                DataColumn imageColumn = new DataColumn("Image");
-                imageColumn.DataType = typeof(Image); // or System.Type.GetType("System.Byte[]");
-                imageColumn.AllowDBNull = true; // Set to false if an image is always required
-                imageColumn.Caption = "Image"; // Optional: A user-friendly caption
-                dt.Columns.Add(imageColumn);
-                imageColumn.SetOrdinal(0);
-                foreach (DataRow row in dt.Rows)
-                {
-                    try
-                    {
-                        row["Image"] = ImageUtilities.GetImageFromUrl($"https://image.tmdb.org/t/p/w200{($"{row["ProfilePath"]}")}");
-                    }
-                    catch (Exception picex)
-                    {
-                        row["Image"] = DBNull.Value;
-                    }
-                }
-
-                Kolibri.net.Common.FormUtilities.Visualizers.VisualizeDataSet($"{_item.Title} - {theList.Count()} first", dt.DataSet, this.Parent.Size);
+                Form form =await CreatateFormController. GenerateFormFromActors( credits,  _item);
+                form.ShowDialog();  
             }
             catch (Exception ex) { }
             this.Cursor = Cursors.Default;
         }
 
+     
         private void buttonRediger_Click(object sender, EventArgs e)
         {
             Form form = new Form();
@@ -488,7 +512,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (res == DialogResult.OK)
             {
-                if (!string.IsNullOrEmpty(_item.ImdbRating)) { _item.ImdbRating= _item.ImdbRating.Replace(",", "."); }
+                if (!string.IsNullOrEmpty(_item.ImdbRating)) { _item.ImdbRating = _item.ImdbRating.Replace(",", "."); }
                 _liteDB.UpdateAsync(_item);
                 _liteDB.UpdateAsync(_itemPath);
                 Init(_item);
@@ -511,9 +535,9 @@ namespace Kolibri.net.SilverScreen.Forms
                     throw new NoNullAllowedException($"SubDL krever en API Key, og din er tom. Vennligst legg inn en nøkkel for å kunne søke etter undertekster");
 
 
-                FileInfo info = _itemPath.ItemFileInfo;
+                FileInfo info = new FileInfo(_itemPath.ItemFileInfo.FullName);
 
-                FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
+                FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.ItemFileInfo.FullName, ".srt"));
                 if (srtInfo.Exists)
                 {
                     FileUtilities.Start(srtInfo.Directory);
@@ -571,27 +595,32 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"List contained no elements for this path.{Environment.NewLine}{ex.Message}. Try searching for elements and try again", _itemPath.FullName);
+                MessageBox.Show($"List contained no elements for this path.{Environment.NewLine}{ex.Message}. Try searching for elements and try again", _itemPath.ItemFileInfo.FullName);
             }
         }
 
         private async void buttonPosterFix_Click(object sender, EventArgs e)
         {
             try
-            {
-                PlexController plex = new PlexController(_liteDB.GetUserSettings());
-
+            { 
                 if (_item != null && _item.Type.StartsWith("movie", StringComparison.OrdinalIgnoreCase))
                 {
 
                     if (!HTMLUtilities.DoesUrlExists(_item.Poster))
                     {
-                        var pItem = await plex.FindByImdbAsync(_item.ImdbId);
+                        if (_plexController == null) {
+                            _plexController = new PlexController(_liteDB.GetUserSettings());
+                        }
+                        var pItem = await _plexController.FindByImdbAsync(_item.ImdbId);
                         if (pItem != null)
                         {
                             _item.Poster = pItem.Poster;
                             await _liteDB.UpsertAsync(_item);
                             var txt = $"{_item.Title} - {_item.Poster} ";
+                            Init(_item, false);
+                        }
+                        else {
+                            throw new KeyNotFoundException($"{_item.ImdbId} - {_item.Title}");
                         }
                     }
                 }
@@ -604,9 +633,12 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private async void buttonPlaylist_Click(object sender, EventArgs e)
         {
-            PlexController plex = new PlexController(_liteDB.GetUserSettings());
+            if (_plexController == null)
+            {
+                _plexController = new PlexController(_liteDB.GetUserSettings());
+            }
             object value = string.Empty;
-            var pls = await plex.GetPlaylistsAsync();
+            var pls = await _plexController.GetPlaylistsAsync();
             var res = InputDialogs.ChooseListBox($"Playlist to put {_item.Title} in ", "To add item to playlist, choose one",
                          pls.ToList()
                          , ref value, false);
@@ -614,14 +646,15 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 try
                 {
-                    var pl = (value as ListViewItem).Text; 
+                    var pl = (value as ListViewItem).Text;
 
                     string imdbId = _item.ImdbId;
-                    if (!await plex.AddElementToPlaylist(pl, imdbId))
+                    if (!await _plexController.AddElementToPlaylist(pl, imdbId))
                     {
                         throw new Exception($"Item not added to Playlist {pl} ({_item.Title})");
                     }
-                    else {
+                    else
+                    {
                         MessageBox.Show($"Item added to Playlist {pl} ({_item.Title})", pl);
                     }
                 }
@@ -631,5 +664,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
             }
         }
+
+   
     }
 }

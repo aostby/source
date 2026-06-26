@@ -149,6 +149,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     {
                         tbTitle.Text = sItem.Title;
                         tbYear.Text = sItem.Year;
+                        tbCountry .Text = sItem.Country;
                         tbRated.Text = sItem.ImdbRating;
                         tbRuntime.Text = sItem.Runtime;
                         tbGenre.Text = sItem.Genre;
@@ -161,8 +162,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                         var f = _liteDB.FindFileAsync(labelImdbId.Text);
                         FileItem file = f.Result;
 
-                        linkLabelOpenFilePath.BackColor = file == null ? Color.IndianRed : (file != null && file.ItemFileInfo.Exists ? Control.DefaultBackColor : Color.Yellow);
-                        toolTip1.SetToolTip(linkLabelOpenFilePath, $"{file?.ItemFileInfo?.FullName}");
+                        linkLabelOpenFilePath.BackColor = file == null ? Color.IndianRed : (file != null && File.Exists( file.ItemFileInfo.FullName) ? Control.DefaultBackColor : Color.Yellow);
+                        toolTip1.SetToolTip(linkLabelOpenFilePath, $"{file.ItemFileInfo.FullName}");
                         if (false)
                         {
                             try
@@ -372,8 +373,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             try
             {
-                var url = _liteDB.FindFileAsync(labelImdbId.Text);
-                FileUtilities.OpenFolderHighlightFile(url.GetAwaiter().GetResult().ItemFileInfo);
+                var url = await _liteDB.FindFileAsync(labelImdbId.Text);
+                FileUtilities.OpenFolderHighlightFile(new FileInfo(url.ItemFileInfo.FullName));
             }
             catch (Exception ex)
             {

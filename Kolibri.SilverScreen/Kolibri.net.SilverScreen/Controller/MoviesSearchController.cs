@@ -22,10 +22,8 @@ namespace Kolibri.net.SilverScreen.Controller
         private TMDBController _TMDB;
         private OMDBController _OMDB;
         private PlexController _plex; 
-     
 
         private List<DirectoryInfo> _cleanDirsAfterSearch = new List<DirectoryInfo>();
-
 
         /// <summary>
         /// Oppdatering (tristate): 
@@ -121,8 +119,7 @@ namespace Kolibri.net.SilverScreen.Controller
             
             //Sjekk at vi har alt av verdier
             if (!Init(dir, tristate)) return ret;
-            ClearIfTristateTrue(dir);
-
+            ClearIfTristateTrue(dir); 
 
             var numFiles = await MovieUtilites.GetCommonMovieFiles(dir);
             foreach (var filePath in numFiles)
@@ -132,7 +129,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 try
                 {
                     count = count + 1;
-                    
+
                     FileInfo file = new FileInfo(filePath);
                     var temp = await _liteDB.FindByFileNameAsync(file);
                     if (temp != null && tristate == CheckState.Unchecked)
@@ -143,10 +140,20 @@ namespace Kolibri.net.SilverScreen.Controller
                     {
                         GetTitleAndYear(file, out year, out title, out fileTitle);
                         item = await GetItem(file, year, title, fileTitle);
-                      
+
                     }
                     if (item != null)
+                    {
                         ret.Add(item);
+                        if (temp==null&& !tristate.Equals(CheckState.Unchecked)&&File.Exists(item.TomatoUrl) )
+                        {
+                            if (await _liteDB.FindFileAsync(item.ImdbId) == null)
+                            {
+                                var fi = new FileItem(item.ImdbId, file.FullName);
+                                await _liteDB.UpsertAsync(fi);
+                            }
+                        }
+                    }
                     else
                     {
                         SetStatusLabelText($"{title} ikke funnet! {file.FullName}.", "NOTFOUND");
@@ -192,13 +199,12 @@ namespace Kolibri.net.SilverScreen.Controller
                 try
                 {
                     foreach (FileItem fi in _liteDB.FindAllFileItems(dir))
-                    {
-                      
+                    { 
                         if (_updateTriState == CheckState.Checked)
                         {
-                            if (!fi.ItemFileInfo.Exists)
+                            if (!File.Exists(fi.ItemFileInfo.FullName))
                             {
-                                SetStatusLabelText($"Sletter {fi.FullName} fra databasen.", "DELETE");
+                                SetStatusLabelText($"Sletter {fi.ItemFileInfo.FullName} fra databasen.", "DELETE");
                                 _liteDB.DeleteItem(fi.ImdbId);
                                 _liteDB.Delete(fi);
                             }
@@ -226,26 +232,27 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 try
                 {
-                    var remove = FileUtilities.GetFileDialogFilter(new List<string>() { "nfo", "txt", "jpg" }.ToArray());
+                    // var extensionList = new List<string>() { "nfo", "txt", "jpg", "exe" };
+                    var extensionList = new List<string>() { ".nfo", ".txt", ".jpg", ".exe" };
+                    var remove = FileUtilities.GetFileDialogFilter( extensionList.ToArray());
 
-                    var removeFiles = FileUtilities.GetFiles(dir, remove, true);
+                    var removeFiles = FileUtilities.GetFiles(dir, extensionList, SearchOption.AllDirectories);
                     if (removeFiles.Count() >= 1)
                     {
                         foreach (var item in removeFiles)
-                        {
-
+                        { 
                             try
                             {
-                                File.SetAttributes(item.FullName, FileAttributes.Normal); //sett attributter i tilfelle de er read only
+                                File.SetAttributes(item, FileAttributes.Normal); //sett attributter i tilfelle de er read only
                                 ret = true;
                             }
                             catch (Exception)
                             {
-                                SetStatusLabelText($"Filatrtibutter kan ikke endres {item.Name} fra {dir.Name}.", "ATTRIBUTES");
+                                SetStatusLabelText($"Filatrtibutter kan ikke endres {item} fra {dir.Name}.", "ATTRIBUTES");
                                 ret = false;
                             }
-                            item.Delete();
-                            SetStatusLabelText($"Slettet {item.Name} fra {dir.Name}.", "DELETE");
+                            File.Delete(item);
+                            SetStatusLabelText($"Slettet {item} fra {dir.Name}.", "DELETE");
                             ret = true;
                         }
                         FileUtilities.DeleteEmptyDirs(dir);
@@ -388,7 +395,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     {
                         if (_updateTriState != CheckState.Indeterminate)
                         {
-                            if (!$"{ret.TomatoUrl}".ToUpper().GetHashCode().Equals(test.FullName.ToUpper().GetHashCode()))
+                            if (!$"{ret.TomatoUrl}".ToUpper().GetHashCode().Equals(test.ItemFileInfo.FullName.ToUpper().GetHashCode()))
                             {
                                 ret.TomatoUrl = file.FullName;
                                 await _liteDB.UpdateAsync(ret);
@@ -476,7 +483,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                     SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_TMDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
                                     return ret;
                                 }
-                                if (test == null || (!$"{ret.TomatoUrl}".Equals(test.FullName)))
+                                if (test == null || (!$"{ret.TomatoUrl}".Equals(test.ItemFileInfo.FullName)))
                                 {
                                     ret.TomatoUrl = file.FullName;
                                     await _liteDB.UpsertAsync(ret);
@@ -590,7 +597,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     {
                         var test = await _liteDB.FindByFileNameAsync(file);
                         {
-                            if (test != null && !$"{ret.TomatoUrl}".Equals(test.FullName))
+                            if (test != null && !$"{ret.TomatoUrl}".Equals(test.ItemFileInfo.FullName))
                             {
                                 ret.TomatoUrl = file.FullName;
                                 await _liteDB.UpdateAsync(ret);
