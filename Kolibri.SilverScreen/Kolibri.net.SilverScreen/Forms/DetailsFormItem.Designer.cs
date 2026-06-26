@@ -50,14 +50,16 @@ namespace Kolibri.net.SilverScreen.Forms
             linkTrailer = new LinkLabel();
             linkLabelOpenFilepath = new LinkLabel();
             buttonDeleteItem = new Button();
-            labelFileExists = new Label();
             labelQuality = new Label();
             buttonSimilar = new Button();
             toolTipDetail = new ToolTip(components);
+            buttonDeleteReference = new Button();
             buttonRediger = new Button();
             buttonSubtitleSearch = new Button();
             buttonPosterFix = new Button();
             buttonPlaylist = new Button();
+            labelAdded = new Label();
+            tbAdded = new TextBox();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
             SuspendLayout();
             // 
@@ -104,7 +106,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(181, 562);
+            label4.Location = new Point(176, 562);
             label4.Margin = new Padding(4, 0, 4, 0);
             label4.Name = "label4";
             label4.Size = new Size(52, 15);
@@ -174,11 +176,11 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // tbRuntime
             // 
-            tbRuntime.Location = new Point(181, 578);
+            tbRuntime.Location = new Point(176, 578);
             tbRuntime.Margin = new Padding(4, 3, 4, 3);
             tbRuntime.Name = "tbRuntime";
             tbRuntime.ReadOnly = true;
-            tbRuntime.Size = new Size(158, 23);
+            tbRuntime.Size = new Size(111, 23);
             tbRuntime.TabIndex = 23;
             // 
             // tbRated
@@ -251,32 +253,20 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonDeleteItem
             // 
-            buttonDeleteItem.Location = new Point(337, 398);
+            buttonDeleteItem.Location = new Point(341, 398);
             buttonDeleteItem.Margin = new Padding(4, 3, 4, 3);
             buttonDeleteItem.Name = "buttonDeleteItem";
-            buttonDeleteItem.Size = new Size(75, 23);
+            buttonDeleteItem.Size = new Size(95, 23);
             buttonDeleteItem.TabIndex = 43;
-            buttonDeleteItem.Text = "Slett fra DB (Ikke fra disk)";
+            buttonDeleteItem.Text = "Slett metadata";
             toolTipDetail.SetToolTip(buttonDeleteItem, "Sletter dette objektet fra DB, men ikke fra disk.");
             buttonDeleteItem.UseVisualStyleBackColor = true;
             buttonDeleteItem.Click += buttonDeleteItem_Click;
             // 
-            // labelFileExists
-            // 
-            labelFileExists.AutoSize = true;
-            labelFileExists.ForeColor = Color.ForestGreen;
-            labelFileExists.Location = new Point(100, 424);
-            labelFileExists.Margin = new Padding(4, 0, 4, 0);
-            labelFileExists.Name = "labelFileExists";
-            labelFileExists.Size = new Size(35, 15);
-            labelFileExists.TabIndex = 44;
-            labelFileExists.Text = "Exists";
-            toolTipDetail.SetToolTip(labelFileExists, "Finnes filen på disk");
-            // 
             // labelQuality
             // 
             labelQuality.AutoSize = true;
-            labelQuality.Location = new Point(158, 424);
+            labelQuality.Location = new Point(192, 424);
             labelQuality.Margin = new Padding(4, 0, 4, 0);
             labelQuality.Name = "labelQuality";
             labelQuality.Size = new Size(25, 15);
@@ -287,9 +277,9 @@ namespace Kolibri.net.SilverScreen.Forms
             // buttonSimilar
             // 
             buttonSimilar.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSimilar.Location = new Point(415, 398);
+            buttonSimilar.Location = new Point(434, 398);
             buttonSimilar.Name = "buttonSimilar";
-            buttonSimilar.Size = new Size(75, 23);
+            buttonSimilar.Size = new Size(56, 23);
             buttonSimilar.TabIndex = 46;
             buttonSimilar.Text = "Similar";
             buttonSimilar.TextAlign = ContentAlignment.MiddleRight;
@@ -297,11 +287,23 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonSimilar.UseVisualStyleBackColor = true;
             buttonSimilar.Click += buttonSimilar_Click;
             // 
+            // buttonDeleteReference
+            // 
+            buttonDeleteReference.Location = new Point(341, 422);
+            buttonDeleteReference.Margin = new Padding(4, 3, 4, 3);
+            buttonDeleteReference.Name = "buttonDeleteReference";
+            buttonDeleteReference.Size = new Size(95, 23);
+            buttonDeleteReference.TabIndex = 51;
+            buttonDeleteReference.Text = "Slett referanse";
+            toolTipDetail.SetToolTip(buttonDeleteReference, "Sletter dette filobjektet fra DB, men ikke fra disk.");
+            buttonDeleteReference.UseVisualStyleBackColor = true;
+            buttonDeleteReference.Click += buttonDeleteReference_Click;
+            // 
             // buttonRediger
             // 
-            buttonRediger.Location = new Point(259, 398);
+            buttonRediger.Location = new Point(274, 398);
             buttonRediger.Name = "buttonRediger";
-            buttonRediger.Size = new Size(75, 23);
+            buttonRediger.Size = new Size(60, 23);
             buttonRediger.TabIndex = 47;
             buttonRediger.Text = "Rediger";
             buttonRediger.UseVisualStyleBackColor = true;
@@ -310,9 +312,9 @@ namespace Kolibri.net.SilverScreen.Forms
             // buttonSubtitleSearch
             // 
             buttonSubtitleSearch.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSubtitleSearch.Location = new Point(415, 422);
+            buttonSubtitleSearch.Location = new Point(434, 422);
             buttonSubtitleSearch.Name = "buttonSubtitleSearch";
-            buttonSubtitleSearch.Size = new Size(75, 23);
+            buttonSubtitleSearch.Size = new Size(56, 23);
             buttonSubtitleSearch.TabIndex = 48;
             buttonSubtitleSearch.Text = "Subtitle search";
             buttonSubtitleSearch.TextAlign = ContentAlignment.MiddleRight;
@@ -321,9 +323,9 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonPosterFix
             // 
-            buttonPosterFix.Location = new Point(259, 421);
+            buttonPosterFix.Location = new Point(274, 421);
             buttonPosterFix.Name = "buttonPosterFix";
-            buttonPosterFix.Size = new Size(75, 23);
+            buttonPosterFix.Size = new Size(60, 23);
             buttonPosterFix.TabIndex = 49;
             buttonPosterFix.Text = "Poster";
             buttonPosterFix.UseVisualStyleBackColor = true;
@@ -331,7 +333,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonPlaylist
             // 
-            buttonPlaylist.Location = new Point(337, 420);
+            buttonPlaylist.Location = new Point(102, 424);
             buttonPlaylist.Name = "buttonPlaylist";
             buttonPlaylist.Size = new Size(75, 23);
             buttonPlaylist.TabIndex = 50;
@@ -339,18 +341,39 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonPlaylist.UseVisualStyleBackColor = true;
             buttonPlaylist.Click += buttonPlaylist_Click;
             // 
+            // labelAdded
+            // 
+            labelAdded.AutoSize = true;
+            labelAdded.Location = new Point(295, 562);
+            labelAdded.Margin = new Padding(4, 0, 4, 0);
+            labelAdded.Name = "labelAdded";
+            labelAdded.Size = new Size(42, 15);
+            labelAdded.TabIndex = 53;
+            labelAdded.Text = "Added";
+            // 
+            // tbAdded
+            // 
+            tbAdded.Location = new Point(295, 578);
+            tbAdded.Margin = new Padding(4, 3, 4, 3);
+            tbAdded.Name = "tbAdded";
+            tbAdded.ReadOnly = true;
+            tbAdded.Size = new Size(71, 23);
+            tbAdded.TabIndex = 52;
+            // 
             // DetailsFormItem
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(504, 754);
+            Controls.Add(labelAdded);
+            Controls.Add(tbAdded);
+            Controls.Add(buttonDeleteReference);
             Controls.Add(buttonPlaylist);
             Controls.Add(buttonPosterFix);
             Controls.Add(buttonSubtitleSearch);
             Controls.Add(buttonRediger);
             Controls.Add(buttonSimilar);
             Controls.Add(labelQuality);
-            Controls.Add(labelFileExists);
             Controls.Add(buttonDeleteItem);
             Controls.Add(linkLabelOpenFilepath);
             Controls.Add(linkTrailer);
@@ -403,7 +426,6 @@ namespace Kolibri.net.SilverScreen.Forms
         private System.Windows.Forms.LinkLabel linkTrailer;
         private System.Windows.Forms.LinkLabel linkLabelOpenFilepath;
         private System.Windows.Forms.Button buttonDeleteItem;
-        private System.Windows.Forms.Label labelFileExists;
         private System.Windows.Forms.Label labelQuality;
         private Button buttonSimilar;
         private ToolTip toolTipDetail;
@@ -411,5 +433,8 @@ namespace Kolibri.net.SilverScreen.Forms
         private Button buttonSubtitleSearch;
         private Button buttonPosterFix;
         private Button buttonPlaylist;
+        private Button buttonDeleteReference;
+        private Label labelAdded;
+        private TextBox tbAdded;
     }
 }

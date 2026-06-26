@@ -378,12 +378,12 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 }
                 else
                 {
-                    pictureBoxCurrent.Image = ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
+                    pictureBoxCurrent.Image = ImageUtilities.Base64ToImage(ImageUtilities.DefaultBrokenImage);
                 }
             }
             catch (Exception ex)
             {
-                pictureBoxCurrent.Image = (Bitmap)ImageUtilities.Base64ToImage(ImageUtilities.BrokenImage());
+                pictureBoxCurrent.Image = (Bitmap)ImageUtilities.Base64ToImage(ImageUtilities.DefaultBrokenImage);
             }
         }
 
@@ -479,17 +479,17 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 var list = _liteDB.FindAllFileItems();
                 foreach (var fItem in list)
                 {
-                    if (fItem.FullName.Contains(textBox1.Text, StringComparison.OrdinalIgnoreCase))
+                    if (fItem.ItemFileInfo.FullName.Contains(textBox1.Text, StringComparison.OrdinalIgnoreCase))
                     {
-                        fItem.FullName = fItem.FullName.Replace(textBox1.Text, textBox2.Text);
-                        fItem.ItemFileInfo.Refresh();
+                        fItem.FullName = fItem.ItemFileInfo.FullName.Replace(textBox1.Text, textBox2.Text);
+                        //fItem.ItemFileInfo.Refresh();
                         await _liteDB.UpsertAsync(fItem);
-                        if (Directory.Exists(fItem.FullName))
+                        if (Directory.Exists(fItem.ItemFileInfo.FullName))
                         {
                             Item item = await _liteDB.FindItemAsync(fItem.ImdbId);
                             if (item != null && item.Type == "series")
                             {
-                                SetStatusLabelText($"Updating path for {fItem.FullName}");
+                                SetStatusLabelText($"Updating path for {fItem.ItemFileInfo.FullName}");
 
                                 item.TomatoUrl = fItem.ItemFileInfo.FullName;
                                 await _liteDB.UpsertAsync(item);
@@ -497,7 +497,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         }
 
                     }
-                    var txt = $"{fItem.ItemFileInfo.Exists} - {fItem.FullName}";
+                    var txt = $"{File.Exists(fItem.ItemFileInfo.FullName)} - {fItem.ItemFileInfo.FullName}";
                     builder.AppendLine(txt);
                 }
 
@@ -542,20 +542,20 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         FileItem fItem = new FileItem(imdbid, folder.Substring(0, folder.LastIndexOf("}") + 1));
 
 
-                        if (Directory.Exists(fItem.FullName))
+                        if (Directory.Exists(fItem.ItemFileInfo.FullName))
                         {
                             await _liteDB.UpsertAsync(fItem);
                             Item item = await _liteDB.FindItemAsync(imdbid);
                             if (item != null && item.Type == "series")
                             {
-                                SetStatusLabelText($"Updating path for {fItem.FullName}");
+                                SetStatusLabelText($"Updating path for {fItem.ItemFileInfo.FullName}");
 
-                                item.TomatoUrl = fItem.FullName;
+                                item.TomatoUrl = fItem.ItemFileInfo.FullName;
                                 await _liteDB.UpsertAsync(item);
                                
                             }
                         }
-                        var txt = $"{Directory.Exists(folder)} - {fItem.FullName}";
+                        var txt = $"{Directory.Exists(folder)} - {fItem.ItemFileInfo.FullName}";
                         builder.AppendLine(txt);
                     }
 

@@ -4,6 +4,7 @@ using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Microsoft.VisualBasic.FileIO;
+using MovieFileLibrary;
 using System.Data;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -195,7 +196,7 @@ namespace Kolibri.net.SilverScreen.Forms
         /// </summary>
         /// <param name="collection"></param>
         /// <param name="destinationPath"></param>
-        private void MoveFiles(FileInfo[] collection, DirectoryInfo destinationPath=null)
+        private void MoveFiles(FileInfo[] collection, DirectoryInfo destinationPath = null)
         {
 
             var numerrors = 0;
@@ -208,9 +209,10 @@ namespace Kolibri.net.SilverScreen.Forms
                     int year = 1;
                     DirectoryInfo destination = null;
                     if (destinationPath == null)
-                    { var moviefile = MovieUtilites.DetectMovieFile(file);
+                    {
+                        var moviefile = MovieUtilites.DetectMovieFile(file);
                         year = moviefile.Year.ToInt().GetValueOrDefault();
-                        destination = new DirectoryInfo(Path.Combine(file.Directory.FullName+"_moved", year.ToString(),Path.GetFileNameWithoutExtension(file.FullName)));
+                        destination = new DirectoryInfo(Path.Combine(file.Directory.FullName + "_moved", year.ToString(), Path.GetFileNameWithoutExtension(file.FullName)));
                         if (!destination.Exists) destination.Create();
                         System.IO.File.Move(file.FullName, Path.Combine(destination.FullName, file.Name));
                         continue;
@@ -273,18 +275,28 @@ namespace Kolibri.net.SilverScreen.Forms
             SetLabelText($"Moving operation is completed, number of accumilated errors: {numerrors} ");
         }
         #region Fast? finn ut
-        private void MoveFoldersToMovieYear(FileInfo[] movieFiles, DirectoryInfo destinationPath)
+        private void MoveFoldersToMovieYear(FileInfo[] movieFiles, DirectoryInfo destinationPath, bool useFilenameNotFoldername = false)
         {
             foreach (FileInfo file in movieFiles)
             {
                 try
                 {
-                    int year = Kolibri.net.Common.Utilities.MovieUtilites.GetYear(file.DirectoryName);
-                    var destination = new DirectoryInfo(Path.Combine(destinationPath.FullName, year.ToString(), file.Directory.Name));
+                    DirectoryInfo destination;
+                    int year = 1;
+                    if (useFilenameNotFoldername)
+                    {
+                        year = MovieUtilites.GetYear(file.Name);
+                        destination = new DirectoryInfo(Path.Combine(destinationPath.FullName, year.ToString(), file.Name));
+                    }
+                    else
+                    {
+                        year = Kolibri.net.Common.Utilities.MovieUtilites.GetYear(file.DirectoryName);
+                        destination = new DirectoryInfo(Path.Combine(destinationPath.FullName, year.ToString(), file.Directory.Name));
+                    }
                     string sourceDirectory = file.Directory.FullName;// Replace with your source folder path
-                    DirectoryInfo destinationDirectory = new DirectoryInfo( destination.FullName); // Replace with your destination folder path
+                    DirectoryInfo destinationDirectory = new DirectoryInfo(destination.FullName); // Replace with your destination folder path
                     if (!destinationDirectory.Parent.Exists) destinationDirectory.Parent.Create();
-               
+
 
                     try
                     {
@@ -292,8 +304,15 @@ namespace Kolibri.net.SilverScreen.Forms
                         if (Directory.Exists(sourceDirectory))
                         {
                             // Move the directory and its contents
-                            Directory.Move(sourceDirectory, destinationDirectory.FullName);
-                            
+                            if (useFilenameNotFoldername)
+                            {
+                                File.Move(file.FullName, destination.FullName);
+                            }
+                            else
+                            {
+                                Directory.Move(sourceDirectory, destinationDirectory.FullName);
+                            }
+
                             SetLabelText($"Folder '{sourceDirectory}' and its contents moved to '{destinationDirectory}'.");
                         }
                         else
@@ -321,7 +340,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 SetLabelText(ex.Message);
             }
-            
+
         }
 
 
@@ -534,7 +553,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
                     toolStripStatusLabel1.Text = message;
                     Thread.Sleep(3);
-             
+
                 }
             }
             catch (Exception ex)
@@ -547,9 +566,10 @@ namespace Kolibri.net.SilverScreen.Forms
         private void buttonMovieFolder_Click(object sender, EventArgs e)
         {
             string source = textBoxSource.Text;
-            if (!Directory.Exists(source)) {
+            if (!Directory.Exists(source))
+            {
                 source = _settings.UserFilePaths.MoviesSourcePath;
-                
+
             }
             DirectoryInfo folder = FileUtilities.LetOppMappe(source, "Let opp mappen med filmer som skal få nye mapper basert på filnavn");////.Replace(@"\\", @"\"));
             if (folder != null && folder.Exists)
@@ -580,9 +600,61 @@ namespace Kolibri.net.SilverScreen.Forms
             try
             {
                 var path = (linkLabelMovieFolder as LinkLabel).Tag as DirectoryInfo;
-              var  fList =  FileUtilities.GetFiles(path, MovieUtilites.MoviesCommonFileExt(true), System.IO.SearchOption.AllDirectories);
+                var fList = FileUtilities.GetFiles(path, MovieUtilites.MoviesCommonFileExt(true), System.IO.SearchOption.AllDirectories);
                 var fiList = fList.Select(x => new FileInfo(x)).ToArray();
-                MoveFoldersToMovieYear(fiList, new DirectoryInfo(Path.Combine(path.FullName, "_byYear")));
+                MoveFoldersToMovieYear(fiList, new DirectoryInfo(Path.Combine(path.FullName, "_byYear")), checkBoxFilename.Checked);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+        private void buttonMovieFilesMoveFolders_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var path = (linkLabelMovieFolder as LinkLabel).Tag as DirectoryInfo;
+                var fList = FileUtilities.GetFiles(path, MovieUtilites.MoviesCommonFileExt(true), System.IO.SearchOption.AllDirectories);
+                var fiList = fList.Select(x => new FileInfo(x)).ToArray();
+
+                foreach (var item in fiList)
+                {
+                    try
+                    {
+                        FileInfo destination = new FileInfo(Path.Combine(item.Directory.FullName,
+                                Path.GetFileNameWithoutExtension(item.FullName),
+                                item.Name));
+
+                        if (!destination.Directory.Exists)
+                            destination.Directory.Create();
+
+
+
+
+
+                        // Check if the source directory exists
+                        if (item.Exists)
+                        {
+                            File.Move(item.FullName, destination.FullName);
+                            SetLabelText($"File '{item.FullName}'  moved to '{destination.FullName}'.");
+                        }
+                        try
+                        {
+                            FileUtilities.DeleteEmptyDirs(item.Directory);
+                        }
+                        catch (Exception ex)
+                        {
+                            SetLabelText(ex.Message);
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        SetLabelText($"An unexpected error occurred: {ex.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {

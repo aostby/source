@@ -94,10 +94,13 @@
             // 
             // labelNumItemsDB
             // 
+            labelNumItemsDB.AutoEllipsis = true;
             labelNumItemsDB.AutoSize = true;
             labelNumItemsDB.Location = new Point(12, 38);
+            labelNumItemsDB.MaximumSize = new Size(420, 15);
+            labelNumItemsDB.MinimumSize = new Size(420, 15);
             labelNumItemsDB.Name = "labelNumItemsDB";
-            labelNumItemsDB.Size = new Size(64, 15);
+            labelNumItemsDB.Size = new Size(420, 15);
             labelNumItemsDB.TabIndex = 5;
             labelNumItemsDB.TabStop = true;
             labelNumItemsDB.Text = "Antall (DB)";
@@ -225,6 +228,7 @@
             checkBoxTristate.Text = "Ingen endring, alt,  manglende";
             checkBoxTristate.ThreeState = true;
             checkBoxTristate.UseVisualStyleBackColor = true;
+            checkBoxTristate.CheckStateChanged += checkBoxTristate_CheckStateChanged;
             // 
             // MyMoviesForm
             // 

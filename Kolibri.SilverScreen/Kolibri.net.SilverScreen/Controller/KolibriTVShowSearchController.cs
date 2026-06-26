@@ -159,10 +159,10 @@ namespace Kolibri.net.SilverScreen.Controller
                     item = itemList.Where(x => x.Title.Equals(seriesName)).FirstOrDefault();
                     if (item == null)
                     {
-                        var il = _liteDB.FindAllFileItems().ToList().FindAll(x => Path.GetFileNameWithoutExtension(x.FullName).ToArray().First() == seriesName.ToArray().First());
+                        var il = _liteDB.FindAllFileItems().ToList().FindAll(x => Path.GetFileNameWithoutExtension(x.ItemFileInfo.FullName).ToArray().First() == seriesName.ToArray().First());
                         foreach (var fi in il)
                         {
-                            var fiName = MovieUtilites.GetMovieTitle(fi.FullName);
+                            var fiName = MovieUtilites.GetMovieTitle(fi.ItemFileInfo.FullName);
                             if (fiName.Equals(seriesName))
                             { item = await _liteDB.FindItemAsync(fi.ImdbId); break; }
                         }
@@ -980,7 +980,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 {
                     foreach (FileItem fi in _liteDB.FindAllFileItems(dir))
                     {
-                        SetStatusLabelText($"Sletter {fi.FullName} fra databasen.", "DELETE");
+                        SetStatusLabelText($"Sletter {fi.ItemFileInfo.FullName} fra databasen.", "DELETE");
                         _liteDB.DeleteItem(fi.ImdbId);
                         _liteDB.Delete(fi);
                     }

@@ -97,7 +97,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (radioButtonFilterNoneExistant.Checked)
                 {
                     diff = _fileItems.Count();
-                    var filtered = _fileItems.Where(x => !x.ItemFileInfo.Exists);
+                    var filtered = _fileItems.Where(x => !(File.Exists( x.ItemFileInfo.FullName)));
                     if (filtered != null)
                     {
                         diff = filtered.Count();
@@ -119,7 +119,7 @@ namespace Kolibri.net.SilverScreen.Forms
                             teller++;
                             if (sublist.Contains(srch)) continue;
 
-                            var has = _fileItems.ToList().Find(cus => cus.FullName.Equals(srch));
+                            var has = _fileItems.ToList().Find(cus => cus.ItemFileInfo.FullName.Equals(srch));
                             if (has == null)
                             {
 

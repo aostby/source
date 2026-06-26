@@ -3,6 +3,7 @@ using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Tools;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
 using Kolibri.net.SilverScreen.Controls;
 using Kolibri.net.SilverScreen.IMDBForms;
@@ -11,6 +12,7 @@ using OMDbApiNet.Model;
 using System.Data;
 using System.Reflection;
 using static Kolibri.net.SilverScreen.Controls.Constants;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Kolibri.net.SilverScreen.Forms
 {
@@ -24,13 +26,20 @@ namespace Kolibri.net.SilverScreen.Forms
         private PlexController _plex;
 
         private readonly UserSettings _userSettings;
+        /// <summary>
+        /// Metadata imdbid for en filsti
+        /// </summary>
         private IEnumerable<FileItem> _fileItems;
+        /// <summary>
+        /// fysiske filer som finnes
+        /// </summary>
         private List<Item> _searchFiles;
         private List<string> _currentSearch = new List<string>();
         private MoviesSearchController _searchController;
         private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
         private bool isProcessing;
 
+        [Obsolete("Just for initializing, do not use, use with usersettings instead")]
         public MyMoviesForm()
         {
             InitializeComponent();
@@ -40,13 +49,15 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             _userSettings = userSettings;
             InitializeComponent();
+
             StartUp();
-        } 
+
+        }
 
         private async void StartUp()
         {
             _plex = new PlexController(_userSettings);
-
+            
             var progress = ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
             _searchController = new MoviesSearchController(_userSettings, plex: _plex, progress: progress);
             _searchController.ProgressUpdated += OnProgressUpdated;
@@ -73,16 +84,13 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             radioButtonShowGrid.Checked = true;
 
-            //var res = new DirectoryInfo(_userSettings.UserFilePaths.MoviesSourcePath); //await GetPathSearchFiles();
-            //_fileItems = _liteDB.FindAllFileItems(res);
-            //_fileItems = _fileItems.Where(x => x.ItemFileInfo.Exists);
             var list = await _liteDB.FindAllItems();
-            
-            _fileItems = list.ToList().Where(x => !string.IsNullOrEmpty(x.TomatoUrl)&&x.TomatoUrl.StartsWith(_userSettings.UserFilePaths.MoviesSourcePath) ).Select(data => new FileItem(data.ImdbId, data.TomatoUrl)).ToList();
-            
+
+            _fileItems = list.ToList().Where(x => !string.IsNullOrEmpty(x.TomatoUrl) && x.TomatoUrl.StartsWith(_userSettings.UserFilePaths.MoviesSourcePath)).Select(data => new FileItem(data.ImdbId, data.TomatoUrl)).ToList();
+
             buttonVelg_Click(null, null);
         }
-        
+
 
         private async void SetLabelText(string message)
         {
@@ -105,26 +113,21 @@ namespace Kolibri.net.SilverScreen.Forms
         /// henter filer fra inneværende sti
         /// </summary>
         /// <returns></returns>
-        private async Task<DirectoryInfo> GetPathSearchFiles(DirectoryInfo dInfo = null)
+        private async Task<DirectoryInfo> SetPathSearchFiles(DirectoryInfo dInfo = null)
         {
-
-            if (dInfo == null)
-                dInfo =new DirectoryInfo( GetCurentPath());
+            if (dInfo == null) dInfo = new DirectoryInfo(GetCurentPath());
             try
             {
-               
-               //     _currentSearch=FileUtilities.GetFiles(dInfo, "*.*", true).Select(x => x.FullName.ToString()).   ToList();
-                  _currentSearch = await MovieUtilites.GetCommonMovieFiles(dInfo);
+                _currentSearch = await MovieUtilites.GetCommonMovieFiles(dInfo);
 
-                    //Filter
-                    _currentSearch = _currentSearch.Where(cdr => !cdr?.Contains("@__thumb") == true).ToList();
-                 
+                //Filter
+                _currentSearch = _currentSearch.Where(cdr => !cdr?.Contains("@__thumb") == true).ToList();
             }
             catch (Exception)
             {
                 _currentSearch = new List<string>();
             }
-            
+
             return dInfo;
         }
 
@@ -144,10 +147,12 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private async void buttonOpenFolder_Click(object sender, EventArgs e)
         {
-            SetForm(new Form());Thread.SpinWait(5);
-           buttonOpenFolder.Enabled = false;
-            radioButtonShowGrid.Checked = true;         
-            groupBoxValg.Enabled = false; 
+            SetForm(new Form());
+            SetForm(new Form(), splitContainer1.Panel1);
+            Thread.SpinWait(5);
+            buttonOpenFolder.Enabled = false;
+            radioButtonShowGrid.Checked = true;
+            groupBoxValg.Enabled = false;
 
             _searchFiles = new List<Item>();
             DirectoryInfo dInfo = null;
@@ -164,8 +169,14 @@ namespace Kolibri.net.SilverScreen.Forms
             if (dInfo != null && dInfo.Exists)
             {
                 SetLabelText($@"Searching for files in {dInfo.Name} ({dInfo.FullName})");
-              //  _ = await GetPathSearchFiles(dInfo);
-                _= await SetCurrentPath(dInfo, checkBoxTristate.CheckState);
+
+                if (checkBoxTristate.CheckState == CheckState.Checked)
+                {
+                    if (
+                         MessageBox.Show("Alle metadata (imdbid) knyttet til kildemappe, blir slettet ved valg av kildemappe", "Fortsette?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                }
+
+                _ = await SetCurrentPath(dInfo, checkBoxTristate.CheckState);
                 groupBoxValg.Enabled = !groupBoxValg.Enabled;
                 buttonVelg_Click(null, null);
             }
@@ -175,7 +186,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private async Task<DirectoryInfo> SetCurrentPath(DirectoryInfo dInfo, CheckState tristate = CheckState.Indeterminate)
         {
-            await GetPathSearchFiles(dInfo);
+            await SetPathSearchFiles(dInfo);
 
             _userSettings.UserFilePaths.MoviesSourcePath = dInfo.FullName;
             _liteDB.Update(_userSettings);
@@ -183,7 +194,7 @@ namespace Kolibri.net.SilverScreen.Forms
             textBoxSource.Text = dInfo.FullName;
             SetLabelText($"Path - set to {dInfo.FullName}");
 
-            _searchFiles= await _searchController.SearchForMovies(dInfo, tristate);
+            _searchFiles = await _searchController.SearchForMovies(dInfo, tristate);
             if (!string.IsNullOrWhiteSpace(_searchController.CurrentLog.ToString()))
             {
                 SetLabelText($"Log contains {_searchController.CurrentLog.ToString().Split(Environment.NewLine).Length} lines");
@@ -193,8 +204,8 @@ namespace Kolibri.net.SilverScreen.Forms
             _fileItems = _liteDB.FindAllFileItems(dInfo);
 
             var count = _fileItems.Count();
-            var diff =   count -_searchFiles.Count;
-            labelNumItemsDB.Text = $"{count} found in LiteDB [{dInfo.Name}] (diff: {diff} - folder: {_searchFiles.Count})";
+            var diff = count - _searchFiles.Count;
+            labelNumItemsDB.Text = $"{count} found in LiteDB (diff: {diff} - folder: {_searchFiles.Count})  [{dInfo.Name}]";
             labelNumItemsDB.Tag = dInfo;
 
             return dInfo;
@@ -261,7 +272,7 @@ namespace Kolibri.net.SilverScreen.Forms
             Form form;
             SplitterPanel panel = setPanel;
             FileInfo fi = null;
-            if (checkBoxDetailType.Checked) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(mm as Item, _liteDB, tmdb: _TMDB, imagecache: _imageCache); }
+            if (checkBoxDetailType.Checked) { form = new Kolibri.net.SilverScreen.Forms.DetailsFormItem(mm as Item, _liteDB, tmdb: _TMDB, imagecache: _imageCache, plex: _plex); }
             else
             {
                 Item? item = (Item)(mm as Item);
@@ -272,10 +283,10 @@ namespace Kolibri.net.SilverScreen.Forms
                     {
 
                         var test = await _liteDB.FindByFileNameAsync(fi);
-                        item?.TomatoUrl = test?.FullName;
+                        item?.TomatoUrl = test?.ItemFileInfo.FullName;
                     }
                 }
-                catch (Exception) { } 
+                catch (Exception) { }
 
                 form = new MovieForm(_userSettings, mm as Item, fi);
             }
@@ -392,17 +403,19 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
-        private async  void buttonVelg_Click(object sender, EventArgs e)
+        private async void buttonVelg_Click(object sender, EventArgs e)
         {
             if (radioButtonShowGrid.Checked)
             {
                 var list = await _liteDB.FindItemsAsync(_fileItems);
                 if (list != null && list.Count > 0)
                 {
-                    if (checkBox1.Checked) 
-                    { TreeViewItemsForm form = new TreeViewItemsForm(list);
+                    if (checkBox1.Checked)
+                    {
+                        TreeViewItemsForm form = new TreeViewItemsForm(list);
                         form.CurrentItemChanged += OnCurrentItemChanged;
-                        SetForm(form, splitContainer1.Panel1); }
+                        SetForm(form, splitContainer1.Panel1);
+                    }
                     else { ShowGridForDBItems(list); }
                 }
                 else
@@ -425,9 +438,8 @@ namespace Kolibri.net.SilverScreen.Forms
                 SetForm(form);
 
             }
-            else if (radioButtonDuplicates.Checked) {
-
-
+            else if (radioButtonDuplicates.Checked)
+            {
                 SetLabelText("Searching for dupes.... please wait");
                 SameFileController contr = new SameFileController(new DirectoryInfo(textBoxSource.Text));
                 var list = contr.GetDupes();
@@ -438,44 +450,44 @@ namespace Kolibri.net.SilverScreen.Forms
                     Form form = Common.FormUtilities.Controller.OutputFormController.DataTableForm($"Dupes {ds.Tables[0].Rows.Count}", ds.Tables[0], ds.Tables[0].Columns[0], new Size(50, 50));
                     SetForm(form);
                 }
-                else {
+                else
+                {
                     SetForm(Common.FormUtilities.Controller.OutputFormController.RichTextBoxForm("Dupes list", "No dupes found.", new Size(50, 50)));
                 }
-                
-                return; 
+
+                return;
             }
-
-
-
             else if (radioButtonShowDiff.Checked || radioButtonEditDiff.Checked)
             {
                 try
                 {
-                    List<string> filepaths = _fileItems.Select(f => f.FullName).ToList();
+                    List<string> filepaths = _fileItems.Select(f => f.ItemFileInfo.FullName).ToList();
                     List<string> difflist = _currentSearch.Except(_searchFiles.Select(x => x.TomatoUrl).ToList()).ToList();
-                //    var liste = difflist.FindAll(x => x.Contains("CD", StringComparison.OrdinalIgnoreCase));
-                //    difflist = difflist.Except(liste).ToList();
+                    //    var liste = difflist.FindAll(x => x.Contains("CD", StringComparison.OrdinalIgnoreCase));
+                    //    difflist = difflist.Except(liste).ToList();
 
                     if (difflist != null && difflist.Count == 0)
                     {
-                        difflist = _fileItems.Where(x => !x.ItemFileInfo.Exists).Select(f => f.FullName).ToList();
+                        difflist = _fileItems.Where(x => !(File.Exists( x.ItemFileInfo.FullName))).Select(f => f.ItemFileInfo.FullName).ToList();
                     }
-                    else if (difflist.Count >= 10) {
-                    
-                    } 
+                    else if (difflist.Count >= 10)
+                    {
+
+                    }
 
                     if (radioButtonShowDiff.Checked)
                     {
                         System.Data.DataTable datatable = new System.Data.DataTable();
-                       
+
                         datatable.Columns.Add("File", typeof(String)); datatable.Columns.Add("FullName", typeof(String));
-                        for (int i = 0; i < difflist.Count(); i++) {  datatable.Rows.Add(Path.GetFileName(difflist[i]) ,difflist[i]); }
+                        for (int i = 0; i < difflist.Count(); i++) { datatable.Rows.Add(Path.GetFileName(difflist[i]), difflist[i]); }
                         Form form = new Form();
                         if (datatable.Rows.Count > 0)
                         {
                             form = Common.FormUtilities.Controller.OutputFormController.DataTableForm("Diff list", datatable, datatable.Columns[1], new Size(50, 50));
                         }
-                        else {
+                        else
+                        {
                             form = Common.FormUtilities.Controller.OutputFormController.RichTextBoxForm("Diff list", "No diff found", new Size(50, 50));
                         }
                         SetForm(form);
@@ -511,17 +523,37 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
-        private void OnCurrentItemChanged(object? sender, EventArgs e)
+        private async void OnCurrentItemChanged(object? sender, EventArgs e)
         {
-            
+
             if (isProcessing) return;
             isProcessing = true;
             try
             {
                 var tvi = (sender as TreeViewItemsForm);
-                if (tvi.Visible && tvi.CurrentItem!=null)
+                if (tvi.Visible && tvi.CurrentItem != null)
                 {
-                    SetForm(tvi.CurrentItem, splitContainer1.Panel2);
+                    var checkBox = (tvi.Controls.Find("radioButtonActor", true).FirstOrDefault() as RadioButton);
+                    if (checkBox != null && checkBox.Checked) {
+
+                        var credits = await _liteDB.GetCredits(tvi.CurrentItem.ImdbId);
+                        if (credits == null)
+                        {
+                            credits = await _TMDB.GetMovieCredits(tvi.CurrentItem.Title, tvi.CurrentItem.Year.ToInt32());
+                            if (credits != null && credits.Cast.Count >= 1)
+                            {
+                                _ = await _liteDB.Upsert(tvi.CurrentItem.ImdbId, credits);
+                            }
+                        }
+
+
+                        var form = await CreatateFormController.GenerateFormFromActors(credits, tvi.CurrentItem, _imageCache);
+                        SetForm(form, splitContainer1.Panel2);
+                    }
+                    else
+                    { 
+                        SetForm(tvi.CurrentItem, splitContainer1.Panel2);
+                    }
                 }
             }
             catch (Exception ex)
@@ -542,6 +574,34 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception ex)
             { SetLabelText(ex.Message); }
+        }
+
+        private void checkBoxTristate_CheckStateChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                var state = (sender as CheckBox).CheckState ;
+                string text = $"{state} er valgt. ";
+
+                switch (state)  
+                {
+                    case CheckState.Unchecked:
+                        text += "Ingen endringer ved valg av kildemappe";
+                        break;
+                    case CheckState.Checked:
+                        text += "Alle innslag (imdbid) knyttet til kildemappe, blir slettet ved valg av kildemappe";
+                        break;
+                    case CheckState.Indeterminate:
+                        text += "Alle nye filer blir lagt til eller oppdatert ved valg av kildemappe";
+                        break;
+                    default:
+                        break;
+                }
+                SetLabelText(text);
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
 }

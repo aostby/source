@@ -3,6 +3,7 @@ using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controls;
+using LiteDB;
 using OMDbApiNet.Model;
 using System.Data;
 
@@ -309,7 +310,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     else if (_seasonEpisode != null)
                     {
                         var t = await _liteDB.FindFileAsync(_seasonEpisode.ImdbId);
-                        path = t.FullName;
+                        path = t.ItemFileInfo.FullName;
                     }
                 
                     if (Path.Exists(path))
@@ -521,7 +522,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 throw new NotImplementedException();
 
-                FileInfo info = _itemPath.ItemFileInfo;
+                FileInfo info = new FileInfo(_itemPath.ItemFileInfo.FullName)    ;
 
 
                 //FileInfo srtInfo = new FileInfo(Path.ChangeExtension(_itemPath.FullName, ".srt"));
@@ -556,7 +557,7 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"List contained no elements for this path.{Environment.NewLine}{ex.Message}. Try searching for elements and try again", _itemPath.FullName);
+                MessageBox.Show($"List contained no elements for this path.{Environment.NewLine}{ex.Message}. Try searching for elements and try again", _itemPath.ItemFileInfo.FullName);
             }
         }
     }

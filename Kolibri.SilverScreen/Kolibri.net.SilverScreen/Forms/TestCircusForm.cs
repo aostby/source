@@ -71,12 +71,12 @@ namespace Kolibri.net.SilverScreen.Forms
                     var list = _liteDB.FindAllFileItems();
                     foreach (var fItem in list)
                     {
-                        if (fItem.FullName.Contains(textBox1.Text, StringComparison.OrdinalIgnoreCase))
+                        if (fItem.ItemFileInfo.FullName.Contains(textBox1.Text, StringComparison.OrdinalIgnoreCase))
                         {
-                            fItem.FullName = fItem.FullName.Replace(textBox1.Text, textBox2.Text);
+                            fItem.FullName = fItem.ItemFileInfo.FullName.Replace(textBox1.Text, textBox2.Text);
                             await _liteDB.UpsertAsync(fItem);
                         }
-                        var txt = $"{fItem.ItemFileInfo.Exists} - {fItem.FullName}";
+                        var txt = $"{File.Exists(fItem.ItemFileInfo.FullName)} - {fItem.ItemFileInfo.FullName}";
                         builder.AppendLine(txt);
                     }
                 }
