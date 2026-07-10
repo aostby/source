@@ -1,9 +1,13 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
+using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.Utilities.Extensions;
 using OMDbApiNet.Model;
 using System.ComponentModel;
 using System.Data;
+using ZstdSharp.Unsafe;
+using static Kolibri.net.SilverScreen.Controls.Constants;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using ToolTip = System.Windows.Forms.ToolTip;
 
@@ -52,15 +56,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private void Init()
         {
-            _cms = new ContextMenuStrip();
-            _cms.Items.Add("Expand all", null, (s, e) =>
-            {
-                treeView1.ExpandAll();
-            });
-            _cms.Items.Add("Collapse all", null, (s, e) =>
-            {
-                treeView1.CollapseAll();
-            });
+            CreateContextMenu();
 
             groupBoxOrderbyText = groupBoxOrder.Text;
             treeView1.ImageList = imageListIcons;
@@ -89,6 +85,63 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception)
             { }
+
+            void CreateContextMenu()
+            {
+                _cms = new ContextMenuStrip();
+                _cms.Items.Add("Expand all", null, (s, e) =>
+                {
+                    treeView1.ExpandAll();
+                });
+                _cms.Items.Add("Collapse all", null, (s, e) =>
+                {
+                    treeView1.CollapseAll();
+                });
+
+                _cms.Items.Add("-");
+
+                _cms.Items.Add("Go to Current", null, (s, e) =>
+                {
+                    try
+                    {
+                        TreeNode highlightedNode = treeView1.SelectedNode;
+                        if (highlightedNode != null && highlightedNode.Tag != null)
+                        {
+                            CurrentItem = (Item)highlightedNode.Tag;
+                            FileUtilities.OpenFolderHighlightFile(CurrentItem.TomatoUrl);
+                            this.treeView1_NodeMouseDoubleClick(highlightedNode, new TreeNodeMouseClickEventArgs(highlightedNode, MouseButtons.Right, 1,
+                                highlightedNode.Bounds.Location.X, highlightedNode.Bounds.Location.Y));
+                        }
+                    }
+                    catch (Exception ex) { }
+                });
+                _cms.Items.Add("-");
+
+                _cms.Items.Add("Move to Folder", null, (s, e) =>
+                {
+                    try
+                    {
+                        TreeNode highlightedNode = treeView1.SelectedNode;
+                        if (highlightedNode != null && highlightedNode.Tag != null)
+                        {
+                            CurrentItem = (Item)highlightedNode.Tag;
+
+                            DirectoryInfo sourceFolder = new DirectoryInfo(Path.GetDirectoryName(CurrentItem.TomatoUrl));
+                            if (sourceFolder.Exists)
+                            {
+                                // Call moveform with this folder
+                                var form = new SortMultimediaDesktopForm(MultimediaType.movie, null, sourceFolder.FullName, Environment.CurrentDirectory);
+                                form.ShowDialog(this);
+                            }
+                            else { throw new FileNotFoundException(sourceFolder.FullName); }
+                        }
+                    }
+                    catch (Exception ex) {
+
+                        MessageBox.Show(ex.Message, ex.GetType().Name);
+                    }
+                });
+            }
         }
 
         private void Radio_CheckedChanged(object sender, EventArgs e)
@@ -133,6 +186,10 @@ namespace Kolibri.net.SilverScreen.Forms
 
             else if (radioButtonActor.Checked)
                 BuildByActor();
+
+
+            else if (radioButtonRated.Checked)
+                BuildByRated();
 
             treeView1.EndUpdate();
             try
@@ -210,6 +267,48 @@ namespace Kolibri.net.SilverScreen.Forms
                     continue;
 
                 var act = item.Actors.Split(',');
+
+                foreach (var g in act)
+                {
+                    var genre = g.Trim();
+
+                    if (!actoreDict.ContainsKey(genre))
+                        actoreDict[genre] = new List<OMDbApiNet.Model.Item>();
+
+                    actoreDict[genre].Add(item);
+                }
+            }
+
+            foreach (var kvp in actoreDict.OrderBy(g => g.Key))
+            {
+                TreeNode parent = new TreeNode(kvp.Key);
+
+                foreach (var item in kvp.Value.OrderBy(t => t.Title))
+                {
+                    parent.Nodes.Add(new TreeNode($"{item.Title} ({item.Year})")
+                    {
+                        Tag = item,
+                        ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower()),
+                        ToolTipText = $"{item.TomatoUrl}"
+                    });
+                }
+
+                treeView1.Nodes.Add(parent);
+            }
+        }
+
+
+        private void BuildByRated()
+        {
+
+            var actoreDict = new Dictionary<string, List<OMDbApiNet.Model.Item>>();
+
+            foreach (var item in _items)
+            {
+                if (string.IsNullOrWhiteSpace(item.Rated))
+                    continue;
+
+                var act = item.Rated.Split(',');
 
                 foreach (var g in act)
                 {

@@ -207,7 +207,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 var test = await _liteDB.FindByFileNameAsync(file);
                 if (test != null && _updateTriState !=CheckState.Checked)
                 {
-                    movie = await _liteDB.FindItemAsync(test.ImdbId);
+                    movie = await _liteDB.GetItemAsync(test.ImdbId);
                     if (movie != null)
                     {
                         movie.TomatoUrl = file.FullName;
@@ -232,7 +232,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                 Movie tmdbMovie = _TMDB.GetMovie(tLibList[0].Id);
                                 if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                                 {
-                                    movie = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                                    movie = await _liteDB.GetItemAsync(tmdbMovie.ImdbId);
                                     if (movie == null)
                                         movie = await _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
 
@@ -267,7 +267,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                         if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                                             if (_updateTriState == null)
                                             {
-                                                movie = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                                                movie = await _liteDB.GetItemAsync(tmdbMovie.ImdbId);
                                             }
                                         if (movie == null)
                                         {

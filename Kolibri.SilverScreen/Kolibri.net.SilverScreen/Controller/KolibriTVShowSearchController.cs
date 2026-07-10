@@ -76,11 +76,11 @@ namespace Kolibri.net.SilverScreen.Controller
                 if (fList.Count() == 0) continue;
                 Item item = null;
                 string imdbid = fList.FirstOrDefault().ImdbIdFromDirectoryName();
-                if (imdbid != null) { item = await _liteDB.FindItemAsync(imdbid); }
+                if (imdbid != null) { item = await _liteDB.GetItemAsync(imdbid); }
                 if (item == null && imdbid != null) { item = _OMDB.GetItemByImdbId(imdbid);
                     
 
-                    if (item != null) { await _liteDB.UpsertAsync(item); item = await _liteDB.FindItemAsync(item.ImdbId); } }
+                    if (item != null) { await _liteDB.UpsertAsync(item); item = await _liteDB.GetItemAsync(item.ImdbId); } }
                 if (item != null)
                 {
                     var show = await GetShowByIdAsync(imdbid);
@@ -146,7 +146,7 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 if (!string.IsNullOrEmpty(seriesName) && seriesName.StartsWith("tt"))
                 {
-                    item = await _liteDB.FindItemAsync(seriesName);
+                    item = await _liteDB.GetItemAsync(seriesName);
                     if (item != null) return item;
                 }
                 try { item = await _liteDB.FindItemByTitle(seriesName, year, OMDbApiNet.OmdbType.Series.ToString().ToLower()) ;
@@ -164,7 +164,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         {
                             var fiName = MovieUtilites.GetMovieTitle(fi.ItemFileInfo.FullName);
                             if (fiName.Equals(seriesName))
-                            { item = await _liteDB.FindItemAsync(fi.ImdbId); break; }
+                            { item = await _liteDB.GetItemAsync(fi.ImdbId); break; }
                         }
                     }
                 }
@@ -178,7 +178,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         if (seriesSearchItem == null)
                             seriesSearchItem = seriesSearchItemList.FirstOrDefault();
 
-                        try { item = await _liteDB.FindItemAsync(seriesSearchItem.ImdbId); } catch (Exception ex) { }
+                        try { item = await _liteDB.GetItemAsync(seriesSearchItem.ImdbId); } catch (Exception ex) { }
 
                         if (item == null && seriesSearchItem != null)
                         {
@@ -244,7 +244,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 var test = await _liteDB.FindByFileNameAsync(file);
                 if (test != null && _updateTriState == null || _updateTriState == false)
                 {
-                    movie = await _liteDB.FindItemAsync(test.ImdbId);
+                    movie = await _liteDB.GetItemAsync(test.ImdbId);
                     if (movie != null)
                     {
                         movie.TomatoUrl = file.FullName;
@@ -269,7 +269,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                 Movie tmdbMovie = _TMDB.GetMovie(tLibList[0].Id);
                                 if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                                 {
-                                    movie = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                                    movie = await _liteDB.GetItemAsync(tmdbMovie.ImdbId);
                                     if (movie == null)
                                         movie = await _OMDB.GetMovieByIMDBidAsync(tmdbMovie.ImdbId);
 
@@ -303,7 +303,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                         if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                                             if (_updateTriState == null)
                                             {
-                                                movie = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                                                movie = await _liteDB.GetItemAsync(tmdbMovie.ImdbId);
                                             }
                                         if (movie == null)
                                         {
@@ -390,7 +390,7 @@ namespace Kolibri.net.SilverScreen.Controller
         public async Task<KolibriTVShow> GetShowByIdAsync(string imdbid)
         {
             if (imdbid.IsNumeric()) throw new Exception("Probably not an ImdbId, they start with tt: " + imdbid);
-            Item item = await _liteDB.FindItemAsync(imdbid);
+            Item item = await _liteDB.GetItemAsync(imdbid);
             if (item == null) throw new NotFoundException(new TMDbStatusMessage() { StatusCode = 401, StatusMessage = $"Item {imdbid} not found in local database" });
 
             KolibriTVShow tv = new KolibriTVShow() { Item = item };
@@ -544,7 +544,7 @@ namespace Kolibri.net.SilverScreen.Controller
                     if (show.Item == null) show.Item = _liteDB.FindItemByTitle(showName ?? omdbEpisode.Title.FirstToUpper()).FirstOrDefault() ?? GetItemByIdOrNameAsync(show.Title, show.Year.ToInt32()).Result;
                     if (show.Item == null)
                     {
-                        show.Item = await _liteDB.FindItemAsync(omdbEpisode.ImdbId);
+                        show.Item = await _liteDB.GetItemAsync(omdbEpisode.ImdbId);
                         if (show.Item == null && !string.IsNullOrEmpty(omdbEpisode.ImdbId))
                         {
                             show.Item = _OMDB.GetItemByImdbId(omdbEpisode.ImdbId);

@@ -49,44 +49,48 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             _userSettings = userSettings;
             InitializeComponent();
-
             StartUp();
+        }
+        private async Task<bool> InitControllers() {
+            bool ret = true;
 
+             _plex = new PlexController(_userSettings); 
+           
+            _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
+            _dgvController = new DataGrivViewControls(MultimediaType.Movies, _liteDB);
+            _imageCache = new ImageCacheDB(_userSettings);
+            try
+            {
+                if (_TMDB == null && !string.IsNullOrWhiteSpace(_userSettings.TMDBkey))
+                    _TMDB = new TMDBController(_liteDB, _userSettings.TMDBkey);
+            }
+            catch (Exception)
+            {
+                ret = false;
+                _TMDB = null;
+            }
+            return ret;
         }
 
         private async void StartUp()
         {
-            _plex = new PlexController(_userSettings);
-            
             var progress = ProgressBarHelper.InitProgressBar(toolStripProgressBar1);
             _searchController = new MoviesSearchController(_userSettings, plex: _plex, progress: progress);
             _searchController.ProgressUpdated += OnProgressUpdated;
 
+            _ = Task.Run(async () => await InitControllers()).GetAwaiter().GetResult();
             _searchFiles = new List<Item>();
             textBoxSource.Text = GetCurentPath();
-            this.Text = $" - {_userSettings.LiteDBFilePath}";
+            this.Text = $" - {textBoxSource.Text}";
             SetLabelText(this.Text);
-
-            _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
-            _dgvController = new DataGrivViewControls(MultimediaType.Movies, _liteDB);
-
-            _imageCache = new ImageCacheDB(_userSettings);
+              
             buttonOpenFolder.Image = Icons.GetFolderIcon().ToBitmap();
-            // buttonManual.Image = Icons.IconFromExtensionShell("avi", Icons.SystemIconSize.Small).ToBitmap();
-            try
-            {
-                if (_TMDB == null && !string.IsNullOrWhiteSpace(_userSettings.OMDBkey))
-                    _TMDB = new TMDBController(_liteDB, _userSettings.OMDBkey);
-            }
-            catch (Exception)
-            {
-                _TMDB = null;
-            }
             radioButtonShowGrid.Checked = true;
 
-            var list = await _liteDB.FindAllItems();
+            _fileItems= _liteDB.FindAllFileItems(new DirectoryInfo(textBoxSource.Text));
 
-            _fileItems = list.ToList().Where(x => !string.IsNullOrEmpty(x.TomatoUrl) && x.TomatoUrl.StartsWith(_userSettings.UserFilePaths.MoviesSourcePath)).Select(data => new FileItem(data.ImdbId, data.TomatoUrl)).ToList();
+            //var list = await _liteDB.FindAllItems();
+            //_fileItems = list.ToList().Where(x => !string.IsNullOrEmpty(x.TomatoUrl) && x.TomatoUrl.StartsWith(_userSettings.UserFilePaths.MoviesSourcePath)).Select(data => new FileItem(data.ImdbId, data.TomatoUrl)).ToList();
 
             buttonVelg_Click(null, null);
         }
@@ -164,8 +168,10 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 dInfo = new DirectoryInfo(GetCurentPath());
             }
+            string title = $"Let opp mappe ({Assembly.GetEntryAssembly().GetName().Name})";
+            labelNumItemsDB.Text = title;
 
-            dInfo = FileUtilities.LetOppMappe(dInfo.FullName, $"Let opp mappe ({Assembly.GetEntryAssembly().GetName().Name})");
+            dInfo = FileUtilities.LetOppMappe(dInfo.FullName,title);
             if (dInfo != null && dInfo.Exists)
             {
                 SetLabelText($@"Searching for files in {dInfo.Name} ({dInfo.FullName})");
@@ -288,7 +294,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 catch (Exception) { }
 
-                form = new MovieForm(_userSettings, mm as Item, fi);
+                form = new MovieForm(_userSettings, mm as Item, fi , _plex);
             }
             form.Text += $" {mm.Title}";
             SetForm(form, panel);
@@ -353,7 +359,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
                 SetLabelText($"{tableItem.Rows.Count} rader.");
 
-                var movie = await _liteDB.FindItemAsync(tableItem.Rows[0]["ImdbId"].ToString());
+                var movie = await _liteDB.GetItemAsync(tableItem.Rows[0]["ImdbId"].ToString());
                 SetForm(movie, splitContainer1.Panel2);
             }
             catch (Exception ex)

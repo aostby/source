@@ -43,7 +43,7 @@ namespace Kolibri.net.SilverScreen.Forms
             tbActors = new TextBox();
             tbGenre = new TextBox();
             tbRuntime = new TextBox();
-            tbRated = new TextBox();
+            tbIMDBRated = new TextBox();
             tbYear = new TextBox();
             tbTitle = new TextBox();
             pbPoster = new PictureBox();
@@ -54,12 +54,15 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonSimilar = new Button();
             toolTipDetail = new ToolTip(components);
             buttonDeleteReference = new Button();
+            buttonAddPL = new Button();
+            buttonOpenPl = new Button();
             buttonRediger = new Button();
             buttonSubtitleSearch = new Button();
             buttonPosterFix = new Button();
-            buttonPlaylist = new Button();
             labelAdded = new Label();
             tbAdded = new TextBox();
+            labelRated = new Label();
+            tbRated = new TextBox();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
             SuspendLayout();
             // 
@@ -150,7 +153,7 @@ namespace Kolibri.net.SilverScreen.Forms
             tbPlot.Margin = new Padding(4, 3, 4, 3);
             tbPlot.Name = "tbPlot";
             tbPlot.ReadOnly = true;
-            tbPlot.Size = new Size(485, 91);
+            tbPlot.Size = new Size(485, 119);
             tbPlot.TabIndex = 27;
             tbPlot.Text = "";
             tbPlot.DoubleClick += tbPlot_DoubleClick;
@@ -183,15 +186,15 @@ namespace Kolibri.net.SilverScreen.Forms
             tbRuntime.Size = new Size(111, 23);
             tbRuntime.TabIndex = 23;
             // 
-            // tbRated
+            // tbIMDBRated
             // 
-            tbRated.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            tbRated.Location = new Point(192, 399);
-            tbRated.Margin = new Padding(4, 3, 4, 3);
-            tbRated.Name = "tbRated";
-            tbRated.ReadOnly = true;
-            tbRated.Size = new Size(60, 20);
-            tbRated.TabIndex = 22;
+            tbIMDBRated.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            tbIMDBRated.Location = new Point(207, 399);
+            tbIMDBRated.Margin = new Padding(4, 3, 4, 3);
+            tbIMDBRated.Name = "tbIMDBRated";
+            tbIMDBRated.ReadOnly = true;
+            tbIMDBRated.Size = new Size(60, 20);
+            tbIMDBRated.TabIndex = 22;
             // 
             // tbYear
             // 
@@ -266,7 +269,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelQuality
             // 
             labelQuality.AutoSize = true;
-            labelQuality.Location = new Point(192, 424);
+            labelQuality.Location = new Point(207, 424);
             labelQuality.Margin = new Padding(4, 0, 4, 0);
             labelQuality.Name = "labelQuality";
             labelQuality.Size = new Size(25, 15);
@@ -298,6 +301,28 @@ namespace Kolibri.net.SilverScreen.Forms
             toolTipDetail.SetToolTip(buttonDeleteReference, "Sletter dette filobjektet fra DB, men ikke fra disk.");
             buttonDeleteReference.UseVisualStyleBackColor = true;
             buttonDeleteReference.Click += buttonDeleteReference_Click;
+            // 
+            // buttonAddPL
+            // 
+            buttonAddPL.Location = new Point(51, 424);
+            buttonAddPL.Name = "buttonAddPL";
+            buttonAddPL.Size = new Size(68, 23);
+            buttonAddPL.TabIndex = 56;
+            buttonAddPL.Text = "Add to PL";
+            toolTipDetail.SetToolTip(buttonAddPL, "Add to PlayList");
+            buttonAddPL.UseVisualStyleBackColor = true;
+            buttonAddPL.Click += buttonPlaylist_Click;
+            // 
+            // buttonOpenPl
+            // 
+            buttonOpenPl.Location = new Point(125, 424);
+            buttonOpenPl.Name = "buttonOpenPl";
+            buttonOpenPl.Size = new Size(68, 23);
+            buttonOpenPl.TabIndex = 57;
+            buttonOpenPl.Text = "Open PL";
+            toolTipDetail.SetToolTip(buttonOpenPl, "Add to PlayList");
+            buttonOpenPl.UseVisualStyleBackColor = true;
+            buttonOpenPl.Click += buttonPlaylist_Click;
             // 
             // buttonRediger
             // 
@@ -331,16 +356,6 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonPosterFix.UseVisualStyleBackColor = true;
             buttonPosterFix.Click += buttonPosterFix_Click;
             // 
-            // buttonPlaylist
-            // 
-            buttonPlaylist.Location = new Point(102, 424);
-            buttonPlaylist.Name = "buttonPlaylist";
-            buttonPlaylist.Size = new Size(75, 23);
-            buttonPlaylist.TabIndex = 50;
-            buttonPlaylist.Text = "Playlist";
-            buttonPlaylist.UseVisualStyleBackColor = true;
-            buttonPlaylist.Click += buttonPlaylist_Click;
-            // 
             // labelAdded
             // 
             labelAdded.AutoSize = true;
@@ -360,15 +375,37 @@ namespace Kolibri.net.SilverScreen.Forms
             tbAdded.Size = new Size(71, 23);
             tbAdded.TabIndex = 52;
             // 
+            // labelRated
+            // 
+            labelRated.AutoSize = true;
+            labelRated.Location = new Point(383, 562);
+            labelRated.Margin = new Padding(4, 0, 4, 0);
+            labelRated.Name = "labelRated";
+            labelRated.Size = new Size(37, 15);
+            labelRated.TabIndex = 54;
+            labelRated.Text = "Rated";
+            // 
+            // tbRated
+            // 
+            tbRated.Location = new Point(383, 580);
+            tbRated.Margin = new Padding(4, 3, 4, 3);
+            tbRated.Name = "tbRated";
+            tbRated.ReadOnly = true;
+            tbRated.Size = new Size(71, 23);
+            tbRated.TabIndex = 55;
+            // 
             // DetailsFormItem
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(504, 754);
+            Controls.Add(buttonOpenPl);
+            Controls.Add(buttonAddPL);
+            Controls.Add(tbRated);
+            Controls.Add(labelRated);
             Controls.Add(labelAdded);
             Controls.Add(tbAdded);
             Controls.Add(buttonDeleteReference);
-            Controls.Add(buttonPlaylist);
             Controls.Add(buttonPosterFix);
             Controls.Add(buttonSubtitleSearch);
             Controls.Add(buttonRediger);
@@ -390,7 +427,7 @@ namespace Kolibri.net.SilverScreen.Forms
             Controls.Add(tbActors);
             Controls.Add(tbGenre);
             Controls.Add(tbRuntime);
-            Controls.Add(tbRated);
+            Controls.Add(tbIMDBRated);
             Controls.Add(tbYear);
             Controls.Add(tbTitle);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -420,7 +457,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private System.Windows.Forms.TextBox tbActors;
         private System.Windows.Forms.TextBox tbGenre;
         private System.Windows.Forms.TextBox tbRuntime;
-        private System.Windows.Forms.TextBox tbRated;
+        private System.Windows.Forms.TextBox tbIMDBRated;
         private System.Windows.Forms.TextBox tbYear;
         private System.Windows.Forms.TextBox tbTitle;
         private System.Windows.Forms.LinkLabel linkTrailer;
@@ -436,5 +473,9 @@ namespace Kolibri.net.SilverScreen.Forms
         private Button buttonDeleteReference;
         private Label labelAdded;
         private TextBox tbAdded;
+        private Label labelRated;
+        private TextBox tbRated;
+        private Button buttonAddPL;
+        private Button buttonOpenPl;
     }
 }

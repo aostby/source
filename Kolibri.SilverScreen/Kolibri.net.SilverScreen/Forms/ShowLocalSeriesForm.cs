@@ -407,7 +407,7 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
                     string imdbid = folder.FullName.ImdbIdFromDirectoryName();
                     if (folder.Exists)
                     {
-                        Item item = await _liteDB.FindItemAsync(imdbid);
+                        Item item = await _liteDB.GetItemAsync(imdbid);
                         if (item == null)
                         {
                             item = new OMDBController(_userSettings.OMDBkey, _liteDB).GetItemByImdbId(imdbid);

@@ -1,6 +1,7 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Controller;
+using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using MoviesFromImdb.Controller;
@@ -12,27 +13,32 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
+using TMDbLib.Objects.People;
 
 namespace Kolibri.net.SilverScreen.IMDBForms
 {
     public partial class MovieForm : Form
     {
+
+        //private _watchListnames=new List<string>;
         FileInfo _info = null;
         LiteDBController _liteDB;         
         UserSettings _userSettings;
         IMDBDAL _IMDBDAL;
+
+        PlexController _plex;
         
         public MovieForm(UserSettings userSettings)
-        {
-            _userSettings = userSettings;
+        {  
             InitializeComponent();
+            _userSettings = userSettings;          
             Init();
         }
         public MovieForm(UserSettings userSettings, FileInfo info, string year = "")
-        {
-            _info = info;
+        {     InitializeComponent();
             _userSettings = userSettings;
-            InitializeComponent();
+            _info = info;         
+        
             this.Text = $"File: {info.Name}";
 
             Init();
@@ -42,10 +48,11 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             buttonUpdate.Visible = true;
 
         }
-        public MovieForm(UserSettings userSettings, Item item, FileInfo info=null)
+        public MovieForm(UserSettings userSettings, Item item, FileInfo info=null, PlexController plex=null)
         {
-            _userSettings = userSettings;
             InitializeComponent();
+            _userSettings = userSettings;            
+            _plex = plex;
             Init();
             tbSearch.Text = item.Title;
             tbYearParameter.Text = item.Year!=null ? (item.Year.EndsWith('–') ? item.Year.TrimEnd('–') : item.Year):string.Empty;
@@ -55,16 +62,15 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             try
             {
-                //          _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
                 this.Text = $"{Assembly.GetExecutingAssembly().GetName().Name} - {_userSettings.FavoriteWatchList}";
-                var list = _liteDB.WishListFindAll().ToList();
-                var names = list.Select(c => c.WatchListName.ToString()).Distinct();
-
-                comboBox1.DataSource = names.ToList();
-                if (names.Contains(_userSettings.FavoriteWatchList))
+                List<WatchList> list = _liteDB.WatchListFindAll().ToList();
+                var watchListnames = list.Select(c => c.WatchListName.ToString()).Distinct().ToList();               
+                comboBox1.DataSource = watchListnames.ToList();
+                
+                if (watchListnames.Contains(_userSettings.FavoriteWatchList))
                     comboBox1.SelectedIndex = comboBox1.Items.IndexOf(_userSettings.FavoriteWatchList);
             }
-            catch (Exception)
+            catch (Exception ex)
             { }
 
 
@@ -74,15 +80,20 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private async void Init()
         {
-            if (_liteDB == null)
-            {
-                _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
-            }
-
-            
+            if (_liteDB == null) { _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false); }
 
             //https://www.c-sharpcorner.com/article/autocomplete-textbox-in-C-Sharp/
-            _IMDBDAL = new IMDBDAL(_liteDB);
+            if (_IMDBDAL == null) { _IMDBDAL = new IMDBDAL(_liteDB); }
+
+            if (_plex == null)
+            {
+                try
+                {
+                    _plex = new PlexController(_userSettings);
+                    var result = Task.Run(async () => await _plex.GetPlaylistsAsync()).GetAwaiter().GetResult();
+                }
+                catch (Exception ex) { }
+            }
 
             tbSearch.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             tbSearch.AutoCompleteSource = AutoCompleteSource.CustomSource;
@@ -93,6 +104,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             }
             catch (Exception ex)
             { }
+
+
+            
 
         }
 
@@ -131,7 +145,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 try
                 {
                     string year = tbYearParameter.Text.Trim().TrimEnd('-').ToInt32().ToString();
-                    Item sItem = parameter == "t" ? await _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(), YearParameterNumber) : await _liteDB.FindItemAsync(tbSearch.Text.Trim().FirstToUpper());
+                    Item sItem = parameter == "t" ? await _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(), YearParameterNumber) : await _liteDB.GetItemAsync(tbSearch.Text.Trim().FirstToUpper());
                     if (sItem != null && sItem.Year.TrimEnd('–').ToInt32() != YearParameterNumber) { sItem = null; }
               
 
@@ -366,14 +380,22 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private async void linkLabelOpenFilePath_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             (sender as LinkLabel).BackColor = Control.DefaultBackColor;
+            if (_info != null && _info.Exists)
+            {
+                FileUtilities.OpenFolderHighlightFile(_info.FullName);
+            }
+
             if (string.IsNullOrEmpty(tbSearch.Text) || string.IsNullOrEmpty(tbYear.Text))
             {
                 MessageBox.Show("Please enter movie name!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
+            var url = await _liteDB.FindFileAsync(labelImdbId.Text);
+      
+
             try
             {
-                var url = await _liteDB.FindFileAsync(labelImdbId.Text);
+            
                 FileUtilities.OpenFolderHighlightFile(new FileInfo(url.ItemFileInfo.FullName));
             }
             catch (Exception ex)
@@ -466,13 +488,12 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
-
             try
             {
                 if (!string.IsNullOrEmpty(labelImdbId.Text))
                 {
                     string imdbId = labelImdbId.Text;
-                    Item mov = await _liteDB.FindItemAsync(imdbId);
+                    Item mov = await _liteDB.GetItemAsync(imdbId);
                     if (mov != null)
                     {
                          

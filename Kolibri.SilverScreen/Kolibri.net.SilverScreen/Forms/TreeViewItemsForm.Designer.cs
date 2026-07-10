@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             treeView1 = new TreeView();
             groupBoxOrder = new GroupBox();
+            radioButtonRated = new RadioButton();
             checkBoxToolTip = new CheckBox();
             radioButtonActor = new RadioButton();
             radioButtonRating = new RadioButton();
@@ -53,6 +54,7 @@
             // 
             // groupBoxOrder
             // 
+            groupBoxOrder.Controls.Add(radioButtonRated);
             groupBoxOrder.Controls.Add(checkBoxToolTip);
             groupBoxOrder.Controls.Add(radioButtonActor);
             groupBoxOrder.Controls.Add(radioButtonRating);
@@ -61,15 +63,26 @@
             groupBoxOrder.Controls.Add(radioButtonTitle);
             groupBoxOrder.Location = new Point(12, 3);
             groupBoxOrder.Name = "groupBoxOrder";
-            groupBoxOrder.Size = new Size(447, 41);
+            groupBoxOrder.Size = new Size(565, 41);
             groupBoxOrder.TabIndex = 1;
             groupBoxOrder.TabStop = false;
             groupBoxOrder.Text = "Order by";
             // 
+            // radioButtonRated
+            // 
+            radioButtonRated.AutoSize = true;
+            radioButtonRated.Location = new Point(349, 16);
+            radioButtonRated.Name = "radioButtonRated";
+            radioButtonRated.Size = new Size(55, 19);
+            radioButtonRated.TabIndex = 6;
+            radioButtonRated.Text = "Rated";
+            radioButtonRated.UseVisualStyleBackColor = true;
+            radioButtonRated.CheckedChanged += Radio_CheckedChanged;
+            // 
             // checkBoxToolTip
             // 
             checkBoxToolTip.AutoSize = true;
-            checkBoxToolTip.Location = new Point(353, 17);
+            checkBoxToolTip.Location = new Point(410, 17);
             checkBoxToolTip.Name = "checkBoxToolTip";
             checkBoxToolTip.Size = new Size(70, 19);
             checkBoxToolTip.TabIndex = 5;
@@ -164,5 +177,6 @@
         private ImageList imageListIcons;
         private RadioButton radioButtonActor;
         private CheckBox checkBoxToolTip;
+        private RadioButton radioButtonRated;
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.VisualBasic.FileIO;
 using MovieFileLibrary;
 using System.Data;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 using static Kolibri.net.SilverScreen.Controls.Constants;
 
@@ -21,35 +22,39 @@ namespace Kolibri.net.SilverScreen.Forms
         public DirectoryInfo DestinationPath { get { return new DirectoryInfo(textBoxDestination.Text); } }
 
 
-        public SortMultimediaDesktopForm(MultimediaType type, UserSettings settings)
+        public SortMultimediaDesktopForm(MultimediaType type, UserSettings settings =null, string sourcePath=null, string destinationPath=null)
         {
             _type = type;
             _settings = settings;
             InitializeComponent();
-            Init();
+            Init(sourcePath, destinationPath);
         }
 
 
-        internal void Init(string formType = null)
+        internal void Init(string sourcePath = null, string destPath = null)
         {
-            string sourcePath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-            string destPath = Environment.CurrentDirectory;
+            if(string.IsNullOrEmpty(sourcePath))
+              sourcePath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+             if(string.IsNullOrEmpty( destPath))
+                destPath = Environment.CurrentDirectory;
 
             toolStripStatusLabelFilnavn.Text = string.Empty;
             switch (_type)
             {
                 case MultimediaType.movie:
                 case MultimediaType.Movies:
-                    sourcePath = _settings.UserFilePaths.MoviesSourcePath;
-                    destPath = _settings.UserFilePaths.MoviesDestinationPath;
+                    if (string.IsNullOrEmpty(sourcePath)) sourcePath = _settings.UserFilePaths.MoviesSourcePath;
+                    if (string.IsNullOrEmpty(destPath)) destPath = _settings.UserFilePaths.MoviesDestinationPath;
                     break;
                 case MultimediaType.Series:
                     break;
                 case MultimediaType.Audio:
                     break;
                 case MultimediaType.Pictures:
-                    sourcePath = _settings.UserFilePaths.MoviesSourcePath;
-                    destPath = _settings.UserFilePaths.MoviesDestinationPath;
+                    if (string.IsNullOrEmpty(sourcePath))
+                        sourcePath = _settings.UserFilePaths.MoviesSourcePath;
+                    if (string.IsNullOrEmpty(destPath))
+                        destPath = _settings.UserFilePaths.MoviesDestinationPath;
                     break;
                 default:
                     break;
@@ -59,8 +64,10 @@ namespace Kolibri.net.SilverScreen.Forms
                 sourcePath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
             if (!Directory.Exists(destPath))
                 destPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures);
-            SetSource(sourcePath);
-            SetDestination(destPath);
+         
+                SetSource(sourcePath);
+                SetDestination(destPath);
+             
 
             this.StartPosition = FormStartPosition.CenterParent;
             //Lets make it nasty (some forms aren't rendered properly otherwise)
@@ -455,6 +462,8 @@ namespace Kolibri.net.SilverScreen.Forms
                 else
                 {
                     textBoxDestination.Text = folder.FullName.ToString();
+                    Environment.CurrentDirectory = textBoxDestination.Text; // Tells Windows to remember the last used folder internally
+
                 }
             }
 
@@ -467,8 +476,8 @@ namespace Kolibri.net.SilverScreen.Forms
                 TextBox textBox = null;
                 if (sender.Equals(buttonOpenDirS)) { textBox = textBoxSource; }
                 else if (sender.Equals(buttonOpenDirD)) { textBox = textBoxDestination; }
-
-                Process.Start(textBox.Text);
+                FileUtilities.OpenWindowsExplorer(textBox.Text);
+                
             }
             catch (Exception ex)
             {
@@ -507,14 +516,30 @@ namespace Kolibri.net.SilverScreen.Forms
             if (Directory.Exists(sourcePath))
             {
                 textBoxSource.Text = sourcePath;
+                if (_settings != null)
+                {
+                    switch (_type)
+                    {
+                        case MultimediaType.Movies:
+                        case MultimediaType.movie:
+                            _settings.UserFilePaths.MoviesSourcePath = sourcePath;
+                            break;
 
-                if (_type.Equals(MultimediaType.movie) || _type.Equals(MultimediaType.Movies))
-                    _settings.UserFilePaths.MoviesSourcePath = sourcePath;
-                else if (_type.Equals(MultimediaType.Pictures))
-                    _settings.UserFilePaths.PicturesSourcePath = sourcePath;
-                else if (_type.Equals(MultimediaType.Series))
-                    _settings.UserFilePaths.SeriesSourcePath = sourcePath;
-                _settings.Save();
+
+                        case MultimediaType.Series:
+                            _settings.UserFilePaths.SeriesSourcePath = sourcePath; break;
+                        case MultimediaType.Audio:
+                            break;
+                        case MultimediaType.Pictures:
+                            _settings.UserFilePaths.PicturesSourcePath = sourcePath; break;
+                        default:
+                            break;
+                    }
+                    _settings.Save();
+                }
+
+
+
             }
         }
         public void SetDestination(string destPath)
@@ -522,14 +547,16 @@ namespace Kolibri.net.SilverScreen.Forms
             if (Directory.Exists(destPath))
             {
                 textBoxDestination.Text = destPath;
-
-                if (_type.Equals(MultimediaType.movie) || _type.Equals(MultimediaType.Movies))
-                    _settings.UserFilePaths.MoviesDestinationPath = destPath;
-                else if (_type.Equals(MultimediaType.Pictures))
-                    _settings.UserFilePaths.PicturesDestination = destPath;
-                else if (_type.Equals(MultimediaType.Series))
-                    _settings.UserFilePaths.SeriesDestination = destPath;
-                _settings.Save();
+                if (_settings != null)
+                {
+                    if (_type.Equals(MultimediaType.movie) || _type.Equals(MultimediaType.Movies))
+                        _settings.UserFilePaths.MoviesDestinationPath = destPath;
+                    else if (_type.Equals(MultimediaType.Pictures))
+                        _settings.UserFilePaths.PicturesDestination = destPath;
+                    else if (_type.Equals(MultimediaType.Series))
+                        _settings.UserFilePaths.SeriesDestination = destPath;
+                    _settings.Save();
+                }
             }
         }
         private void SetLabelText(string message)

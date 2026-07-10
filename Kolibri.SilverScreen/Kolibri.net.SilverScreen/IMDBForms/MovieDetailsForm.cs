@@ -67,7 +67,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     this.Text = $"{this.Text} - {Path.GetFileNameWithoutExtension(tmp.GetAwaiter().GetResult().FullName)}";
                 }
                 else {
-                   var tmpM= await _liteDB.FindItemAsync(imdbId);
+                   var tmpM= await _liteDB.GetItemAsync(imdbId);
                     if (tmpM == null)
                     {
                         this.BackColor = Color.LightSalmon;

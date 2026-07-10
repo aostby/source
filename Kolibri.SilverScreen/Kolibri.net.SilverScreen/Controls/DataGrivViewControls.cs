@@ -364,7 +364,7 @@ namespace Kolibri.net.SilverScreen.Controls
                     {
 
                         var id = dgv.Rows[e.RowIndex].Cells["ImdbId"].Value;
-                        var movie = await _liteDB.FindItemAsync(id.ToString());
+                        var movie = await _liteDB.GetItemAsync(id.ToString());
                         movie.ImdbRating = newValue.ToString().Replace(",", ".");
                         await _liteDB.UpsertAsync(movie);
 
@@ -489,7 +489,7 @@ namespace Kolibri.net.SilverScreen.Controls
                     catch (Exception) { index = 0; DataGridView1.ClearSelection(); } 
              
 
-                CurrentItem = await _liteDB.FindItemAsync(imdbid);
+                CurrentItem = await _liteDB.GetItemAsync(imdbid);
                 if (CurrentItem != null)
                 {
                     
@@ -639,7 +639,7 @@ namespace Kolibri.net.SilverScreen.Controls
                     var info = await _liteDB.FindFileAsync(imdbid);
                     if (info != null)
                     {
-                        var item = await _liteDB.FindItemAsync(info.ImdbId);
+                        var item = await _liteDB.GetItemAsync(info.ImdbId);
                         if (item != null) {
                             var form = new DetailsFormItem(item, _liteDB);
                             form.FormBorderStyle = FormBorderStyle.SizableToolWindow;

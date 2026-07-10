@@ -7,8 +7,10 @@ using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
+using Kolibri.net.SilverScreen.IMDBForms;
 using LiteDB;
 using OMDbApiNet.Model;
+using Org.BouncyCastle.Tls;
 using System.Data;
 using TMDbLib.Objects.Movies;
 
@@ -16,6 +18,7 @@ namespace Kolibri.net.SilverScreen.Forms
 {
     public partial class DetailsFormItem : Form
     {
+        private UserSettings _userSettings; //from GetPlexController
         private BindingSource _bsMovies;
         internal Item _item;
         internal FileItem _itemPath;
@@ -29,26 +32,26 @@ namespace Kolibri.net.SilverScreen.Forms
 
         [Obsolete("Designer only", true)] public DetailsFormItem() { InitializeComponent(); }
 
-        public DetailsFormItem(string imdbId, LiteDBController contr, OMDBController omdb = null
+        public DetailsFormItem(string imdbId, LiteDBController contr
+            , OMDBController omdb = null
             , TMDBController tmdb = null
             , SubDLSubtitleController subDL = null
-            , ImageCacheDB imagecache = null, PlexController plex = null
+            , ImageCacheDB imagecache = null
+            , PlexController plex = null
             )
         {
             InitializeComponent();
             _liteDB = contr;
-            _plexController = new PlexController(_liteDB.GetUserSettings());
+            _plexController = plex;
             
+
             this.FormBorderStyle = FormBorderStyle.None;
             _OMDB = omdb;
             _TMDB = tmdb;
             _subDL = subDL;
-            _imageCache = imagecache;
-            _plexController = plex; 
-            if(_plexController==null)
-                _plexController = new PlexController(_liteDB.GetUserSettings());
+            _imageCache = imagecache; 
 
-            _item =  _liteDB.FindItemAsync(imdbId).GetAwaiter().GetResult();    
+            _item =  _liteDB.GetItemAsync(imdbId).GetAwaiter().GetResult();    
             if( _item == null )                 _item = GetItemFromMySqlDB(imdbId);
 
             Init(_item);
@@ -73,47 +76,46 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             InitializeComponent();
             _liteDB = contr;
+                _plexController = plex;
             _item = item;
             this.FormBorderStyle = FormBorderStyle.None;
             _OMDB = omdb;
             _TMDB = tmdb;
             _subDL = subDL;
             _imageCache = imagecache;
-            _plexController = plex;
-            if (_plexController == null)
-                _plexController = new PlexController(_liteDB.GetUserSettings());
-
-
+            _plexController = plex; 
 
             Init(_item);
+
             //Dersom alt er initialisert, sett farger
             InitButtons();
         }
 
         private void Init(Item item, bool SearchForPoster=true)
         {
+            GetPlexController();
+
             tbTitle.Text = item.Title;
             tbYear.Text = item.Year;
-            tbRated.Text = item.ImdbRating;
-            tbRated.BackColor = Color.Green;
+            tbIMDBRated.Text = item.ImdbRating;
+            tbIMDBRated.BackColor = Color.Green;
             int rating = 0;
             if (item.ImdbRating.IsNumeric() && item.ImdbRating.Substring(0, 1).ToInt32() > 0)
                 rating = item.ImdbRating.Substring(0, 1).ToInt32();
-            if (rating <= 2) { tbRated.BackColor = Color.Red; }
-            else if (rating >= 3 && rating <= 4) { tbRated.BackColor = Color.Red; }
-            else if (rating >= 4 && rating <= 5) { tbRated.BackColor = Color.LightSalmon; }
-            else if (rating >= 5 && rating <= 6) { tbRated.BackColor = Color.LightGreen; }
-            else if (rating >= 7 && rating <= 8) { tbRated.BackColor = Color.LimeGreen; }
-            else if (rating >= 9) { tbRated.BackColor = Color.Green; }
+            if (rating <= 2) { tbIMDBRated.BackColor = Color.Red; }
+            else if (rating >= 3 && rating <= 4) { tbIMDBRated.BackColor = Color.Red; }
+            else if (rating >= 4 && rating <= 5) { tbIMDBRated.BackColor = Color.LightSalmon; }
+            else if (rating >= 5 && rating <= 6) { tbIMDBRated.BackColor = Color.LightGreen; }
+            else if (rating >= 7 && rating <= 8) { tbIMDBRated.BackColor = Color.LimeGreen; }
+            else if (rating >= 9) { tbIMDBRated.BackColor = Color.Green; }
 
             tbRuntime.Text = item.Runtime;
             tbGenre.Text = item.Genre;
             tbActors.Text = item.Actors;
             tbPlot.Text = item.Plot;
             tbMetascore.Text = item.Metascore;
-            
-                pbPoster.ImageLocation = item.Poster;
-
+            pbPoster.ImageLocation = item.Poster;
+            tbRated.Text = item.Rated;
             try
             {
                 if (SearchForPoster&&_plexController!=null&&!HTMLUtilities.DoesUrlExists(item.Poster))
@@ -122,29 +124,22 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
             }
             catch (Exception ex)
-            {
-
-            }
+            {    }
 
 
 
             try
             {
-                UserSettings settings = _liteDB.GetUserSettings();
-
-                if (_OMDB == null) { try { _OMDB = new OMDBController(settings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
-                if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{settings.TMDBkey}"); } catch (Exception ex) { } }
-                if (_subDL == null) { try { _subDL = new SubDLSubtitleController(settings); } catch (Exception) { } }
-                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(settings); } catch (Exception ex) { } };
+                if (_OMDB == null) { try { _OMDB = new OMDBController(_userSettings.OMDBkey, _liteDB); } catch (Exception ex) { throw new Exception("OMDB cannot be null. make sure you have the correct API key", ex); } }
+                if (_TMDB == null) { try { _TMDB = new TMDBController(_liteDB, $"{_userSettings.TMDBkey}"); } catch (Exception ex) { } }
+                if (_subDL == null) { try { _subDL = new SubDLSubtitleController(_userSettings); } catch (Exception) { } }
+                if (_imageCache == null) { try { _imageCache = new ImageCacheDB(_userSettings); } catch (Exception ex) { } };
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
-            SetAllLabelsToBold(this);
-//            if (item != null) {
-//                Set(item.Title)
-//;                    }
+            SetAllLabelsToBold(this); 
 
         }
         private void SetAllLabelsToBold(Control parent)
@@ -270,7 +265,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private void btnAddToWatchlist_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(tbTitle.Text) && string.IsNullOrEmpty(tbYear.Text) && string.IsNullOrEmpty(tbRated.Text) && string.IsNullOrEmpty(tbRuntime.Text) && string.IsNullOrEmpty(tbGenre.Text) && string.IsNullOrEmpty(tbActors.Text) && string.IsNullOrEmpty(tbPlot.Text) && string.IsNullOrEmpty(tbMetascore.Text) && string.IsNullOrEmpty(pbPoster.ImageLocation))
+            if (string.IsNullOrEmpty(tbTitle.Text) && string.IsNullOrEmpty(tbYear.Text) && string.IsNullOrEmpty(tbIMDBRated.Text) && string.IsNullOrEmpty(tbRuntime.Text) && string.IsNullOrEmpty(tbGenre.Text) && string.IsNullOrEmpty(tbActors.Text) && string.IsNullOrEmpty(tbPlot.Text) && string.IsNullOrEmpty(tbMetascore.Text) && string.IsNullOrEmpty(pbPoster.ImageLocation))
             {
                 MessageBox.Show("Fields cannot be empty!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -285,7 +280,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 Title = tbTitle.Text,
                 Year = tbYear.Text,
-                Rated = tbRated.Text,
+                Rated = tbIMDBRated.Text,
                 Runtime = tbRuntime.Text,
                 Genre = tbGenre.Text,
                 Actors = tbActors.Text,
@@ -305,6 +300,18 @@ namespace Kolibri.net.SilverScreen.Forms
                 if (sender.Equals(linkTrailer))
                 {
                     Uri link = new Uri($"https://www.imdb.com/title/{_item.ImdbId}/");
+                    try
+                    {
+                        var mov = _TMDB.GetMovie(_item.ImdbId, true);
+                        if (mov != null && mov.Id != null)
+                        {
+                            link = new Uri($"https://www.themoviedb.org/movie/{mov.Id}");
+                        }
+                    }
+                    catch (Exception ex) { }
+                
+
+
                 //    https://www.themoviedb.org/movie/{movie_id}
 
 
@@ -428,7 +435,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     try
                     {
                         var movie = _TMDB.GetMovie(item.Id);
-                        var local = await _liteDB.FindItemAsync(movie.ImdbId);
+                        var local = await _liteDB.GetItemAsync(movie.ImdbId);
                         if (local != null)
                         { imdbItems.Insert(0, local); }
                         else
@@ -607,10 +614,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 {
 
                     if (!HTMLUtilities.DoesUrlExists(_item.Poster))
-                    {
-                        if (_plexController == null) {
-                            _plexController = new PlexController(_liteDB.GetUserSettings());
-                        }
+                    {   
                         var pItem = await _plexController.FindByImdbAsync(_item.ImdbId);
                         if (pItem != null)
                         {
@@ -633,38 +637,81 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private async void buttonPlaylist_Click(object sender, EventArgs e)
         {
-            if (_plexController == null)
+            if (sender.Equals(buttonAddPL))
             {
-                _plexController = new PlexController(_liteDB.GetUserSettings());
+                object value = string.Empty;
+                var pls = await _plexController.GetPlaylistsAsync();
+                var res = InputDialogs.ChooseListBox($"Playlist to put {_item.Title} in ", "To add item to playlist, choose one",
+                             pls.ToList()
+                             , ref value, false);
+                if (res == DialogResult.OK)
+                {
+                    try
+                    {
+                        var pl = (value as ListViewItem).Text;
+
+                        string imdbId = _item.ImdbId;
+                        if (!await _plexController.AddElementToPlaylist(pl, imdbId))
+                        {
+                            throw new Exception($"Item not added to Playlist {pl} ({_item.Title})");
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Item added to Playlist {pl} ({_item.Title})", pl);
+                       await     _liteDB.AddToWatchListAsync(pl, _item);
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, ex.GetType().Name);
+                    }
+                }
+                else if (sender.Equals(buttonOpenPl))
+                {
+                }
+                ;
             }
-            object value = string.Empty;
-            var pls = await _plexController.GetPlaylistsAsync();
-            var res = InputDialogs.ChooseListBox($"Playlist to put {_item.Title} in ", "To add item to playlist, choose one",
-                         pls.ToList()
-                         , ref value, false);
-            if (res == DialogResult.OK)
-            {
+            else if (sender.Equals(buttonOpenPl)) {
                 try
                 {
-                    var pl = (value as ListViewItem).Text;
+                    var found = _liteDB.WatchListGetItemByID(_item.ImdbId);
 
-                    string imdbId = _item.ImdbId;
-                    if (!await _plexController.AddElementToPlaylist(pl, imdbId))
-                    {
-                        throw new Exception($"Item not added to Playlist {pl} ({_item.Title})");
-                    }
-                    else
-                    {
-                        MessageBox.Show($"Item added to Playlist {pl} ({_item.Title})", pl);
-                    }
+                    WatchlistForm form = new WatchlistForm(_liteDB, found.WatchListName);
+                    form.ShowDialog();
+
                 }
                 catch (Exception ex)
                 {
+
                     MessageBox.Show(ex.Message, ex.GetType().Name);
                 }
+            
             }
+            }
+      
+
+        private void GetPlexController()
+        {
+            try
+            {
+                {
+                    if (_userSettings == null)
+                        _userSettings = _liteDB.GetUserSettings();
+                }
+                if (_plexController == null)
+                {
+                    _plexController = new PlexController(_userSettings);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _plexController = null;
+            }
+
+         
         }
 
-   
     }
 }

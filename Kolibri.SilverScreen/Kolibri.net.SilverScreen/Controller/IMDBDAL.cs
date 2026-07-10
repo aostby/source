@@ -35,7 +35,7 @@ namespace MoviesFromImdb.Controller
 
         public DataSet GetAllMovies(string wishListName = null)
         {
-            IEnumerable<WatchList> list = _liteDB.WishListFindAll(watchListName: wishListName).ToList(); 
+            IEnumerable<WatchList> list = _liteDB.WatchListFindAll(watchListName: wishListName).ToList(); 
 
             DataSet ret = Kolibri.net.Common.Utilities.DataSetUtilities.AutoGenererDataSet(list.ToList());
             if (ret.Tables.Count != 0)
@@ -71,7 +71,7 @@ namespace MoviesFromImdb.Controller
             {
                 if (_liteDB == null)
                     _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
-                _liteDB.WishListAdd(entity);
+                _liteDB.WatchListAdd(entity);
                 return true;
             }
             catch (Exception)
@@ -83,11 +83,11 @@ namespace MoviesFromImdb.Controller
         public   bool ChangeMovieStatus(string movieId, string watched = "Y")
         {
          
-            var entity = _liteDB.WishListGetItemByID(movieId);
+            var entity = _liteDB.WatchListGetItemByID(movieId);
             entity.Watched = watched;
 
 
-            if (_liteDB.WishListUpsert(entity).GetAwaiter().GetResult())
+            if (_liteDB.WatchListUpsert(entity).GetAwaiter().GetResult())
             {
                 MessageBox.Show("Movie status changed from not watched to watched!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;
@@ -99,12 +99,9 @@ namespace MoviesFromImdb.Controller
             }
         }
         public   bool DeleteMovie(string movieId)
-        {
-        
+        { 
 
-
-
-            if (_liteDB.DeleteWishListItem(movieId) >= 1)
+            if (_liteDB.DeleteWatchListItem(movieId) >= 1)
             {
                 MessageBox.Show("Movie deleted from watchlist!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;

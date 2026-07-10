@@ -600,7 +600,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else if (name.Contains("title.ratings"))
                     {
-                        Item item = await _contr.FindItemAsync(arr[0]);
+                        Item item = await _contr.GetItemAsync(arr[0]);
                         if (item != null)
                         {
                             item.Rated = arr[1];
@@ -613,7 +613,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     }
                     else if (name.Contains("title.crew"))
                     {
-                        Item item = await _contr.FindItemAsync(arr[0]);
+                        Item item = await _contr.GetItemAsync(arr[0]);
                         if (item != null)
                         {
                             //item.Writer = 
@@ -630,7 +630,7 @@ namespace Kolibri.net.SilverScreen.Forms
                             lines = orglines.Take<string>(new Range(localImdbIds.Count(), orglines.Count() - localImdbIds.Count())).ToList();
 
 
-                            Item item = await _contr.FindItemAsync(arr[0]);
+                            Item item = await _contr.GetItemAsync(arr[0]);
                             if (item == null) { item = itemservice.Get(arr[0]); }
                             ;
                             if (item == null)
@@ -785,7 +785,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 else if (name.Contains("title.ratings"))
                 {
-                    Item item = await _contr.FindItemAsync(arr[0]);
+                    Item item = await _contr.GetItemAsync(arr[0]);
                     if (item != null)
                     {
                         item.Rated = arr[1];
@@ -798,7 +798,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
                 else if (name.Contains("title.crew"))
                 {
-                    Item item = await _contr.FindItemAsync(arr[0]);
+                    Item item = await _contr.GetItemAsync(arr[0]);
                     if (item != null)
                     {
                         //item.Writer = 
@@ -815,7 +815,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         lines = orglines.Take<string>(new Range(localImdbIds.Count(), orglines.Count() - localImdbIds.Count())).ToList();
 
 
-                        Item item = await _contr.FindItemAsync(arr[0]);
+                        Item item = await _contr.GetItemAsync(arr[0]);
                         if (item == null) { item = itemservice.Get(arr[0]); }
                         ;
                         if (item == null)

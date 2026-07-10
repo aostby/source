@@ -341,8 +341,15 @@ namespace Kolibri.SilverScreen.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, ex.GetType().Name);
-                SetStatusLabel($"Exception occured when trying to remove directories from folder.");
+
+                string msg = $"Exception occured when trying to remove directories from folder:{Environment.NewLine}{ex.Message}";
+                var type = ex.GetType();
+                if (type.Equals(typeof(IOException))&&msg.Contains(@"\\")) {
+                    msg += $"{Environment.NewLine}{Environment.NewLine}{type.Name} often needs manual measures to clean up";
+                }
+
+                MessageBox.Show(msg, type.Name );
+                SetStatusLabel(msg);
             }
         }
 

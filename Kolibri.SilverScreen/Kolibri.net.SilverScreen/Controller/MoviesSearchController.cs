@@ -27,9 +27,9 @@ namespace Kolibri.net.SilverScreen.Controller
 
         /// <summary>
         /// Oppdatering (tristate): 
-        /// Indeterminate = Ingenting
-        /// Checked =Alt 
-        /// Unchecked = Kun filinformasjon og manglende
+        /// Indeterminate = Manglende og oppdatering.
+        /// Checked = Alt. 
+        /// Unchecked = Ingenting.
         /// </summary>
         private CheckState _updateTriState = CheckState.Indeterminate;
 
@@ -104,10 +104,10 @@ namespace Kolibri.net.SilverScreen.Controller
         #region Movie Item
 
         /// <summary>
-        /// Tristate Ingenting, manglende, alt
+        /// Søker opp filmer fra LiteDB. Oppdaterer hvis Checked (alt) eller Indeterminate (manglende) er satt 
         /// </summary>
-        /// <param name="dir"></param>
-        /// <param name="tristate"></param>
+        /// <param name="dir">Filsti en skal lette opp filmer fra.</param>
+        /// <param name="tristate">Ingenting=Unchecked, manglende=Indeterminate, alt=Checked</param>
         /// <returns></returns>
         public async Task<List<Item>> SearchForMovies(DirectoryInfo dir, CheckState tristate = CheckState.Indeterminate)
         {
@@ -134,20 +134,25 @@ namespace Kolibri.net.SilverScreen.Controller
                     var temp = await _liteDB.FindByFileNameAsync(file);
                     if (temp != null && tristate == CheckState.Unchecked)
                     {
-                        item = await _liteDB.FindItemAsync(temp.ImdbId);
+                        if (tristate == CheckState.Unchecked)
+                        {
+                            item = await _liteDB.GetItemAsync(temp.ImdbId);
+                        }
                     }
                     else
                     {
                         GetTitleAndYear(file, out year, out title, out fileTitle);
                         item = await GetItem(file, year, title, fileTitle);
-
                     }
+                
+                
                     if (item != null)
                     {
                         ret.Add(item);
-                        if (temp==null&& !tristate.Equals(CheckState.Unchecked)&&File.Exists(item.TomatoUrl) )
+                        if (  temp==null  )
                         {
-                            if (await _liteDB.FindFileAsync(item.ImdbId) == null)
+                            temp = await _liteDB.FindFileAsync(item.ImdbId);
+                            if (temp == null )
                             {
                                 var fi = new FileItem(item.ImdbId, file.FullName);
                                 await _liteDB.UpsertAsync(fi);
@@ -285,31 +290,27 @@ namespace Kolibri.net.SilverScreen.Controller
             if (string.IsNullOrEmpty(imdbid)) return ret;
             try
             {
-             ret= await  _liteDB.FindItemAsync(imdbid);
+                ret = await _liteDB.GetItemAsync(imdbid);
 
-                if (_updateTriState != CheckState.Indeterminate &&ret!=null&& string.IsNullOrEmpty(ret.TomatoUrl))
+                //Oppdater hvis følgende er sant
+                if (_updateTriState != CheckState.Unchecked
+                    && ret != null
+                    && (string.IsNullOrEmpty(ret.TomatoUrl)
+                        || (!$"{ret.TomatoUrl}".Equals(file.FullName))))
                 {
-                  
-                    if (!$"{ret.TomatoUrl}".Equals(file.FullName)&&!file.FullName.Equals(ret.TomatoUrl))
-                    {
-                        ret.TomatoUrl = file.FullName;
-                        await _liteDB.UpdateAsync(ret);
-                        await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
-                        SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_liteDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS"); 
-                    }
-                  
-                  
-                }
+                    ret.TomatoUrl = file.FullName;
 
+                    await _liteDB.UpdateAsync(ret);
+                    await _liteDB.UpsertAsync(new FileItem(ret.ImdbId, file.FullName));
+                    SetStatusLabelText($"{ret.ImdbId} Fant via [{nameof(_liteDB)}] {ret.Title} - oppdaterer filsti til {file.FullName}.", "EXISTS");
+                }
             }
             catch (Exception ex)
             {
                 SetStatusLabelText($"{ex.Message} - {file.FullName}.", "ERROR");
-            } 
+            }
             return ret;
-        
         }
-
 
         /// <summary>
         /// Finnes denne filmen i liteDB, oppdaterer vi kun filstien og returnerer hvis ingenting skal endres forøvrig
@@ -334,6 +335,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 }
                 else if (_updateTriState != CheckState.Unchecked)
                 {
+                    //Dersom vi ikke har fått endret allerede, oppdater
                     if (!$"{movie.TomatoUrl}".ToUpper().GetHashCode().Equals(file.FullName.ToUpper().GetHashCode()))
                     {
                         movie.TomatoUrl = file.FullName;
@@ -390,10 +392,10 @@ namespace Kolibri.net.SilverScreen.Controller
             {
                 if (test != null)
                 {
-                    ret = await _liteDB.FindItemAsync(test.ImdbId);
+                    ret = await _liteDB.GetItemAsync(test.ImdbId);
                     if (ret != null)
                     {
-                        if (_updateTriState != CheckState.Indeterminate)
+                        if (_updateTriState != CheckState.Unchecked)
                         {
                             if (!$"{ret.TomatoUrl}".ToUpper().GetHashCode().Equals(test.ItemFileInfo.FullName.ToUpper().GetHashCode()))
                             {
@@ -442,7 +444,7 @@ namespace Kolibri.net.SilverScreen.Controller
         {
             var test = await _liteDB.FindByFileNameAsync(file);
             if (test != null) {
-                var item = await _liteDB.FindItemAsync(test.ImdbId);
+                var item = await _liteDB.GetItemAsync(test.ImdbId);
                 if (item != null) return item;
             }
 
@@ -469,7 +471,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         Movie tmdbMovie = _TMDB.GetMovie(tLibList[0].Id);
                         if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                         {
-                            ret = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                            ret = await _liteDB.GetItemAsync(tmdbMovie.ImdbId);
                             if (ret == null)
                                 ret = await _plex?.FindByImdbAsync(tmdbMovie.ImdbId);
                             if (ret == null)
@@ -516,7 +518,7 @@ namespace Kolibri.net.SilverScreen.Controller
                                 if (!string.IsNullOrEmpty(tmdbMovie.ImdbId))
                                     if (_updateTriState == null)
                                     {
-                                        ret = await _liteDB.FindItemAsync(tmdbMovie.ImdbId);
+                                        ret = await _liteDB.GetItemAsync(tmdbMovie.ImdbId);
                                     }
                                 if (ret == null)
                                 {
@@ -557,7 +559,10 @@ namespace Kolibri.net.SilverScreen.Controller
             //Sjekk om tittelen finnes i LiteDB som tittel/år
             if (ret == null && (_updateTriState==CheckState. Checked||_updateTriState==CheckState.Unchecked))
             {
-                ret = await _liteDB.FindItemByTitle(title, year);
+                var tmp =  await _liteDB.FindByFileNameAsync(file);
+                if (tmp != null)
+                { ret = await _liteDB.GetItemAsync(tmp.ImdbId); }
+                if (ret == null) ret = await _liteDB.FindItemByTitle(title, year);
                 if (ret != null)
                 {
                     if (ret.TomatoUrl.Equals(file.FullName))

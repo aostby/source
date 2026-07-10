@@ -456,7 +456,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     case MultimediaType.movie:
                     case MultimediaType.Movies:
 
-                        var movie = _liteDB.FindItemAsync(tableItem.Rows[0]["ImdbId"].ToString());
+                        var movie = _liteDB.GetItemAsync(tableItem.Rows[0]["ImdbId"].ToString());
                         SetForm(movie, splitContainer2.Panel2);
                         break;
                     case MultimediaType.Series:

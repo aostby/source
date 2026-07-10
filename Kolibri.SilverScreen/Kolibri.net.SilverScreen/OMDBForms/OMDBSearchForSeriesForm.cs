@@ -87,7 +87,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                     string tit = SeriesUtilities.GetSeriesTitle(item);
                     Item omdb = null;
                     if (item.Contains("{"))
-                        omdb = await _liteDB.FindItemAsync(item.ImdbIdFromDirectoryName());
+                        omdb = await _liteDB.GetItemAsync(item.ImdbIdFromDirectoryName());
                     if (omdb == null) { omdb = _liteDB.FindItemByTitle(tit).FirstOrDefault(); }
 
 
@@ -227,7 +227,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
 
             try
             {
-                var yearItem = _liteDB.FindItemAsync(textBoxSearchValue.Text);
+                var yearItem = _liteDB.GetItemAsync(textBoxSearchValue.Text);
                 string year = "";
                 if (!string.IsNullOrWhiteSpace(textBoxYearValue.Text)) { year = textBoxYearValue.Text; }
                 IMDBForms.MovieForm form = new IMDBForms.MovieForm(_settings, new FileInfo(textBoxSearchValue.Text), year);
@@ -372,7 +372,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
             {
                 if (dataGridView1.Focused)
                 {
-                    var item = await _liteDB.FindItemAsync(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
+                    var item = await _liteDB.GetItemAsync(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
                     pictureBoxCurrent.Image = (Bitmap)ImageUtilities.GetImageFromUrl(item.Poster);
                     labelPath.Text = item.TomatoUrl.ToString();
                 }
@@ -394,7 +394,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                 textBoxYearValue.Text = string.Empty;
                 if (sender.Equals(toolStripMenuItemNavn))
                 {
-                    var item = await _liteDB.FindItemAsync(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
+                    var item = await _liteDB.GetItemAsync(dataGridView1.SelectedRows[0].Cells["ImdbId"].Value.ToString());
                     if (item != null)
                     {
                         textBoxSearchValue.Text = item.Title;
@@ -425,7 +425,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                                     var destination = dirInfo.FullName + $" {{imdb-{ret}}}";
                                     Directory.Move(dirInfo.FullName, destination);
                                     string tit = dataGridView1.SelectedRows[0].Cells["Title"].Value.ToString();
-                                    var item = await _liteDB.FindItemAsync(tit);
+                                    var item = await _liteDB.GetItemAsync(tit);
                                     if (item != null)
                                     {
                                         item.TomatoUrl = destination;
@@ -486,7 +486,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         await _liteDB.UpsertAsync(fItem);
                         if (Directory.Exists(fItem.ItemFileInfo.FullName))
                         {
-                            Item item = await _liteDB.FindItemAsync(fItem.ImdbId);
+                            Item item = await _liteDB.GetItemAsync(fItem.ImdbId);
                             if (item != null && item.Type == "series")
                             {
                                 SetStatusLabelText($"Updating path for {fItem.ItemFileInfo.FullName}");
@@ -545,7 +545,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                         if (Directory.Exists(fItem.ItemFileInfo.FullName))
                         {
                             await _liteDB.UpsertAsync(fItem);
-                            Item item = await _liteDB.FindItemAsync(imdbid);
+                            Item item = await _liteDB.GetItemAsync(imdbid);
                             if (item != null && item.Type == "series")
                             {
                                 SetStatusLabelText($"Updating path for {fItem.ItemFileInfo.FullName}");
@@ -588,7 +588,7 @@ namespace Kolibri.net.SilverScreen.OMDBForms
                                 // item = _liteDB.FindItem(textBoxManual.Text); //Ikke hent lokal kopi, poenget med manuelt søk er å hente ny versjon fra OMDB
                                 if (imdbid != null)
                                 {
-                                    var item = await _liteDB.FindItemAsync(imdbid);
+                                    var item = await _liteDB.GetItemAsync(imdbid);
                                     if (item == null)
                                     {
 
