@@ -415,6 +415,7 @@ namespace Kolibri.net.SilverScreen.Controller
                 //plex
                 if (ret == null && _plex != null)
                 {
+                    //Finn løsning på om PLEX er OK!!!
                     Item? srcPlex = await _plex?.FindByTitleAsync(title, year);
 
                     if (srcPlex != null)
@@ -422,7 +423,8 @@ namespace Kolibri.net.SilverScreen.Controller
                         ret = srcPlex;
                         if (ret != null)
                         {
-                            if (test == null || (!$"{ret.TomatoUrl}".Equals(file.FullName)))
+                            if (test == null  
+                                &&(!$"{ret.TomatoUrl}".ToUpper().GetHashCode().Equals(file.FullName.ToUpper().GetHashCode())) )
                             {
                                 ret.TomatoUrl = file.FullName;
                              var ok=   await _liteDB.UpsertAsync(ret);

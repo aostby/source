@@ -60,6 +60,9 @@
             grusToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabelStatus = new ToolStripStatusLabel();
+            toolStripSeparator5 = new ToolStripSeparator();
+            toolStripSeparator6 = new ToolStripSeparator();
+            toolStripMenuItemPlex2LiteDB = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
@@ -86,26 +89,26 @@
             // liteDBFilepathToolStripMenuItem
             // 
             liteDBFilepathToolStripMenuItem.Name = "liteDBFilepathToolStripMenuItem";
-            liteDBFilepathToolStripMenuItem.Size = new Size(151, 22);
+            liteDBFilepathToolStripMenuItem.Size = new Size(180, 22);
             liteDBFilepathToolStripMenuItem.Text = "LiteDB filepath";
             liteDBFilepathToolStripMenuItem.Click += liteDBFilepathToolStripMenuItem_Click;
             // 
             // innstillingerToolStripMenuItem
             // 
             innstillingerToolStripMenuItem.Name = "innstillingerToolStripMenuItem";
-            innstillingerToolStripMenuItem.Size = new Size(151, 22);
+            innstillingerToolStripMenuItem.Size = new Size(180, 22);
             innstillingerToolStripMenuItem.Text = "Innstillinger";
             innstillingerToolStripMenuItem.Click += innstillingerToolStripMenuItem_Click;
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(148, 6);
+            toolStripSeparator3.Size = new Size(177, 6);
             // 
             // lukkToolStripMenuItem
             // 
             lukkToolStripMenuItem.Name = "lukkToolStripMenuItem";
-            lukkToolStripMenuItem.Size = new Size(151, 22);
+            lukkToolStripMenuItem.Size = new Size(180, 22);
             lukkToolStripMenuItem.Text = "Lukk";
             lukkToolStripMenuItem.Click += lukkToolStripMenuItem_Click;
             // 
@@ -151,7 +154,7 @@
             // 
             // bakgrunnOppdateringToolStripMenuItem
             // 
-            bakgrunnOppdateringToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filmerToolStripMenuItem, iMDbDataFilesToolStripMenuItem });
+            bakgrunnOppdateringToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filmerToolStripMenuItem, toolStripSeparator5, toolStripMenuItemPlex2LiteDB, toolStripSeparator6, iMDbDataFilesToolStripMenuItem });
             bakgrunnOppdateringToolStripMenuItem.Name = "bakgrunnOppdateringToolStripMenuItem";
             bakgrunnOppdateringToolStripMenuItem.Size = new Size(193, 22);
             bakgrunnOppdateringToolStripMenuItem.Text = "Bakgrunn oppdatering";
@@ -159,14 +162,14 @@
             // filmerToolStripMenuItem
             // 
             filmerToolStripMenuItem.Name = "filmerToolStripMenuItem";
-            filmerToolStripMenuItem.Size = new Size(150, 22);
+            filmerToolStripMenuItem.Size = new Size(180, 22);
             filmerToolStripMenuItem.Text = "Filmer";
             filmerToolStripMenuItem.Click += filmerToolStripMenuItem_Click;
             // 
             // iMDbDataFilesToolStripMenuItem
             // 
             iMDbDataFilesToolStripMenuItem.Name = "iMDbDataFilesToolStripMenuItem";
-            iMDbDataFilesToolStripMenuItem.Size = new Size(150, 22);
+            iMDbDataFilesToolStripMenuItem.Size = new Size(180, 22);
             iMDbDataFilesToolStripMenuItem.Text = "IMDbDataFiles";
             iMDbDataFilesToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
@@ -192,35 +195,35 @@
             // movieslocalToolStripMenuItem
             // 
             movieslocalToolStripMenuItem.Name = "movieslocalToolStripMenuItem";
-            movieslocalToolStripMenuItem.Size = new Size(180, 22);
+            movieslocalToolStripMenuItem.Size = new Size(148, 22);
             movieslocalToolStripMenuItem.Text = "Movies (local)";
             movieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // serieslocalToolStripMenuItem
             // 
             serieslocalToolStripMenuItem.Name = "serieslocalToolStripMenuItem";
-            serieslocalToolStripMenuItem.Size = new Size(180, 22);
+            serieslocalToolStripMenuItem.Size = new Size(148, 22);
             serieslocalToolStripMenuItem.Text = "Series (local)";
             serieslocalToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // searchToolStripMenuItem
             // 
             searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            searchToolStripMenuItem.Size = new Size(180, 22);
+            searchToolStripMenuItem.Size = new Size(148, 22);
             searchToolStripMenuItem.Text = "Search...";
             searchToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // genreSearchToolStripMenuItem
             // 
             genreSearchToolStripMenuItem.Name = "genreSearchToolStripMenuItem";
-            genreSearchToolStripMenuItem.Size = new Size(180, 22);
+            genreSearchToolStripMenuItem.Size = new Size(148, 22);
             genreSearchToolStripMenuItem.Text = "Genre search";
             genreSearchToolStripMenuItem.Click += multiMedialocalToolStripMenuItem_Click;
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(177, 6);
+            toolStripSeparator4.Size = new Size(145, 6);
             // 
             // windowsToolStripMenuItem
             // 
@@ -286,6 +289,23 @@
             toolStripStatusLabelStatus.Size = new Size(39, 17);
             toolStripStatusLabelStatus.Text = "Status";
             // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new Size(177, 6);
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(177, 6);
+            // 
+            // toolStripMenuItemPlex2LiteDB
+            // 
+            toolStripMenuItemPlex2LiteDB.Name = "toolStripMenuItemPlex2LiteDB";
+            toolStripMenuItemPlex2LiteDB.Size = new Size(180, 22);
+            toolStripMenuItemPlex2LiteDB.Text = "Plex2LiteDB";
+            toolStripMenuItemPlex2LiteDB.Click += toolStripMenuItemPlex2LiteDB_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -341,5 +361,8 @@
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripSeparator toolStripSeparator4;
+        private ToolStripSeparator toolStripSeparator5;
+        private ToolStripMenuItem toolStripMenuItemPlex2LiteDB;
+        private ToolStripSeparator toolStripSeparator6;
     }
 }

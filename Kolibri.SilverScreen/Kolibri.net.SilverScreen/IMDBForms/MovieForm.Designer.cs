@@ -74,6 +74,7 @@
             buttonStream = new Button();
             labelCountry = new Label();
             tbCountry = new TextBox();
+            btnTopTMDB = new Button();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
@@ -109,7 +110,7 @@
             // 
             // tbYear
             // 
-            tbYear.Location = new Point(92, 233);
+            tbYear.Location = new Point(92, 184);
             tbYear.Margin = new Padding(4);
             tbYear.Name = "tbYear";
             tbYear.ReadOnly = true;
@@ -118,7 +119,7 @@
             // 
             // tbRated
             // 
-            tbRated.Location = new Point(92, 264);
+            tbRated.Location = new Point(92, 215);
             tbRated.Margin = new Padding(4);
             tbRated.Name = "tbRated";
             tbRated.ReadOnly = true;
@@ -127,7 +128,7 @@
             // 
             // tbRuntime
             // 
-            tbRuntime.Location = new Point(507, 233);
+            tbRuntime.Location = new Point(507, 184);
             tbRuntime.Margin = new Padding(4);
             tbRuntime.Name = "tbRuntime";
             tbRuntime.ReadOnly = true;
@@ -136,7 +137,7 @@
             // 
             // tbGenre
             // 
-            tbGenre.Location = new Point(416, 264);
+            tbGenre.Location = new Point(416, 215);
             tbGenre.Margin = new Padding(4);
             tbGenre.Name = "tbGenre";
             tbGenre.ReadOnly = true;
@@ -145,7 +146,7 @@
             // 
             // tbActors
             // 
-            tbActors.Location = new Point(92, 300);
+            tbActors.Location = new Point(92, 249);
             tbActors.Margin = new Padding(4);
             tbActors.Name = "tbActors";
             tbActors.ReadOnly = true;
@@ -154,17 +155,17 @@
             // 
             // tbPlot
             // 
-            tbPlot.Location = new Point(92, 339);
+            tbPlot.Location = new Point(92, 288);
             tbPlot.Margin = new Padding(4);
             tbPlot.Multiline = true;
             tbPlot.Name = "tbPlot";
             tbPlot.ReadOnly = true;
-            tbPlot.Size = new Size(526, 186);
+            tbPlot.Size = new Size(218, 225);
             tbPlot.TabIndex = 10;
             // 
             // tbMetascore
             // 
-            tbMetascore.Location = new Point(263, 264);
+            tbMetascore.Location = new Point(263, 215);
             tbMetascore.Margin = new Padding(4);
             tbMetascore.Name = "tbMetascore";
             tbMetascore.ReadOnly = true;
@@ -184,7 +185,7 @@
             // labelYear
             // 
             labelYear.AutoSize = true;
-            labelYear.Location = new Point(11, 237);
+            labelYear.Location = new Point(11, 188);
             labelYear.Margin = new Padding(4, 0, 4, 0);
             labelYear.Name = "labelYear";
             labelYear.Size = new Size(29, 15);
@@ -194,7 +195,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(11, 268);
+            label3.Location = new Point(11, 219);
             label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
             label3.Size = new Size(37, 15);
@@ -204,7 +205,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(422, 237);
+            label4.Location = new Point(422, 188);
             label4.Margin = new Padding(4, 0, 4, 0);
             label4.Name = "label4";
             label4.Size = new Size(52, 15);
@@ -214,7 +215,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(334, 268);
+            label5.Location = new Point(334, 219);
             label5.Margin = new Padding(4, 0, 4, 0);
             label5.Name = "label5";
             label5.Size = new Size(38, 15);
@@ -224,7 +225,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(10, 304);
+            label6.Location = new Point(10, 253);
             label6.Margin = new Padding(4, 0, 4, 0);
             label6.Name = "label6";
             label6.Size = new Size(41, 15);
@@ -234,7 +235,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(179, 268);
+            label7.Location = new Point(179, 219);
             label7.Margin = new Padding(4, 0, 4, 0);
             label7.Name = "label7";
             label7.Size = new Size(62, 15);
@@ -244,7 +245,7 @@
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new Point(10, 339);
+            label8.Location = new Point(10, 288);
             label8.Margin = new Padding(4, 0, 4, 0);
             label8.Name = "label8";
             label8.Size = new Size(28, 15);
@@ -287,7 +288,7 @@
             // 
             // btnClear
             // 
-            btnClear.Location = new Point(92, 536);
+            btnClear.Location = new Point(380, 546);
             btnClear.Margin = new Padding(4);
             btnClear.Name = "btnClear";
             btnClear.Size = new Size(122, 26);
@@ -387,10 +388,10 @@
             // 
             // btnTop100
             // 
-            btnTop100.Location = new Point(654, 536);
+            btnTop100.Location = new Point(176, 546);
             btnTop100.Margin = new Padding(4);
             btnTop100.Name = "btnTop100";
-            btnTop100.Size = new Size(123, 26);
+            btnTop100.Size = new Size(95, 26);
             btnTop100.TabIndex = 26;
             btnTop100.Text = "Top 100 IMDb";
             btnTop100.UseVisualStyleBackColor = true;
@@ -398,22 +399,22 @@
             // 
             // btnRecommend
             // 
-            btnRecommend.Location = new Point(784, 536);
+            btnRecommend.Location = new Point(270, 546);
             btnRecommend.Margin = new Padding(4);
             btnRecommend.Name = "btnRecommend";
-            btnRecommend.Size = new Size(136, 26);
+            btnRecommend.Size = new Size(97, 26);
             btnRecommend.TabIndex = 27;
-            btnRecommend.Text = "Recommend movie";
+            btnRecommend.Text = "Random movie";
             btnRecommend.UseVisualStyleBackColor = true;
             btnRecommend.Click += btnRecommend_Click;
             // 
             // pictureBox1
             // 
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(672, 14);
+            pictureBox1.Location = new Point(-2, 528);
             pictureBox1.Margin = new Padding(4);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(235, 83);
+            pictureBox1.Size = new Size(86, 44);
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.TabIndex = 23;
             pictureBox1.TabStop = false;
@@ -421,18 +422,19 @@
             // 
             // pbPoster
             // 
-            pbPoster.Location = new Point(654, 122);
+            pbPoster.BackgroundImageLayout = ImageLayout.Zoom;
+            pbPoster.Location = new Point(334, 288);
             pbPoster.Margin = new Padding(4);
             pbPoster.Name = "pbPoster";
-            pbPoster.Size = new Size(266, 379);
-            pbPoster.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbPoster.Size = new Size(266, 225);
+            pbPoster.SizeMode = PictureBoxSizeMode.Zoom;
             pbPoster.TabIndex = 9;
             pbPoster.TabStop = false;
             // 
             // linkTrailer
             // 
             linkTrailer.AutoSize = true;
-            linkTrailer.Location = new Point(660, 510);
+            linkTrailer.Location = new Point(92, 520);
             linkTrailer.Margin = new Padding(4, 0, 4, 0);
             linkTrailer.Name = "linkTrailer";
             linkTrailer.Size = new Size(74, 15);
@@ -464,7 +466,7 @@
             // linkLabelOpenFilePath
             // 
             linkLabelOpenFilePath.AutoSize = true;
-            linkLabelOpenFilePath.Location = new Point(738, 510);
+            linkLabelOpenFilePath.Location = new Point(178, 520);
             linkLabelOpenFilePath.Margin = new Padding(4, 0, 4, 0);
             linkLabelOpenFilePath.Name = "linkLabelOpenFilePath";
             linkLabelOpenFilePath.Size = new Size(84, 15);
@@ -485,7 +487,7 @@
             // checkBoxLookUp
             // 
             checkBoxLookUp.AutoSize = true;
-            checkBoxLookUp.Location = new Point(823, 510);
+            checkBoxLookUp.Location = new Point(263, 520);
             checkBoxLookUp.Name = "checkBoxLookUp";
             checkBoxLookUp.Size = new Size(111, 19);
             checkBoxLookUp.TabIndex = 34;
@@ -494,7 +496,7 @@
             // 
             // buttonStream
             // 
-            buttonStream.Location = new Point(221, 536);
+            buttonStream.Location = new Point(525, 546);
             buttonStream.Name = "buttonStream";
             buttonStream.Size = new Size(75, 26);
             buttonStream.TabIndex = 35;
@@ -505,7 +507,7 @@
             // labelCountry
             // 
             labelCountry.AutoSize = true;
-            labelCountry.Location = new Point(179, 237);
+            labelCountry.Location = new Point(179, 188);
             labelCountry.Margin = new Padding(4, 0, 4, 0);
             labelCountry.Name = "labelCountry";
             labelCountry.Size = new Size(50, 15);
@@ -514,18 +516,30 @@
             // 
             // tbCountry
             // 
-            tbCountry.Location = new Point(237, 233);
+            tbCountry.Location = new Point(237, 184);
             tbCountry.Margin = new Padding(4);
             tbCountry.Name = "tbCountry";
             tbCountry.ReadOnly = true;
             tbCountry.Size = new Size(173, 23);
             tbCountry.TabIndex = 36;
             // 
+            // btnTopTMDB
+            // 
+            btnTopTMDB.Location = new Point(92, 546);
+            btnTopTMDB.Margin = new Padding(4);
+            btnTopTMDB.Name = "btnTopTMDB";
+            btnTopTMDB.Size = new Size(74, 26);
+            btnTopTMDB.TabIndex = 38;
+            btnTopTMDB.Text = "Top TMDB";
+            btnTopTMDB.UseVisualStyleBackColor = true;
+            btnTopTMDB.Click += btnTopTMDB_Click;
+            // 
             // MovieForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(934, 577);
+            ClientSize = new Size(631, 577);
+            Controls.Add(btnTopTMDB);
             Controls.Add(labelCountry);
             Controls.Add(tbCountry);
             Controls.Add(buttonStream);
@@ -616,6 +630,7 @@
         private Button buttonStream;
         private Label labelCountry;
         private TextBox tbCountry;
+        private Button btnTopTMDB;
     }
 }
 

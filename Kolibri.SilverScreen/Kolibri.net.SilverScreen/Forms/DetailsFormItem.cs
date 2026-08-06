@@ -185,7 +185,8 @@ namespace Kolibri.net.SilverScreen.Forms
                     toolTipDetail.SetToolTip(labelQuality, $"{labelQuality.Text} - {ByteUtilities.GetByteSize(info.Length)}");
 
                     tbAdded.Text =  t.DateAdded.ToShortDateString();
-
+                    try { toolTipDetail.SetToolTip(tbAdded, StringUtilities.FormatMinutesAsHoursAndMinutes((int)(DateTime.Now - t.DateAdded).TotalMinutes)); }
+                    catch (Exception) { }
                 }
                 catch (Exception)
                 {
@@ -477,12 +478,13 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 TMDbLib.Objects.Movies.Credits credits = await _liteDB.GetCredits(_item.ImdbId);
                 if (credits == null)
+                {
                     credits = await _TMDB.GetMovieCredits(_item.Title, _item.Year.ToInt32());
-
-
+                    _ =await _liteDB.Update(_item.ImdbId, credits);
+                } 
 
                 Form form =await CreatateFormController. GenerateFormFromActors( credits,  _item);
-                form.ShowDialog();  
+              //  form.Show ();  
             }
             catch (Exception ex) { }
             this.Cursor = Cursors.Default;

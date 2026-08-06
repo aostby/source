@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kolibri.net.SilverScreen.IMDBForms
+namespace Kolibri.net.SilverScreen.Entities
 {
     public class Top100IMDb
     {
@@ -27,10 +27,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         public string ImdbId { get; set; }
 
         [JsonProperty("TomatoUrl")]
-        public string TomatoUrl { get; set; }
-
-
-
+        public string TomatoUrl { get; set; } 
 
     }
 }

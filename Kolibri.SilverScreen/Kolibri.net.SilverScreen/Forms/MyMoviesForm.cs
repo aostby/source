@@ -295,6 +295,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 catch (Exception) { }
 
                 form = new MovieForm(_userSettings, mm as Item, fi , _plex);
+                try { if (this.IsMdiContainer){ form.MdiParent = this; } } catch (Exception) { }
             }
             form.Text += $" {mm.Title}";
             SetForm(form, panel);

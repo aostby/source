@@ -7,6 +7,7 @@ using Kolibri.net.SilverScreen.Controller;
 using Kolibri.net.SilverScreen.Forms;
 using Microsoft.Extensions.Configuration;
 using static Kolibri.net.SilverScreen.Controls.Constants;
+using static TMDbLib.Objects.General.WatchProvider;
 
 namespace Kolibri.SilverScreen.Forms
 {
@@ -97,8 +98,8 @@ namespace Kolibri.SilverScreen.Forms
                 Form newMDIChild = null;
                 if (sender.Equals(movieslocalToolStripMenuItem))
                 {
-                   // if (MessageBox.Show("Want new form?", "DEVELOP", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                        newMDIChild = new MyMoviesForm(_userSettings);
+                    // if (MessageBox.Show("Want new form?", "DEVELOP", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    newMDIChild = new MyMoviesForm(_userSettings);
                     //else
                     //    newMDIChild = new ShowLocalMoviesForm(MultimediaType.Movies, _userSettings);
                 }
@@ -273,7 +274,7 @@ namespace Kolibri.SilverScreen.Forms
         }
 
         private async void filmerToolStripMenuItem_Click(object sender, EventArgs e)
-        { 
+        {
             var dInfo = FileUtilities.LetOppMappe(_userSettings.UserFilePaths.MoviesSourcePath, $"Let opp mappe ({Kolibri.net.SilverScreen.Controls.Constants.MultimediaType.Movies})");
             if (dInfo != null && dInfo.Exists)
             {
@@ -344,16 +345,51 @@ namespace Kolibri.SilverScreen.Forms
 
                 string msg = $"Exception occured when trying to remove directories from folder:{Environment.NewLine}{ex.Message}";
                 var type = ex.GetType();
-                if (type.Equals(typeof(IOException))&&msg.Contains(@"\\")) {
+                if (type.Equals(typeof(IOException)) && msg.Contains(@"\\"))
+                {
                     msg += $"{Environment.NewLine}{Environment.NewLine}{type.Name} often needs manual measures to clean up";
                 }
 
-                MessageBox.Show(msg, type.Name );
+                MessageBox.Show(msg, type.Name);
                 SetStatusLabel(msg);
             }
         }
 
-       
-    }
+        private async void toolStripMenuItemPlex2LiteDB_Click(object sender, EventArgs e)
+        {// Use async/await inside the lambda wrapper
+            await Task.Run(async () => await FetchAndSavePlex2LiteDBAsync());
+        }
 
+        public async Task FetchAndSavePlex2LiteDBAsync()
+        {  
+
+            try
+            {
+                using (LiteDBController ldbc = new(new FileInfo(_userSettings.LiteDBFilePath), false, false))
+                {
+                    SetStatusLabel("Initializing LiteDB");
+                    var plex = new PlexController(_userSettings);
+                    SetStatusLabel("Initializing Plex");
+                    Task.Run(() => { _ = plex.GetAllItemsAsync(); });
+                    SetStatusLabel("Initializing Plex, now looping through items");
+                    var list = await plex.GetAllItemsAsync();
+                    foreach (var item in list)
+                    {
+                        if (ldbc.GetItemAsync(item.ImdbId) == null)
+                        {
+                            ldbc.InsertAsync(item); 
+                            //SetStatusLabel("Plex2LiteDB finished.");
+                        }
+                    }
+                }
+               
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+                SetStatusLabel(ex.Message);
+            }
+        }
+    }
 }
