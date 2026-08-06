@@ -1,4 +1,5 @@
-﻿using Kolibri.net.Common.Dal.Controller;
+﻿using Google.Protobuf.Collections;
+using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.FormUtilities.Controller;
 using Kolibri.net.Common.FormUtilities.Forms;
@@ -6,8 +7,11 @@ using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controls;
+using Kolibri.net.SilverScreen.Entities;
+
 //using Microsoft.Office.Interop.Excel;
 using OMDbApiNet.Model;
+using Org.BouncyCastle.Ocsp;
 using System.Collections;
 using System.ComponentModel;
 using System.Data;
@@ -90,89 +94,33 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             }
         }
 
-        private void buttonSearch_Click(object sender, EventArgs e)
+        private async void buttonSearch_Click(object sender, EventArgs e)
         {
             buttonVisualize.Enabled = false;
             try
             {
-                List<Item> ret = null;
+                BrowseMoviesSearchOptions opt = new BrowseMoviesSearchOptions()
+                {
+                    SearchText = tbSearch.Text,
+                    Genre = comboBoxGenre.Text,
+                    Year = comboBoxYear.Text,
+                    Actor = radioButtonActor.Checked,
+                    MovieTitle = radioButtonMovieTitle.Checked
+                };
 
-                string searhText = tbSearch.Text;
-                string genre = comboBoxGenre.Text;
-                string year = comboBoxYear.Text;
-                if (year == "All") year = string.Empty;
+                if (opt.Year == "All") opt.Year = string.Empty;
 
-                if (string.IsNullOrWhiteSpace(searhText + genre + year))
+                if (!opt.HasAnyCriteria())
                 {
                     labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - No items found for this search. Check your parameters";
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(genre))
-                {
-                    ret = _LITEDB.FindItemByGenreNew(genre).ToList();
 
-                    if (!string.IsNullOrEmpty(searhText) && ret != null && ret.Count() > 0)
-                    {
-                        ret = ret.Where(a => a.Title.ToUpper().Contains(searhText.ToUpper())).ToList();
-                    }
-
-                    try
-                    {
-
-                        if (!string.IsNullOrEmpty(year) && ret != null && ret.Count() > 0 && year != "All")
-                        {
-                            int min = year.Split('-').FirstOrDefault().Trim().ToInt().GetValueOrDefault();
-                            int max = year.Split('-').LastOrDefault().Trim().ToInt().GetValueOrDefault();
-
-                            ret = ret.Where(d => (int)d.Year.ToInt().GetValueOrDefault() >= min && (int)d.Year.ToInt().GetValueOrDefault() <= max).ToList();
-                        }
-                    }
-                    catch (Exception) { }
-                }
-
-                if (ret == null && !string.IsNullOrEmpty(year))
-                {
-                    try
-                    {
-                        ret = _LITEDB.FindAllItems().Result.ToList();
-                        if (!string.IsNullOrEmpty(year) && ret != null && ret.Count() > 0)
-                        {
-                            int min = year.Split('-').FirstOrDefault().Trim().ToInt().GetValueOrDefault();
-                            int max = year.Split('-').LastOrDefault().Trim().ToInt().GetValueOrDefault();
-
-                            ret = ret.Where(d => (int)d.Year.ToInt().GetValueOrDefault() >= min && (int)d.Year.ToInt().GetValueOrDefault() <= max).ToList();
-                            if (checkBoxDecending.Checked)
-                            {
-                                ret = ret.OrderByDescending(x => x.Year).ThenByDescending(y => y.ImdbRating).ToList();
-                            }
-                            else
-                            {
-                                ret = ret.OrderBy(x => x.Year).ThenBy(y => y.ImdbRating).ToList();
-                            }
-                        }
-                    }
-                    catch (Exception) { }
+                var ret = await FilterSeach(opt);
 
 
-                    if (!string.IsNullOrEmpty(searhText) && ret != null && ret.Count() > 0)
-                    {
-                        ret = ret.FindAll(a => a.Title.ToUpper().Contains(searhText.ToUpper())).ToList();
-
-                        if (ret == null) { ret = ret.FindAll(a => a.Actors.ToUpper().Contains(searhText.ToUpper())).ToList(); }
-                    }
-
-
-                }
-
-                if (ret == null && !string.IsNullOrEmpty(searhText))
-                {
-                    ret = _LITEDB.FindItemByTitle(searhText).ToList();
-                    if (ret == null||ret.Count<=0) { ret = ret.FindAll(a => a.Actors.ToUpper().Contains(searhText.ToUpper())).ToList(); }
-                }
-
-
-                var gen = (ret != null) ? ret.ToList() : null;
+                //     var gen = (ret != null) ? ret.ToList() : null;
 
                 if (ret != null && ret.Count() > 0)
                 {
@@ -180,8 +128,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                         ret = checkBoxDecending.Checked ? ret.OrderByDescending(s => s.ImdbRating).ToList() : ret.OrderBy(s => s.ImdbRating).ToList();
                     else if (radioButtonYear.Checked)
                         ret = checkBoxDecending.Checked ? ret.OrderByDescending(s => s.Year).ToList() : ret.OrderBy(s => s.Year).ToList();
-                    labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - Number of items found for this search: searhText: {searhText} + genre: {genre} + year: {year} = {ret.Count()}";
-                    DisplayHtml(checkBoxPoster.Checked, ret, $"{searhText} {genre} {year}");
+                    labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - Number of items found for this search: searhText: {opt.SearchText} + genre: {opt.Genre} + year: {opt.Year} = {ret.Count()}";
+                    DisplayHtml(checkBoxPoster.Checked, ret, $"{opt.SearchText} {opt.Genre} {opt.Year}");
                     buttonVisualize.Tag = ret;
                     buttonVisualize.Enabled = buttonVisualize.Tag != null && ret.Count() > 0;
                 }
@@ -189,13 +137,128 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 else
                 {
                     MessageBox.Show("No movies found!", "{searhText} + {genre} + {year}");
-                    labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - No items found for this search. Check your parameters searhText: {searhText} + genre: {genre} + year: {year}";
+                    labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - No items found for this search. Check your parameters searhText: {opt.SearchText} + genre: {opt.Genre} + year: {opt.Year}";
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+        }
+
+        private async Task<List<Item>>? FilterSeach(BrowseMoviesSearchOptions opt)
+        {
+            List<Item> ret = _LITEDB.FindAllItems("movies").GetAwaiter().GetResult().ToList();
+            if (!string.IsNullOrEmpty(opt.Genre))
+            {
+                ret = _LITEDB.FindItemByGenreNew(opt.Genre).ToList();
+                if (opt.MovieTitle)
+                {
+                    if (!string.IsNullOrEmpty(opt.SearchText) && ret != null && ret.Count() > 0)
+                    {
+                        ret = ret.Where(a => a.Title.ToUpper().Contains(opt.SearchText.ToUpper())).ToList();
+                    }
+                }
+                else if (opt.Actor)
+                {
+
+                    ret = ret.FindAll(a => !string.IsNullOrEmpty(a.Actors) && a.Actors.ToUpper().Contains(opt.SearchText.ToUpper())).ToList();
+                }
+
+                try
+                {
+
+                    if (!string.IsNullOrEmpty(opt.Year) && ret != null && ret.Count() > 0 && opt.Year != "All")
+                    {
+                        int min = opt.Year.Split('-').FirstOrDefault().Trim().ToInt().GetValueOrDefault();
+                        int max = opt.Year.Split('-').LastOrDefault().Trim().ToInt().GetValueOrDefault();
+
+                        ret = ret.Where(d => (int)d.Year.ToInt().GetValueOrDefault() >= min && (int)d.Year.ToInt().GetValueOrDefault() <= max).ToList();
+                    }
+                }
+                catch (Exception) { }
+            }
+
+            ret = FilterByYear(opt, ret);
+            if (opt.MovieTitle)
+            {
+                if ((ret != null || ret.Count() >= 0) && !string.IsNullOrEmpty(opt.SearchText))
+                {
+                    ret = _LITEDB.FindItemByTitle(opt.SearchText).ToList();
+                    if (ret == null || ret.Count <= 0) { ret = ret.FindAll(a => !string.IsNullOrEmpty(a.Actors) && a.Actors.ToUpper().Contains(opt.SearchText.ToUpper())).ToList(); }
+                }
+            }
+            else if (opt.Actor)
+            {
+                if (ret == null || ret.Count() <= 0)
+                {
+                    var cont = await _LITEDB.FindAllItems("movies");
+                    ret = cont.ToList<Item>();
+                    //ret = await FilterSeach(opt, ret);
+                }
+                if (opt.HasAnyCriteria() && ret != null)
+                {
+                    ret = ret.FindAll(a => !string.IsNullOrEmpty(a.Actors) && a.Actors.ToUpper().Contains(opt.SearchText.ToUpper())).OrderByDescending(x => x.Year).ToList();
+                    ret = FilterByYear(opt, ret);
+
+                }
+
+
+
+
+
+
+            }
+            else
+            {
+                throw new Exception("SearchCriteria too weak");
+            }
+
+            return ret;
+
+        }
+
+        private List<Item> FilterByYear(BrowseMoviesSearchOptions opt, List<Item> ret)
+        {
+            if (!string.IsNullOrEmpty(opt.Year))
+            {
+                try
+                {
+                    if (ret == null)
+                    {
+                        ret = _LITEDB.FindAllItems().Result.ToList();
+                    }
+                    if (!string.IsNullOrEmpty(opt.Year) && ret != null && ret.Count() > 0)
+                    {
+                        int min = opt.Year.Split('-').FirstOrDefault().Trim().ToInt().GetValueOrDefault();
+                        int max = opt.Year.Split('-').LastOrDefault().Trim().ToInt().GetValueOrDefault();
+
+                        //     ret = ret.Where(d => (int)d.Year.ToInt().GetValueOrDefault() >= min && (int)d.Year.ToInt().GetValueOrDefault() <= max).ToList();
+                        ret = ret.FindAll(d => !string.IsNullOrEmpty(d.Year) && d.Year.ToInt() >= min && d.Year.ToInt() <= max).ToList();
+                        if (checkBoxDecending.Checked)
+                        {
+                            ret = ret.OrderByDescending(x => x.Year).ThenByDescending(y => y.ImdbRating).ToList();
+                        }
+                        else
+                        {
+                            ret = ret.OrderBy(x => x.Year).ThenBy(y => y.ImdbRating).ToList();
+                        }
+                    }
+                }
+                catch (Exception) { }
+
+
+                if (opt.MovieTitle && !string.IsNullOrEmpty(opt.SearchText) && ret != null && ret.Count() > 0)
+                {
+                    ret = ret.FindAll(a => a.Title.ToUpper().Contains(opt.SearchText.ToUpper())).ToList();
+
+                    if (ret == null) { ret = ret.FindAll(a => a.Actors.ToUpper().Contains(opt.SearchText.ToUpper())).ToList(); }
+                }
+
+
+            }
+
+            return ret;
         }
 
         private async void DisplayHtml(bool poster, IEnumerable<Item> liste, string title = null)
@@ -356,7 +419,7 @@ img:hover{{transform: scale(1.5)}}
                 foreach (DataRow row in dt.Rows)
                 {
                     html.Append($@"<div id=""{row["Type"]}"" style=""display:block"">");
-                    Item movie =    _LITEDB.FindItemByTitle($"{row["Title"]}", $"{row["Year"]}".ToInt().GetValueOrDefault()).GetAwaiter().GetResult();
+                    Item movie = _LITEDB.FindItemByTitle($"{row["Title"]}", $"{row["Year"]}".ToInt().GetValueOrDefault()).GetAwaiter().GetResult();
 
                     html.Append($"<tr>");
                     foreach (DataColumn item in row.Table.Columns)
@@ -503,7 +566,7 @@ img:hover{{transform: scale(1.5)}}
         {
             try
             {
-                        DirectoryInfo dirInfo = FolderUtilities.LetOppMappe(_lastPath);
+                DirectoryInfo dirInfo = FolderUtilities.LetOppMappe(_lastPath);
                 if (dirInfo == null || !dirInfo.Exists)
                 { return; }
                 _lastPath = dirInfo.FullName;
@@ -529,6 +592,52 @@ img:hover{{transform: scale(1.5)}}
                     labelInfo.Text = $"{DateTime.Now.ToShortTimeString()} - No items found for this search. Check your parameters searhText: {dirInfo.FullName}";
                 }
 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+            }
+        }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {  
+                List<Item> items = buttonVisualize.Tag as List<Item>;
+                if (items != null && items.Count > 0)
+                {
+                    var plex = new PlexController(_userSettings);
+
+                    var test = await plex.GetPlaylistsAsync();
+
+                   string pl = null;
+                    try
+                    {
+                        pl = test.FindAll(x => x.Equals($"{tbSearch.Text}", StringComparison.OrdinalIgnoreCase)).First();
+                    }
+                    catch (Exception) { }
+
+
+                    if (pl == null)
+                    {
+                        _ = await plex.CreatePlayList(tbSearch.Text, items);
+
+                        test = await plex.GetPlaylistsAsync();
+                        pl = test.FindAll(x => x.Equals($"{tbSearch.Text}", StringComparison.OrdinalIgnoreCase)).First();
+                    }
+                    
+          
+
+                    if (!string.IsNullOrWhiteSpace(  pl))
+                    {   foreach (var item in items)
+                        {
+                            if (_LITEDB.GetItemAsync(item.ImdbId) != null)
+                            {
+                                _ = await plex.AddElementToPlaylist(pl, item.ImdbId);
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {

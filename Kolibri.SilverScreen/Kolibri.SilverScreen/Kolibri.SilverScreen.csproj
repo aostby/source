@@ -21,9 +21,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LiteDB" Version="5.0.21" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj" />
@@ -66,7 +66,7 @@
     </Compile>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy unrestricted -file E:\DEV\GitHub\source\zipargs.ps1 -rootpath $(SolutionDir) -zippath &quot;E:\DEV\2025\Backup\$(TargetName)_$([System.DateTime]::Now.ToString(yyyy-MM-dd_HHmmss)).zip&quot;" />
+    <Exec Command="&quot;c:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy unrestricted -file E:\DEV\GitHub\source\zipargs.ps1 -rootpath $(SolutionDir) -zippath &quot;E:\DEV\2026\Backup\$(TargetName)_$([System.DateTime]::Now.ToString(yyyy-MM-dd_HHmmss)).zip&quot;" />
   </Target>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="RMDIR &quot;\\Uranusshare\dev\RELEASE\SilverScreen\publish&quot; /S /Q" />
