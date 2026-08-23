@@ -96,6 +96,23 @@
             el.style.display = el.style.display === "block" ? "none" : "block";
         }
 
+
+        function colorByImdbRating(rating) {
+
+            let color = '#ccc'; // default gray
+
+            if (rating >= 8.0) {
+                color = '#f5c518'; // IMDb Gold for great movies
+            } else if (rating >= 6.0) {
+                color = '#4caf50'; // Green for good/decent movies
+            } else if (rating >= 4.0) {
+                color = '#ff9800'; // Orange for mediocre movies
+            } else {
+                color = '#f44336'; // Red for poor movies
+            }
+
+            return color;
+        }
         function renderMovies(data) {
             const tbody = document.getElementById("movieBody");
             tbody.innerHTML = "";
@@ -108,6 +125,7 @@
                 const imdb = safe(m, "ImdbRating");
                 const plot = safe(m, "Plot");
                 const poster = safe(m, "Poster");
+                
 
                 const tr = document.createElement("tr");
 
@@ -117,11 +135,14 @@
                          src="${poster}"
                          loading="lazy"
                          onerror="this.style.display='none'">
-                </td>
+                </td> 
+
                 <td>${title}</td>
                 <td>${year}</td>
                 <td>${genre}</td>
-                <td class="score">${imdb}</td>
+
+                 <td class="score">  <span style="color: ${colorByImdbRating(imdb)}">${imdb}</span> </td>
+
                 <td>
                     <div class="plot-short" onclick="togglePlot(${index})">
                         ${getShortPlot(plot)}

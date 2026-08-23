@@ -183,13 +183,12 @@ namespace Kolibri.net.SilverScreen.Forms
                 BuildByGenre();
             else if (radioButtonTitle.Checked)
                 BuildByTitle();
-
             else if (radioButtonActor.Checked)
                 BuildByActor();
-
-
             else if (radioButtonRated.Checked)
                 BuildByRated();
+            else if (radioButtonExists.Checked)
+                BuildByFileExists();    
 
             treeView1.EndUpdate();
             try
@@ -479,6 +478,33 @@ namespace Kolibri.net.SilverScreen.Forms
                 treeView1.Nodes.Add(parent);
             }
         }
+
+        private void BuildByFileExists()
+        {
+            var groups = _items
+                .GroupBy(i => $"{File.Exists(i.TomatoUrl)}" )
+                .OrderByDescending(g => g.Key);
+
+            foreach (var group in groups)
+            {
+                TreeNode parent = new TreeNode($"Exists: {group.Key}");
+
+                foreach (var item in group.OrderBy(r => r.Title))
+                {
+                    string info = GetTooltipInfo(item);
+                    parent.Nodes.Add(new TreeNode($"{item.Title} ({item.Year}) - {item.ImdbRating}")
+                    {
+                        Tag = item,
+                        ImageKey = Path.GetExtension($"{item.TomatoUrl}".ToLower()),
+                        ToolTipText = $"{info}",
+                    });
+                }
+
+                treeView1.Nodes.Add(parent);
+            }
+        }
+
+
 
         private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {

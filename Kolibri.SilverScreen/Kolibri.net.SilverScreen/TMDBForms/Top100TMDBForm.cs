@@ -115,7 +115,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
                 {
                     var json = wc.DownloadString(url);
-                    var result = JsonConvert.DeserializeObject<WatchList>(json);
+                    var result = JsonConvert.DeserializeObject<WatchListItem>(json);
 
                     if (result.Response == "True")
                     {

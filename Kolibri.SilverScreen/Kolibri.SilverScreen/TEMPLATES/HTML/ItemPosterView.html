@@ -87,7 +87,7 @@
         }
 
         .rating {
-            color: #ffd369;
+           
             font-weight: bold;
             margin-top: 4px;
         }
@@ -133,6 +133,24 @@
 
         function safe(obj, prop) {
             return obj[prop] ?? "";
+        }
+
+
+        function colorByImdbRating( rating) {
+            
+            let color = '#ccc'; // default gray
+
+            if (rating >= 8.0) {
+                color = '#f5c518'; // IMDb Gold for great movies
+            } else if (rating >= 6.0) {
+                color = '#4caf50'; // Green for good/decent movies
+            } else if (rating >= 4.0) {
+                color = '#ff9800'; // Orange for mediocre movies
+            } else {
+                color = '#f44336'; // Red for poor movies
+            }
+             
+            return color;
         }
 
         function getShortPlot(text) {
@@ -187,7 +205,10 @@
                 <div class="content">
                     <div class="title">${title}</div>
                     <div class="meta">${year} • ${genre}</div>
-                    <div class="rating">⭐ ${rating}</div>
+                   <!-- <div class="rating">⭐ ${rating}</div> -->
+                   <div class="rating"> <span style="color: ${colorByImdbRating(rating)}"> ⭐ ${rating}</span> </div>
+
+
                     <div class="plot-short" onclick="togglePlot(${index})">
                         ${getShortPlot(plot)}
                     </div>

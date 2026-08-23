@@ -56,7 +56,7 @@
             buttonUpdate = new Button();
             buttonNewList = new Button();
             labelWatchListName = new Label();
-            comboBox1 = new ComboBox();
+            comboBoxWatchLists = new ComboBox();
             tbYearParameter = new TextBox();
             label10 = new Label();
             labelLine = new Label();
@@ -205,7 +205,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(422, 188);
+            label4.Location = new Point(446, 188);
             label4.Margin = new Padding(4, 0, 4, 0);
             label4.Name = "label4";
             label4.Size = new Size(52, 15);
@@ -215,7 +215,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(334, 219);
+            label5.Location = new Point(372, 219);
             label5.Margin = new Padding(4, 0, 4, 0);
             label5.Name = "label5";
             label5.Size = new Size(38, 15);
@@ -302,7 +302,7 @@
             groupBox1.Controls.Add(buttonUpdate);
             groupBox1.Controls.Add(buttonNewList);
             groupBox1.Controls.Add(labelWatchListName);
-            groupBox1.Controls.Add(comboBox1);
+            groupBox1.Controls.Add(comboBoxWatchLists);
             groupBox1.Controls.Add(tbYearParameter);
             groupBox1.Controls.Add(label10);
             groupBox1.Controls.Add(label9);
@@ -349,14 +349,14 @@
             labelWatchListName.TabIndex = 23;
             labelWatchListName.Text = "WatchList Name:";
             // 
-            // comboBox1
+            // comboBoxWatchLists
             // 
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(154, 84);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(198, 23);
-            comboBox1.TabIndex = 22;
-            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+            comboBoxWatchLists.FormattingEnabled = true;
+            comboBoxWatchLists.Location = new Point(154, 84);
+            comboBoxWatchLists.Name = "comboBoxWatchLists";
+            comboBoxWatchLists.Size = new Size(198, 23);
+            comboBoxWatchLists.TabIndex = 22;
+            comboBoxWatchLists.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
             // tbYearParameter
             // 
@@ -619,7 +619,7 @@
         private System.Windows.Forms.Label labelImdbId;
         private System.Windows.Forms.Label labelImdbRating;
         private System.Windows.Forms.LinkLabel linkLabelOpenFilePath;
-        private ComboBox comboBox1;
+        private ComboBox comboBoxWatchLists;
         private Label labelWatchListName;
         private ToolTip toolTip1;
         private Button buttonNewList;

@@ -73,11 +73,13 @@ namespace Kolibri.net.Common.VisualizeOMDbItem
 
             this.Text = $"Series list count: {_serieItems.Count()}";
 
-
-            foreach (var item in _serieItems)
+            Task.Run(async () =>
             {
-                await _imgCache.FindImageAsync(item.ImdbId);
-            }
+                foreach (var item in _serieItems)
+                {
+                    _ = await _imgCache.FindImageAsync(item.ImdbId);
+                }
+            });
         }
 
 

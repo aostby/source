@@ -24,7 +24,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         FileInfo _info = null;
         LiteDBController _liteDB;
         UserSettings _userSettings;
-        IMDBDAL _IMDBDAL;
+        WatchListController _WListController;
         TMDBController _tmdb;
 
         PlexController _plex;
@@ -65,12 +65,12 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             try
             {
                 this.Text = $"{Assembly.GetExecutingAssembly().GetName().Name} - {_userSettings.FavoriteWatchList}";
-                List<WatchList> list = _liteDB.WatchListFindAll().ToList();
+                List<WatchListItem> list = _liteDB.WatchListFindAll().ToList();
                 var watchListnames = list.Select(c => c.WatchListName.ToString()).Distinct().ToList();
-                comboBox1.DataSource = watchListnames.ToList();
+                comboBoxWatchLists.DataSource = watchListnames.ToList();
 
                 if (watchListnames.Contains(_userSettings.FavoriteWatchList))
-                    comboBox1.SelectedIndex = comboBox1.Items.IndexOf(_userSettings.FavoriteWatchList);
+                    comboBoxWatchLists.SelectedIndex = comboBoxWatchLists.Items.IndexOf(_userSettings.FavoriteWatchList);
             }
             catch (Exception ex)
             { }
@@ -85,7 +85,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             if (_liteDB == null) { _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false); }
 
             //https://www.c-sharpcorner.com/article/autocomplete-textbox-in-C-Sharp/
-            if (_IMDBDAL == null) { _IMDBDAL = new IMDBDAL(_liteDB); }
+            if (_WListController == null) { _WListController = new WatchListController(_liteDB); }
             if (_tmdb == null) { _tmdb = new TMDBController(_liteDB, _userSettings.TMDBkey); }
 
             if (_plex == null)
@@ -93,7 +93,13 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 try
                 {
                     _plex = new PlexController(_userSettings);
-                    var result = Task.Run(async () => await _plex.GetPlaylistsAsync()).GetAwaiter().GetResult();
+                    var c = Task.Run(async () => await _plex.GetPlaylistsAsync()).GetAwaiter().GetResult();
+                    var watchListnames = c.Select(c => c.ToString()).Distinct().ToList();
+                    comboBoxWatchLists.DataSource = watchListnames.ToList();
+
+                    if (watchListnames.Contains(_userSettings.FavoriteWatchList))
+                        comboBoxWatchLists.SelectedIndex = comboBoxWatchLists.Items.IndexOf(_userSettings.FavoriteWatchList);
+
                 }
                 catch (Exception ex) { }
             }
@@ -143,6 +149,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
             string json = null;
 
+         
+
             using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
             {
                 try
@@ -150,17 +158,25 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     string year = tbYearParameter.Text.Trim().TrimEnd('-').ToInt32().ToString();
                     Item sItem = parameter == "t" ? await _liteDB.FindItemByTitle(tbSearch.Text.Trim().FirstToUpper(), YearParameterNumber) : await _liteDB.GetItemAsync(tbSearch.Text.Trim().FirstToUpper());
                     if (sItem != null && sItem.Year.TrimEnd('–').ToInt32() != YearParameterNumber) { sItem = null; }
-
+                     
 
                     if (sItem == null || sItem.Poster == null || (e != null && sItem.ImdbRating == "N/A"))
                     {
-                        json = wc.DownloadString(url);
-                        //  var result = JsonConvert.DeserializeObject<WatchList>(json);
-                        var result = JsonConvert.DeserializeObject<Item>(json);
-                        result.TomatoUrl = sItem?.TomatoUrl;
-                        await _liteDB.UpsertAsync(result);
-                        sItem = result;
 
+                        if (_plex != null)
+                        {
+                            var tmpyear = year.ToInt();
+                            sItem = await _plex.FindByTitleAsync(tbSearch.Text.Trim().FirstToUpper(), tmpyear );
+                        }
+                        if (sItem == null)
+                        {
+                            json = wc.DownloadString(url);
+                            //  var result = JsonConvert.DeserializeObject<WatchList>(json);
+                            var result = JsonConvert.DeserializeObject<Item>(json);
+                            result.TomatoUrl = sItem?.TomatoUrl;
+                            await _liteDB.UpsertAsync(result);
+                            sItem = result;
+                        }
                     }
                     if (sItem != null)
                     {
@@ -236,7 +252,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             ImageConverter converter = new ImageConverter();
             arr = (byte[])converter.ConvertTo(img, typeof(byte[]));
 
-            WatchList obj = new WatchList()
+            WatchListItem obj = new WatchListItem()
             {
                 Title = tbTitle.Text,
                 Year = tbYear.Text,
@@ -254,9 +270,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 Watched = "N"
 
             };
-            obj.WatchListName = comboBox1.SelectedValue.ToString();
+            obj.WatchListName = comboBoxWatchLists.SelectedValue.ToString();
 
-            _IMDBDAL.AddMovie(obj);
+            _WListController.AddMovieToLiteDBWatchList(obj);
 
         }
 
@@ -264,7 +280,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             try
             {
-                WatchlistForm frm = new WatchlistForm(_liteDB, comboBox1.SelectedValue.ToString());
+                WatchlistForm frm = new WatchlistForm(_liteDB, comboBoxWatchLists.SelectedValue.ToString());
                 frm.MdiParent = this.MdiParent;
                 frm.Show();
             }
@@ -347,7 +363,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
                 {
                     var json = wc.DownloadString(url);
-                    var result = JsonConvert.DeserializeObject<WatchList>(json);
+                    var result = JsonConvert.DeserializeObject<WatchListItem>(json);
 
                     if (result.Response == "True")
                     {
@@ -479,10 +495,10 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 var res = Kolibri.net.Common.FormUtilities.Forms.InputDialogs.InputBox("Set name for new list", "Please set a name for new item", ref newName);
                 if (res == DialogResult.OK)
                 {
-                    var list = comboBox1.Items.Cast<string>().ToList();
+                    var list = comboBoxWatchLists.Items.Cast<string>().ToList();
                     list.Insert(0, newName);
-                    comboBox1.DataSource = null;
-                    comboBox1.DataSource = list;
+                    comboBoxWatchLists.DataSource = null;
+                    comboBoxWatchLists.DataSource = list;
 
                 }
             }

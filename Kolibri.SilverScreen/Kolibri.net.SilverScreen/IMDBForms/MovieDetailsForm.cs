@@ -1,8 +1,9 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.Utilities.Extensions;
 using MoviesFromImdb.Controller;
- 
+using OMDbApiNet.Model;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -19,7 +20,11 @@ namespace Kolibri.net.SilverScreen.IMDBForms
     {
         private BindingSource _bsMovies;
         private LiteDBController _liteDB;
-        private IMDBDAL _IMDBDAL;
+        private WatchListController _WListController;
+
+        private UserSettings _userSettings;
+ 
+
         public MovieDetailsForm(LiteDBController liteDB)
         {
             _liteDB = liteDB;
@@ -27,12 +32,31 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             Init();
         }
 
-        public MovieDetailsForm(LiteDBController liteDB, WatchList obj)
-        {_liteDB = liteDB;  
-            _IMDBDAL = new IMDBDAL(_liteDB);
+        public MovieDetailsForm(LiteDBController liteDB, Item item)
+        {
+            _liteDB = liteDB;
+            _WListController = new WatchListController(_liteDB);
             InitializeComponent();
+
+            Init(item.ImdbId);
+        }
+
+
+        public MovieDetailsForm(LiteDBController liteDB, WatchListItem obj)
+        {
+            _liteDB = liteDB;  
+            _WListController = new WatchListController(_liteDB);
+            InitializeComponent(); 
+
             tbTitle.Text = obj.Title;
-            tbYear.Text = obj.Year.EndsWith('-') ? obj.Year.TrimEnd('-'): obj.Year;
+            tbYear.Text = obj.Year.EndsWith('-') ? obj.Year.TrimEnd('-') : obj.Year;
+            try
+            {
+                tbYear.Text += $" ({(StringUtilities.FormatMinutesAsHoursAndMinutes((int)(DateTime.Now - obj.Released.ToDateTime()).TotalMinutes))} ago) ";
+            }
+            catch (Exception ex) { }
+
+
             tbRated.Text = obj.ImdbRating;
             tbRuntime.Text = obj.Runtime;
             tbGenre.Text = obj.Genre;
@@ -43,7 +67,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             linkTrailer.Tag = obj.ImdbId;
             btnLeft.Hide();
             btnRight.Hide();
-            
+
+            tbImdbId.Text = obj.ImdbId; 
+
             Init(obj.ImdbId);
         }
 
@@ -77,6 +103,8 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 }
 
             }
+            _userSettings = _liteDB.GetUserSettings();
+            btnAddToWatchlist.Text += $" ({_userSettings.FavoriteWatchList})";
         }
 
         private void FillUpFields(BindingSource bsMovies)
@@ -95,6 +123,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 tbMetascore.Text = drv["Metascore"].ToString();
                 pbPoster.ImageLocation = drv["Poster"].ToString();
                 linkTrailer.Text = drv["trailer"].ToString();
+               tbImdbId.Text = drv["imdbid"].ToString();
 
                 btnLeft.Enabled = _bsMovies.IndexOf(drv) != 0;
                 btnRight.Enabled = _bsMovies.IndexOf(drv) != _bsMovies.Count - 1;
@@ -135,7 +164,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             ImageConverter converter = new ImageConverter();
             arr = (byte[])converter.ConvertTo(img, typeof(byte[]));
 
-            WatchList obj = new WatchList()
+            WatchListItem obj = new WatchListItem()
             {
                 Title = tbTitle.Text,
                 Year = tbYear.Text,
@@ -146,10 +175,12 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 Plot = tbPlot.Text,
                 Metascore = tbMetascore.Text,
                 Poster = pbPoster.ImageLocation,
-                Picture = arr
+                Picture = arr,
+                ImdbId = tbImdbId.Text,
+                WatchListName = _userSettings.FavoriteWatchList
             };
 
-            _IMDBDAL.AddMovie(obj);
+            _WListController.AddMovieToLiteDBWatchList(obj);
         }
         private void linkLabelOpenFilePath_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {

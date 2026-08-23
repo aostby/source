@@ -18,6 +18,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Text;
 using TMDbLib.Objects.General;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Kolibri.net.Common.MovieAPI.Forms
 {
@@ -61,7 +62,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 comboBoxYear.Items.AddRange(year.ToArray());
                 comboBoxGenre.SelectedIndex = 0;
                 comboBoxYear.SelectedIndex = 0;
-                comboBoxYear.SelectedIndex = comboBoxYear.FindStringExact(DateTime.Now.Year.ToString());
+                // comboBoxYear.SelectedIndex = comboBoxYear.FindStringExact(DateTime.Now.Year.ToString());
 
 
                 tbSearch.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
@@ -447,7 +448,7 @@ img:hover{{transform: scale(1.5)}}
                                         path = info.Directory.FullName;
                                     }
 
-                                    if (!String.IsNullOrEmpty(path))
+                                    if (!string.IsNullOrEmpty(path))
                                     {
                                         string temp = $@"<a href=""{path}"">{row[item.ColumnName]}</a>";
                                         html.Append(temp);
@@ -602,7 +603,7 @@ img:hover{{transform: scale(1.5)}}
         private async void button1_Click(object sender, EventArgs e)
         {
             try
-            {  
+            {
                 List<Item> items = buttonVisualize.Tag as List<Item>;
                 if (items != null && items.Count > 0)
                 {
@@ -610,7 +611,7 @@ img:hover{{transform: scale(1.5)}}
 
                     var test = await plex.GetPlaylistsAsync();
 
-                   string pl = null;
+                    string pl = null;
                     try
                     {
                         pl = test.FindAll(x => x.Equals($"{tbSearch.Text}", StringComparison.OrdinalIgnoreCase)).First();
@@ -625,24 +626,79 @@ img:hover{{transform: scale(1.5)}}
                         test = await plex.GetPlaylistsAsync();
                         pl = test.FindAll(x => x.Equals($"{tbSearch.Text}", StringComparison.OrdinalIgnoreCase)).First();
                     }
-                    
-          
 
-                    if (!string.IsNullOrWhiteSpace(  pl))
-                    {   foreach (var item in items)
+
+
+                    if (!string.IsNullOrWhiteSpace(pl))
+                    {
+                        List<string> added = new List<string>();
+                        foreach (var item in items)
                         {
                             if (_LITEDB.GetItemAsync(item.ImdbId) != null)
                             {
                                 _ = await plex.AddElementToPlaylist(pl, item.ImdbId);
+                                added.Add($"{item.Title} ({item.ImdbId})");
                             }
                         }
+                        MessageBox.Show( string.Join(Environment.NewLine, added.ToArray()),$"{pl} added titles:" );
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, ex.GetType().Name);
+                MessageBox.Show($"An error occured: {ex.Message}, Try again....", ex.GetType().Name);
             }
+        }
+
+        private void radioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                var radioButton = sender as RadioButton;
+                if (radioButton.Checked)
+                {
+                    if (radioButton.Equals(radioButtonMovieTitle))
+                    {
+                        try
+                        {
+                            tbSearch.AutoCompleteCustomSource = AutoCompleteController.ToAutoCompleteStringCollection
+                                        (_LITEDB.FindAllItems().GetAwaiter().GetResult().Select(s => s.Title).ToList());
+                        }
+                        catch (Exception ex)
+                        { }
+                    }
+                    else if (radioButton.Equals(radioButtonActor))
+                    {
+                        List<string> actors = new List<string>();
+                        var tmp = _LITEDB.FindAllItems().GetAwaiter().GetResult().Select(s => s.Actors).ToList();
+                        foreach (var item in tmp)
+                        {
+                            if (item != null)
+                            {
+                                List<string> cleanList = item.Split(new[] { ',' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).ToList();
+                                if (cleanList != null) actors.AddRange(cleanList);
+                            }
+                        }
+                   //     tbSearch.AutoCompleteCustomSource = AutoCompleteController.ToAutoCompleteStringCollection(actors.Distinct().ToList());
+                        tbSearch.AutoCompleteList = actors; 
+
+
+                    }
+                    else throw new Exception($"No known source for {sender}");
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    tbSearch.AutoCompleteCustomSource = AutoCompleteController.ToAutoCompleteStringCollection
+                                (_LITEDB.FindAllItems().GetAwaiter().GetResult().Select(s => s.Title).ToList());
+                }
+                catch (Exception exs)
+                { }
+
+            }
+
         }
     }
 }

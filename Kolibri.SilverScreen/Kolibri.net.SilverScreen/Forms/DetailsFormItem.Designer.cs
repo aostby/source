@@ -31,12 +31,12 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DetailsFormItem));
-            label8 = new Label();
-            label7 = new Label();
-            label6 = new Label();
-            label5 = new Label();
-            label4 = new Label();
-            label2 = new Label();
+            labelPlot = new Label();
+            labelMetascore = new Label();
+            labelActors = new Label();
+            labelGenre = new Label();
+            labelRuntime = new Label();
+            labelYear = new Label();
             label1 = new Label();
             tbMetascore = new TextBox();
             tbPlot = new RichTextBox();
@@ -63,68 +63,70 @@ namespace Kolibri.net.SilverScreen.Forms
             tbAdded = new TextBox();
             labelRated = new Label();
             tbRated = new TextBox();
+            buttonReviews = new Button();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
             SuspendLayout();
             // 
-            // label8
+            // labelPlot
             // 
-            label8.AutoSize = true;
-            label8.Location = new Point(12, 605);
-            label8.Margin = new Padding(4, 0, 4, 0);
-            label8.Name = "label8";
-            label8.Size = new Size(152, 15);
-            label8.TabIndex = 36;
-            label8.Text = "Plot (double click for more)";
+            labelPlot.AutoSize = true;
+            labelPlot.Location = new Point(12, 602);
+            labelPlot.Margin = new Padding(4, 0, 4, 0);
+            labelPlot.Name = "labelPlot";
+            labelPlot.Size = new Size(152, 15);
+            labelPlot.TabIndex = 36;
+            labelPlot.Text = "Plot (double click for more)";
+            labelPlot.DoubleClick += tbPlot_DoubleClick;
             // 
-            // label7
+            // labelMetascore
             // 
-            label7.AutoSize = true;
-            label7.Location = new Point(12, 562);
-            label7.Margin = new Padding(4, 0, 4, 0);
-            label7.Name = "label7";
-            label7.Size = new Size(62, 15);
-            label7.TabIndex = 35;
-            label7.Text = "Metascore";
+            labelMetascore.AutoSize = true;
+            labelMetascore.Location = new Point(190, 562);
+            labelMetascore.Margin = new Padding(4, 0, 4, 0);
+            labelMetascore.Name = "labelMetascore";
+            labelMetascore.Size = new Size(62, 15);
+            labelMetascore.TabIndex = 35;
+            labelMetascore.Text = "Metascore";
             // 
-            // label6
+            // labelActors
             // 
-            label6.AutoSize = true;
-            label6.Location = new Point(12, 515);
-            label6.Margin = new Padding(4, 0, 4, 0);
-            label6.Name = "label6";
-            label6.Size = new Size(165, 15);
-            label6.TabIndex = 34;
-            label6.Text = "Actors (double click for more)";
+            labelActors.AutoSize = true;
+            labelActors.Location = new Point(12, 515);
+            labelActors.Margin = new Padding(4, 0, 4, 0);
+            labelActors.Name = "labelActors";
+            labelActors.Size = new Size(165, 15);
+            labelActors.TabIndex = 34;
+            labelActors.Text = "Actors (double click for more)";
             // 
-            // label5
+            // labelGenre
             // 
-            label5.AutoSize = true;
-            label5.Location = new Point(49, 473);
-            label5.Margin = new Padding(4, 0, 4, 0);
-            label5.Name = "label5";
-            label5.Size = new Size(38, 15);
-            label5.TabIndex = 33;
-            label5.Text = "Genre";
+            labelGenre.AutoSize = true;
+            labelGenre.Location = new Point(49, 473);
+            labelGenre.Margin = new Padding(4, 0, 4, 0);
+            labelGenre.Name = "labelGenre";
+            labelGenre.Size = new Size(38, 15);
+            labelGenre.TabIndex = 33;
+            labelGenre.Text = "Genre";
             // 
-            // label4
+            // labelRuntime
             // 
-            label4.AutoSize = true;
-            label4.Location = new Point(176, 562);
-            label4.Margin = new Padding(4, 0, 4, 0);
-            label4.Name = "label4";
-            label4.Size = new Size(52, 15);
-            label4.TabIndex = 32;
-            label4.Text = "Runtime";
+            labelRuntime.AutoSize = true;
+            labelRuntime.Location = new Point(269, 562);
+            labelRuntime.Margin = new Padding(4, 0, 4, 0);
+            labelRuntime.Name = "labelRuntime";
+            labelRuntime.Size = new Size(52, 15);
+            labelRuntime.TabIndex = 32;
+            labelRuntime.Text = "Runtime";
             // 
-            // label2
+            // labelYear
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(12, 473);
-            label2.Margin = new Padding(4, 0, 4, 0);
-            label2.Name = "label2";
-            label2.Size = new Size(29, 15);
-            label2.TabIndex = 30;
-            label2.Text = "Year";
+            labelYear.AutoSize = true;
+            labelYear.Location = new Point(12, 473);
+            labelYear.Margin = new Padding(4, 0, 4, 0);
+            labelYear.Name = "labelYear";
+            labelYear.Size = new Size(29, 15);
+            labelYear.TabIndex = 30;
+            labelYear.Text = "Year";
             // 
             // label1
             // 
@@ -139,11 +141,11 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // tbMetascore
             // 
-            tbMetascore.Location = new Point(12, 578);
+            tbMetascore.Location = new Point(190, 580);
             tbMetascore.Margin = new Padding(4, 3, 4, 3);
             tbMetascore.Name = "tbMetascore";
             tbMetascore.ReadOnly = true;
-            tbMetascore.Size = new Size(158, 23);
+            tbMetascore.Size = new Size(71, 23);
             tbMetascore.TabIndex = 28;
             // 
             // tbPlot
@@ -179,17 +181,17 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // tbRuntime
             // 
-            tbRuntime.Location = new Point(176, 578);
+            tbRuntime.Location = new Point(269, 580);
             tbRuntime.Margin = new Padding(4, 3, 4, 3);
             tbRuntime.Name = "tbRuntime";
             tbRuntime.ReadOnly = true;
-            tbRuntime.Size = new Size(111, 23);
+            tbRuntime.Size = new Size(71, 23);
             tbRuntime.TabIndex = 23;
             // 
             // tbIMDBRated
             // 
             tbIMDBRated.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            tbIMDBRated.Location = new Point(207, 399);
+            tbIMDBRated.Location = new Point(197, 399);
             tbIMDBRated.Margin = new Padding(4, 3, 4, 3);
             tbIMDBRated.Name = "tbIMDBRated";
             tbIMDBRated.ReadOnly = true;
@@ -269,7 +271,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelQuality
             // 
             labelQuality.AutoSize = true;
-            labelQuality.Location = new Point(207, 424);
+            labelQuality.Location = new Point(194, 424);
             labelQuality.Margin = new Padding(4, 0, 4, 0);
             labelQuality.Name = "labelQuality";
             labelQuality.Size = new Size(25, 15);
@@ -309,7 +311,7 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonAddPL.Size = new Size(68, 23);
             buttonAddPL.TabIndex = 56;
             buttonAddPL.Text = "Add to PL";
-            toolTipDetail.SetToolTip(buttonAddPL, "Add to PlayList");
+            toolTipDetail.SetToolTip(buttonAddPL, "Add to PlayList (plex)");
             buttonAddPL.UseVisualStyleBackColor = true;
             buttonAddPL.Click += buttonPlaylist_Click;
             // 
@@ -320,7 +322,7 @@ namespace Kolibri.net.SilverScreen.Forms
             buttonOpenPl.Size = new Size(68, 23);
             buttonOpenPl.TabIndex = 57;
             buttonOpenPl.Text = "Open PL";
-            toolTipDetail.SetToolTip(buttonOpenPl, "Add to PlayList");
+            toolTipDetail.SetToolTip(buttonOpenPl, "Find a DB playlist this item is in");
             buttonOpenPl.UseVisualStyleBackColor = true;
             buttonOpenPl.Click += buttonPlaylist_Click;
             // 
@@ -359,7 +361,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelAdded
             // 
             labelAdded.AutoSize = true;
-            labelAdded.Location = new Point(295, 562);
+            labelAdded.Location = new Point(348, 562);
             labelAdded.Margin = new Padding(4, 0, 4, 0);
             labelAdded.Name = "labelAdded";
             labelAdded.Size = new Size(42, 15);
@@ -368,7 +370,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // tbAdded
             // 
-            tbAdded.Location = new Point(295, 578);
+            tbAdded.Location = new Point(348, 580);
             tbAdded.Margin = new Padding(4, 3, 4, 3);
             tbAdded.Name = "tbAdded";
             tbAdded.ReadOnly = true;
@@ -378,7 +380,7 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelRated
             // 
             labelRated.AutoSize = true;
-            labelRated.Location = new Point(383, 562);
+            labelRated.Location = new Point(426, 562);
             labelRated.Margin = new Padding(4, 0, 4, 0);
             labelRated.Name = "labelRated";
             labelRated.Size = new Size(37, 15);
@@ -387,18 +389,29 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // tbRated
             // 
-            tbRated.Location = new Point(383, 580);
+            tbRated.Location = new Point(426, 580);
             tbRated.Margin = new Padding(4, 3, 4, 3);
             tbRated.Name = "tbRated";
             tbRated.ReadOnly = true;
             tbRated.Size = new Size(71, 23);
             tbRated.TabIndex = 55;
             // 
+            // buttonReviews
+            // 
+            buttonReviews.Location = new Point(12, 562);
+            buttonReviews.Name = "buttonReviews";
+            buttonReviews.Size = new Size(75, 23);
+            buttonReviews.TabIndex = 58;
+            buttonReviews.Text = "Reviews";
+            buttonReviews.UseVisualStyleBackColor = true;
+            buttonReviews.Click += buttonReviews_Click;
+            // 
             // DetailsFormItem
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(504, 754);
+            Controls.Add(buttonReviews);
             Controls.Add(buttonOpenPl);
             Controls.Add(buttonAddPL);
             Controls.Add(tbRated);
@@ -414,12 +427,12 @@ namespace Kolibri.net.SilverScreen.Forms
             Controls.Add(buttonDeleteItem);
             Controls.Add(linkLabelOpenFilepath);
             Controls.Add(linkTrailer);
-            Controls.Add(label8);
-            Controls.Add(label7);
-            Controls.Add(label6);
-            Controls.Add(label5);
-            Controls.Add(label4);
-            Controls.Add(label2);
+            Controls.Add(labelPlot);
+            Controls.Add(labelMetascore);
+            Controls.Add(labelActors);
+            Controls.Add(labelGenre);
+            Controls.Add(labelRuntime);
+            Controls.Add(labelYear);
             Controls.Add(label1);
             Controls.Add(tbMetascore);
             Controls.Add(tbPlot);
@@ -444,12 +457,12 @@ namespace Kolibri.net.SilverScreen.Forms
 
         #endregion
 
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelPlot;
+        private System.Windows.Forms.Label labelMetascore;
+        private System.Windows.Forms.Label labelActors;
+        private System.Windows.Forms.Label labelGenre;
+        private System.Windows.Forms.Label labelRuntime;
+        private System.Windows.Forms.Label labelYear;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox tbMetascore;
         internal System.Windows.Forms.RichTextBox tbPlot;
@@ -477,5 +490,6 @@ namespace Kolibri.net.SilverScreen.Forms
         private TextBox tbRated;
         private Button buttonAddPL;
         private Button buttonOpenPl;
+        private Button buttonReviews;
     }
 }

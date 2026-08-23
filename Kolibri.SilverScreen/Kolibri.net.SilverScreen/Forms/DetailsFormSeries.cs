@@ -18,6 +18,8 @@ namespace Kolibri.net.SilverScreen.Forms
         internal SubDLSubtitleController _subDL;
         internal ImageCacheDB _imageCache;
 
+        private Item _item = null;
+
         //private UserSettings _userSettings; 
         public KolibriTVShow _ktv { get; } 
 
@@ -29,7 +31,7 @@ namespace Kolibri.net.SilverScreen.Forms
             InitializeComponent();
             _liteDB = liteDb;
             _ktv = kTV;
-            var item = _ktv.Item;
+           _item = _ktv.Item;
             //  _userSettings = settings;
 
             _imageCache = imageCache;
@@ -39,7 +41,7 @@ namespace Kolibri.net.SilverScreen.Forms
                 this.Text += $" - {kTV.Item.Title}";
             }
             Init();
-            Init(item);
+            Init(_item);
         }
 
         private async void Init()
@@ -466,7 +468,7 @@ namespace Kolibri.net.SilverScreen.Forms
 
         }
 
-        private void buttonRediger_Click(object sender, EventArgs e)
+        private async void buttonRediger_Click(object sender, EventArgs e)
         {
             Form form = new Form();
             form.Size = new Size(500, 500);
@@ -488,7 +490,7 @@ namespace Kolibri.net.SilverScreen.Forms
             propertyGrid1.Size = new System.Drawing.Size(400, 300);
             propertyGrid1.TabIndex = 1;
             propertyGrid1.Text = "Innstillinger";
-            propertyGrid1.SelectedObject = _seasonEpisode;
+            propertyGrid1.SelectedObject = _item;
             propertyGrid1.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Bottom;
             propertyGrid1.Size = new Size(495, 480);
             // propertyGrid1.Dock = DockStyle.Top;
@@ -499,8 +501,8 @@ namespace Kolibri.net.SilverScreen.Forms
 
             if (res == DialogResult.OK)
             {
-                _liteDB.Update(_seasonEpisode);
-                _liteDB.UpdateAsync(_itemPath);
+                _ = await _liteDB.UpdateAsync(_item);
+                _ = await _liteDB.UpdateAsync(_itemPath);
                 //Init(_seasonEpisode);
                 throw new NotImplementedException();
             }

@@ -27,7 +27,12 @@ namespace Kolibri.net.SilverScreen.Entities
         public string ImdbId { get; set; }
 
         [JsonProperty("TomatoUrl")]
-        public string TomatoUrl { get; set; } 
+        public string TomatoUrl { get; set; }
+
+        
+
+        [JsonProperty("ReleasedDate")]
+        public string ReleasedDate { get; set; }
 
     }
 }

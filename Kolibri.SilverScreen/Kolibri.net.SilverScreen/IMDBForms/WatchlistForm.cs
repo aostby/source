@@ -14,7 +14,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private DataSet dsMovies;
         private bool printovanje = false;
 
-        private IMDBDAL _IMDBDAL;
+        private WatchListController _WListController;
         private string _watchListName = "MyMovies";
 
         private LiteDBController _liteDB { get; }
@@ -22,7 +22,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         public WatchlistForm(LiteDBController liteDB, string watchListName)
         {
             InitializeComponent();
-            _IMDBDAL = new IMDBDAL(liteDB);
+            _WListController = new WatchListController(liteDB);
 
             if (!string.IsNullOrEmpty(watchListName))
             {
@@ -42,7 +42,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             try
             {
-                dsMovies = _IMDBDAL.GetAllMovies(_watchListName);
+                dsMovies = _WListController.GetAllMoviesFromWatchLists(_watchListName);
                 if (dsMovies.Tables.Count == 0)
                 {
                     bsMovies.DataSource = null;
@@ -121,7 +121,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         }
         private void miChangeStatus_Click(object sender, EventArgs e)
         {
-            _IMDBDAL.ChangeMovieStatus(gridMovies["ImdbId", gridMovies.CurrentCell.RowIndex].Value.ToString());
+            _WListController.ChangeMovieStatus(gridMovies["ImdbId", gridMovies.CurrentCell.RowIndex].Value.ToString());
 
             FillUpGrid();
 
@@ -136,7 +136,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
             string id = gridMovies["ImdbId", gridMovies.CurrentCell.RowIndex].Value.ToString();
 
-            _IMDBDAL.DeleteMovie(id);
+            _WListController.DeleteMovieFromWatchLists(id);
 
             FillUpGrid();
         }
