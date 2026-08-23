@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             treeView1 = new TreeView();
             groupBoxOrder = new GroupBox();
+            radioButtonExists = new RadioButton();
             radioButtonRated = new RadioButton();
             checkBoxToolTip = new CheckBox();
             radioButtonActor = new RadioButton();
@@ -54,6 +55,7 @@
             // 
             // groupBoxOrder
             // 
+            groupBoxOrder.Controls.Add(radioButtonExists);
             groupBoxOrder.Controls.Add(radioButtonRated);
             groupBoxOrder.Controls.Add(checkBoxToolTip);
             groupBoxOrder.Controls.Add(radioButtonActor);
@@ -68,10 +70,21 @@
             groupBoxOrder.TabStop = false;
             groupBoxOrder.Text = "Order by";
             // 
+            // radioButtonExists
+            // 
+            radioButtonExists.AutoSize = true;
+            radioButtonExists.Location = new Point(362, 16);
+            radioButtonExists.Name = "radioButtonExists";
+            radioButtonExists.Size = new Size(53, 19);
+            radioButtonExists.TabIndex = 7;
+            radioButtonExists.Text = "Exists";
+            radioButtonExists.UseVisualStyleBackColor = true;
+            radioButtonExists.CheckedChanged += Radio_CheckedChanged;
+            // 
             // radioButtonRated
             // 
             radioButtonRated.AutoSize = true;
-            radioButtonRated.Location = new Point(349, 16);
+            radioButtonRated.Location = new Point(307, 16);
             radioButtonRated.Name = "radioButtonRated";
             radioButtonRated.Size = new Size(55, 19);
             radioButtonRated.TabIndex = 6;
@@ -82,7 +95,7 @@
             // checkBoxToolTip
             // 
             checkBoxToolTip.AutoSize = true;
-            checkBoxToolTip.Location = new Point(410, 17);
+            checkBoxToolTip.Location = new Point(419, 16);
             checkBoxToolTip.Name = "checkBoxToolTip";
             checkBoxToolTip.Size = new Size(70, 19);
             checkBoxToolTip.TabIndex = 5;
@@ -92,7 +105,7 @@
             // radioButtonActor
             // 
             radioButtonActor.AutoSize = true;
-            radioButtonActor.Location = new Point(289, 16);
+            radioButtonActor.Location = new Point(252, 16);
             radioButtonActor.Name = "radioButtonActor";
             radioButtonActor.Size = new Size(54, 19);
             radioButtonActor.TabIndex = 4;
@@ -103,7 +116,7 @@
             // radioButtonRating
             // 
             radioButtonRating.AutoSize = true;
-            radioButtonRating.Location = new Point(196, 16);
+            radioButtonRating.Location = new Point(162, 16);
             radioButtonRating.Name = "radioButtonRating";
             radioButtonRating.Size = new Size(87, 19);
             radioButtonRating.TabIndex = 3;
@@ -114,7 +127,7 @@
             // radioButtonYear
             // 
             radioButtonYear.AutoSize = true;
-            radioButtonYear.Location = new Point(136, 16);
+            radioButtonYear.Location = new Point(111, 16);
             radioButtonYear.Name = "radioButtonYear";
             radioButtonYear.Size = new Size(47, 19);
             radioButtonYear.TabIndex = 2;
@@ -125,7 +138,7 @@
             // radioButtonGenre
             // 
             radioButtonGenre.AutoSize = true;
-            radioButtonGenre.Location = new Point(67, 16);
+            radioButtonGenre.Location = new Point(54, 16);
             radioButtonGenre.Name = "radioButtonGenre";
             radioButtonGenre.Size = new Size(56, 19);
             radioButtonGenre.TabIndex = 1;
@@ -178,5 +191,6 @@
         private RadioButton radioButtonActor;
         private CheckBox checkBoxToolTip;
         private RadioButton radioButtonRated;
+        private RadioButton radioButtonExists;
     }
 }

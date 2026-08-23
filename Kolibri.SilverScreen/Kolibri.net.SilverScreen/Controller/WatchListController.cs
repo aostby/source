@@ -15,27 +15,31 @@ using System.Windows.Forms;
 
 namespace MoviesFromImdb.Controller
 {
-    public class IMDBDAL
+    public class WatchListController
     {
         private UserSettings _userSettings;
-        private   LiteDBController _liteDB = null;
+        private LiteDBController _liteDB = null;
         private ImageCacheDB _imageCache;
 
-        public IMDBDAL(LiteDBController liteDB) {
+        public WatchListController(LiteDBController liteDB)
+        {
             _liteDB = liteDB;
-            _imageCache = new ImageCacheDB(liteDB.GetUserSettings());
-        }
-        public IMDBDAL(UserSettings userSettings)
+            Init();
+        }  
+        public WatchListController(UserSettings userSettings)
         {
             _userSettings = userSettings;
             _liteDB = new LiteDBController(userSettings.LiteDBFileInfo, false, false);
-            _imageCache = new ImageCacheDB(_liteDB.GetUserSettings());
+            Init();
         }
-
-
-        public DataSet GetAllMovies(string wishListName = null)
+        private void Init()
         {
-            IEnumerable<WatchList> list = _liteDB.WatchListFindAll(watchListName: wishListName).ToList(); 
+            if (_userSettings == null) { _userSettings = _liteDB.GetUserSettings(); }
+            _imageCache = new ImageCacheDB(_userSettings);
+        }
+        public DataSet GetAllMoviesFromWatchLists(string watchListName = null)
+        {
+            IEnumerable<WatchListItem> list = _liteDB.WatchListFindAll(watchListName: watchListName).ToList(); 
 
             DataSet ret = Kolibri.net.Common.Utilities.DataSetUtilities.AutoGenererDataSet(list.ToList());
             if (ret.Tables.Count != 0)
@@ -65,12 +69,18 @@ namespace MoviesFromImdb.Controller
             return ret;
         }
 
-        public   bool AddMovie( WatchList entity)
+        public bool AddMovieToLiteDBWatchList( WatchListItem entity)
         {
             try
             {
                 if (_liteDB == null)
+                {
                     _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
+                    if (_userSettings == null)
+                    {
+                        _userSettings = _liteDB.GetUserSettings();
+                    }
+                }
                 _liteDB.WatchListAdd(entity);
                 return true;
             }
@@ -98,7 +108,7 @@ namespace MoviesFromImdb.Controller
                 return false;
             }
         }
-        public   bool DeleteMovie(string movieId)
+        public   bool DeleteMovieFromWatchLists(string movieId)
         { 
 
             if (_liteDB.DeleteWatchListItem(movieId) >= 1)

@@ -1,8 +1,10 @@
 ﻿
 using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
+using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Entities;
 using Newtonsoft.Json;
+using OMDbApiNet.Model;
 using System.Data;
 using System.Net;
 using System.Text;
@@ -14,6 +16,16 @@ namespace Kolibri.net.SilverScreen.IMDBForms
     public partial class Top100IMDbForm : Form
     {
         LiteDBController _liteDB;
+        public Top100IMDbForm(LiteDBController liteDB, List<Item> itemList)
+        {
+            _liteDB = liteDB;
+            InitializeComponent();
+            if (itemList == null)
+            {
+                top100Movies();
+            }
+            else { top100Movies(itemList); }
+        }
         public Top100IMDbForm(LiteDBController liteDB, string title = "", int year = 0)
         {
             _liteDB = liteDB;
@@ -37,12 +49,21 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
                 var movies = JsonConvert.SerializeObject(list.ToList().OrderByDescending(o => o.ImdbRating).ToList(), Formatting.Indented);
 
+
                 movies = movies.Replace("ImdbRating", "Rank");
-                movies = movies.Replace("ReleaseDate", "Year");
-                movies = movies.Replace("Released", "Year");
-                
-                movies = movies.Replace("imdbRating", "Rank");
+                //movies = movies.Replace("ReleaseDate", "Year");
+                //movies = movies.Replace("Released", "Year"); 
+               
                 var result = JsonConvert.DeserializeObject<List<Top100IMDb>>(movies);
+
+
+                foreach (var item in result)
+                {
+                    if (string.IsNullOrEmpty(item.ReleasedDate))
+                    {
+                        item.ReleasedDate = new DateTime(item.Year.ToInt32(), 1, 1).ToString("yyyy.mm.yy");
+                    }
+                }
 
                 gridTop100.AutoGenerateColumns = true;
                 gridTop100.DataSource = result;
@@ -57,25 +78,21 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             {
             }
         }
-        private async void top100Movies()
+        private async void top100Movies(IEnumerable<Item> list=null)
         {
             int number = 100;
-            //if (!File.Exists(@"C:\Users\your\Documents\TestApp\MoviesFromImdb\top100.json"))
-            //{
-            //    MessageBox.Show("File top100.json not exist!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //    return;
-            //}
-            //string json = File.ReadAllText(@"C:\Users\your\Documents\TestApp\MoviesFromImdb\top100.json");
-            //LiteDBController _liteDB = new LiteDBController( false, false, false);
-            //var serializer = new JavaScriptSerializer();
-            //var movies = serializer.Serialize(_liteDB.FindAllItems().ToList()
-            var list = await _liteDB.FindAllItems();
+           
+            if (list == null) list = await _liteDB.FindAllItems();
+
             var movies =
-                JsonConvert.SerializeObject( list              
+                JsonConvert.SerializeObject(list
                 .Where(m => m.ImdbRating != "N/A")
                 .OrderByDescending(o => o.ImdbRating)
                 .Take(number).ToList(), Formatting.Indented);
             movies = movies.Replace("ImdbRating", "Rank");
+            movies = movies.Replace("imdbRating", "Rank");
+            movies = movies.Replace("Released", "ReleasedDate");
+
             var result = JsonConvert.DeserializeObject<List<Top100IMDb>>(movies);
 
 
@@ -92,30 +109,40 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         private void miMovieDetails_Click(object sender, EventArgs e)
         {
-            string tt = gridTop100[gridTop100.ColumnCount - 2, gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
-            //string tt = gridTop100.SelectedRows[0].Cells["ImdbId"].Value.ToString();
-
-            string url = "http://www.omdbapi.com/?i=" + tt + "&apikey=e17f08db";
-
-            using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
+            try
             {
-                var json = wc.DownloadString(url);
-                var result = JsonConvert.DeserializeObject<WatchList>(json);
+                string tt = gridTop100[gridTop100.ColumnCount - 3, gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
+                //string tt = gridTop100.SelectedRows[0].Cells["ImdbId"].Value.ToString();
+                tt= gridTop100["ImdbId", gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
 
-                if (result.Response == "True")
+                string url = "http://www.omdbapi.com/?i=" + tt + $"&apikey={_liteDB.GetUserSettings().OMDBkey}";
+
+                using (WebClient wc = new WebClient() { Encoding = Encoding.UTF8 })
                 {
-                    MovieDetailsForm frm = new MovieDetailsForm(_liteDB, result);
-                    frm.MdiParent = this.MdiParent;
-                    frm.Show();
+                    var json = wc.DownloadString(url);
+                    var result = JsonConvert.DeserializeObject<WatchListItem>(json);
 
-                }
-                else
-                {
-                    MessageBox.Show($"Movie (tt = {tt}) not found!", "Information - " + System.Reflection.MethodBase.GetCurrentMethod().Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                    if (result.Response == "True")
+                    {
+                        MovieDetailsForm frm = new MovieDetailsForm(_liteDB, result);
+                        frm.MdiParent = this.MdiParent;
+                        frm.Show();
 
+                    }
+                    else
+                    {
+                        throw new Exception(tt);
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show($"Movie (tt = {ex.Message}) not found!", "Information - " + System.Reflection.MethodBase.GetCurrentMethod().Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+      
+
         }
+    } 
 
         private void gridTop100_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {

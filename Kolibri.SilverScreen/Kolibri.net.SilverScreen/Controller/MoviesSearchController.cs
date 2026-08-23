@@ -152,7 +152,7 @@ namespace Kolibri.net.SilverScreen.Controller
                         if (  temp==null  )
                         {
                             temp = await _liteDB.FindFileAsync(item.ImdbId);
-                            if (temp == null )
+                            if (temp == null||(!temp.ItemFileInfo.Exists&&(tristate==CheckState.Indeterminate||tristate==CheckState.Checked)) )
                             {
                                 var fi = new FileItem(item.ImdbId, file.FullName);
                                 await _liteDB.UpsertAsync(fi);

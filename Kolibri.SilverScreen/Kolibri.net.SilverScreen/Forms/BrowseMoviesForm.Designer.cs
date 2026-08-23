@@ -1,4 +1,6 @@
 ﻿
+using Kolibri.net.Common.Formutilities.Controls;
+
 namespace Kolibri.net.Common.MovieAPI.Forms
 {
     partial class BrowseMoviesForm
@@ -30,6 +32,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private void InitializeComponent()
         {
             splitContainer1 = new SplitContainer();
+            groupBoxPlayList = new GroupBox();
+            button1 = new Button();
             groupBoxSearcByFolder = new GroupBox();
             checkBoxPrintable = new CheckBox();
             buttonOpenFolder = new Button();
@@ -47,19 +51,19 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             linkLabelYear = new LinkLabel();
             radioButtonYear = new RadioButton();
             linkLabelGenre = new LinkLabel();
-            tbSearch = new TextBox();
+            tbSearch = new ContainsTextBox();
             comboBoxYear = new ComboBox();
             comboBoxGenre = new ComboBox();
             labelInfo = new Label();
-            groupBoxPlayList = new GroupBox();
-            button1 = new Button();
+            groupBoxSort = new GroupBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.SuspendLayout();
+            groupBoxPlayList.SuspendLayout();
             groupBoxSearcByFolder.SuspendLayout();
             groupBoxVisualize.SuspendLayout();
             groupBoxSearch.SuspendLayout();
-            groupBoxPlayList.SuspendLayout();
+            groupBoxSort.SuspendLayout();
             SuspendLayout();
             // 
             // splitContainer1
@@ -79,10 +83,30 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             splitContainer1.Panel1.Controls.Add(groupBoxVisualize);
             splitContainer1.Panel1.Controls.Add(groupBoxSearch);
             splitContainer1.Panel1.Controls.Add(labelInfo);
-            splitContainer1.Size = new Size(1211, 674);
+            splitContainer1.Size = new Size(1313, 674);
             splitContainer1.SplitterDistance = 161;
             splitContainer1.SplitterWidth = 5;
             splitContainer1.TabIndex = 0;
+            // 
+            // groupBoxPlayList
+            // 
+            groupBoxPlayList.Controls.Add(button1);
+            groupBoxPlayList.Location = new Point(662, 23);
+            groupBoxPlayList.Name = "groupBoxPlayList";
+            groupBoxPlayList.Size = new Size(190, 125);
+            groupBoxPlayList.TabIndex = 15;
+            groupBoxPlayList.TabStop = false;
+            groupBoxPlayList.Text = "Add to Playlist";
+            // 
+            // button1
+            // 
+            button1.Location = new Point(6, 18);
+            button1.Name = "button1";
+            button1.Size = new Size(178, 48);
+            button1.TabIndex = 0;
+            button1.Text = "Add To Playlist (Plex)";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // groupBoxSearcByFolder
             // 
@@ -126,7 +150,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             panelFound.AutoScroll = true;
             panelFound.Location = new Point(858, 58);
             panelFound.Name = "panelFound";
-            panelFound.Size = new Size(337, 90);
+            panelFound.Size = new Size(439, 90);
             panelFound.TabIndex = 13;
             // 
             // groupBoxVisualize
@@ -154,15 +178,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // 
             // groupBoxSearch
             // 
+            groupBoxSearch.Controls.Add(groupBoxSort);
             groupBoxSearch.Controls.Add(radioButtonActor);
             groupBoxSearch.Controls.Add(radioButtonMovieTitle);
             groupBoxSearch.Controls.Add(checkBoxPoster);
             groupBoxSearch.Controls.Add(buttonSearch);
             groupBoxSearch.Controls.Add(checkBoxDecending);
             groupBoxSearch.Controls.Add(linkLabelOpenInBrowser);
-            groupBoxSearch.Controls.Add(radioButtonRating);
             groupBoxSearch.Controls.Add(linkLabelYear);
-            groupBoxSearch.Controls.Add(radioButtonYear);
             groupBoxSearch.Controls.Add(linkLabelGenre);
             groupBoxSearch.Controls.Add(tbSearch);
             groupBoxSearch.Controls.Add(comboBoxYear);
@@ -185,6 +208,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             radioButtonActor.TabIndex = 12;
             radioButtonActor.Text = "Actor";
             radioButtonActor.UseVisualStyleBackColor = true;
+            radioButtonActor.CheckedChanged += radioButton_CheckedChanged;
             // 
             // radioButtonMovieTitle
             // 
@@ -197,13 +221,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             radioButtonMovieTitle.TabStop = true;
             radioButtonMovieTitle.Text = "Movie Title";
             radioButtonMovieTitle.UseVisualStyleBackColor = true;
+            radioButtonMovieTitle.CheckedChanged += radioButton_CheckedChanged;
             // 
             // checkBoxPoster
             // 
             checkBoxPoster.AutoSize = true;
             checkBoxPoster.Checked = true;
             checkBoxPoster.CheckState = CheckState.Checked;
-            checkBoxPoster.Location = new Point(295, 101);
+            checkBoxPoster.Location = new Point(295, 114);
             checkBoxPoster.Name = "checkBoxPoster";
             checkBoxPoster.Size = new Size(59, 19);
             checkBoxPoster.TabIndex = 10;
@@ -226,7 +251,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             checkBoxDecending.AutoSize = true;
             checkBoxDecending.Checked = true;
             checkBoxDecending.CheckState = CheckState.Checked;
-            checkBoxDecending.Location = new Point(295, 81);
+            checkBoxDecending.Location = new Point(295, 94);
             checkBoxDecending.Margin = new Padding(4, 3, 4, 3);
             checkBoxDecending.Name = "checkBoxDecending";
             checkBoxDecending.Size = new Size(83, 19);
@@ -237,7 +262,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // linkLabelOpenInBrowser
             // 
             linkLabelOpenInBrowser.AutoSize = true;
-            linkLabelOpenInBrowser.Location = new Point(294, 119);
+            linkLabelOpenInBrowser.Location = new Point(154, 111);
             linkLabelOpenInBrowser.Margin = new Padding(4, 0, 4, 0);
             linkLabelOpenInBrowser.Name = "linkLabelOpenInBrowser";
             linkLabelOpenInBrowser.Size = new Size(94, 15);
@@ -249,18 +274,20 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // radioButtonRating
             // 
             radioButtonRating.AutoSize = true;
-            radioButtonRating.Location = new Point(295, 44);
+            radioButtonRating.Checked = true;
+            radioButtonRating.Location = new Point(7, 12);
             radioButtonRating.Margin = new Padding(4, 3, 4, 3);
             radioButtonRating.Name = "radioButtonRating";
             radioButtonRating.Size = new Size(59, 19);
             radioButtonRating.TabIndex = 7;
+            radioButtonRating.TabStop = true;
             radioButtonRating.Text = "Rating";
             radioButtonRating.UseVisualStyleBackColor = true;
             // 
             // linkLabelYear
             // 
             linkLabelYear.AutoSize = true;
-            linkLabelYear.Location = new Point(40, 120);
+            linkLabelYear.Location = new Point(33, 106);
             linkLabelYear.Margin = new Padding(4, 0, 4, 0);
             linkLabelYear.Name = "linkLabelYear";
             linkLabelYear.Size = new Size(29, 15);
@@ -271,7 +298,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // radioButtonYear
             // 
             radioButtonYear.AutoSize = true;
-            radioButtonYear.Location = new Point(295, 61);
+            radioButtonYear.Location = new Point(7, 29);
             radioButtonYear.Margin = new Padding(4, 3, 4, 3);
             radioButtonYear.Name = "radioButtonYear";
             radioButtonYear.Size = new Size(47, 19);
@@ -282,7 +309,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // linkLabelGenre
             // 
             linkLabelGenre.AutoSize = true;
-            linkLabelGenre.Location = new Point(40, 89);
+            linkLabelGenre.Location = new Point(33, 75);
             linkLabelGenre.Margin = new Padding(4, 0, 4, 0);
             linkLabelGenre.Name = "linkLabelGenre";
             linkLabelGenre.Size = new Size(38, 15);
@@ -301,16 +328,16 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // comboBoxYear
             // 
             comboBoxYear.FormattingEnabled = true;
-            comboBoxYear.Location = new Point(138, 111);
+            comboBoxYear.Location = new Point(77, 102);
             comboBoxYear.Margin = new Padding(4, 3, 4, 3);
             comboBoxYear.Name = "comboBoxYear";
-            comboBoxYear.Size = new Size(140, 23);
+            comboBoxYear.Size = new Size(69, 23);
             comboBoxYear.TabIndex = 3;
             // 
             // comboBoxGenre
             // 
             comboBoxGenre.FormattingEnabled = true;
-            comboBoxGenre.Location = new Point(138, 80);
+            comboBoxGenre.Location = new Point(77, 71);
             comboBoxGenre.Margin = new Padding(4, 3, 4, 3);
             comboBoxGenre.Name = "comboBoxGenre";
             comboBoxGenre.Size = new Size(140, 23);
@@ -324,35 +351,26 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             labelInfo.Location = new Point(858, 16);
             labelInfo.Margin = new Padding(4, 0, 4, 0);
             labelInfo.Name = "labelInfo";
-            labelInfo.Size = new Size(337, 39);
+            labelInfo.Size = new Size(439, 39);
             labelInfo.TabIndex = 10;
             labelInfo.Text = "Search for a database item.";
             // 
-            // groupBoxPlayList
+            // groupBoxSort
             // 
-            groupBoxPlayList.Controls.Add(button1);
-            groupBoxPlayList.Location = new Point(662, 23);
-            groupBoxPlayList.Name = "groupBoxPlayList";
-            groupBoxPlayList.Size = new Size(190, 125);
-            groupBoxPlayList.TabIndex = 15;
-            groupBoxPlayList.TabStop = false;
-            groupBoxPlayList.Text = "Add to Playlist";
-            // 
-            // button1
-            // 
-            button1.Location = new Point(6, 18);
-            button1.Name = "button1";
-            button1.Size = new Size(178, 48);
-            button1.TabIndex = 0;
-            button1.Text = "Add To Playlist (Plex)";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            groupBoxSort.Controls.Add(radioButtonRating);
+            groupBoxSort.Controls.Add(radioButtonYear);
+            groupBoxSort.Location = new Point(295, 45);
+            groupBoxSort.Name = "groupBoxSort";
+            groupBoxSort.Size = new Size(66, 50);
+            groupBoxSort.TabIndex = 14;
+            groupBoxSort.TabStop = false;
+            groupBoxSort.Text = "Sort";
             // 
             // BrowseMoviesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1211, 674);
+            ClientSize = new Size(1313, 674);
             Controls.Add(splitContainer1);
             Margin = new Padding(4, 3, 4, 3);
             Name = "BrowseMoviesForm";
@@ -361,12 +379,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             splitContainer1.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            groupBoxPlayList.ResumeLayout(false);
             groupBoxSearcByFolder.ResumeLayout(false);
             groupBoxSearcByFolder.PerformLayout();
             groupBoxVisualize.ResumeLayout(false);
             groupBoxSearch.ResumeLayout(false);
             groupBoxSearch.PerformLayout();
-            groupBoxPlayList.ResumeLayout(false);
+            groupBoxSort.ResumeLayout(false);
+            groupBoxSort.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -374,7 +394,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
 
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.ComboBox comboBoxGenre;
-        private System.Windows.Forms.TextBox tbSearch;
+        private ContainsTextBox tbSearch;
         private System.Windows.Forms.Button buttonSearch;
         private System.Windows.Forms.RadioButton radioButtonYear;
         private System.Windows.Forms.RadioButton radioButtonRating;
@@ -396,5 +416,6 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private RadioButton radioButtonMovieTitle;
         private GroupBox groupBoxPlayList;
         private Button button1;
+        private GroupBox groupBoxSort;
     }
 }
