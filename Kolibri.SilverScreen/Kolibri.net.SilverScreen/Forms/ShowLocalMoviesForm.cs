@@ -27,7 +27,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private List<string> _searchFiles;
         private List<string> _currentSearch = new List<string>();
 
-        private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
+        private Kolibri.net.SilverScreen.Controls.DataGridViewControls _dgvController;
 
         public ShowLocalMoviesForm(MultimediaType type, UserSettings settings)
         {
@@ -168,7 +168,7 @@ namespace Kolibri.net.SilverScreen.Forms
             else { diff = _searchFiles.Count - _fileItems.Count(); }
 
 
-            if (_dgvController == null) _dgvController = new DataGrivViewControls(_type, _liteDB);
+            if (_dgvController == null) _dgvController = new DataGridViewControls(_type, _liteDB);
             int count = 0;
 
             switch (_type)

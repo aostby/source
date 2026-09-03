@@ -10,7 +10,7 @@ using static Kolibri.net.SilverScreen.Controls.Constants;
 
 namespace Kolibri.net.SilverScreen.Controls
 {
-    public class DataGrivViewControls
+    public class DataGridViewControls
     {
 
         public event EventHandler CurrentItemChanged; 
@@ -33,7 +33,7 @@ namespace Kolibri.net.SilverScreen.Controls
         private SeasonEpisode CurrentSeasonEpisode { get;   set; }
 
   
-        public DataGrivViewControls(MultimediaType type, LiteDBController contr)
+        public DataGridViewControls(MultimediaType type, LiteDBController contr)
         {
             _type = type;
             _liteDB = contr;
@@ -47,7 +47,7 @@ namespace Kolibri.net.SilverScreen.Controls
             DataGridView view = null;
            
             if (!type.Equals(MultimediaType.Series))
-            { view = GetMovieItemDataGridView(table); }
+            { view = GetMovieItemDataGridView(table,( Constants.VisibleTMDBColumns.Append("Response").Append("Type")).ToList()); }
             else
             {
                 view = GetSeasonEpisodeDataGridView(table);
@@ -286,14 +286,15 @@ namespace Kolibri.net.SilverScreen.Controls
             return epTable;
 
         }
-        public   DataGridView GetMovieItemDataGridView(DataTable tableItem)
+        public   DataGridView GetMovieItemDataGridView(DataTable tableItem, List<string> visibleColumns =null)
         {
             DataGridView ret = null;
             try
             {
-                List<string> visibleColumns = Constants.VisibleTMDBColumns;
 
-                DataGridView dgv = new DataGridView();
+                if (visibleColumns == null) visibleColumns = Constants.VisibleTMDBColumns;
+
+               DataGridView dgv = new DataGridView();
                 dgv.SuspendLayout();
                 dgv.DataSource = tableItem;
                 refresh(dgv, tableItem);
@@ -667,7 +668,27 @@ namespace Kolibri.net.SilverScreen.Controls
                     try
                     {
                         string path = Path.GetDirectoryName(dgv.Rows[e.RowIndex].Cells["TomatoUrl"].Value.ToString());
-                        System.Diagnostics.Process.Start(path);
+                        if (!string.IsNullOrWhiteSpace(path))
+                        { System.Diagnostics.Process.Start(path); }
+                        else
+                        {
+                            using (var omdb = new OMDBController(_liteDB.GetUserSettings().OMDBkey, _liteDB))
+                            {
+                             var title=   dgv.Rows[e.RowIndex].Cells["Title"].Value.ToString();
+                                var year = dgv.Rows[e.RowIndex].Cells["Year"].Value.ToString();
+
+
+                           var item =      omdb.GetMovieByIMDBTitle(title, Convert.ToInt32( year));
+                                if (item != null)
+                                {
+                                    var form = new DetailsFormItem(item, _liteDB);
+                                    form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                                    form.Text += $" File exists: {File.Exists(item.TomatoUrl)}";
+                                    form.ShowDialog();
+                                    return;
+                                }
+                            }
+                        }
 
                     }
                     catch (Exception)

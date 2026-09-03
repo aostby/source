@@ -103,8 +103,18 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 }
 
             }
-            _userSettings = _liteDB.GetUserSettings();
-            btnAddToWatchlist.Text += $" ({_userSettings.FavoriteWatchList})";
+            try
+            {
+                if (_liteDB != null)
+                {
+                    _userSettings = _liteDB.GetUserSettings();
+                    btnAddToWatchlist.Text += $" ({_userSettings.FavoriteWatchList})";
+                }
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         private void FillUpFields(BindingSource bsMovies)

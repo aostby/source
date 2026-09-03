@@ -60,12 +60,12 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 TabPage tabPage = new TabPage(s.SeasonNumber.PadLeft(2, '0'));
                 //SeriesUtilities.SortAndFormatSeriesTable()
-                DataGrivViewControls dgvtrls = new DataGrivViewControls(Constants.MultimediaType.Series, _liteDB);
+                DataGridViewControls dgvtrls = new DataGridViewControls(Constants.MultimediaType.Series, _liteDB);
                 
                 dgvtrls.CurrentItemChanged += HandleCurrentItemChanged;
               
 
-                var table = (DataGrivViewControls.EpisodeToDataTable(s) );// DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
+                var table = (DataGridViewControls.EpisodeToDataTable(s) );// DataSetUtilities.AutoGenererDataSet(s.Episodes.ToList()).Tables[0];
                 if (!table.Columns.Contains("Season"))
                 {
                     System.Data.DataColumn newColumn = new System.Data.DataColumn("Season", typeof(System.String));
@@ -85,7 +85,7 @@ namespace Kolibri.net.SilverScreen.Forms
             //string url = string.Empty;
             try
             {
-                var contr = (sender as DataGrivViewControls);
+                var contr = (sender as DataGridViewControls);
                var item = contr.CurrentItem; //imdb
                 Uri url = new Uri($"https://www.imdb.com/title/{item.ImdbId}"); //imdb
                // string temp = $"https://www.themoviedb.org/tv/{}/season/6/episode/1" //tmdb
@@ -101,7 +101,7 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                var poster = (sender as DataGrivViewControls).CurrentItem.Poster;
+                var poster = (sender as DataGridViewControls).CurrentItem.Poster;
                 if (poster == null) {
                     poster = _ktv.Item.Poster;
                 }

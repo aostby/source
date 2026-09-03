@@ -7,6 +7,7 @@ using OMDbApiNet.Model;
 using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Text;
+using System.Windows.Forms.DataVisualization.Charting;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
 using static System.Net.Mime.MediaTypeNames;
@@ -171,9 +172,19 @@ namespace Kolibri.net.SilverScreen.Controller
                 {
                 }
             }
-            _progress?.Report(100); 
-            await RemoveUnwantedExtraFilesExecute();
-                SetStatusLabelText($"Søket fullført.", "FINISHED");     
+            _progress?.Report(100);
+
+            StartUnwantedFilesCleanup();
+
+            //// bare kjør denne alene uten å bry seg om resultat  
+            //await Task.Factory.StartNew(
+            //    async () => await RemoveUnwantedExtraFilesExecute(),
+            //    CancellationToken.None,
+            //    TaskCreationOptions.LongRunning,
+            //    TaskScheduler.Default
+            //).Unwrap();
+
+            SetStatusLabelText($"Søket fullført.", "FINISHED");     
             return ret;
         }
 
@@ -230,6 +241,108 @@ namespace Kolibri.net.SilverScreen.Controller
             { _cleanDirsAfterSearch.Add(dirInfo); }
             return ret;
         }
+
+        private void StartUnwantedFilesCleanup()
+        {
+            // 1. Snapshot and clear immediately to free up the UI thread
+            var targetDirs = _cleanDirsAfterSearch.Distinct().ToList();
+            _cleanDirsAfterSearch.Clear();
+
+            // 2. Offload the entire parallel operation to a background thread
+            Task.Run(() =>
+            {
+                var extensionList = new List<string>() { ".nfo", ".txt", ".jpg", ".exe" };
+                // Globale språkkoder for undertekster (Unntatt ENG og Skandinaviske språk)
+                var lang = new List<string>() {
+                    "ara.srt", // Arabisk
+                    "arabic.srt", // Arabisk
+                    "ces.srt", // Tsjekkisk (Også forkortet .cze.srt)
+                    "chi.srt", // Kinesisk (Også ofte forkortet .zho.srt)
+                    "cze.srt",
+                    "deu.srt", // Tysk (Også ofte forkortet .ger.srt)
+                    "dut.srt",
+                    "Dutch.srt",
+                    "ell.srt", // Gresk (Også forkortet .gre.srt)
+                    "esp.srt",
+                    "fin.srt", // Finsk (Inkludert etter ønske)
+                    "fra.srt", // Fransk (Også ofte forkortet .fre.srt)
+                    "fre.srt",
+                    "french.srt",
+                    "ger.srt",
+                    "german.srt",
+                    "gre.srt",
+                    "greek.srt",
+                    "hin.srt", // Hindi
+                    "hun.srt", // Ungarsk
+                    "ind.srt", // Indonesisk
+                    "ita.srt", // Italiensk
+                    "jpn.srt", // Japansk
+                    "kor.srt", // Koreansk
+                    "nl.srt",  // Nederlandsk (Noen ganger 2-bokstavs i filnavn)
+                    "nld.srt", // Nederlandsk 3-bokstavs
+                    "pol.srt", // Polsk
+                    "por.srt", // Portugisisk
+                    "ron.srt", // Rumensk (Også forkortet .rum.srt)
+                    "rum.srt",
+                    "rus.srt", // Russisk
+                    "spa.srt", // Spansk
+                       "spanish.srt", // Spansk
+                    "tha.srt", // Thai
+                    "tur.srt", // Tyrkisk
+                    "ukr.srt",  // Ukrainsk
+                    "vie.srt", // Vietnamesisk
+                    "zho.srt",
+                    "bul.srt",
+                    "est.srt",
+                    "lav.srt",
+                    "lit.srt",
+                    "slo.srt",
+                    "slv.srt",
+                    "tam.srt",
+                    "tel.srt",
+                    "hrv.srt",
+
+                };
+                extensionList.AddRange(lang.Distinct());
+
+                // 3. Define parallel options to optimize for network UNC paths
+                var parallelOptions = new ParallelOptions
+                {
+                    // UNC paths suffer from latency, so allowing more concurrent 
+                    // operations keeps the network pipe full while waiting for responses.
+                    MaxDegreeOfParallelism = Environment.ProcessorCount * 2
+                };
+
+                // 4. Process multiple folders in parallel safely
+                Parallel.ForEach(targetDirs, parallelOptions, dir =>
+                {
+                    try
+                    {
+                        // Files are gathered and deleted strictly sequentially *inside* this specific dir
+                        var removeFiles = FileUtilities.GetFiles(dir, extensionList, SearchOption.AllDirectories);
+                        if (removeFiles.Count >= 1)
+                        {
+
+                            foreach (var item in removeFiles)
+                            {
+                                try
+                                {
+                                    File.SetAttributes(item, FileAttributes.Normal);
+                                    File.Delete(item);
+                                }
+                                catch { /* File is locked or in use, skip silently */ }
+                            }
+                        }
+
+                        // SAFE: This runs sequentially after the foreach loop above finishes for THIS directory.
+                        // It will not collide with other threads because they are working on completely different directories.
+                        FileUtilities.DeleteEmptyDirs(dir);
+                    }
+                    catch { /* Directory is inaccessible, off-line, or missing permissions */ }
+                });
+            });
+        }
+
         private async Task<bool> RemoveUnwantedExtraFilesExecute()
         {
             bool ret = true;

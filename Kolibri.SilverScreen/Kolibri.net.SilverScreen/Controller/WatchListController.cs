@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static TMDbLib.Objects.General.WatchProvider;
 
 namespace MoviesFromImdb.Controller
 {
@@ -20,6 +21,7 @@ namespace MoviesFromImdb.Controller
         private UserSettings _userSettings;
         private LiteDBController _liteDB = null;
         private ImageCacheDB _imageCache;
+        private PlexController _plex;
 
         public WatchListController(LiteDBController liteDB)
         {
@@ -36,8 +38,27 @@ namespace MoviesFromImdb.Controller
         {
             if (_userSettings == null) { _userSettings = _liteDB.GetUserSettings(); }
             _imageCache = new ImageCacheDB(_userSettings);
+            _plex = new PlexController(_userSettings);
         }
-        public DataSet GetAllMoviesFromWatchLists(string watchListName = null)
+        public List<string> GetAllWatchlistNames(string type = null, string watchListName = null)
+        {
+            var list = _liteDB.WatchListFindAll(type, watchListName).ToList();
+            var ret = list.Where(x => x.WatchListName != null).Select(x => x.WatchListName).Distinct().ToList<string>();
+            return ret;
+        }
+
+        public async Task< List<string>> GetAllMoviesIDsFromWatchListsAsync(string playlistName) {
+            var list = _liteDB.WatchListFindAll(watchListName: playlistName).ToList();
+            if (list != null && list.Count() >= 1)
+                return list.Select(x => x.ImdbId).ToList();
+          //  var dblist = await  GetAllMoviesFromWatchLists(playlistName).GetAwaiter().GetResult().Tables[0].AsEnumerable().Select(r => r.Field<string>("ImdbId")).ToList().Where(y => y != null);
+            var plexList = await _plex.GetPlaylistItemsAsync(playlistName) ;
+
+            //var result = dblist.Concat(plexList ).OrderBy(x => x).Distinct().ToList();
+            return list.Select(i=>i.ImdbId).ToList();
+        }
+
+        public async Task< DataSet> GetAllMoviesFromWatchLists(string watchListName = null)
         {
             IEnumerable<WatchListItem> list = _liteDB.WatchListFindAll(watchListName: watchListName).ToList(); 
 
@@ -56,7 +77,14 @@ namespace MoviesFromImdb.Controller
                         if (string.IsNullOrWhiteSpace(url)) {
                             url = row[pos].ToString();
                         }
-                        var pic = ImageUtilities.GetImageFromUrl(url);
+                        Image pic = null;
+                        var img = await _imageCache.FindImageAsync(url);
+                        if (img == null)
+                            pic = ImageUtilities.GetImageFromUrl(url);
+                        else {
+                            pic = img.Image;
+                        }
+ 
                         pos = row.Table.Columns.IndexOf("Image");
                         row[pos] = pic;
 

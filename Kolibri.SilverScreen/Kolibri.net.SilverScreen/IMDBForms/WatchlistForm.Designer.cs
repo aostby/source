@@ -72,6 +72,7 @@
             chart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             btnGrid = new Button();
             buttonPlex = new Button();
+            toolTip1 = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)gridMovies).BeginInit();
             cmsOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bsMovies).BeginInit();
@@ -458,6 +459,7 @@
             buttonPlex.Size = new Size(97, 26);
             buttonPlex.TabIndex = 81;
             buttonPlex.Text = "Copy to Plex";
+            toolTip1.SetToolTip(buttonPlex, "Kopier denne listen til Plex");
             buttonPlex.UseVisualStyleBackColor = true;
             buttonPlex.Click += buttonPlex_Click;
             // 
@@ -534,5 +536,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Watched;
         private System.Windows.Forms.DataGridViewTextBoxColumn ImdbId;
         private Button buttonPlex;
+        private ToolTip toolTip1;
     }
 }

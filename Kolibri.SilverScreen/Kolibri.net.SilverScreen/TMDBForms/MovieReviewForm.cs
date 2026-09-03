@@ -1,5 +1,6 @@
 ﻿using Kolibri.net.Common.Utilities.Controller;
 using Kolibri.net.SilverScreen.Controls;
+using OMDbApiNet.Model;
 using Plex.ServerApi.PlexModels.Account.Resources;
 using System;
 using System;
@@ -16,7 +17,7 @@ namespace Kolibri.net.SilverScreen.TMDBForms
     {
      
     
-        public MovieReviewForm(ReviewBase review )  
+        public MovieReviewForm(ReviewBase review , Item item=null)  
             
         {
             InitializeComponent();
@@ -25,11 +26,13 @@ namespace Kolibri.net.SilverScreen.TMDBForms
             var mdiParent = ResourceController.GetMdiParent();
             if (mdiParent != null) this.MdiParent = mdiParent;
 
-            DisplayReview(review);
+            DisplayReview(review, item);
         }
-        private async void DisplayReview(ReviewBase review)
+        private async void DisplayReview(ReviewBase review, Item item=null)
         {
             if (review == null) return;
+            if (item != null)
+                this.Text = $"Review for Title: {item.Title} -  ImdbRating: {item.ImdbRating}";
 
             // Forfatter og tekst
             txtAuthor.Text = review.Author ?? "Ukjent";
