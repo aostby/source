@@ -55,17 +55,19 @@
             // 
             // textBoxSource
             // 
-            textBoxSource.Location = new Point(12, 12);
+            textBoxSource.Location = new Point(14, 16);
+            textBoxSource.Margin = new Padding(3, 4, 3, 4);
             textBoxSource.Name = "textBoxSource";
-            textBoxSource.Size = new Size(662, 23);
+            textBoxSource.Size = new Size(756, 27);
             textBoxSource.TabIndex = 3;
             // 
             // buttonOpenFolder
             // 
             buttonOpenFolder.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonOpenFolder.Location = new Point(596, 37);
+            buttonOpenFolder.Location = new Point(681, 49);
+            buttonOpenFolder.Margin = new Padding(3, 4, 3, 4);
             buttonOpenFolder.Name = "buttonOpenFolder";
-            buttonOpenFolder.Size = new Size(75, 23);
+            buttonOpenFolder.Size = new Size(86, 31);
             buttonOpenFolder.TabIndex = 2;
             buttonOpenFolder.Text = "Let opp mappe";
             buttonOpenFolder.TextAlign = ContentAlignment.MiddleRight;
@@ -74,33 +76,35 @@
             // 
             // statusStrip1
             // 
+            statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripProgressBar1, toolStripStatusLabelStatus });
-            statusStrip1.Location = new Point(0, 747);
+            statusStrip1.Location = new Point(0, 998);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(1201, 22);
+            statusStrip1.Padding = new Padding(1, 0, 16, 0);
+            statusStrip1.Size = new Size(1373, 27);
             statusStrip1.TabIndex = 4;
             statusStrip1.Text = "statusStrip1";
             // 
             // toolStripProgressBar1
             // 
             toolStripProgressBar1.Name = "toolStripProgressBar1";
-            toolStripProgressBar1.Size = new Size(100, 16);
+            toolStripProgressBar1.Size = new Size(114, 19);
             // 
             // toolStripStatusLabelStatus
             // 
             toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
-            toolStripStatusLabelStatus.Size = new Size(60, 17);
+            toolStripStatusLabelStatus.Size = new Size(75, 21);
             toolStripStatusLabelStatus.Text = "Welcome!";
             // 
             // labelNumItemsDB
             // 
             labelNumItemsDB.AutoEllipsis = true;
             labelNumItemsDB.AutoSize = true;
-            labelNumItemsDB.Location = new Point(12, 38);
-            labelNumItemsDB.MaximumSize = new Size(420, 15);
-            labelNumItemsDB.MinimumSize = new Size(420, 15);
+            labelNumItemsDB.Location = new Point(14, 51);
+            labelNumItemsDB.MaximumSize = new Size(480, 20);
+            labelNumItemsDB.MinimumSize = new Size(480, 20);
             labelNumItemsDB.Name = "labelNumItemsDB";
-            labelNumItemsDB.Size = new Size(420, 15);
+            labelNumItemsDB.Size = new Size(480, 20);
             labelNumItemsDB.TabIndex = 5;
             labelNumItemsDB.TabStop = true;
             labelNumItemsDB.Text = "Antall (DB)";
@@ -115,9 +119,11 @@
             groupBoxValg.Controls.Add(radioButtonShowLog);
             groupBoxValg.Controls.Add(buttonVelg);
             groupBoxValg.Controls.Add(radioButtonShowGrid);
-            groupBoxValg.Location = new Point(677, -2);
+            groupBoxValg.Location = new Point(774, -3);
+            groupBoxValg.Margin = new Padding(3, 4, 3, 4);
             groupBoxValg.Name = "groupBoxValg";
-            groupBoxValg.Size = new Size(521, 41);
+            groupBoxValg.Padding = new Padding(3, 4, 3, 4);
+            groupBoxValg.Size = new Size(595, 55);
             groupBoxValg.TabIndex = 7;
             groupBoxValg.TabStop = false;
             groupBoxValg.Text = "Velg handling";
@@ -125,9 +131,10 @@
             // radioButtonDuplicates
             // 
             radioButtonDuplicates.AutoSize = true;
-            radioButtonDuplicates.Location = new Point(352, 17);
+            radioButtonDuplicates.Location = new Point(401, 23);
+            radioButtonDuplicates.Margin = new Padding(3, 4, 3, 4);
             radioButtonDuplicates.Name = "radioButtonDuplicates";
-            radioButtonDuplicates.Size = new Size(79, 19);
+            radioButtonDuplicates.Size = new Size(99, 24);
             radioButtonDuplicates.TabIndex = 5;
             radioButtonDuplicates.Text = "Duplikater";
             radioButtonDuplicates.UseVisualStyleBackColor = true;
@@ -135,9 +142,10 @@
             // radioButtonEditDiff
             // 
             radioButtonEditDiff.AutoSize = true;
-            radioButtonEditDiff.Location = new Point(260, 17);
+            radioButtonEditDiff.Location = new Point(282, 23);
+            radioButtonEditDiff.Margin = new Padding(3, 4, 3, 4);
             radioButtonEditDiff.Name = "radioButtonEditDiff";
-            radioButtonEditDiff.Size = new Size(86, 19);
+            radioButtonEditDiff.Size = new Size(109, 24);
             radioButtonEditDiff.TabIndex = 4;
             radioButtonEditDiff.Text = "Rediger diff";
             radioButtonEditDiff.UseVisualStyleBackColor = true;
@@ -145,9 +153,10 @@
             // radioButtonShowDiff
             // 
             radioButtonShowDiff.AutoSize = true;
-            radioButtonShowDiff.Location = new Point(193, 17);
+            radioButtonShowDiff.Location = new Point(196, 23);
+            radioButtonShowDiff.Margin = new Padding(3, 4, 3, 4);
             radioButtonShowDiff.Name = "radioButtonShowDiff";
-            radioButtonShowDiff.Size = new Size(61, 19);
+            radioButtonShowDiff.Size = new Size(76, 24);
             radioButtonShowDiff.TabIndex = 3;
             radioButtonShowDiff.Text = "Vis diff";
             radioButtonShowDiff.UseVisualStyleBackColor = true;
@@ -155,9 +164,10 @@
             // radioButtonShowLog
             // 
             radioButtonShowLog.AutoSize = true;
-            radioButtonShowLog.Location = new Point(103, 17);
+            radioButtonShowLog.Location = new Point(102, 23);
+            radioButtonShowLog.Margin = new Padding(3, 4, 3, 4);
             radioButtonShowLog.Name = "radioButtonShowLog";
-            radioButtonShowLog.Size = new Size(67, 19);
+            radioButtonShowLog.Size = new Size(84, 24);
             radioButtonShowLog.TabIndex = 2;
             radioButtonShowLog.Text = "Vis logg";
             radioButtonShowLog.UseVisualStyleBackColor = true;
@@ -165,9 +175,10 @@
             // buttonVelg
             // 
             buttonVelg.Anchor = AnchorStyles.Right;
-            buttonVelg.Location = new Point(437, 13);
+            buttonVelg.Location = new Point(503, 20);
+            buttonVelg.Margin = new Padding(3, 4, 3, 4);
             buttonVelg.Name = "buttonVelg";
-            buttonVelg.Size = new Size(75, 23);
+            buttonVelg.Size = new Size(86, 31);
             buttonVelg.TabIndex = 1;
             buttonVelg.Text = "Velg";
             buttonVelg.UseVisualStyleBackColor = true;
@@ -177,9 +188,10 @@
             // 
             radioButtonShowGrid.AutoSize = true;
             radioButtonShowGrid.Checked = true;
-            radioButtonShowGrid.Location = new Point(17, 17);
+            radioButtonShowGrid.Location = new Point(19, 23);
+            radioButtonShowGrid.Margin = new Padding(3, 4, 3, 4);
             radioButtonShowGrid.Name = "radioButtonShowGrid";
-            radioButtonShowGrid.Size = new Size(58, 19);
+            radioButtonShowGrid.Size = new Size(73, 24);
             radioButtonShowGrid.TabIndex = 0;
             radioButtonShowGrid.TabStop = true;
             radioButtonShowGrid.Text = "Vis DB";
@@ -188,10 +200,12 @@
             // splitContainer1
             // 
             splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            splitContainer1.Location = new Point(12, 82);
+            splitContainer1.Location = new Point(14, 109);
+            splitContainer1.Margin = new Padding(3, 4, 3, 4);
             splitContainer1.Name = "splitContainer1";
-            splitContainer1.Size = new Size(1180, 662);
-            splitContainer1.SplitterDistance = 520;
+            splitContainer1.Size = new Size(1349, 883);
+            splitContainer1.SplitterDistance = 594;
+            splitContainer1.SplitterWidth = 5;
             splitContainer1.TabIndex = 8;
             // 
             // checkBoxDetailType
@@ -199,9 +213,10 @@
             checkBoxDetailType.AutoSize = true;
             checkBoxDetailType.Checked = true;
             checkBoxDetailType.CheckState = CheckState.Checked;
-            checkBoxDetailType.Location = new Point(456, 38);
+            checkBoxDetailType.Location = new Point(501, 51);
+            checkBoxDetailType.Margin = new Padding(3, 4, 3, 4);
             checkBoxDetailType.Name = "checkBoxDetailType";
-            checkBoxDetailType.Size = new Size(134, 19);
+            checkBoxDetailType.Size = new Size(167, 24);
             checkBoxDetailType.TabIndex = 9;
             checkBoxDetailType.Text = "Utvidet detaljvisning";
             checkBoxDetailType.UseVisualStyleBackColor = true;
@@ -211,9 +226,10 @@
             checkBox1.AutoSize = true;
             checkBox1.Checked = true;
             checkBox1.CheckState = CheckState.Checked;
-            checkBox1.Location = new Point(456, 60);
+            checkBox1.Location = new Point(501, 80);
+            checkBox1.Margin = new Padding(3, 4, 3, 4);
             checkBox1.Name = "checkBox1";
-            checkBox1.Size = new Size(80, 19);
+            checkBox1.Size = new Size(97, 24);
             checkBox1.TabIndex = 10;
             checkBox1.Text = "Trevisning";
             checkBox1.UseVisualStyleBackColor = true;
@@ -221,9 +237,10 @@
             // checkBoxTristate
             // 
             checkBoxTristate.AutoSize = true;
-            checkBoxTristate.Location = new Point(600, 61);
+            checkBoxTristate.Location = new Point(686, 81);
+            checkBoxTristate.Margin = new Padding(3, 4, 3, 4);
             checkBoxTristate.Name = "checkBoxTristate";
-            checkBoxTristate.Size = new Size(188, 19);
+            checkBoxTristate.Size = new Size(233, 24);
             checkBoxTristate.TabIndex = 11;
             checkBoxTristate.Text = "Ingen endring, alt,  manglende";
             checkBoxTristate.ThreeState = true;
@@ -232,9 +249,9 @@
             // 
             // MyMoviesForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1201, 769);
+            ClientSize = new Size(1373, 1025);
             Controls.Add(checkBoxTristate);
             Controls.Add(checkBox1);
             Controls.Add(checkBoxDetailType);
@@ -244,6 +261,7 @@
             Controls.Add(statusStrip1);
             Controls.Add(textBoxSource);
             Controls.Add(buttonOpenFolder);
+            Margin = new Padding(3, 4, 3, 4);
             Name = "MyMoviesForm";
             Text = "Movies I Have - MyMovies";
             statusStrip1.ResumeLayout(false);

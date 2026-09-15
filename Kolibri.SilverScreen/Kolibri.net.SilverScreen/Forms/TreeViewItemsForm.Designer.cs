@@ -46,9 +46,10 @@
             // treeView1
             // 
             treeView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            treeView1.Location = new Point(12, 50);
+            treeView1.Location = new Point(14, 67);
+            treeView1.Margin = new Padding(3, 4, 3, 4);
             treeView1.Name = "treeView1";
-            treeView1.Size = new Size(776, 388);
+            treeView1.Size = new Size(886, 516);
             treeView1.TabIndex = 0;
             treeView1.NodeMouseDoubleClick += treeView1_NodeMouseDoubleClick;
             treeView1.MouseDown += treeView1_MouseDown;
@@ -63,9 +64,11 @@
             groupBoxOrder.Controls.Add(radioButtonYear);
             groupBoxOrder.Controls.Add(radioButtonGenre);
             groupBoxOrder.Controls.Add(radioButtonTitle);
-            groupBoxOrder.Location = new Point(12, 3);
+            groupBoxOrder.Location = new Point(14, 4);
+            groupBoxOrder.Margin = new Padding(3, 4, 3, 4);
             groupBoxOrder.Name = "groupBoxOrder";
-            groupBoxOrder.Size = new Size(565, 41);
+            groupBoxOrder.Padding = new Padding(3, 4, 3, 4);
+            groupBoxOrder.Size = new Size(646, 55);
             groupBoxOrder.TabIndex = 1;
             groupBoxOrder.TabStop = false;
             groupBoxOrder.Text = "Order by";
@@ -73,9 +76,10 @@
             // radioButtonExists
             // 
             radioButtonExists.AutoSize = true;
-            radioButtonExists.Location = new Point(362, 16);
+            radioButtonExists.Location = new Point(414, 21);
+            radioButtonExists.Margin = new Padding(3, 4, 3, 4);
             radioButtonExists.Name = "radioButtonExists";
-            radioButtonExists.Size = new Size(53, 19);
+            radioButtonExists.Size = new Size(66, 24);
             radioButtonExists.TabIndex = 7;
             radioButtonExists.Text = "Exists";
             radioButtonExists.UseVisualStyleBackColor = true;
@@ -84,9 +88,10 @@
             // radioButtonRated
             // 
             radioButtonRated.AutoSize = true;
-            radioButtonRated.Location = new Point(307, 16);
+            radioButtonRated.Location = new Point(351, 21);
+            radioButtonRated.Margin = new Padding(3, 4, 3, 4);
             radioButtonRated.Name = "radioButtonRated";
-            radioButtonRated.Size = new Size(55, 19);
+            radioButtonRated.Size = new Size(69, 24);
             radioButtonRated.TabIndex = 6;
             radioButtonRated.Text = "Rated";
             radioButtonRated.UseVisualStyleBackColor = true;
@@ -95,9 +100,10 @@
             // checkBoxToolTip
             // 
             checkBoxToolTip.AutoSize = true;
-            checkBoxToolTip.Location = new Point(419, 16);
+            checkBoxToolTip.Location = new Point(480, 21);
+            checkBoxToolTip.Margin = new Padding(3, 4, 3, 4);
             checkBoxToolTip.Name = "checkBoxToolTip";
-            checkBoxToolTip.Size = new Size(70, 19);
+            checkBoxToolTip.Size = new Size(88, 24);
             checkBoxToolTip.TabIndex = 5;
             checkBoxToolTip.Text = "Vis bilde";
             checkBoxToolTip.UseVisualStyleBackColor = true;
@@ -105,9 +111,10 @@
             // radioButtonActor
             // 
             radioButtonActor.AutoSize = true;
-            radioButtonActor.Location = new Point(252, 16);
+            radioButtonActor.Location = new Point(288, 21);
+            radioButtonActor.Margin = new Padding(3, 4, 3, 4);
             radioButtonActor.Name = "radioButtonActor";
-            radioButtonActor.Size = new Size(54, 19);
+            radioButtonActor.Size = new Size(66, 24);
             radioButtonActor.TabIndex = 4;
             radioButtonActor.Text = "Actor";
             radioButtonActor.UseVisualStyleBackColor = true;
@@ -116,9 +123,10 @@
             // radioButtonRating
             // 
             radioButtonRating.AutoSize = true;
-            radioButtonRating.Location = new Point(162, 16);
+            radioButtonRating.Location = new Point(185, 21);
+            radioButtonRating.Margin = new Padding(3, 4, 3, 4);
             radioButtonRating.Name = "radioButtonRating";
-            radioButtonRating.Size = new Size(87, 19);
+            radioButtonRating.Size = new Size(108, 24);
             radioButtonRating.TabIndex = 3;
             radioButtonRating.Text = "ImdbRating";
             radioButtonRating.UseVisualStyleBackColor = true;
@@ -127,9 +135,10 @@
             // radioButtonYear
             // 
             radioButtonYear.AutoSize = true;
-            radioButtonYear.Location = new Point(111, 16);
+            radioButtonYear.Location = new Point(127, 21);
+            radioButtonYear.Margin = new Padding(3, 4, 3, 4);
             radioButtonYear.Name = "radioButtonYear";
-            radioButtonYear.Size = new Size(47, 19);
+            radioButtonYear.Size = new Size(58, 24);
             radioButtonYear.TabIndex = 2;
             radioButtonYear.Text = "Year";
             radioButtonYear.UseVisualStyleBackColor = true;
@@ -138,9 +147,10 @@
             // radioButtonGenre
             // 
             radioButtonGenre.AutoSize = true;
-            radioButtonGenre.Location = new Point(54, 16);
+            radioButtonGenre.Location = new Point(62, 21);
+            radioButtonGenre.Margin = new Padding(3, 4, 3, 4);
             radioButtonGenre.Name = "radioButtonGenre";
-            radioButtonGenre.Size = new Size(56, 19);
+            radioButtonGenre.Size = new Size(69, 24);
             radioButtonGenre.TabIndex = 1;
             radioButtonGenre.Text = "Genre";
             radioButtonGenre.UseVisualStyleBackColor = true;
@@ -150,9 +160,10 @@
             // 
             radioButtonTitle.AutoSize = true;
             radioButtonTitle.Checked = true;
-            radioButtonTitle.Location = new Point(6, 16);
+            radioButtonTitle.Location = new Point(7, 21);
+            radioButtonTitle.Margin = new Padding(3, 4, 3, 4);
             radioButtonTitle.Name = "radioButtonTitle";
-            radioButtonTitle.Size = new Size(48, 19);
+            radioButtonTitle.Size = new Size(59, 24);
             radioButtonTitle.TabIndex = 0;
             radioButtonTitle.TabStop = true;
             radioButtonTitle.Text = "Title";
@@ -167,11 +178,12 @@
             // 
             // TreeViewItemsForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(914, 600);
             Controls.Add(groupBoxOrder);
             Controls.Add(treeView1);
+            Margin = new Padding(3, 4, 3, 4);
             Name = "TreeViewItemsForm";
             Text = "TreeViewItemsForm";
             groupBoxOrder.ResumeLayout(false);

@@ -280,7 +280,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         {
             try
             {
-                WatchlistForm frm = new WatchlistForm(_liteDB, comboBoxWatchLists.SelectedValue.ToString());
+                WatchlistForm frm = new WatchlistForm(_liteDB,_plex, comboBoxWatchLists.SelectedValue.ToString());
                 frm.MdiParent = this.MdiParent;
                 frm.Show();
             }

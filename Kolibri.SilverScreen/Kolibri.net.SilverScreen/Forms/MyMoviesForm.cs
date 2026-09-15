@@ -36,7 +36,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private List<Item> _searchFiles;
         private List<string> _currentSearch = new List<string>();
         private MoviesSearchController _searchController;
-        private Kolibri.net.SilverScreen.Controls.DataGrivViewControls _dgvController;
+        private Kolibri.net.SilverScreen.Controls.DataGridViewControls _dgvController;
         private bool isProcessing;
 
         [Obsolete("Just for initializing, do not use, use with usersettings instead")]
@@ -57,7 +57,7 @@ namespace Kolibri.net.SilverScreen.Forms
              _plex = new PlexController(_userSettings); 
            
             _liteDB = new LiteDBController(new FileInfo(_userSettings.LiteDBFilePath), false, false);
-            _dgvController = new DataGrivViewControls(MultimediaType.Movies, _liteDB);
+            _dgvController = new DataGridViewControls(MultimediaType.Movies, _liteDB);
             _imageCache = new ImageCacheDB(_userSettings);
             try
             {

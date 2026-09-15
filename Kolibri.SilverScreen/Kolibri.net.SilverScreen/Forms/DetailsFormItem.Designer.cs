@@ -70,10 +70,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelPlot
             // 
             labelPlot.AutoSize = true;
-            labelPlot.Location = new Point(12, 602);
-            labelPlot.Margin = new Padding(4, 0, 4, 0);
+            labelPlot.Location = new Point(14, 803);
+            labelPlot.Margin = new Padding(5, 0, 5, 0);
             labelPlot.Name = "labelPlot";
-            labelPlot.Size = new Size(152, 15);
+            labelPlot.Size = new Size(191, 20);
             labelPlot.TabIndex = 36;
             labelPlot.Text = "Plot (double click for more)";
             labelPlot.DoubleClick += tbPlot_DoubleClick;
@@ -81,50 +81,50 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelMetascore
             // 
             labelMetascore.AutoSize = true;
-            labelMetascore.Location = new Point(190, 562);
-            labelMetascore.Margin = new Padding(4, 0, 4, 0);
+            labelMetascore.Location = new Point(217, 749);
+            labelMetascore.Margin = new Padding(5, 0, 5, 0);
             labelMetascore.Name = "labelMetascore";
-            labelMetascore.Size = new Size(62, 15);
+            labelMetascore.Size = new Size(78, 20);
             labelMetascore.TabIndex = 35;
             labelMetascore.Text = "Metascore";
             // 
             // labelActors
             // 
             labelActors.AutoSize = true;
-            labelActors.Location = new Point(12, 515);
-            labelActors.Margin = new Padding(4, 0, 4, 0);
+            labelActors.Location = new Point(14, 687);
+            labelActors.Margin = new Padding(5, 0, 5, 0);
             labelActors.Name = "labelActors";
-            labelActors.Size = new Size(165, 15);
+            labelActors.Size = new Size(207, 20);
             labelActors.TabIndex = 34;
             labelActors.Text = "Actors (double click for more)";
             // 
             // labelGenre
             // 
             labelGenre.AutoSize = true;
-            labelGenre.Location = new Point(49, 473);
-            labelGenre.Margin = new Padding(4, 0, 4, 0);
+            labelGenre.Location = new Point(56, 631);
+            labelGenre.Margin = new Padding(5, 0, 5, 0);
             labelGenre.Name = "labelGenre";
-            labelGenre.Size = new Size(38, 15);
+            labelGenre.Size = new Size(48, 20);
             labelGenre.TabIndex = 33;
             labelGenre.Text = "Genre";
             // 
             // labelRuntime
             // 
             labelRuntime.AutoSize = true;
-            labelRuntime.Location = new Point(269, 562);
-            labelRuntime.Margin = new Padding(4, 0, 4, 0);
+            labelRuntime.Location = new Point(307, 749);
+            labelRuntime.Margin = new Padding(5, 0, 5, 0);
             labelRuntime.Name = "labelRuntime";
-            labelRuntime.Size = new Size(52, 15);
+            labelRuntime.Size = new Size(64, 20);
             labelRuntime.TabIndex = 32;
             labelRuntime.Text = "Runtime";
             // 
             // labelYear
             // 
             labelYear.AutoSize = true;
-            labelYear.Location = new Point(12, 473);
-            labelYear.Margin = new Padding(4, 0, 4, 0);
+            labelYear.Location = new Point(14, 631);
+            labelYear.Margin = new Padding(5, 0, 5, 0);
             labelYear.Name = "labelYear";
-            labelYear.Size = new Size(29, 15);
+            labelYear.Size = new Size(37, 20);
             labelYear.TabIndex = 30;
             labelYear.Text = "Year";
             // 
@@ -132,96 +132,96 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             label1.AutoSize = true;
             label1.ImageAlign = ContentAlignment.MiddleLeft;
-            label1.Location = new Point(12, 428);
-            label1.Margin = new Padding(4, 0, 4, 0);
+            label1.Location = new Point(14, 571);
+            label1.Margin = new Padding(5, 0, 5, 0);
             label1.Name = "label1";
-            label1.Size = new Size(30, 15);
+            label1.Size = new Size(38, 20);
             label1.TabIndex = 29;
             label1.Text = "Title";
             // 
             // tbMetascore
             // 
-            tbMetascore.Location = new Point(190, 580);
-            tbMetascore.Margin = new Padding(4, 3, 4, 3);
+            tbMetascore.Location = new Point(217, 773);
+            tbMetascore.Margin = new Padding(5, 4, 5, 4);
             tbMetascore.Name = "tbMetascore";
             tbMetascore.ReadOnly = true;
-            tbMetascore.Size = new Size(71, 23);
+            tbMetascore.Size = new Size(81, 27);
             tbMetascore.TabIndex = 28;
             // 
             // tbPlot
             // 
             tbPlot.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            tbPlot.Location = new Point(12, 623);
-            tbPlot.Margin = new Padding(4, 3, 4, 3);
+            tbPlot.Location = new Point(14, 831);
+            tbPlot.Margin = new Padding(5, 4, 5, 4);
             tbPlot.Name = "tbPlot";
             tbPlot.ReadOnly = true;
-            tbPlot.Size = new Size(485, 119);
+            tbPlot.Size = new Size(554, 157);
             tbPlot.TabIndex = 27;
             tbPlot.Text = "";
             tbPlot.DoubleClick += tbPlot_DoubleClick;
             // 
             // tbActors
             // 
-            tbActors.Location = new Point(12, 531);
-            tbActors.Margin = new Padding(4, 3, 4, 3);
+            tbActors.Location = new Point(14, 708);
+            tbActors.Margin = new Padding(5, 4, 5, 4);
             tbActors.Name = "tbActors";
             tbActors.ReadOnly = true;
-            tbActors.Size = new Size(485, 23);
+            tbActors.Size = new Size(554, 27);
             tbActors.TabIndex = 25;
             tbActors.Click += tbActors_Clicked;
             // 
             // tbGenre
             // 
-            tbGenre.Location = new Point(49, 488);
-            tbGenre.Margin = new Padding(4, 3, 4, 3);
+            tbGenre.Location = new Point(56, 651);
+            tbGenre.Margin = new Padding(5, 4, 5, 4);
             tbGenre.Name = "tbGenre";
             tbGenre.ReadOnly = true;
-            tbGenre.Size = new Size(447, 23);
+            tbGenre.Size = new Size(407, 27);
             tbGenre.TabIndex = 24;
             // 
             // tbRuntime
             // 
-            tbRuntime.Location = new Point(269, 580);
-            tbRuntime.Margin = new Padding(4, 3, 4, 3);
+            tbRuntime.Location = new Point(307, 773);
+            tbRuntime.Margin = new Padding(5, 4, 5, 4);
             tbRuntime.Name = "tbRuntime";
             tbRuntime.ReadOnly = true;
-            tbRuntime.Size = new Size(71, 23);
+            tbRuntime.Size = new Size(81, 27);
             tbRuntime.TabIndex = 23;
             // 
             // tbIMDBRated
             // 
             tbIMDBRated.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            tbIMDBRated.Location = new Point(197, 399);
-            tbIMDBRated.Margin = new Padding(4, 3, 4, 3);
+            tbIMDBRated.Location = new Point(225, 532);
+            tbIMDBRated.Margin = new Padding(5, 4, 5, 4);
             tbIMDBRated.Name = "tbIMDBRated";
             tbIMDBRated.ReadOnly = true;
-            tbIMDBRated.Size = new Size(60, 20);
+            tbIMDBRated.Size = new Size(68, 23);
             tbIMDBRated.TabIndex = 22;
             // 
             // tbYear
             // 
-            tbYear.Location = new Point(12, 488);
-            tbYear.Margin = new Padding(4, 3, 4, 3);
+            tbYear.Location = new Point(14, 651);
+            tbYear.Margin = new Padding(5, 4, 5, 4);
             tbYear.Name = "tbYear";
             tbYear.ReadOnly = true;
-            tbYear.Size = new Size(41, 23);
+            tbYear.Size = new Size(46, 27);
             tbYear.TabIndex = 21;
             // 
             // tbTitle
             // 
-            tbTitle.Location = new Point(12, 447);
-            tbTitle.Margin = new Padding(4, 3, 4, 3);
+            tbTitle.Location = new Point(14, 596);
+            tbTitle.Margin = new Padding(5, 4, 5, 4);
             tbTitle.Name = "tbTitle";
             tbTitle.ReadOnly = true;
-            tbTitle.Size = new Size(485, 23);
+            tbTitle.Size = new Size(554, 27);
             tbTitle.TabIndex = 20;
             // 
             // pbPoster
             // 
-            pbPoster.Location = new Point(14, 12);
-            pbPoster.Margin = new Padding(4, 3, 4, 3);
+            pbPoster.Location = new Point(14, 16);
+            pbPoster.Margin = new Padding(5, 4, 5, 4);
             pbPoster.Name = "pbPoster";
-            pbPoster.Size = new Size(476, 378);
+            pbPoster.Size = new Size(554, 504);
             pbPoster.SizeMode = PictureBoxSizeMode.Zoom;
             pbPoster.TabIndex = 26;
             pbPoster.TabStop = false;
@@ -232,10 +232,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             linkTrailer.AutoSize = true;
             linkTrailer.BorderStyle = BorderStyle.FixedSingle;
-            linkTrailer.Location = new Point(14, 402);
-            linkTrailer.Margin = new Padding(4, 0, 4, 0);
+            linkTrailer.Location = new Point(16, 536);
+            linkTrailer.Margin = new Padding(5, 0, 5, 0);
             linkTrailer.Name = "linkTrailer";
-            linkTrailer.Size = new Size(76, 17);
+            linkTrailer.Size = new Size(95, 22);
             linkTrailer.TabIndex = 40;
             linkTrailer.TabStop = true;
             linkTrailer.Text = "Watch trailer";
@@ -246,10 +246,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             linkLabelOpenFilepath.AutoSize = true;
             linkLabelOpenFilepath.BorderStyle = BorderStyle.FixedSingle;
-            linkLabelOpenFilepath.Location = new Point(102, 402);
-            linkLabelOpenFilepath.Margin = new Padding(4, 0, 4, 0);
+            linkLabelOpenFilepath.Location = new Point(117, 536);
+            linkLabelOpenFilepath.Margin = new Padding(5, 0, 5, 0);
             linkLabelOpenFilepath.Name = "linkLabelOpenFilepath";
-            linkLabelOpenFilepath.Size = new Size(81, 17);
+            linkLabelOpenFilepath.Size = new Size(102, 22);
             linkLabelOpenFilepath.TabIndex = 42;
             linkLabelOpenFilepath.TabStop = true;
             linkLabelOpenFilepath.Text = "Open filepath";
@@ -258,10 +258,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonDeleteItem
             // 
-            buttonDeleteItem.Location = new Point(341, 398);
-            buttonDeleteItem.Margin = new Padding(4, 3, 4, 3);
+            buttonDeleteItem.Location = new Point(374, 531);
+            buttonDeleteItem.Margin = new Padding(5, 4, 5, 4);
             buttonDeleteItem.Name = "buttonDeleteItem";
-            buttonDeleteItem.Size = new Size(95, 23);
+            buttonDeleteItem.Size = new Size(118, 31);
             buttonDeleteItem.TabIndex = 43;
             buttonDeleteItem.Text = "Slett metadata";
             toolTipDetail.SetToolTip(buttonDeleteItem, "Sletter dette objektet fra DB, men ikke fra disk.");
@@ -271,10 +271,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelQuality
             // 
             labelQuality.AutoSize = true;
-            labelQuality.Location = new Point(194, 424);
-            labelQuality.Margin = new Padding(4, 0, 4, 0);
+            labelQuality.Location = new Point(222, 565);
+            labelQuality.Margin = new Padding(5, 0, 5, 0);
             labelQuality.Name = "labelQuality";
-            labelQuality.Size = new Size(25, 15);
+            labelQuality.Size = new Size(31, 20);
             labelQuality.TabIndex = 45;
             labelQuality.Text = "HQ";
             toolTipDetail.SetToolTip(labelQuality, "Filmkvalitet");
@@ -282,9 +282,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // buttonSimilar
             // 
             buttonSimilar.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSimilar.Location = new Point(434, 398);
+            buttonSimilar.Location = new Point(500, 531);
+            buttonSimilar.Margin = new Padding(3, 4, 3, 4);
             buttonSimilar.Name = "buttonSimilar";
-            buttonSimilar.Size = new Size(56, 23);
+            buttonSimilar.Size = new Size(68, 31);
             buttonSimilar.TabIndex = 46;
             buttonSimilar.Text = "Similar";
             buttonSimilar.TextAlign = ContentAlignment.MiddleRight;
@@ -294,10 +295,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonDeleteReference
             // 
-            buttonDeleteReference.Location = new Point(341, 422);
-            buttonDeleteReference.Margin = new Padding(4, 3, 4, 3);
+            buttonDeleteReference.Location = new Point(374, 563);
+            buttonDeleteReference.Margin = new Padding(5, 4, 5, 4);
             buttonDeleteReference.Name = "buttonDeleteReference";
-            buttonDeleteReference.Size = new Size(95, 23);
+            buttonDeleteReference.Size = new Size(118, 31);
             buttonDeleteReference.TabIndex = 51;
             buttonDeleteReference.Text = "Slett referanse";
             toolTipDetail.SetToolTip(buttonDeleteReference, "Sletter dette filobjektet fra DB, men ikke fra disk.");
@@ -306,20 +307,22 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonAddPL
             // 
-            buttonAddPL.Location = new Point(51, 424);
+            buttonAddPL.Location = new Point(58, 565);
+            buttonAddPL.Margin = new Padding(3, 4, 3, 4);
             buttonAddPL.Name = "buttonAddPL";
-            buttonAddPL.Size = new Size(68, 23);
+            buttonAddPL.Size = new Size(78, 31);
             buttonAddPL.TabIndex = 56;
             buttonAddPL.Text = "Add to PL";
-            toolTipDetail.SetToolTip(buttonAddPL, "Add to PlayList (plex)");
+            toolTipDetail.SetToolTip(buttonAddPL, "Add to PlayList (plex - Spilleliste)");
             buttonAddPL.UseVisualStyleBackColor = true;
             buttonAddPL.Click += buttonPlaylist_Click;
             // 
             // buttonOpenPl
             // 
-            buttonOpenPl.Location = new Point(125, 424);
+            buttonOpenPl.Location = new Point(143, 565);
+            buttonOpenPl.Margin = new Padding(3, 4, 3, 4);
             buttonOpenPl.Name = "buttonOpenPl";
-            buttonOpenPl.Size = new Size(68, 23);
+            buttonOpenPl.Size = new Size(78, 31);
             buttonOpenPl.TabIndex = 57;
             buttonOpenPl.Text = "Open PL";
             toolTipDetail.SetToolTip(buttonOpenPl, "Find a DB playlist this item is in");
@@ -328,9 +331,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonRediger
             // 
-            buttonRediger.Location = new Point(274, 398);
+            buttonRediger.Location = new Point(301, 531);
+            buttonRediger.Margin = new Padding(3, 4, 3, 4);
             buttonRediger.Name = "buttonRediger";
-            buttonRediger.Size = new Size(60, 23);
+            buttonRediger.Size = new Size(69, 31);
             buttonRediger.TabIndex = 47;
             buttonRediger.Text = "Rediger";
             buttonRediger.UseVisualStyleBackColor = true;
@@ -339,9 +343,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // buttonSubtitleSearch
             // 
             buttonSubtitleSearch.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonSubtitleSearch.Location = new Point(434, 422);
+            buttonSubtitleSearch.Location = new Point(500, 563);
+            buttonSubtitleSearch.Margin = new Padding(3, 4, 3, 4);
             buttonSubtitleSearch.Name = "buttonSubtitleSearch";
-            buttonSubtitleSearch.Size = new Size(56, 23);
+            buttonSubtitleSearch.Size = new Size(68, 31);
             buttonSubtitleSearch.TabIndex = 48;
             buttonSubtitleSearch.Text = "Subtitle search";
             buttonSubtitleSearch.TextAlign = ContentAlignment.MiddleRight;
@@ -350,9 +355,10 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // buttonPosterFix
             // 
-            buttonPosterFix.Location = new Point(274, 421);
+            buttonPosterFix.Location = new Point(301, 561);
+            buttonPosterFix.Margin = new Padding(3, 4, 3, 4);
             buttonPosterFix.Name = "buttonPosterFix";
-            buttonPosterFix.Size = new Size(60, 23);
+            buttonPosterFix.Size = new Size(69, 31);
             buttonPosterFix.TabIndex = 49;
             buttonPosterFix.Text = "Poster";
             buttonPosterFix.UseVisualStyleBackColor = true;
@@ -361,46 +367,47 @@ namespace Kolibri.net.SilverScreen.Forms
             // labelAdded
             // 
             labelAdded.AutoSize = true;
-            labelAdded.Location = new Point(348, 562);
-            labelAdded.Margin = new Padding(4, 0, 4, 0);
+            labelAdded.Location = new Point(398, 749);
+            labelAdded.Margin = new Padding(5, 0, 5, 0);
             labelAdded.Name = "labelAdded";
-            labelAdded.Size = new Size(42, 15);
+            labelAdded.Size = new Size(54, 20);
             labelAdded.TabIndex = 53;
             labelAdded.Text = "Added";
             // 
             // tbAdded
             // 
-            tbAdded.Location = new Point(348, 580);
-            tbAdded.Margin = new Padding(4, 3, 4, 3);
+            tbAdded.Location = new Point(398, 773);
+            tbAdded.Margin = new Padding(5, 4, 5, 4);
             tbAdded.Name = "tbAdded";
             tbAdded.ReadOnly = true;
-            tbAdded.Size = new Size(71, 23);
+            tbAdded.Size = new Size(81, 27);
             tbAdded.TabIndex = 52;
             // 
             // labelRated
             // 
             labelRated.AutoSize = true;
-            labelRated.Location = new Point(426, 562);
-            labelRated.Margin = new Padding(4, 0, 4, 0);
+            labelRated.Location = new Point(487, 749);
+            labelRated.Margin = new Padding(5, 0, 5, 0);
             labelRated.Name = "labelRated";
-            labelRated.Size = new Size(37, 15);
+            labelRated.Size = new Size(48, 20);
             labelRated.TabIndex = 54;
             labelRated.Text = "Rated";
             // 
             // tbRated
             // 
-            tbRated.Location = new Point(426, 580);
-            tbRated.Margin = new Padding(4, 3, 4, 3);
+            tbRated.Location = new Point(487, 773);
+            tbRated.Margin = new Padding(5, 4, 5, 4);
             tbRated.Name = "tbRated";
             tbRated.ReadOnly = true;
-            tbRated.Size = new Size(71, 23);
+            tbRated.Size = new Size(81, 27);
             tbRated.TabIndex = 55;
             // 
             // buttonReviews
             // 
-            buttonReviews.Location = new Point(12, 562);
+            buttonReviews.Location = new Point(474, 651);
+            buttonReviews.Margin = new Padding(3, 4, 3, 4);
             buttonReviews.Name = "buttonReviews";
-            buttonReviews.Size = new Size(75, 23);
+            buttonReviews.Size = new Size(86, 31);
             buttonReviews.TabIndex = 58;
             buttonReviews.Text = "Reviews";
             buttonReviews.UseVisualStyleBackColor = true;
@@ -408,9 +415,9 @@ namespace Kolibri.net.SilverScreen.Forms
             // 
             // DetailsFormItem
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(504, 754);
+            ClientSize = new Size(582, 1005);
             Controls.Add(buttonReviews);
             Controls.Add(buttonOpenPl);
             Controls.Add(buttonAddPL);
@@ -445,8 +452,8 @@ namespace Kolibri.net.SilverScreen.Forms
             Controls.Add(tbTitle);
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
-            Margin = new Padding(4, 3, 4, 3);
-            MinimumSize = new Size(16, 39);
+            Margin = new Padding(5, 4, 5, 4);
+            MinimumSize = new Size(18, 47);
             Name = "DetailsFormItem";
             Text = "Movie Detail ";
             KeyDown += MovieDetailsForm_KeyDown;

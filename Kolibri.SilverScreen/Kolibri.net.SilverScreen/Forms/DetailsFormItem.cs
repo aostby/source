@@ -12,7 +12,10 @@ using Kolibri.net.SilverScreen.TMDBForms;
 using LiteDB;
 using OMDbApiNet.Model;
 using Org.BouncyCastle.Tls;
+using System.Collections.Immutable;
 using System.Data;
+using System.Windows.Forms.DataVisualization.Charting;
+using TMDbLib.Objects.General;
 using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Reviews;
 
@@ -99,6 +102,8 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             GetPlexController();
 
+            this.Text = $"{item.Type} details";
+
             tbTitle.Text = item.Title;
             tbYear.Text = item.Year;
             tbIMDBRated.Text = item.ImdbRating;
@@ -164,12 +169,17 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                string path;
+                FileInfo info = new FileInfo( Path.GetTempFileName());
+                string path=null;
+              
                 var t = await _liteDB.FindFileAsync(_item.ImdbId);
-                path = t.ItemFileInfo.FullName;
+                if (t != null) { path = t.ItemFileInfo.FullName;
+                    info = new FileInfo(path);
+                }
 
                 toolTipDetail.SetToolTip(linkLabelOpenFilepath, path);
-                FileInfo info = new FileInfo(path);
+
+
                 _itemPath = new FileItem(_item.ImdbId, info.FullName);
                 if (!info.Exists) { linkLabelOpenFilepath.LinkColor = Color.Salmon; toolTipDetail.SetToolTip(linkLabelOpenFilepath, info.Exists.ToString()); }
                 if (info.Directory.Exists) { linkLabelOpenFilepath.LinkColor = Color.Green; }
@@ -190,7 +200,7 @@ namespace Kolibri.net.SilverScreen.Forms
                     try { toolTipDetail.SetToolTip(tbAdded, StringUtilities.FormatMinutesAsHoursAndMinutes((int)(DateTime.Now - t.DateAdded).TotalMinutes)); }
                     catch (Exception) { }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                 }
 
@@ -480,6 +490,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private async void tbActors_Clicked(object sender, EventArgs e)
         {
             this.Cursor = Cursors.WaitCursor;
+            tbActors.Enabled = false;
             try
             {
                 TMDbLib.Objects.Movies.Credits credits = await _liteDB.GetCredits(_item.ImdbId);
@@ -494,6 +505,7 @@ namespace Kolibri.net.SilverScreen.Forms
             }
             catch (Exception ex) { }
             this.Cursor = Cursors.Default;
+            tbActors.Enabled = true;
         }
 
 
@@ -620,15 +632,26 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 if (_item != null && _item.Type.StartsWith("movie", StringComparison.OrdinalIgnoreCase))
                 {
+                    var url = _item.Poster;
 
-                    if (!HTMLUtilities.DoesUrlExists(_item.Poster))
-                    {
+                    if (!HTMLUtilities.DoesUrlExists(url))
+                                            { 
+
                         var pItem = await _plexController.FindByImdbAsync(_item.ImdbId);
                         if (pItem != null)
                         {
                             _item.Poster = pItem.Poster;
                             await _liteDB.UpsertAsync(_item);
                             var txt = $"{_item.Title} - {_item.Poster} ";
+                            try
+                            {
+                                _=await _imageCache.InsertImageAsync(_item.ImdbId, ImageUtilities.GetImageFromUrl(_item.Poster) as Bitmap);
+                            }
+                            catch (Exception)
+                            {
+
+                                
+                            }
                             Init(_item, false);
                         }
                         //else {                            throw new KeyNotFoundException($"{_item.ImdbId} - {_item.Title}");                        }
@@ -689,7 +712,7 @@ namespace Kolibri.net.SilverScreen.Forms
                         buttonOpenPl.Enabled = false;
                         throw new KeyNotFoundException($"'{_item.Title}' finns ikke i noen spilleliste. Legg til '{_item.Title}' ({_item.ImdbId}) vha funksjon for å legge til. ");
                     }
-                    WatchlistForm form = new WatchlistForm(_liteDB, found.WatchListName);
+                    WatchlistForm form = new WatchlistForm(_liteDB,_plexController, found.WatchListName);
                     form.ShowDialog();
 
                 }
@@ -725,23 +748,33 @@ namespace Kolibri.net.SilverScreen.Forms
 
         }
 
-        private void buttonReviews_Click(object sender, EventArgs e)
+        private async void buttonReviews_Click(object sender, EventArgs e)
         {
             try
             {
-                var reviewContainer = _TMDB.GetMovieReviewsAsync(_item.ImdbId, true);
-                var reviewlist = reviewContainer.Results.ToList();
-                if (reviewlist != null && reviewlist.Count <= 1)
+                var reviewList = await _liteDB.GetReviewListAsync(_item.ImdbId);
+                if (reviewList == null || _item.Year.ToInt32() >= DateTime.Now.Year)  //Forutsetter at filmer ikke får nye reviews hvis eldre enn årets
                 {
-                    foreach (var movieReview in reviewlist)
+
+                    var reviewContainer = _TMDB.GetMovieReviewsAsync(_item.ImdbId, true);
+                    reviewList = reviewContainer?.Results.ToList<ReviewBase>();
+                    if (reviewList != null && reviewList.Count > 1)
+                        _liteDB.Upsert(_item.ImdbId, reviewList);
+                }
+
+
+
+                if (reviewList != null && reviewList.Count <= 1)
+                {
+                    foreach (var movieReview in reviewList)
                     {
-                        new MovieReviewForm(movieReview).Show();
+                        new MovieReviewForm(movieReview, _item).Show();
                     }
                     buttonReviews.Enabled = false;
                     return;
                 }
 
-                var ds = DataSetUtilities.AutoGenererTypedDataSet(reviewlist);
+                var ds = DataSetUtilities.AutoGenererTypedDataSet(reviewList);
                 string[] kolonnerSomSkalMed = new string[] { "Author", "Rating", "Content", "CreatedAt"/*, "Url" */};
                 ds.Tables[0].Columns.Add("Rating", typeof(string));
                 foreach (DataRow item in ds.Tables[0].Rows)
@@ -758,19 +791,14 @@ namespace Kolibri.net.SilverScreen.Forms
                 }
 
                 var table = new DataView(ds.Tables[0], "", "UpdatedAt DESC", DataViewRowState.CurrentRows).ToTable(false, kolonnerSomSkalMed);
-                
-                
-                
-                Common.FormUtilities.Forms.OutputDialogs.ShowDataTableDialog($"{_item.Title} - Reviews", table, table.Columns["Content"], this.Size);
+                Common.FormUtilities.Forms.OutputDialogs.ShowDataTableDialog($"Review for ({_item.Year}) {_item.Title} - ImdbRating: {_item.ImdbRating} ", table, table.Columns["Content"], this.Size);
             }
             catch (Exception ex)
             {
                 buttonReviews.Enabled = false;
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+        } 
 
-        }
-
-      
     }
 }
