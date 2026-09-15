@@ -254,56 +254,93 @@ namespace Kolibri.net.SilverScreen.Controller
                 var extensionList = new List<string>() { ".nfo", ".txt", ".jpg", ".exe" };
                 // Globale språkkoder for undertekster (Unntatt ENG og Skandinaviske språk)
                 var lang = new List<string>() {
-                    "ara.srt", // Arabisk
-                    "arabic.srt", // Arabisk
-                    "ces.srt", // Tsjekkisk (Også forkortet .cze.srt)
-                    "chi.srt", // Kinesisk (Også ofte forkortet .zho.srt)
-                    "cze.srt",
-                    "deu.srt", // Tysk (Også ofte forkortet .ger.srt)
-                    "dut.srt",
-                    "Dutch.srt",
-                    "ell.srt", // Gresk (Også forkortet .gre.srt)
-                    "esp.srt",
-                    "fin.srt", // Finsk (Inkludert etter ønske)
-                    "fra.srt", // Fransk (Også ofte forkortet .fre.srt)
-                    "fre.srt",
-                    "french.srt",
-                    "ger.srt",
-                    "german.srt",
-                    "gre.srt",
-                    "greek.srt",
-                    "hin.srt", // Hindi
-                    "hun.srt", // Ungarsk
-                    "ind.srt", // Indonesisk
-                    "ita.srt", // Italiensk
-                    "jpn.srt", // Japansk
-                    "kor.srt", // Koreansk
-                    "nl.srt",  // Nederlandsk (Noen ganger 2-bokstavs i filnavn)
-                    "nld.srt", // Nederlandsk 3-bokstavs
-                    "pol.srt", // Polsk
-                    "por.srt", // Portugisisk
-                    "ron.srt", // Rumensk (Også forkortet .rum.srt)
-                    "rum.srt",
-                    "rus.srt", // Russisk
-                    "spa.srt", // Spansk
-                       "spanish.srt", // Spansk
-                    "tha.srt", // Thai
-                    "tur.srt", // Tyrkisk
-                    "ukr.srt",  // Ukrainsk
-                    "vie.srt", // Vietnamesisk
-                    "zho.srt",
-                    "bul.srt",
-                    "est.srt",
-                    "lav.srt",
-                    "lit.srt",
-                    "slo.srt",
-                    "slv.srt",
-                    "tam.srt",
-                    "tel.srt",
-                    "hrv.srt",
-
+              "Bulgarian.srt",
+              "Dutch.srt",
+              "Estonian.srt",
+              "Japanese.srt",
+              "Korean.srt",
+              "Latvian.srt",
+              "Lithuanian.srt",
+              "Russian.srt",
+              "Slovenian.srt",
+              "Thai.srt",
+              "Turkish.srt",
+              "Vietnamese.srt",
+              "kir.srt",
+                "kaz.srt",
+                "mac.srt",
+                "srp.srt",
+                "arm.srt",
+                "geo.srt",
+                "kan.srt",
+                "mal.srt",
+                "khm.srt",
+              "aze.srt",
+              "ice.srt",
+              "mal.srt",
+              "alb.srt",
+              "srp.srt",
+              "kan.srt",
+              "baq.srt",
+              "cat.srt",
+              "fil.srt",
+              "glg.srt",
+              "ara.srt", // Arabisk
+              "arabic.srt", // Arabisk
+              "bul.srt",
+              "ces.srt", // Tsjekkisk (Også forkortet .cze.srt)
+              "chi.srt", // Kinesisk (Også ofte forkortet .zho.srt)
+              "cze.srt",
+              "deu.srt", // Tysk (Også ofte forkortet .ger.srt)
+              "dut.srt",
+              "ell.srt", // Gresk (Også forkortet .gre.srt)
+              "esp.srt",
+              "est.srt",
+              "fin.srt", // Finsk (Inkludert etter ønske)
+              "fra.srt", // Fransk (Også ofte forkortet .fre.srt)
+              "fre.srt",
+              "french.srt",
+              "ger.srt",
+              "german.srt",
+              "gre.srt",
+              "greek.srt",
+              "heb.srt",
+              "hin.srt", // Hindi
+              "hrv.srt",
+              "hun.srt", // Ungarsk
+              "ind.srt", // Indonesisk
+              "ita.srt", // Italiensk
+              "jpn.srt", // Japansk
+              "kor.srt", // Koreansk
+              "lav.srt",
+              "lit.srt",
+              "may.srt",
+              "nl.srt",  // Nederlandsk (Noen ganger 2-bokstavs i filnavn)
+              "nld.srt", // Nederlandsk 3-bokstavs
+              "pol.srt", // Polsk
+              "por.srt", // Portugisisk
+              "ron.srt", // Rumensk (Også forkortet .rum.srt)
+              "rum.srt",
+              "rus.srt", // Russisk
+              "slo.srt",
+              "slv.srt",
+              "spa.srt", // Spansk
+              "spanish.srt", // Spansk
+              "tam.srt",
+              "tel.srt",
+              "tha.srt", // Thai
+              "tur.srt", // Tyrkisk
+              "ukr.srt",  // Ukrainsk
+              "vie.srt", // Vietnamesisk
+              "zho.srt",
                 };
-                extensionList.AddRange(lang.Distinct());
+
+                List<string> resultList = lang.Concat(lang
+                    .Select(item => item.Replace(".", ".HI.")))
+                .ToList();
+
+
+                extensionList.AddRange(resultList.Distinct());
 
                 // 3. Define parallel options to optimize for network UNC paths
                 var parallelOptions = new ParallelOptions

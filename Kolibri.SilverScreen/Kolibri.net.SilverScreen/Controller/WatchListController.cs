@@ -1,6 +1,8 @@
 ﻿using Kolibri.net.Common.Dal.Controller;
 using Kolibri.net.Common.Dal.Entities;
 using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.Utilities.Extensions;
+using Newtonsoft.Json;
 using OMDbApiNet.Model;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Forms;
 using static TMDbLib.Objects.General.WatchProvider;
 
@@ -71,17 +74,39 @@ namespace MoviesFromImdb.Controller
                 {
                     try
                     {
+                        Item item = null;
                         int pos = row.Table.Columns.IndexOf("Poster");
-                        var id = row.Table.Columns.IndexOf("ImdbId");
-                        var url = string.Empty;// _imageCache.GetPosterUrlAsync($"{row[id]}").Result;
-                        if (string.IsNullOrWhiteSpace(url)) {
-                            url = row[pos].ToString();
+                        var idpos = row.Table.Columns.IndexOf("ImdbId");
+                        var url = row[pos].ToString();
+                        var imdbId = row[idpos].ToString();
+                        if (string.IsNullOrWhiteSpace(url))
+                        {
+                            if (string.IsNullOrWhiteSpace(imdbId)) continue;
+                           
                         }
+                      
                         Image pic = null;
                         var img = await _imageCache.FindImageAsync(url);
                         if (img == null)
-                            pic = ImageUtilities.GetImageFromUrl(url);
-                        else {
+                        {
+                            if (!HTMLUtilities.DoesUrlExists(url))
+                            {
+                                item = await _liteDB.GetItemAsync(imdbId);
+                                if (item == null) continue;
+
+                                if (item != null && HTMLUtilities.DoesUrlExists(item.Poster))
+                                {
+                                    url = item.Poster;
+                                    row[pos] = item.Poster;
+                                    pic = ImageUtilities.GetImageFromUrl(url);
+                                    _ = await _imageCache.InsertImageAsync(item.ImdbId, pic as Bitmap);
+                                    _ = await _imageCache.InsertImageAsync(url, pic as Bitmap);
+                                    _ = await _liteDB.AddToWatchListAsync(watchListName, item);
+                                }
+                            }
+                        }
+                        else
+                        {
                             pic = img.Image;
                         }
  
@@ -96,6 +121,8 @@ namespace MoviesFromImdb.Controller
             }
             return ret;
         }
+
+    
 
         public bool AddMovieToLiteDBWatchList( WatchListItem entity)
         {

@@ -5,6 +5,7 @@ using MoviesFromImdb.Controller;
 using System.ComponentModel;
 using System.Data;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Kolibri.net.SilverScreen.IMDBForms
@@ -20,13 +21,14 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private LiteDBController _liteDB { get; }
 
         private PlexController _plex { get; }
-        
 
-        public WatchlistForm(LiteDBController liteDB,PlexController plex, string watchListName)
+
+        public WatchlistForm(LiteDBController liteDB, PlexController plex, string watchListName)
         {
-            InitializeComponent(); 
+            InitializeComponent();
             _liteDB = liteDB;
             _WListController = new WatchListController(_liteDB);
+            _plex = plex;
 
             if (!string.IsNullOrEmpty(watchListName))
             {
@@ -37,12 +39,9 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
             this.Text += $" Name: {_watchListName}";
             FillUpGrid();
-          
-
-
         }
 
-        public async  void FillUpGrid()
+        public async void FillUpGrid()
         {
             try
             {
@@ -52,7 +51,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                     bsMovies.DataSource = null;
                     return;
                 }
-                this.Text += $" Count: {dsMovies.Tables[0].Rows.Count }";
+                this.Text += $" Count: {dsMovies.Tables[0].Rows.Count}";
                 bsMovies.DataSource = dsMovies.Tables[0];
                 gridMovies.SuspendLayout();
                 gridMovies.DataSource = bsMovies;
@@ -132,7 +131,7 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         }
 
-        private void miDeleteMovie_Click(object sender, EventArgs e)
+        private async void miDeleteMovie_Click(object sender, EventArgs e)
         {
 
             if (MessageBox.Show("Are you sure you want to delete movie?", "Message", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) !=
@@ -142,6 +141,12 @@ namespace Kolibri.net.SilverScreen.IMDBForms
             string id = gridMovies["ImdbId", gridMovies.CurrentCell.RowIndex].Value.ToString();
 
             _WListController.DeleteMovieFromWatchLists(id);
+            try
+            {
+                var res = MessageBox.Show($"should this movie be removed from _plex playlist {_watchListName} also?", _watchListName, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (res == DialogResult.Yes) { _ = await _plex.RemoveMovieFromPlaylistAsync(_watchListName, id); }
+            }
+            catch (Exception ex) { }
 
             FillUpGrid();
         }
@@ -469,10 +474,11 @@ namespace Kolibri.net.SilverScreen.IMDBForms
         private async void buttonPlex_Click(object sender, EventArgs e)
         {
             try
-            {  var test = await _plex.GetPlaylistsAsync();
+            {
+                var test = await _plex.GetPlaylistsAsync();
                 var pl = test.FindAll(x => x.Equals($"{_watchListName}", StringComparison.OrdinalIgnoreCase)).First();
                 if (!string.IsNullOrEmpty(pl))
-                { 
+                {
                     foreach (DataGridViewRow row in gridMovies.Rows)
                     {
                         string imdbId = gridMovies["ImdbId", row.Index].Value.ToString();
@@ -481,6 +487,22 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 }
                 else { throw new Exception($"No playlist in Plex is called {tbTitle.Text}"); }
                 MessageBox.Show($"'{_watchListName}' copied to a playlist in your plex Server");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"'{_watchListName}' is not a playlist in your plex Server? {ex.Message}", ex.GetType().Name);
+            }
+        }
+
+        private async void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+
+                DataGridViewRow r = gridMovies.Rows[gridMovies.SelectedCells[0].RowIndex];           
+                    string imdbId = gridMovies["ImdbId", r.Index].Value.ToString();
+                    _plex.AddElementToPlaylist(_watchListName, imdbId);
+               
             }
             catch (Exception ex)
             {

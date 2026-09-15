@@ -73,6 +73,7 @@
             btnGrid = new Button();
             buttonPlex = new Button();
             toolTip1 = new ToolTip(components);
+            toolStripMenuItem1 = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)gridMovies).BeginInit();
             cmsOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bsMovies).BeginInit();
@@ -244,9 +245,9 @@
             // cmsOptions
             // 
             cmsOptions.ImageScalingSize = new Size(20, 20);
-            cmsOptions.Items.AddRange(new ToolStripItem[] { miMovieDetails, miChangeStatus, miDeleteMovie });
+            cmsOptions.Items.AddRange(new ToolStripItem[] { miMovieDetails, miChangeStatus, toolStripMenuItem1, miDeleteMovie });
             cmsOptions.Name = "cmsOptions";
-            cmsOptions.Size = new Size(191, 70);
+            cmsOptions.Size = new Size(191, 114);
             cmsOptions.Opening += cmsOptions_Opening;
             // 
             // miMovieDetails
@@ -463,6 +464,13 @@
             buttonPlex.UseVisualStyleBackColor = true;
             buttonPlex.Click += buttonPlex_Click;
             // 
+            // toolStripMenuItem1
+            // 
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(190, 22);
+            toolStripMenuItem1.Text = "Add To Plex";
+            toolStripMenuItem1.Click += toolStripMenuItem1_Click;
+            // 
             // WatchlistForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -537,5 +545,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ImdbId;
         private Button buttonPlex;
         private ToolTip toolTip1;
+        private ToolStripMenuItem toolStripMenuItem1;
     }
 }

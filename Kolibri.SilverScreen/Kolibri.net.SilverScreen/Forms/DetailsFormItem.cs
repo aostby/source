@@ -102,6 +102,8 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             GetPlexController();
 
+            this.Text = $"{item.Type} details";
+
             tbTitle.Text = item.Title;
             tbYear.Text = item.Year;
             tbIMDBRated.Text = item.ImdbRating;
@@ -630,15 +632,26 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 if (_item != null && _item.Type.StartsWith("movie", StringComparison.OrdinalIgnoreCase))
                 {
+                    var url = _item.Poster;
 
-                    if (!HTMLUtilities.DoesUrlExists(_item.Poster))
-                    {
+                    if (!HTMLUtilities.DoesUrlExists(url))
+                                            { 
+
                         var pItem = await _plexController.FindByImdbAsync(_item.ImdbId);
                         if (pItem != null)
                         {
                             _item.Poster = pItem.Poster;
                             await _liteDB.UpsertAsync(_item);
                             var txt = $"{_item.Title} - {_item.Poster} ";
+                            try
+                            {
+                                _=await _imageCache.InsertImageAsync(_item.ImdbId, ImageUtilities.GetImageFromUrl(_item.Poster) as Bitmap);
+                            }
+                            catch (Exception)
+                            {
+
+                                
+                            }
                             Init(_item, false);
                         }
                         //else {                            throw new KeyNotFoundException($"{_item.ImdbId} - {_item.Title}");                        }

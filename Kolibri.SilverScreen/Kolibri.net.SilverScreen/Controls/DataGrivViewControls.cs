@@ -678,7 +678,7 @@ namespace Kolibri.net.SilverScreen.Controls
                                 var year = dgv.Rows[e.RowIndex].Cells["Year"].Value.ToString();
 
 
-                           var item =      omdb.GetMovieByIMDBTitle(title, Convert.ToInt32( year));
+                           var item = omdb.GetMovieByIMDBTitle(title, Convert.ToInt32( year));
                                 if (item != null)
                                 {
                                     var form = new DetailsFormItem(item, _liteDB);

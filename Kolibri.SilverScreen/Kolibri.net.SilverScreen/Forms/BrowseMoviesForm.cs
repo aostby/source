@@ -8,6 +8,7 @@ using Kolibri.net.Common.Utilities;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controls;
 using Kolibri.net.SilverScreen.Entities;
+using Kolibri.net.SilverScreen.Forms;
 using Kolibri.net.SilverScreen.IMDBForms;
 using MoviesFromImdb.Controller;
 using Newtonsoft.Json;
@@ -25,8 +26,9 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private LiteDBController _liteDB;
         private WatchListController _watchlistContr;
         private PlexController _plex;
+        private TMDBController _tmdb;
 
-        //private ImageCache _imageCache;
+        private ImageCacheDB _imageCache;
         private UserSettings _userSettings;
         private string _lastPath;
 
@@ -49,18 +51,18 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             splitContainer1.FixedPanel = FixedPanel.Panel1;
             splitContainer1.IsSplitterFixed = true;
             linkLabelOpenInBrowser.Tag = _htmlFile;
-            //try { _imageCache = new ImageCache(_userSettings); } catch (Exception) { }
+
 
             try
             {
                 _liteDB = new LiteDBController(_userSettings.LiteDBFileInfo, false, false);
                 _watchlistContr = new WatchListController(_liteDB);
                 _plex = new PlexController(_userSettings);
+                _imageCache = new ImageCacheDB(_userSettings);
+                _tmdb = new TMDBController(_liteDB);
 
                 try
                 {
-                    //   this.Text = $"{Assembly.GetExecutingAssembly().GetName().Name} - {_userSettings.FavoriteWatchList}";
-                    //
                     var list = _watchlistContr.GetAllWatchlistNames();
                     try
                     {
@@ -68,21 +70,13 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                         list.AddRange(pList);
                         list = list.Distinct().ToList();
                     }
-                    catch (AggregateException ex)
-                    {
-
-                    }
-
-                    catch (Exception ex)
-                    {
-                    }
+                    catch (Exception ex) { }
 
                     comboBoxWatchLists.DataSource = list;
                     if (list.Contains(_userSettings.FavoriteWatchList))
                         comboBoxWatchLists.SelectedIndex = comboBoxWatchLists.Items.IndexOf(_userSettings.FavoriteWatchList);
                 }
-                catch (Exception ex)
-                { }
+                catch (Exception ex) { }
 
                 comboBoxGenre.Items.AddRange(MovieUtilites.GenreList.ToArray());
 
@@ -113,13 +107,12 @@ namespace Kolibri.net.Common.MovieAPI.Forms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
 
-            //Task.Run(async () => await _imageCache.InitImages(_LITEDB));
 
             try
 
             {
                 //  this.Text = this.Text + $"({_imageCache.NumElements})";
-                SetStatusLabelText($"Intializing images. Please search for items in movies and series collection saved in \r\n {_liteDB.ConnectionString}");
+                SetStatusLabelText($"Intializing images. Please search for items in movies and series collection saved in {_liteDB.ConnectionString.Filename}");
             }
             catch (Exception ex)
             {
@@ -129,6 +122,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
 
         private void SetStatusLabelText(string message)
         {
+            Thread.Sleep(1);
             try
             {
                 Task.Delay(1).GetAwaiter().GetResult();
@@ -653,7 +647,7 @@ img:hover{{transform: scale(1.5)}}
             }
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private async void buttonAddToPlexPlaylist_Click(object sender, EventArgs e)
         {
             string playlistName = tbSearch.Text;
 
@@ -696,9 +690,6 @@ img:hover{{transform: scale(1.5)}}
                         pl = playlists.FindAll(x => x.Equals($"{playlistName}", StringComparison.OrdinalIgnoreCase)).First();
                     }
 
-
-
-
                     if (!string.IsNullOrWhiteSpace(pl))
                     {
                         var result = MessageBox.Show($"Add {items.Count} items to  {playlistName}?", $"{playlistName}", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -719,6 +710,10 @@ img:hover{{transform: scale(1.5)}}
 
                         }
                     }
+                }
+                else
+                {
+                    SetStatusLabelText($"No items selected to be added to list {playlistName}");
                 }
             }
             catch (Exception ex)
@@ -795,9 +790,9 @@ img:hover{{transform: scale(1.5)}}
             }
         }
 
-        private void buttonPlaylist_Click(object sender, EventArgs e)
+        private void buttonDBPlaylist_Click(object sender, EventArgs e)
         {
-
+            SetStatusLabelText($"Displaying list {comboBoxWatchLists.SelectedValue.ToString()}. Please wait....");
             try
             {
                 WatchlistForm frm = new WatchlistForm(_liteDB, _plex, comboBoxWatchLists.SelectedValue.ToString());
@@ -812,43 +807,71 @@ img:hover{{transform: scale(1.5)}}
 
         private async void buttonSync_Click(object sender, EventArgs e)
         {
-            string playlistName = comboBoxWatchLists.SelectedValue.ToString();
+            string playlistName = comboBoxWatchLists.SelectedValue.ToString();//.FirstToUpper();
             try
             {
                 var dblist = await _watchlistContr.GetAllMoviesIDsFromWatchListsAsync(playlistName: playlistName);
-
                 var plexList = await _plex.GetPlaylistItemsAsync(playlistName);
 
                 var result = dblist.Concat(plexList).OrderBy(x => x).Distinct().ToList();
                 var pLists = await _plex.GetPlaylistsAsync(update: true);
                 pLists = pLists.FindAll(x => x.Equals(playlistName)).ToList();
-                IEnumerable<WatchListItem> list = _liteDB.WatchListFindAll(watchListName: playlistName).ToList().Where(w => w.Watched == "Y");
-                foreach (WatchListItem wi in list)
+                IEnumerable<WatchListItem> list = _liteDB.WatchListFindAll(watchListName: playlistName).ToList();//
+
+                foreach (WatchListItem wi in list.Where(w => w.Watched == "N"))
                 {
-                    _plex.MarkItemAsWatchedAsync(wi.ImdbId);
+                    bool? watched = false;
+                    try
+                    {
+                        watched = await _plex.IsItemWatched(wi.ImdbId);
+                        if (watched.HasValue)
+                        {
+                            if (watched.Value)
+                            {
+                                wi.Watched = "Y";
+                            }
+                            else
+                            {
+                                wi.Watched = "N";
+                                wi.WatchListName = playlistName;
+                                _ = await _liteDB.WatchListUpsert(wi);
+                            }
+                        }
+                    }
+                    catch (Exception ex) { }
 
                 }
+
                 foreach (var ttid in result)
                 {
                     if (ttid == null)
                         continue;
-
                     else if (dblist.Contains(ttid) && plexList.Contains(ttid))
                         continue;
+
 
                     var item = await _liteDB.GetItemAsync(ttid);
                     var wli = JsonConvert.DeserializeObject<WatchListItem>(item.ToJson());
                     wli.WatchListName = playlistName;
+                    wli.Watched = (await _plex.IsItemWatched(wli.ImdbId)).GetValueOrDefault().Equals(true) ? "Y" : "N";
 
                     if (!dblist.Contains(wli.ImdbId))
-                        _watchlistContr.AddMovieToLiteDBWatchList(wli);
+                    {
+
+                        if (wli.Watched != "Y")
+                        {
+                            _watchlistContr.AddMovieToLiteDBWatchList(wli);
+                        }
+                    }
                     if (pLists == null || pLists.Count < 1)
                     {
                         _ = await _plex.CreatePlayList(playlistName, new List<Item>() { item });
                         pLists = await _plex.GetPlaylistsAsync(update: true);
                     }
-                    _ = await _plex.AddElementToPlaylist(playlistName, item.ImdbId);
-             
+                    if (!plexList.Contains(ttid) && wli.Watched.Equals("N"))
+                    {
+                        _ = await _plex.AddElementToPlaylist(playlistName, item.ImdbId);
+                    }
                 }
                 MessageBox.Show(string.Join(Environment.NewLine, result.ToArray()), $"{playlistName} added titles ({result.Count()}):");
             }
@@ -865,17 +888,45 @@ img:hover{{transform: scale(1.5)}}
             try
             {
                 var items = await _plex.GetWatchlistItemsAsync(_liteDB);
+                SetStatusLabelText($"Generating watchlist for {items.Count} items (movies)");
+                if (sender.Equals(buttonVisualizePlex))
+                {
+                    DisplayHtml(true, items, buttonVisualizePlex.Text);
+                    return;
+                }
 
-                
                 DataTable resultTable = DataSetUtilities.ConvertToDataTable(items);
                 resultTable.TableName = $"({resultTable.Rows.Count})WatchList";
-                DataGridViewControls dgvtrls = new DataGridViewControls(Constants.MultimediaType.Series, _liteDB );
-           //     var dgvtrls = await new GetMulitMediaDBDataGridViewAsForm(resultTable);
-                 Form form = await dgvtrls.GetMulitMediaDBDataGridViewAsForm(resultTable, Constants.MultimediaType.movie);
+                DataGridViewControls dgvtrls = new DataGridViewControls(Constants.MultimediaType.Series, _liteDB);
+                //     var dgvtrls = await new GetMulitMediaDBDataGridViewAsForm(resultTable);
+                Form form = await dgvtrls.GetMulitMediaDBDataGridViewAsForm(resultTable, Constants.MultimediaType.movie);
                 splitContainer1.Panel2.Controls.Clear();
                 splitContainer1.Panel2.Controls.Add(form);
                 buttonWatchList.Text = resultTable.TableName;
-                form.Show();
+                form.Show(); 
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name);
+                return;
+            }
+        }
+
+        private  async   void buttonVisualizeDBPlaylist_Click(object sender, EventArgs e)
+        {
+
+
+            try
+            {
+                var res = _liteDB.WatchListFindAll(watchListName: comboBoxWatchLists.Text).ToList();
+                List<Item> items = res.Select(item => (Item)item).ToList();
+
+                if (sender.Equals(buttonVisualizeDBPlaylist))
+                {
+                    DisplayHtml(true, items, comboBoxWatchLists.Text);
+                    return;
+                }
 
             }
             catch (Exception ex)
