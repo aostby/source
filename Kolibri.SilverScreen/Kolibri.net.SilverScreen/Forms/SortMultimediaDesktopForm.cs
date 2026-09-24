@@ -27,6 +27,9 @@ namespace Kolibri.net.SilverScreen.Forms
             _type = type;
             _settings = settings;
             InitializeComponent();
+            if (string.IsNullOrEmpty(sourcePath))
+                sourcePath = _settings.UserFilePaths.MoviesSourcePath;
+
             Init(sourcePath, destinationPath);
         }
 
@@ -592,10 +595,10 @@ namespace Kolibri.net.SilverScreen.Forms
 
         private void buttonMovieFolder_Click(object sender, EventArgs e)
         {
-            string source = textBoxSource.Text;
+            string source = _settings.UserFilePaths.MoviesSourcePath;
             if (!Directory.Exists(source))
             {
-                source = _settings.UserFilePaths.MoviesSourcePath;
+                source = textBoxSource.Text;
 
             }
             DirectoryInfo folder = FileUtilities.LetOppMappe(source, "Let opp mappen med filmer som skal få nye mapper basert på filnavn");////.Replace(@"\\", @"\"));

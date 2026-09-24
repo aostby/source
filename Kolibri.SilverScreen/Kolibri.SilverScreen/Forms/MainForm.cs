@@ -136,7 +136,7 @@ namespace Kolibri.SilverScreen.Forms
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
         }
-        private void finnDuplikaterToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void finnDuplikaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -146,7 +146,7 @@ namespace Kolibri.SilverScreen.Forms
                 {
                     SetStatusLabel("Searching for dupes.... please wait");
                     SameFileController contr = new SameFileController(ex);
-                    var list = contr.GetDupes();
+                    var list = await contr.GetDupesAsync();
                     var ds = DataSetUtilities.AutoGenererDataSet(list);
                     Visualizers.VisualizeDataSet($"Dupes {ds.Tables[0].Rows.Count}", ds, this.Size);
                     var byFolder = contr.GetDupesByFolder();

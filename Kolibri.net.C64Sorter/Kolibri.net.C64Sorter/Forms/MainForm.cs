@@ -11,7 +11,9 @@ using System.Data;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Security.Policy;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Kolibri.net.C64Sorter
@@ -1196,7 +1198,30 @@ Worst case, copy the config to somewhere else than Temp folder, and do a {"Clear
             }
         }
 
-       
+        private async   void  setExternalFTPAddressToolStripMenuItem_Click(object sender, EventArgs e)
+        { /*
+           * Arnold C64 Archive
+           Adresse: arnold.c64.org
+           Hva det er: Et av de eldste, mest ikoniske og største spillarkivene for Commodore 64. [1] (/goto?url=CAESZAHrOzAVK9JGZ-JfODObIBZu99nWtRLtkFsXCzHDzGu-XZ824KjE6PencEEBv-FCdyqcuRjwjskh_6kkgKb0UrZpsTrlLV7pPMhwyNnnTO4gCQT7bbnAH2t21RlZ_L01YE0dJlk), [2] (/goto?url=CAES0AEB6zswFSQTfroZHWam99J98tChwARobUymcWzbhXUA5VCKUfGQkt8OJNq7X4cuwt-aVxn3Ns4OsACoi2fwixXx5mqKHn0_hg4Mvz0dBPc6anXIJx_mMgu9C958w_ZM3cu13vq2LoBX5dgEv1zZk0Al8547mLBOkXWrMGm2gg6u5YGyAGRPDiADPhM9B3Xwk32r9J0t_i_BYBNNNm8rOwuohQX-IKcIeM2kCWHGWNuPyhG3O0g1dWrljs3bXJRxgzo9xd8UffxMuTdBzMdzn-k0)
+           * Chromance (Gangsta's Paradise)
+           Adresse: c64.rulez.org
+           Hva det er: En svært populær europeisk server som oppdateres hyppig med spill, demoer, magasiner og verktøy. Filene her er ofte ferdig preparert for enheter som Ultimate og SD2IEC. [1] (/goto?url=CAESVgHrOzAVHWQOvBz84oiET0b8j6Q9DJnvHRPC2My38iCeDX06fmfsTaQ9Obyu4kkwTHJm2UGyeSAx-NCAwc3Tb6S__-Kowo2G-iW6XDaurJovM67gQ-bB)
+           * Zimmers CBM Archive
+            Adresse: ftp.zimmers.net 
+           * (Sti: /pub/cbm/)Hva det er: Det ultimate tekniske arkivet. I tillegg til programvare finner du offisielle manualer, firmware-filer, skjemaer og historisk dokumentasjon. [1] (/goto?url=CAESYwHrOzAV_fPlSr_ZLmHsPN9dtwodd5-9esX76XOoLiB5jfaBsdsyfPA8BoNd8WuQ5rXm0wzPwhymCB8RTEAQj9ltnf6CEDSQu5Eps849i_htZ790EmoONjPnEjZ6LeLOTph_Mg), [2] (/goto?url=CAESXAHrOzAVb8Bi8oLB7kfArYRHSsT4k-Ng9C5HmX54GEfxx45Z4WoV4aFebIeuxH8vDYvGpacBFQKAJT9VXfNDfHBJV0cC4Kng652MGm_GSpsHKXnfQhktQrmkzFmS)
+           * FUNet / Nic Funet Archive Mirror
+            Adresse: ftp.giga.or.at
+            (Sti: /pub/c64/)Hva det er: Et av de eldste uavbrutte filarkivene i verden, opprinnelig basert i Finland. Inneholder enorme mengder historisk 8-bit programvare. [1] (/goto?url=CAESbwHrOzAVxZ7rnvrbIEM_oQchasTHGzr5cwp787xlNlS92CLdUJey12QUN6_iKdiHntGXZ8D0ArajHvoVlryxgoEmn8D0Rd7oXH-vx2UQZqeqFsfX28RlrYUc-fhprqaPL_eGSq1oQ_VuSYn_xiXvbA), [2] (/goto?url=CAESYwHrOzAV_fPlSr_ZLmHsPN9dtwodd5-9esX76XOoLiB5jfaBsdsyfPA8BoNd8WuQ5rXm0wzPwhymCB8RTEAQj9ltnf6CEDSQu5Eps849i_htZ790EmoONjPnEjZ6LeLOTph_Mg)*/
+            try
+            {
+               
+            }
+            catch (Exception ex)
+            {
+
+                SetStatusLabel($"{ex.GetType().Name} - {ex.Message}");
+            }
+        }
     }
 }
  

@@ -5,8 +5,10 @@ using Kolibri.net.Common.FormUtilities.Forms;
 using Kolibri.net.Common.Images;
 using Kolibri.net.Common.Images.Entities;
 using Kolibri.net.Common.Utilities;
+using Kolibri.net.Common.Utilities.Controller;
 using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controller;
+using Kolibri.net.SilverScreen.Controls;
 using Kolibri.net.SilverScreen.IMDBForms;
 using Kolibri.net.SilverScreen.TMDBForms;
 using LiteDB;
@@ -406,19 +408,23 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             try
             {
-                Form form = new Form();
-                RichTextBox plot = new RichTextBox();
-                plot.DetectUrls = true;
-                plot.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(plot_LinkClicked);
-
-                plot.Text = $"{tbPlot.Text}{(string.Join("", Enumerable.Repeat(Environment.NewLine, 3)))}{_item.ToJson()}";
-
-                plot.Font = new Font("Microsoft San Serif", 16);
-                plot.Dock = DockStyle.Fill;
-                form.Text = tbTitle.Text.Replace(".", "." + Environment.NewLine);
-                form.Controls.Add(plot);
-                form.Size = this.Size;
+                var form = new MovieForm(_userSettings, _item);
+                form.SetMDIParent();
                 form.Show();
+
+                //Form form = new Form();
+                //RichTextBox plot = new RichTextBox();
+                //plot.DetectUrls = true;
+                //plot.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(plot_LinkClicked);
+
+                //plot.Text = $"{tbPlot.Text}{(string.Join("", Enumerable.Repeat(Environment.NewLine, 3)))}{_item.ToJson()}";
+
+                //plot.Font = new Font("Microsoft San Serif", 16);
+                //plot.Dock = DockStyle.Fill;
+                //form.Text = tbTitle.Text.Replace(".", "." + Environment.NewLine);
+                //form.Controls.Add(plot);
+                //form.Size = this.Size;
+                //form.Show();
             }
             catch (Exception ex)
             {

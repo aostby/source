@@ -491,7 +491,8 @@ namespace Kolibri.net.C64Sorter.Controllers
                 throw new Exception($"{response.RequestMessage} Error: {response.StatusCode}");
             }
         }
- 
+         
+
 
         /* volume control values
         Set UltiSID 1 volume

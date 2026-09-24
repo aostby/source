@@ -37,6 +37,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             buttonVisualizePlex = new Button();
             buttonWatchList = new Button();
             groupBoxAddToPlayList = new GroupBox();
+            buttonSyncPlexToDB = new Button();
+            buttonSyncDBToPlex = new Button();
             buttonVisualizeDBPlaylist = new Button();
             buttonSync = new Button();
             comboBoxWatchLists = new ComboBox();
@@ -47,6 +49,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             buttonOpenFolder = new Button();
             groupBoxVisualize = new GroupBox();
             buttonVisualize = new Button();
+            labelLine = new Label();
             groupBoxSearch = new GroupBox();
             groupBoxSort = new GroupBox();
             radioButtonRating = new RadioButton();
@@ -141,6 +144,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // 
             // groupBoxAddToPlayList
             // 
+            groupBoxAddToPlayList.Controls.Add(buttonSyncPlexToDB);
+            groupBoxAddToPlayList.Controls.Add(buttonSyncDBToPlex);
             groupBoxAddToPlayList.Controls.Add(buttonVisualizeDBPlaylist);
             groupBoxAddToPlayList.Controls.Add(buttonSync);
             groupBoxAddToPlayList.Controls.Add(comboBoxWatchLists);
@@ -153,20 +158,40 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             groupBoxAddToPlayList.TabStop = false;
             groupBoxAddToPlayList.Text = "Add to Playlist";
             // 
+            // buttonSyncPlexToDB
+            // 
+            buttonSyncPlexToDB.Location = new Point(203, 91);
+            buttonSyncPlexToDB.Name = "buttonSyncPlexToDB";
+            buttonSyncPlexToDB.Size = new Size(178, 23);
+            buttonSyncPlexToDB.TabIndex = 5;
+            buttonSyncPlexToDB.Text = "Plex To DB";
+            buttonSyncPlexToDB.UseVisualStyleBackColor = true;
+            buttonSyncPlexToDB.Click += buttonSync_Click;
+            // 
+            // buttonSyncDBToPlex
+            // 
+            buttonSyncDBToPlex.Location = new Point(203, 116);
+            buttonSyncDBToPlex.Name = "buttonSyncDBToPlex";
+            buttonSyncDBToPlex.Size = new Size(178, 23);
+            buttonSyncDBToPlex.TabIndex = 6;
+            buttonSyncDBToPlex.Text = "DB To Plex";
+            buttonSyncDBToPlex.UseVisualStyleBackColor = true;
+            buttonSyncDBToPlex.Click += buttonSync_Click;
+            // 
             // buttonVisualizeDBPlaylist
             // 
             buttonVisualizeDBPlaylist.Location = new Point(203, 49);
             buttonVisualizeDBPlaylist.Name = "buttonVisualizeDBPlaylist";
             buttonVisualizeDBPlaylist.Size = new Size(178, 23);
             buttonVisualizeDBPlaylist.TabIndex = 4;
-            buttonVisualizeDBPlaylist.Text = "Visualize DB Playlist";
+            buttonVisualizeDBPlaylist.Text = "HTML of DB Playlist";
             toolTip1.SetToolTip(buttonVisualizeDBPlaylist, "Vis denne spillelisten som den er lagret i lokal database.");
             buttonVisualizeDBPlaylist.UseVisualStyleBackColor = true;
             buttonVisualizeDBPlaylist.Click += buttonVisualizeDBPlaylist_Click;
             // 
             // buttonSync
             // 
-            buttonSync.Location = new Point(203, 91);
+            buttonSync.Location = new Point(6, 101);
             buttonSync.Name = "buttonSync";
             buttonSync.Size = new Size(178, 30);
             buttonSync.TabIndex = 3;
@@ -245,6 +270,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // groupBoxVisualize
             // 
             groupBoxVisualize.Controls.Add(buttonVisualize);
+            groupBoxVisualize.Controls.Add(labelLine);
             groupBoxVisualize.Location = new Point(421, 83);
             groupBoxVisualize.Margin = new Padding(4, 3, 4, 3);
             groupBoxVisualize.Name = "groupBoxVisualize";
@@ -265,6 +291,15 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             buttonVisualize.UseVisualStyleBackColor = true;
             buttonVisualize.Click += buttonVisualize_Click;
             // 
+            // labelLine
+            // 
+            labelLine.AutoSize = true;
+            labelLine.Location = new Point(228, 1);
+            labelLine.Name = "labelLine";
+            labelLine.Size = new Size(457, 15);
+            labelLine.TabIndex = 27;
+            labelLine.Text = "------------------------------------------------------------------------------------------";
+            // 
             // groupBoxSearch
             // 
             groupBoxSearch.Controls.Add(groupBoxSort);
@@ -273,12 +308,12 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             groupBoxSearch.Controls.Add(checkBoxPoster);
             groupBoxSearch.Controls.Add(buttonSearch);
             groupBoxSearch.Controls.Add(checkBoxDecending);
-            groupBoxSearch.Controls.Add(linkLabelOpenInBrowser);
             groupBoxSearch.Controls.Add(linkLabelYear);
             groupBoxSearch.Controls.Add(linkLabelGenre);
             groupBoxSearch.Controls.Add(tbSearch);
             groupBoxSearch.Controls.Add(comboBoxYear);
             groupBoxSearch.Controls.Add(comboBoxGenre);
+            groupBoxSearch.Controls.Add(linkLabelOpenInBrowser);
             groupBoxSearch.Location = new Point(8, 8);
             groupBoxSearch.Margin = new Padding(4, 3, 4, 3);
             groupBoxSearch.Name = "groupBoxSearch";
@@ -481,6 +516,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             groupBoxSearcByFolder.ResumeLayout(false);
             groupBoxSearcByFolder.PerformLayout();
             groupBoxVisualize.ResumeLayout(false);
+            groupBoxVisualize.PerformLayout();
             groupBoxSearch.ResumeLayout(false);
             groupBoxSearch.PerformLayout();
             groupBoxSort.ResumeLayout(false);
@@ -525,5 +561,8 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private Button buttonPlaylist;
         private Button buttonVisualizePlex;
         private Button buttonVisualizeDBPlaylist;
+        private Button buttonSyncDBToPlex;
+        private Button buttonSyncPlexToDB;
+        private Label labelLine;
     }
 }
