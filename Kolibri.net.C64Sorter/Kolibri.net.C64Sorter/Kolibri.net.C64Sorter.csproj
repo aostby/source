@@ -10,7 +10,7 @@
     <ApplicationIcon>commodore_watermark.ico</ApplicationIcon>
 
     <Version Condition="'$(RELEASE_VERSION)' != ''">$(RELEASE_VERSION)</Version>
-    <VersionPrefix Condition="'$(RELEASE_VERSION)' == ''">3.14.4</VersionPrefix>
+    <VersionPrefix Condition="'$(RELEASE_VERSION)' == ''">3.15.1</VersionPrefix>
     <VersionSuffix Condition="'$(RELEASE_VERSION)' == ''">$([System.DateTime]::UtcNow.ToString(`yyyyMMdd-HHmm`))</VersionSuffix>
  
     <AssemblyName>$(MSBuildProjectName)-$(VersionPrefix)</AssemblyName>
@@ -24,8 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities\Kolibri.net.Common.Formutilities.csproj" />
     <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
-    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities\Kolibri.net.Common.FormUtilities.csproj" />
-    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities\Kolibri.net.Common.Utilities.csproj" />
+
   </ItemGroup>
 
   <ItemGroup>

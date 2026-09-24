@@ -51,9 +51,11 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
 
                 movies = movies.Replace("ImdbRating", "Rank");
+                movies = movies.Replace("imdbRating", "Rank");
+
                 //movies = movies.Replace("ReleaseDate", "Year");
                 //movies = movies.Replace("Released", "Year"); 
-               
+
                 var result = JsonConvert.DeserializeObject<List<Top100IMDb>>(movies);
 
 
@@ -106,8 +108,37 @@ namespace Kolibri.net.SilverScreen.IMDBForms
 
         }
 
+        private async void miMovieDetails_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string tt = gridTop100[gridTop100.ColumnCount - 3, gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
+                //string tt = gridTop100.SelectedRows[0].Cells["ImdbId"].Value.ToString();
+                tt = gridTop100["ImdbId", gridTop100.CurrentCell.RowIndex].Value.ToString().Trim();
 
-        private void miMovieDetails_Click(object sender, EventArgs e)
+                string url = "http://www.omdbapi.com/?i=" + tt + $"&apikey={_liteDB.GetUserSettings().OMDBkey}";
+
+                using (HttpClient client = new HttpClient())
+                {
+                    string json = await client.GetStringAsync(url);
+                    var result = JsonConvert.DeserializeObject<WatchListItem>(json);
+                    if (result.Response == "True")
+                    {
+                        MovieDetailsForm frm = new MovieDetailsForm(_liteDB, result);
+                        frm.MdiParent = this.MdiParent;
+                        frm.Show();
+                    }
+                    else throw new Exception(result.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show($"Movie (tt = {ex.Message}) not found!", "Information - " + System.Reflection.MethodBase.GetCurrentMethod().Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void miMovieDetails_Click_old(object sender, EventArgs e)
         {
             try
             {

@@ -78,7 +78,7 @@ namespace Kolibri.net.SilverScreen.Forms
             _searchController = new MoviesSearchController(_userSettings, plex: _plex, progress: progress);
             _searchController.ProgressUpdated += OnProgressUpdated;
 
-            _ = Task.Run(async () => await InitControllers()).GetAwaiter().GetResult();
+            _ = Task.Run(async () => await InitControllers()) ;
             _searchFiles = new List<Item>();
             textBoxSource.Text = GetCurentPath();
             this.Text = $" - {textBoxSource.Text}";
@@ -417,11 +417,12 @@ namespace Kolibri.net.SilverScreen.Forms
                 var list = await _liteDB.FindItemsAsync(_fileItems);
                 if (list != null && list.Count > 0)
                 {
-                    if (checkBox1.Checked)
+                    if (checkBoxTreeView.Checked)
                     {
                         TreeViewItemsForm form = new TreeViewItemsForm(list);
                         form.CurrentItemChanged += OnCurrentItemChanged;
                         SetForm(form, splitContainer1.Panel1);
+                        SetLabelText($"{checkBoxTreeView.Text} - {list.Count()} items");
                     }
                     else { ShowGridForDBItems(list); }
                 }
@@ -449,7 +450,7 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 SetLabelText("Searching for dupes.... please wait");
                 SameFileController contr = new SameFileController(new DirectoryInfo(textBoxSource.Text));
-                var list = contr.GetDupes();
+                var list = await contr.GetDupesAsync();
                 if (list != null && list.Count > 0)
                 {
                     var ds = DataSetUtilities.AutoGenererDataSet(list);

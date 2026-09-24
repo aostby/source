@@ -503,13 +503,11 @@ namespace Kolibri.net.SilverScreen.IMDBForms
                 }
             }
             catch (Exception ex)
-            {
-
-                throw;
+            { 
             }
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void comboBoxWatchLists_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!this.Visible) return;
             try

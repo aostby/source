@@ -123,6 +123,7 @@
         <button onclick="sortMovies('Year')">Sort by Year</button>
         <button onclick="sortMovies('Genre')">Sort by Genre</button>
         <button onclick="sortMovies('ImdbRating')">Sort by IMDb</button>
+        <button onclick="sortMovies('Actors')">Sort by Actor</button>
     </div>
 
     <div id="movieGrid" class="grid"></div>
@@ -191,6 +192,7 @@
                 const poster = safe(m, "Poster");
                 const imdbId = safe(m, "ImdbId");
                 const fileUrl = safe(m, "TomatoUrl");
+                const actor = safe(m, "Actors");
 
                 const card = document.createElement("div");
                 card.className = "card";
@@ -204,8 +206,7 @@
                      onerror="this.style.display='none'">
                 <div class="content">
                     <div class="title">${title}</div>
-                    <div class="meta">${year} • ${genre}</div>
-                   <!-- <div class="rating">⭐ ${rating}</div> -->
+                    <div class="meta">${year} • ${genre} • ${actor}</div>
                    <div class="rating"> <span style="color: ${colorByImdbRating(rating)}"> ⭐ ${rating}</span> </div>
 
 
@@ -215,6 +216,8 @@
                     <div class="plot-full" id="plot-${index}">
                         ${plot}
                     </div>
+
+
                 </div>
             `;
 
@@ -231,9 +234,14 @@
                 let A = a[field] ?? "";
                 let B = b[field] ?? "";
 
-                if (!isNaN(A) && !isNaN(B)) {
+                if (!isNaN(A) && !isNaN(B) && A !== "" && B !== "") {
                     A = Number(A);
                     B = Number(B);
+                }
+                else {
+                    // Text sorting, case-insensitive
+                    A = String(A).toLowerCase();
+                    B = String(B).toLowerCase();
                 }
 
                 if (A < B) return -1 * currentSortDir;

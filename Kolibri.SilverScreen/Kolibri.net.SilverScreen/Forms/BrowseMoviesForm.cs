@@ -686,7 +686,7 @@ img:hover{{transform: scale(1.5)}}
 
                         }
 
-                        playlists = await _plex.GetPlaylistsAsync();
+                        playlists = await _plex.GetPlaylistsAsync(update:true);
                         pl = playlists.FindAll(x => x.Equals($"{playlistName}", StringComparison.OrdinalIgnoreCase)).First();
                     }
 
@@ -793,6 +793,7 @@ img:hover{{transform: scale(1.5)}}
         private void buttonDBPlaylist_Click(object sender, EventArgs e)
         {
             SetStatusLabelText($"Displaying list {comboBoxWatchLists.SelectedValue.ToString()}. Please wait....");
+            this.Cursor = Cursors.WaitCursor;
             try
             {
                 WatchlistForm frm = new WatchlistForm(_liteDB, _plex, comboBoxWatchLists.SelectedValue.ToString());
@@ -803,6 +804,7 @@ img:hover{{transform: scale(1.5)}}
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name);
             }
+            this.Cursor =Cursors.Default;
         }
 
         private async void buttonSync_Click(object sender, EventArgs e)
@@ -817,60 +819,63 @@ img:hover{{transform: scale(1.5)}}
                 var pLists = await _plex.GetPlaylistsAsync(update: true);
                 pLists = pLists.FindAll(x => x.Equals(playlistName)).ToList();
                 IEnumerable<WatchListItem> list = _liteDB.WatchListFindAll(watchListName: playlistName).ToList();//
-
-                foreach (WatchListItem wi in list.Where(w => w.Watched == "N"))
+                if (sender.Equals(buttonSync) || sender.Equals(buttonSyncPlexToDB))
                 {
-                    bool? watched = false;
-                    try
+                    foreach (WatchListItem wi in list.Where(w => w.Watched == "N"))
                     {
-                        watched = await _plex.IsItemWatched(wi.ImdbId);
-                        if (watched.HasValue)
+                        bool? watched = false;
+                        try
                         {
-                            if (watched.Value)
+                            watched = await _plex.IsItemWatched(wi.ImdbId);
+                            if (watched.HasValue)
                             {
-                                wi.Watched = "Y";
-                            }
-                            else
-                            {
-                                wi.Watched = "N";
-                                wi.WatchListName = playlistName;
-                                _ = await _liteDB.WatchListUpsert(wi);
+                                if (watched.Value)
+                                {
+                                    wi.Watched = "Y";
+                                }
+                                else
+                                {
+                                    wi.Watched = "N";
+                                    wi.WatchListName = playlistName;
+                                    _ = await _liteDB.WatchListUpsert(wi);
+                                }
                             }
                         }
-                    }
-                    catch (Exception ex) { }
+                        catch (Exception ex) { }
 
+                    }
                 }
-
-                foreach (var ttid in result)
-                {
-                    if (ttid == null)
-                        continue;
-                    else if (dblist.Contains(ttid) && plexList.Contains(ttid))
-                        continue;
-
-
-                    var item = await _liteDB.GetItemAsync(ttid);
-                    var wli = JsonConvert.DeserializeObject<WatchListItem>(item.ToJson());
-                    wli.WatchListName = playlistName;
-                    wli.Watched = (await _plex.IsItemWatched(wli.ImdbId)).GetValueOrDefault().Equals(true) ? "Y" : "N";
-
-                    if (!dblist.Contains(wli.ImdbId))
+                if (sender.Equals(buttonSync) || sender.Equals(buttonSyncDBToPlex)) {
+                    foreach (var ttid in result)
                     {
+                        if (ttid == null)
+                            continue;
+                        else if (dblist.Contains(ttid) && plexList.Contains(ttid))
+                            continue;
 
-                        if (wli.Watched != "Y")
+
+                        var item = await _liteDB.GetItemAsync(ttid);
+                        var wli = JsonConvert.DeserializeObject<WatchListItem>(item.ToJson());
+                        wli.WatchListName = playlistName;
+                        wli.Watched = (await _plex.IsItemWatched(wli.ImdbId)).GetValueOrDefault().Equals(true) ? "Y" : "N";
+
+                        if (!dblist.Contains(wli.ImdbId))
                         {
-                            _watchlistContr.AddMovieToLiteDBWatchList(wli);
+
+                            if (wli.Watched != "Y")
+                            {
+                                _watchlistContr.AddMovieToLiteDBWatchList(wli);
+                            }
                         }
-                    }
-                    if (pLists == null || pLists.Count < 1)
-                    {
-                        _ = await _plex.CreatePlayList(playlistName, new List<Item>() { item });
-                        pLists = await _plex.GetPlaylistsAsync(update: true);
-                    }
-                    if (!plexList.Contains(ttid) && wli.Watched.Equals("N"))
-                    {
-                        _ = await _plex.AddElementToPlaylist(playlistName, item.ImdbId);
+                        if (pLists == null || pLists.Count < 1)
+                        {
+                            _ = await _plex.CreatePlayList(playlistName, new List<Item>() { item });
+                            pLists = await _plex.GetPlaylistsAsync(update: true);
+                        }
+                        if (!plexList.Contains(ttid) && wli.Watched.Equals("N"))
+                        {
+                            _ = await _plex.AddElementToPlaylist(playlistName, item.ImdbId);
+                        }
                     }
                 }
                 MessageBox.Show(string.Join(Environment.NewLine, result.ToArray()), $"{playlistName} added titles ({result.Count()}):");

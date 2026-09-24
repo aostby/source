@@ -148,11 +148,13 @@
             // 
             // tbPlot
             // 
+            tbPlot.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             tbPlot.Location = new Point(104, 306);
             tbPlot.Margin = new Padding(4, 3, 4, 3);
             tbPlot.Multiline = true;
             tbPlot.Name = "tbPlot";
             tbPlot.ReadOnly = true;
+            tbPlot.ScrollBars = ScrollBars.Vertical;
             tbPlot.Size = new Size(526, 86);
             tbPlot.TabIndex = 27;
             // 

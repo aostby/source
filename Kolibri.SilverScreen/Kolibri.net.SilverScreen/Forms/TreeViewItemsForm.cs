@@ -58,6 +58,7 @@ namespace Kolibri.net.SilverScreen.Forms
         {
             CreateContextMenu();
 
+
             groupBoxOrderbyText = groupBoxOrder.Text;
             treeView1.ImageList = imageListIcons;
 
@@ -65,8 +66,10 @@ namespace Kolibri.net.SilverScreen.Forms
             {
                 var defaultIcon = Icons.GetFolderIcon();
                 imageListIcons.Images.Add("default", defaultIcon);
+                imageListIcons.Images.Add("movie", Icons.GetAllSystemIcons().Find(x => x.SourceFile.Contains("wmploc" , StringComparison.OrdinalIgnoreCase) && x.Index == 122).Icon);
                 imageListIcons.Images.Add(nameof(MessageBoxIcon.Question).ToLower(), SystemIcons.Question);
                 List<string> common = MovieUtilites.MoviesCommonFileExt(true);
+
                 foreach (var key in common)
                 {
                     try
@@ -136,7 +139,8 @@ namespace Kolibri.net.SilverScreen.Forms
                             else { throw new FileNotFoundException(sourceFolder.FullName); }
                         }
                     }
-                    catch (Exception ex) {
+                    catch (Exception ex)
+                    {
 
                         MessageBox.Show(ex.Message, ex.GetType().Name);
                     }
@@ -155,7 +159,7 @@ namespace Kolibri.net.SilverScreen.Forms
             groupBoxOrder.Text = $"{groupBoxOrderbyText} (Items count: {_items.Count})";
             treeView1.Nodes.Clear();
             treeView1.BeginUpdate();
-            treeView1.ShowNodeToolTips = checkBoxToolTip.Checked? false:true;
+            treeView1.ShowNodeToolTips = checkBoxToolTip.Checked ? false : true;
             treeView1.MouseLeave += treeView1_MouseLeave;
 
             if (checkBoxToolTip.Checked)
@@ -188,7 +192,7 @@ namespace Kolibri.net.SilverScreen.Forms
             else if (radioButtonRated.Checked)
                 BuildByRated();
             else if (radioButtonExists.Checked)
-                BuildByFileExists();    
+                BuildByFileExists();
 
             treeView1.EndUpdate();
             try
@@ -216,7 +220,8 @@ namespace Kolibri.net.SilverScreen.Forms
         private TreeNode FindNodeByTag(TreeNodeCollection nodes, object targetId)
         {
             try
-            {  foreach (TreeNode node in nodes)
+            {
+                foreach (TreeNode node in nodes)
                 {
                     // Bruker .Equals() så det fungerer uavhengig av om ID er string, int, Guid osv.
                     if (node.Tag != null && (node.Tag as Item).ImdbId.Equals(CurrentItem.ImdbId))
@@ -235,13 +240,13 @@ namespace Kolibri.net.SilverScreen.Forms
                             {
                                 childMatch.Parent.ExpandAll();
                                 childMatch.Expand();
-                               
+
 
                             }
                             catch (Exception)
                             {
                             }
-                          
+
 
                             return childMatch;
                         }
@@ -380,7 +385,7 @@ namespace Kolibri.net.SilverScreen.Forms
                           $"- Rating: {item.ImdbRating}\r\n" +
                           $"- Year: {item.Year}\r\n" +
                           $"- Genre: {item.Genre}\r\n" +
-                          $"- folder: {(Path.GetDirectoryName( item.TomatoUrl))}\r\n" +
+                          $"- folder: {(Path.GetDirectoryName(item.TomatoUrl))}\r\n" +
                           $"- URL: {item.TomatoUrl}";
             }
             catch (Exception) { }
@@ -482,7 +487,7 @@ namespace Kolibri.net.SilverScreen.Forms
         private void BuildByFileExists()
         {
             var groups = _items
-                .GroupBy(i => $"{File.Exists(i.TomatoUrl)}" )
+                .GroupBy(i => $"{File.Exists(i.TomatoUrl)}")
                 .OrderByDescending(g => g.Key);
 
             foreach (var group in groups)
@@ -549,28 +554,29 @@ namespace Kolibri.net.SilverScreen.Forms
             try
             {
 
-         
-            // Get the current mouse coordinates on the screen
-            Point screenPoint = Control.MousePosition;
 
-            // Convert those screen coordinates to the TreeView's client area
-            Point clientPoint = treeView1.PointToClient(screenPoint);
+                // Get the current mouse coordinates on the screen
+                Point screenPoint = Control.MousePosition;
 
-            // Check if the client coordinates fall strictly inside the TreeView's boundaries
-            if (!treeView1.ClientRectangle.Contains(clientPoint))
-            {
-                { nodeImageToolTip.Hide(treeView1); return; }
+                // Convert those screen coordinates to the TreeView's client area
+                Point clientPoint = treeView1.PointToClient(screenPoint);
+
+                // Check if the client coordinates fall strictly inside the TreeView's boundaries
+                if (!treeView1.ClientRectangle.Contains(clientPoint))
+                {
+                    { nodeImageToolTip.Hide(treeView1); return; }
                 }
             }
             catch (Exception)
             {
- 
+
             }
         }
 
 
         private void MyTreeView_MouseMove(object sender, MouseEventArgs e)
-        {if (!checkBoxToolTip.Checked) { nodeImageToolTip.Hide(treeView1); return; } else { treeView1.ShowNodeToolTips = false; }
+        {
+            if (!checkBoxToolTip.Checked) { nodeImageToolTip.Hide(treeView1); return; } else { treeView1.ShowNodeToolTips = false; }
 
 
             try
@@ -606,7 +612,7 @@ namespace Kolibri.net.SilverScreen.Forms
             }
 
             catch (Exception)
-            {  }
+            { }
         }
         private void NodeImageToolTip_Draw(object sender, DrawToolTipEventArgs e)
         {
@@ -647,6 +653,13 @@ namespace Kolibri.net.SilverScreen.Forms
             }
         }
 
+        private void treeView1_BeforeSelect(object sender, TreeViewCancelEventArgs e)
+        {
+            if (e.Node.Level > 0)
+            {
+                e.Node.SelectedImageKey = "movie";//  e.Node.ImageKey;
+            }
+        }
     }
 }
  

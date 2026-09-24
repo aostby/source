@@ -1,4 +1,5 @@
 ﻿using Kolibri.net.Common.Utilities.Controller;
+using Kolibri.net.Common.Utilities.Extensions;
 using Kolibri.net.SilverScreen.Controls;
 using OMDbApiNet.Model;
 using Plex.ServerApi.PlexModels.Account.Resources;
@@ -23,8 +24,9 @@ namespace Kolibri.net.SilverScreen.TMDBForms
             InitializeComponent();
             // Sett dette vinduet til å være et underprosess-vindu (child) av hovedvinduet
 
-            var mdiParent = ResourceController.GetMdiParent();
-            if (mdiParent != null) this.MdiParent = mdiParent;
+            //var mdiParent = ResourceController.GetMdiParent();
+            //if (mdiParent != null) this.MdiParent = mdiParent;
+            this.SetMDIParent();
 
             DisplayReview(review, item);
         }

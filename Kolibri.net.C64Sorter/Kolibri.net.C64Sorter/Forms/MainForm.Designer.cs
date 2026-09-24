@@ -91,6 +91,7 @@ namespace Kolibri.net.C64Sorter
             d64OrG64OrD81OrD71OrG71ToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator10 = new ToolStripSeparator();
             toolStripMenuItemHTTPServer = new ToolStripMenuItem();
+            setFTPAddressToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem2 = new ToolStripMenuItem();
             commandToolStripMenuItem = new ToolStripMenuItem();
             scriptToolStripMenuItem = new ToolStripMenuItem();
@@ -106,6 +107,7 @@ namespace Kolibri.net.C64Sorter
             linksToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripStatusLabelStatus = new ToolStripLabel();
+            setExternalFTPAddressToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -309,7 +311,7 @@ namespace Kolibri.net.C64Sorter
             // 
             // ultimateEliteIIToolStripMenuItem
             // 
-            ultimateEliteIIToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { machineToolStripMenuItem, toolStripMenuItem3, toolStripMenuItemRun, toolStripSeparator6, mountToolStripMenuItem, toolStripSeparator10, toolStripMenuItemHTTPServer });
+            ultimateEliteIIToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { machineToolStripMenuItem, toolStripMenuItem3, toolStripMenuItemRun, toolStripSeparator6, mountToolStripMenuItem, toolStripSeparator10, toolStripMenuItemHTTPServer, setFTPAddressToolStripMenuItem });
             ultimateEliteIIToolStripMenuItem.Name = "ultimateEliteIIToolStripMenuItem";
             ultimateEliteIIToolStripMenuItem.Size = new Size(98, 20);
             ultimateEliteIIToolStripMenuItem.Text = "Ultimate Elite II";
@@ -388,45 +390,45 @@ namespace Kolibri.net.C64Sorter
             // volumeToolStripMenuItem
             // 
             volumeToolStripMenuItem.Name = "volumeToolStripMenuItem";
-            volumeToolStripMenuItem.Size = new Size(179, 22);
+            volumeToolStripMenuItem.Size = new Size(180, 22);
             volumeToolStripMenuItem.Text = "Volume";
             volumeToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // videostreamToolStripMenuItem
             // 
             videostreamToolStripMenuItem.Name = "videostreamToolStripMenuItem";
-            videostreamToolStripMenuItem.Size = new Size(179, 22);
+            videostreamToolStripMenuItem.Size = new Size(180, 22);
             videostreamToolStripMenuItem.Text = "Videostream";
             videostreamToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripSeparator12
             // 
             toolStripSeparator12.Name = "toolStripSeparator12";
-            toolStripSeparator12.Size = new Size(176, 6);
+            toolStripSeparator12.Size = new Size(177, 6);
             // 
             // configsToolStripMenuItem
             // 
             configsToolStripMenuItem.Name = "configsToolStripMenuItem";
-            configsToolStripMenuItem.Size = new Size(179, 22);
+            configsToolStripMenuItem.Size = new Size(180, 22);
             configsToolStripMenuItem.Text = "Configs...";
             configsToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // displayCfgFilesToolStripMenuItem
             // 
             displayCfgFilesToolStripMenuItem.Name = "displayCfgFilesToolStripMenuItem";
-            displayCfgFilesToolStripMenuItem.Size = new Size(179, 22);
+            displayCfgFilesToolStripMenuItem.Size = new Size(180, 22);
             displayCfgFilesToolStripMenuItem.Text = "Display cfg files";
             displayCfgFilesToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
             // toolStripSeparator13
             // 
             toolStripSeparator13.Name = "toolStripSeparator13";
-            toolStripSeparator13.Size = new Size(176, 6);
+            toolStripSeparator13.Size = new Size(177, 6);
             // 
             // uploadLocalCfgFileToolStripMenuItem
             // 
             uploadLocalCfgFileToolStripMenuItem.Name = "uploadLocalCfgFileToolStripMenuItem";
-            uploadLocalCfgFileToolStripMenuItem.Size = new Size(179, 22);
+            uploadLocalCfgFileToolStripMenuItem.Size = new Size(180, 22);
             uploadLocalCfgFileToolStripMenuItem.Text = "Upload local cfg file";
             uploadLocalCfgFileToolStripMenuItem.Click += ConfigurationToolStripMenuItem_Click;
             // 
@@ -517,6 +519,13 @@ namespace Kolibri.net.C64Sorter
             toolStripMenuItemHTTPServer.Size = new Size(213, 22);
             toolStripMenuItemHTTPServer.Text = "Ultimate 64-II HTTP Server";
             toolStripMenuItemHTTPServer.Click += toolStripMenuItemHTTPServer_Click;
+            // 
+            // setFTPAddressToolStripMenuItem
+            // 
+            setFTPAddressToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setExternalFTPAddressToolStripMenuItem });
+            setFTPAddressToolStripMenuItem.Name = "setFTPAddressToolStripMenuItem";
+            setFTPAddressToolStripMenuItem.Size = new Size(213, 22);
+            setFTPAddressToolStripMenuItem.Text = "Set FTP address";
             // 
             // toolStripMenuItem2
             // 
@@ -625,6 +634,13 @@ namespace Kolibri.net.C64Sorter
             toolStripStatusLabelStatus.Size = new Size(57, 22);
             toolStripStatusLabelStatus.Text = "Welcome";
             // 
+            // setExternalFTPAddressToolStripMenuItem
+            // 
+            setExternalFTPAddressToolStripMenuItem.Name = "setExternalFTPAddressToolStripMenuItem";
+            setExternalFTPAddressToolStripMenuItem.Size = new Size(200, 22);
+            setExternalFTPAddressToolStripMenuItem.Text = "Set External FTP address";
+            setExternalFTPAddressToolStripMenuItem.Click += setExternalFTPAddressToolStripMenuItem_Click;
+            // 
             // MainForm
             // 
             AllowDrop = true;
@@ -729,5 +745,7 @@ namespace Kolibri.net.C64Sorter
         private ToolStripSeparator toolStripSeparator15;
         private ToolStripSeparator toolStripSeparator16;
         private ToolStripMenuItem amigaZIPArchivesSorterToolStripMenuItem;
+        private ToolStripMenuItem setFTPAddressToolStripMenuItem;
+        private ToolStripMenuItem setExternalFTPAddressToolStripMenuItem;
     }
 }

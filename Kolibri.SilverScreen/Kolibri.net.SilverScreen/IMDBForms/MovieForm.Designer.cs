@@ -49,17 +49,11 @@
             label7 = new Label();
             label8 = new Label();
             label9 = new Label();
-            btnAddToWatchlist = new Button();
-            btnWatchList = new Button();
             btnClear = new Button();
             groupBox1 = new GroupBox();
             buttonUpdate = new Button();
-            buttonNewList = new Button();
-            labelWatchListName = new Label();
-            comboBoxWatchLists = new ComboBox();
             tbYearParameter = new TextBox();
             label10 = new Label();
-            labelLine = new Label();
             btnTop100 = new Button();
             btnRecommend = new Button();
             pictureBox1 = new PictureBox();
@@ -69,15 +63,22 @@
             labelImdbRating = new Label();
             linkLabelOpenFilePath = new LinkLabel();
             toolTip1 = new ToolTip(components);
+            buttonNewList = new Button();
+            btnWatchList = new Button();
+            btnAddToWatchlist = new Button();
             labelOmdbId = new Label();
             checkBoxLookUp = new CheckBox();
             buttonStream = new Button();
             labelCountry = new Label();
             tbCountry = new TextBox();
             btnTopTMDB = new Button();
+            groupBoxWatchlist = new GroupBox();
+            labelWatchListName = new Label();
+            comboBoxWatchLists = new ComboBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).BeginInit();
+            groupBoxWatchlist.SuspendLayout();
             SuspendLayout();
             // 
             // tbSearch
@@ -155,12 +156,14 @@
             // 
             // tbPlot
             // 
+            tbPlot.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             tbPlot.Location = new Point(92, 288);
             tbPlot.Margin = new Padding(4);
             tbPlot.Multiline = true;
             tbPlot.Name = "tbPlot";
             tbPlot.ReadOnly = true;
-            tbPlot.Size = new Size(218, 225);
+            tbPlot.ScrollBars = ScrollBars.Vertical;
+            tbPlot.Size = new Size(274, 225);
             tbPlot.TabIndex = 10;
             // 
             // tbMetascore
@@ -262,30 +265,6 @@
             label9.TabIndex = 20;
             label9.Text = "*Enter the movie name :";
             // 
-            // btnAddToWatchlist
-            // 
-            btnAddToWatchlist.Location = new Point(362, 82);
-            btnAddToWatchlist.Margin = new Padding(4);
-            btnAddToWatchlist.Name = "btnAddToWatchlist";
-            btnAddToWatchlist.Size = new Size(48, 26);
-            btnAddToWatchlist.TabIndex = 21;
-            btnAddToWatchlist.Text = "Add to Watchlist";
-            toolTip1.SetToolTip(btnAddToWatchlist, "Add item to WatchList");
-            btnAddToWatchlist.UseVisualStyleBackColor = true;
-            btnAddToWatchlist.Click += btnAddToWatchlist_Click;
-            // 
-            // btnWatchList
-            // 
-            btnWatchList.Location = new Point(422, 82);
-            btnWatchList.Margin = new Padding(4);
-            btnWatchList.Name = "btnWatchList";
-            btnWatchList.Size = new Size(66, 26);
-            btnWatchList.TabIndex = 22;
-            btnWatchList.Text = "Watchlist";
-            toolTip1.SetToolTip(btnWatchList, "View elements in WatchList");
-            btnWatchList.UseVisualStyleBackColor = true;
-            btnWatchList.Click += btnWatchList_Click;
-            // 
             // btnClear
             // 
             btnClear.Location = new Point(380, 546);
@@ -300,22 +279,16 @@
             // groupBox1
             // 
             groupBox1.Controls.Add(buttonUpdate);
-            groupBox1.Controls.Add(buttonNewList);
-            groupBox1.Controls.Add(labelWatchListName);
-            groupBox1.Controls.Add(comboBoxWatchLists);
             groupBox1.Controls.Add(tbYearParameter);
             groupBox1.Controls.Add(label10);
             groupBox1.Controls.Add(label9);
             groupBox1.Controls.Add(tbSearch);
             groupBox1.Controls.Add(btnSearch);
-            groupBox1.Controls.Add(btnWatchList);
-            groupBox1.Controls.Add(btnAddToWatchlist);
-            groupBox1.Controls.Add(labelLine);
             groupBox1.Location = new Point(14, 6);
             groupBox1.Margin = new Padding(4);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new Padding(4);
-            groupBox1.Size = new Size(605, 120);
+            groupBox1.Size = new Size(605, 83);
             groupBox1.TabIndex = 25;
             groupBox1.TabStop = false;
             // 
@@ -328,35 +301,6 @@
             buttonUpdate.Text = "Update local";
             buttonUpdate.UseVisualStyleBackColor = true;
             buttonUpdate.Click += buttonUpdate_Click;
-            // 
-            // buttonNewList
-            // 
-            buttonNewList.Location = new Point(501, 82);
-            buttonNewList.Name = "buttonNewList";
-            buttonNewList.Size = new Size(96, 26);
-            buttonNewList.TabIndex = 24;
-            buttonNewList.Text = "New List";
-            toolTip1.SetToolTip(buttonNewList, "Create new WatchList");
-            buttonNewList.UseVisualStyleBackColor = true;
-            buttonNewList.Click += buttonNewList_Click;
-            // 
-            // labelWatchListName
-            // 
-            labelWatchListName.AutoSize = true;
-            labelWatchListName.Location = new Point(7, 88);
-            labelWatchListName.Name = "labelWatchListName";
-            labelWatchListName.Size = new Size(97, 15);
-            labelWatchListName.TabIndex = 23;
-            labelWatchListName.Text = "WatchList Name:";
-            // 
-            // comboBoxWatchLists
-            // 
-            comboBoxWatchLists.FormattingEnabled = true;
-            comboBoxWatchLists.Location = new Point(154, 84);
-            comboBoxWatchLists.Name = "comboBoxWatchLists";
-            comboBoxWatchLists.Size = new Size(198, 23);
-            comboBoxWatchLists.TabIndex = 22;
-            comboBoxWatchLists.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
             // tbYearParameter
             // 
@@ -376,15 +320,6 @@
             label10.Size = new Size(35, 15);
             label10.TabIndex = 21;
             label10.Text = "Year :";
-            // 
-            // labelLine
-            // 
-            labelLine.AutoSize = true;
-            labelLine.Location = new Point(147, 66);
-            labelLine.Name = "labelLine";
-            labelLine.Size = new Size(457, 15);
-            labelLine.TabIndex = 26;
-            labelLine.Text = "------------------------------------------------------------------------------------------";
             // 
             // btnTop100
             // 
@@ -423,10 +358,10 @@
             // pbPoster
             // 
             pbPoster.BackgroundImageLayout = ImageLayout.Zoom;
-            pbPoster.Location = new Point(334, 288);
+            pbPoster.Location = new Point(365, 288);
             pbPoster.Margin = new Padding(4);
             pbPoster.Name = "pbPoster";
-            pbPoster.Size = new Size(266, 225);
+            pbPoster.Size = new Size(253, 225);
             pbPoster.SizeMode = PictureBoxSizeMode.Zoom;
             pbPoster.TabIndex = 9;
             pbPoster.TabStop = false;
@@ -474,6 +409,41 @@
             linkLabelOpenFilePath.TabStop = true;
             linkLabelOpenFilePath.Text = "Open File Path";
             linkLabelOpenFilePath.LinkClicked += linkLabelOpenFilePath_LinkClicked;
+            // 
+            // buttonNewList
+            // 
+            buttonNewList.Location = new Point(502, 27);
+            buttonNewList.Name = "buttonNewList";
+            buttonNewList.Size = new Size(96, 26);
+            buttonNewList.TabIndex = 29;
+            buttonNewList.Text = "New List";
+            toolTip1.SetToolTip(buttonNewList, "Create new WatchList");
+            buttonNewList.UseVisualStyleBackColor = true;
+            buttonNewList.Click += buttonNewList_Click;
+            // 
+            // btnWatchList
+            // 
+            btnWatchList.Location = new Point(403, 27);
+            btnWatchList.Margin = new Padding(4);
+            btnWatchList.Name = "btnWatchList";
+            btnWatchList.Size = new Size(96, 26);
+            btnWatchList.TabIndex = 27;
+            btnWatchList.Text = "Watchlist DB";
+            toolTip1.SetToolTip(btnWatchList, "View elements in WatchList");
+            btnWatchList.UseVisualStyleBackColor = true;
+            btnWatchList.Click += btnWatchList_Click;
+            // 
+            // btnAddToWatchlist
+            // 
+            btnAddToWatchlist.Location = new Point(317, 27);
+            btnAddToWatchlist.Margin = new Padding(4);
+            btnAddToWatchlist.Name = "btnAddToWatchlist";
+            btnAddToWatchlist.Size = new Size(83, 26);
+            btnAddToWatchlist.TabIndex = 25;
+            btnAddToWatchlist.Text = "Add to DB Watchlist";
+            toolTip1.SetToolTip(btnAddToWatchlist, "Add item to WatchList");
+            btnAddToWatchlist.UseVisualStyleBackColor = true;
+            btnAddToWatchlist.Click += btnAddToWatchlist_Click;
             // 
             // labelOmdbId
             // 
@@ -534,11 +504,45 @@
             btnTopTMDB.UseVisualStyleBackColor = true;
             btnTopTMDB.Click += btnTopTMDB_Click;
             // 
+            // groupBoxWatchlist
+            // 
+            groupBoxWatchlist.Controls.Add(buttonNewList);
+            groupBoxWatchlist.Controls.Add(labelWatchListName);
+            groupBoxWatchlist.Controls.Add(comboBoxWatchLists);
+            groupBoxWatchlist.Controls.Add(btnWatchList);
+            groupBoxWatchlist.Controls.Add(btnAddToWatchlist);
+            groupBoxWatchlist.Location = new Point(10, 585);
+            groupBoxWatchlist.Name = "groupBoxWatchlist";
+            groupBoxWatchlist.Size = new Size(608, 81);
+            groupBoxWatchlist.TabIndex = 39;
+            groupBoxWatchlist.TabStop = false;
+            groupBoxWatchlist.Text = "Watchlist";
+            // 
+            // labelWatchListName
+            // 
+            labelWatchListName.AutoSize = true;
+            labelWatchListName.Location = new Point(9, 33);
+            labelWatchListName.Name = "labelWatchListName";
+            labelWatchListName.Size = new Size(97, 15);
+            labelWatchListName.TabIndex = 28;
+            labelWatchListName.Text = "WatchList Name:";
+            // 
+            // comboBoxWatchLists
+            // 
+            comboBoxWatchLists.FormattingEnabled = true;
+            comboBoxWatchLists.Location = new Point(112, 29);
+            comboBoxWatchLists.Name = "comboBoxWatchLists";
+            comboBoxWatchLists.Size = new Size(198, 23);
+            comboBoxWatchLists.TabIndex = 26;
+            comboBoxWatchLists.SelectedIndexChanged += comboBoxWatchLists_SelectedIndexChanged;
+            // 
             // MovieForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(631, 577);
+            ClientSize = new Size(672, 695);
+            Controls.Add(groupBoxWatchlist);
+            Controls.Add(tbPlot);
             Controls.Add(btnTopTMDB);
             Controls.Add(labelCountry);
             Controls.Add(tbCountry);
@@ -563,7 +567,6 @@
             Controls.Add(labelYear);
             Controls.Add(label1);
             Controls.Add(tbMetascore);
-            Controls.Add(tbPlot);
             Controls.Add(pbPoster);
             Controls.Add(tbActors);
             Controls.Add(tbGenre);
@@ -581,6 +584,8 @@
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pbPoster).EndInit();
+            groupBoxWatchlist.ResumeLayout(false);
+            groupBoxWatchlist.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -606,8 +611,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Button btnAddToWatchlist;
-        private System.Windows.Forms.Button btnWatchList;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.GroupBox groupBox1;
@@ -619,18 +622,20 @@
         private System.Windows.Forms.Label labelImdbId;
         private System.Windows.Forms.Label labelImdbRating;
         private System.Windows.Forms.LinkLabel linkLabelOpenFilePath;
-        private ComboBox comboBoxWatchLists;
-        private Label labelWatchListName;
         private ToolTip toolTip1;
-        private Button buttonNewList;
         private Button buttonUpdate;
         private Label labelOmdbId;
         private CheckBox checkBoxLookUp;
-        private Label labelLine;
         private Button buttonStream;
         private Label labelCountry;
         private TextBox tbCountry;
         private Button btnTopTMDB;
+        private GroupBox groupBoxWatchlist;
+        private Button buttonNewList;
+        private Label labelWatchListName;
+        private ComboBox comboBoxWatchLists;
+        private Button btnWatchList;
+        private Button btnAddToWatchlist;
     }
 }
 
