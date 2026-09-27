@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <RootNamespace>Kolibri.Etiketter</RootNamespace>
+    <AssemblyTitle>Kolibri.Etiketter</AssemblyTitle>
+    <Product>Kolibri.Etiketter – Lyreco 24 per A4 (70 x 37 mm)</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Vises under Hjelp > Om. -->
+    <EmbeddedResource Include="..\README.md" LogicalName="Kolibri.Etiketter.README.md" Link="README.md" />
+  </ItemGroup>
+
+</Project>
