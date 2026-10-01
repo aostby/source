@@ -397,9 +397,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# Arkiver (zip, 7z, rar) sjekkes ikke inn. Unntak: arkiver i Resources-mapper,
-# som bygges inn i programmene (f.eks. Kolibri.Common.Utilities/Resources).
+# Nye arkiver (zip, 7z, rar) sjekkes ikke inn. Arkiver som allerede er sjekket inn
+# (f.eks. ressursene i Kolibri.Common.Utilities/Resources) spores fortsatt.
 *.zip
 *.7z
 *.rar
-!**/Resources/**/*.zip
