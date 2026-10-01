@@ -402,3 +402,7 @@ FodyWeavers.xsd
 *.zip
 *.7z
 *.rar
+
+# Lokalt oppsett for Claude-utvidelsen i Visual Studio (maskinspesifikke stier og skript)
+.claude/
+.mcp.json
