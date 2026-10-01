@@ -1,0 +1,22 @@
+@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error · Kolibri Kino</PageTitle>
+
+<h1>Something went wrong</h1>
+<p>The request failed. The details are in the container's log (<code>docker compose logs kino</code>).</p>
+
+@if (RequestId is not null)
+{
+    <p>Request id: <code>@RequestId</code></p>
+}
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

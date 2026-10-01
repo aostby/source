@@ -1,0 +1,97 @@
+@page "/settings"
+@inherits KinoPage
+@inject SettingsController Settings
+
+@* Port of SettingsForm. The settings are the database's UserSettings document, shared with SilverScreen and the
+   WinForms app; which user's document is Kino:SettingsUser (in a container, set it to your Windows user name). *@
+
+<PageTitle>Settings · Kolibri Kino</PageTitle>
+
+<h1>Settings</h1>
+
+@if (_edited is { } s)
+{
+    <EditForm Model="s" OnSubmit="SaveAsync" class="settings">
+        <fieldset>
+            <legend>General</legend>
+            <label>User <input value="@s.UserName" readonly /></label>
+            <label>Library file <input value="@s.LiteDBFilePath" readonly /></label>
+            <label>Favorite watchlist <InputText @bind-Value="s.FavoriteWatchList" /></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Movie services</legend>
+            <label>
+                OMDb key <InputText @bind-Value="s.OMDBkey" />
+                <small>Details, posters and search. <a href="https://www.omdbapi.com/apikey.aspx" target="_blank" rel="noopener">Get a free key</a>. Empty means the shared default.</small>
+            </label>
+            <label>
+                TMDb key <InputText @bind-Value="s.TMDBkey" />
+                <small>Episode details and TMDb links. <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Get a free key</a>. Empty means the shared default.</small>
+            </label>
+            <label>SubDL key <InputText @bind-Value="s.SUBDLkey" /></label>
+            <label>IMDb data files <InputText @bind-Value="s.IMDbDataFiles" /></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Plex</legend>
+            <label>
+                Plex server name <InputText @bind-Value="s.XPlexServerName" />
+                <small>Host name or IP on your network. Kino connects to http://&lt;name&gt;:32400.</small>
+            </label>
+            <label>Plex token <InputText type="password" @bind-Value="s.XPlexToken" autocomplete="off" /></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Folders</legend>
+            <p class="hint">Shared with SilverScreen and Kino on Windows, so these are usually Windows paths.</p>
+            <label>Movies <InputText @bind-Value="s.UserFilePaths.MoviesSourcePath" /></label>
+            <label>Movies destination <InputText @bind-Value="s.UserFilePaths.MoviesDestinationPath" /></label>
+            <label>Series <InputText @bind-Value="s.UserFilePaths.SeriesSourcePath" /></label>
+            <label>Series destination <InputText @bind-Value="s.UserFilePaths.SeriesDestination" /></label>
+            <label>Pictures <InputText @bind-Value="s.UserFilePaths.PicturesSourcePath" /></label>
+            <label>Pictures destination <InputText @bind-Value="s.UserFilePaths.PicturesDestination" /></label>
+        </fieldset>
+
+        <div class="actions">
+            <button type="submit" class="primary" disabled="@Busy">Save</button>
+            <button type="button" disabled="@Busy" @onclick="TestAsync">Test connections</button>
+            <button type="button" disabled="@Busy" @onclick="Reload">Undo changes</button>
+        </div>
+    </EditForm>
+
+    @if (_checks.Count > 0)
+    {
+        <ul class="checks">
+            @foreach (var check in _checks)
+            {
+                <li class="@(check.Ok ? "ok" : "bad")"><strong>@(check.Ok ? "✓" : "✗") @check.Service</strong> @check.Message</li>
+            }
+        </ul>
+    }
+
+    <StatusLine Busy="Busy" Text="@Status" Error="@Error" />
+}
+
+@code {
+    private UserSettings? _edited;
+    private IReadOnlyList<ConnectionCheck> _checks = [];
+
+    protected override void OnInitialized() => Reload();
+
+    private void Reload()
+    {
+        _edited = Settings.GetEditableCopy();
+        _checks = [];
+        Status = Error = null;
+    }
+
+    private Task TestAsync() => RunAsync("Testing connections…", async ct => _checks = await Settings.TestAsync(_edited!, ct));
+
+    private Task SaveAsync() => RunAsync("Saving…", async ct =>
+    {
+        await Settings.SaveAsync(_edited!, ct);
+        _edited = Settings.GetEditableCopy();
+        Status = "Settings saved. They apply at once.";
+    });
+}

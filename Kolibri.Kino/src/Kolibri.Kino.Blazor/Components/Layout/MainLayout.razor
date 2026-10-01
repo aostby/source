@@ -1,0 +1,31 @@
+@inherits LayoutComponentBase
+@inject SettingsController Settings
+
+<header class="topbar">
+    <a class="brand" href="">
+        <img src="kino.svg" alt="" width="28" height="28" />
+        <span>Kolibri Kino</span>
+    </a>
+    <nav>
+        <NavLink href="" Match="NavLinkMatch.All">Library</NavLink>
+        <NavLink href="watchlists">Watchlists</NavLink>
+        <NavLink href="settings">Settings</NavLink>
+    </nav>
+</header>
+
+@if (Settings.UsesDefaultKeys)
+{
+    <div class="banner">
+        @SettingsController.DefaultKeysMessage <a href="settings">Set your own keys</a>
+    </div>
+}
+
+<main>
+    @Body
+</main>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

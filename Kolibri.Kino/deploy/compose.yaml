@@ -1,0 +1,17 @@
+# Kolibri Kino on the UGREEN NAS. Put this file and .env (copied from .env.example) in the NAS folder
+# /volume1/docker/kolibri-kino, with the library files in its data/ subfolder, then run: docker compose up -d
+services:
+  kino:
+    image: kolibri-kino:latest
+    container_name: kolibri-kino
+    restart: unless-stopped
+    # The NAS user that owns data/ (LiteDB writes the .db file and creates a -log.db next to it).
+    user: "${PUID}:${PGID}"
+    ports:
+      - "${KINO_PORT:-8085}:8080"
+    environment:
+      # Whose settings (API keys, Plex, favorite watchlist) to use: your Windows user name, as SilverScreen stored them.
+      Kino__SettingsUser: ${KINO_SETTINGS_USER}
+      TZ: ${TZ:-Europe/Oslo}
+    volumes:
+      - ./data:/data
