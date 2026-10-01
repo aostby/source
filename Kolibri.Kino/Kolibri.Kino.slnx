@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Kolibri.Kino.Blazor/Kolibri.Kino.Blazor.csproj" />
+    <Project Path="src/Kolibri.Kino.Controllers/Kolibri.Kino.Controllers.csproj" />
+    <Project Path="src/Kolibri.Kino.Core/Kolibri.Kino.Core.csproj" />
+    <Project Path="src/Kolibri.Kino.Data/Kolibri.Kino.Data.csproj" />
+    <Project Path="src/Kolibri.Kino.WinForms/Kolibri.Kino.WinForms.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Kolibri.Kino.Tests/Kolibri.Kino.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Kolibri.Kino.ImageDbMigrator/Kolibri.Kino.ImageDbMigrator.csproj" />
+  </Folder>
+</Solution>

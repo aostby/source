@@ -396,3 +396,13 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Nye arkiver (zip, 7z, rar) sjekkes ikke inn. Arkiver som allerede er sjekket inn
+# (f.eks. ressursene i Kolibri.Common.Utilities/Resources) spores fortsatt.
+*.zip
+*.7z
+*.rar
+
+# Lokalt oppsett for Claude-utvidelsen i Visual Studio (maskinspesifikke stier og skript)
+.claude/
+.mcp.json

@@ -1,0 +1,171 @@
+@page "/watchlists"
+@page "/watchlists/{List}"
+@inherits KinoPage
+@inject WatchlistController Watchlists
+@inject NavigationManager Nav
+
+@* Port of WatchlistsForm: one list at a time, filter, mark watched, remove, export, and copy to a Plex playlist. *@
+
+<PageTitle>@(_current ?? "Watchlists") · Kolibri Kino</PageTitle>
+
+<h1>Watchlists</h1>
+
+<div class="toolbar">
+    <label>
+        List
+        <select value="@_current" @onchange="e => Open(e.Value as string)" disabled="@Busy">
+            @foreach (var name in _names)
+            {
+                <option value="@name">@name</option>
+            }
+        </select>
+    </label>
+    <form class="inline" @onsubmit="CreateListAsync">
+        <input @bind="_newList" placeholder="New list name" aria-label="New list name" />
+        <button type="submit" disabled="@(Busy || string.IsNullOrWhiteSpace(_newList))">Create</button>
+    </form>
+</div>
+
+<div class="toolbar">
+    <input type="search" @bind="_filter" @bind:event="oninput" placeholder="Filter by title…" aria-label="Filter by title" />
+    <div class="chips" role="group" aria-label="Watched">
+        <button class="chip @(_watched is null ? "on" : "")" @onclick="() => _watched = null">All</button>
+        <button class="chip @(_watched == false ? "on" : "")" @onclick="() => _watched = false">Not watched</button>
+        <button class="chip @(_watched == true ? "on" : "")" @onclick="() => _watched = true">Watched</button>
+    </div>
+    <a class="button" href="@($"export/watchlist?list={Uri.EscapeDataString(_current ?? "")}")" download>Export CSV</a>
+    @if (Watchlists.PlexConfigured)
+    {
+        <button disabled="@Busy" @onclick="CopyToPlexAsync">Copy to Plex playlist</button>
+    }
+</div>
+
+<StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
+
+<div class="table-wrap">
+    <table class="list">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Title</th>
+                <th>Year</th>
+                <th>Rating</th>
+                <th class="wide">Genre</th>
+                <th class="wide">Runtime</th>
+                <th>Watched</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Shown)
+            {
+                <tr class="@(item.Watched == "Y" ? "watched" : "")">
+                    <td><PosterImage Src="@($"poster/{item.ImdbId}")" Class="thumb" /></td>
+                    <td><a href="movie/@item.ImdbId">@item.Title</a></td>
+                    <td>@item.Year</td>
+                    <td><Rating Value="@item.ImdbRating" /></td>
+                    <td class="wide">@item.Genre</td>
+                    <td class="wide">@item.Runtime</td>
+                    <td>
+                        <button class="toggle @(item.Watched == "Y" ? "on" : "")" disabled="@Busy" @onclick="() => ToggleWatchedAsync(item)"
+                                aria-pressed="@(item.Watched == "Y" ? "true" : "false")">
+                            @(item.Watched == "Y" ? "Watched" : "Not watched")
+                        </button>
+                    </td>
+                    <td class="row-actions">
+                        @if (_removing == item.ImdbId)
+                        {
+                            @if (Watchlists.PlexConfigured)
+                            {
+                                <label class="small"><input type="checkbox" @bind="_alsoFromPlex" /> also from Plex</label>
+                            }
+                            <button class="danger" disabled="@Busy" @onclick="() => RemoveAsync(item)">Remove</button>
+                            <button @onclick="() => _removing = null">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="quiet" title="Remove from @_current" @onclick="() => (_removing, _alsoFromPlex) = (item.ImdbId, false)">✕</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter] public string? List { get; set; }
+
+    private IReadOnlyList<string> _names = [];
+    private string? _current;
+    private IReadOnlyList<WatchListItem> _items = [];
+    private string? _filter;
+    private bool? _watched;
+    private string? _newList;
+    private string? _removing;
+    private bool _alsoFromPlex;
+
+    private IEnumerable<WatchListItem> Shown => _items
+        .Where(i => string.IsNullOrWhiteSpace(_filter) || i.Title.Contains(_filter.Trim(), StringComparison.CurrentCultureIgnoreCase))
+        .Where(i => _watched is null || (i.Watched == "Y") == _watched);
+
+    private string Summary =>
+        $"{Shown.Count()} of {_items.Count} movie(s) in {_current}; {_items.Count(i => i.Watched != "Y")} not watched.";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _removing = null;
+        await RunAsync("Loading watchlists…", async ct =>
+        {
+            _names = await Watchlists.GetListNamesAsync(ct);
+            _current = _names.FirstOrDefault(n => string.Equals(n, List ?? Watchlists.FavoriteList, StringComparison.OrdinalIgnoreCase))
+                ?? _names.FirstOrDefault();
+            if (_current is null) return;
+
+            // As SilverScreen: the list you pick becomes the favorite (the default next time).
+            await Watchlists.SetFavoriteAsync(_current, ct);
+            _items = (await Watchlists.GetItemsAsync(_current, ct))
+                .OrderBy(i => i.Watched == "Y")
+                .ThenByDescending(i => WatchlistController.Rating(i.ImdbRating))
+                .ToList();
+        });
+    }
+
+    private void Open(string? name)
+    {
+        if (!string.IsNullOrEmpty(name)) Nav.NavigateTo($"watchlists/{Uri.EscapeDataString(name)}");
+    }
+
+    private Task CreateListAsync() => RunAsync("Creating list…", async ct =>
+    {
+        var name = _newList!.Trim();
+        await Watchlists.CreateListAsync(name, ct);
+        _newList = null;
+        Open(name);
+    });
+
+    private Task ToggleWatchedAsync(WatchListItem item) => RunAsync("Saving…", async ct =>
+    {
+        var watched = item.Watched != "Y";
+        if (await Watchlists.SetWatchedAsync(item.ImdbId, watched, ct)) item.Watched = watched ? "Y" : "N";
+    });
+
+    private Task RemoveAsync(WatchListItem item) => RunAsync("Removing…", async ct =>
+    {
+        var alsoFromPlex = _alsoFromPlex;
+        var removedFromPlex = await Watchlists.RemoveAsync(item.ImdbId, _current!, alsoFromPlex, ct);
+        _items = _items.Where(i => i.ImdbId != item.ImdbId).ToList();
+        _removing = null;
+        Status = !alsoFromPlex ? $"Removed {item.Title}."
+            : removedFromPlex ? $"Removed {item.Title} here and in Plex."
+            : $"Removed {item.Title}; it wasn't in the Plex playlist.";
+    });
+
+    private Task CopyToPlexAsync() => RunAsync($"Copying {_current} to Plex…", async ct =>
+    {
+        var result = await Watchlists.CopyToPlexAsync(_current!, ct);
+        var text = $"Plex playlist \"{_current}\"{(result.Created ? " created" : "")}: {result.Added} added, {result.AlreadyThere} already there.";
+        if (result.NotOnServer.Count > 0) text += $" {result.NotOnServer.Count} not on the Plex server.";
+        Status = text;
+    });
+}

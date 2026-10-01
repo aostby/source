@@ -1,0 +1,11 @@
+@* IMDb rating in colour: red below 6, orange 6–6.9, green from 7 (Core's RatingBands, as in the WinForms app). *@
+@if (Band != RatingBand.Unknown)
+{
+    <span class="rating @Band.ToString().ToLowerInvariant()" title="IMDb rating">@Value</span>
+}
+
+@code {
+    [Parameter] public string? Value { get; set; }
+
+    private RatingBand Band => RatingBands.Of(Value);
+}

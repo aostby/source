@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+**/appsettings.Local.json
+.git/
+deploy/
+tests/
+tools/
+src/Kolibri.Kino.WinForms/

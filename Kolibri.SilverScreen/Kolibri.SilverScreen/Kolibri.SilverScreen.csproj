@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
@@ -28,8 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj" />
     <ProjectReference Include="..\..\..\Kolibri.net\Kolibri.net.Common.DialogHelpers\Kolibri.net.Common.DialogHelpers.csproj" />
-    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal\Kolibri.net.Common.Dal.csproj" />
-    <ProjectReference Include="..\..\Kolibri.net\Kolibri.net.Common.DialogHelpers\Kolibri.net.Common.DialogHelpers.csproj" />
+ 
     <ProjectReference Include="..\Kolibri.net.SilverScreen\Kolibri.net.SilverScreen.csproj" />
   </ItemGroup>
   <ItemGroup>

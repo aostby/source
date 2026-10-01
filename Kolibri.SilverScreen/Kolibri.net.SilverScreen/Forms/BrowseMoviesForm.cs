@@ -790,15 +790,21 @@ img:hover{{transform: scale(1.5)}}
             }
         }
 
-        private void buttonDBPlaylist_Click(object sender, EventArgs e)
-        {
-            SetStatusLabelText($"Displaying list {comboBoxWatchLists.SelectedValue.ToString()}. Please wait....");
-            this.Cursor = Cursors.WaitCursor;
-            try
-            {
-                WatchlistForm frm = new WatchlistForm(_liteDB, _plex, comboBoxWatchLists.SelectedValue.ToString());
-                frm.MdiParent = this.MdiParent;
-                frm.Show();
+        private void buttonPlaylistGrid_Click(object sender, EventArgs e)
+        { this.Cursor = Cursors.WaitCursor;
+          try
+            {   SetStatusLabelText($"Displaying list {comboBoxWatchLists.SelectedValue.ToString()}. Please wait....");
+
+                if (radioButtonDB.Checked)
+                {
+                    WatchlistForm frm = new WatchlistForm(_liteDB, _plex, comboBoxWatchLists.SelectedValue.ToString());
+                    frm.MdiParent = this.MdiParent;
+                    frm.Show();
+                }
+                else
+                {
+                    buttonWatchList_Click(radioButtonPlex, null);
+                }
             }
             catch (Exception ex)
             {
@@ -813,7 +819,7 @@ img:hover{{transform: scale(1.5)}}
             try
             {
                 var dblist = await _watchlistContr.GetAllMoviesIDsFromWatchListsAsync(playlistName: playlistName);
-                var plexList = await _plex.GetPlaylistItemsAsync(playlistName);
+                var plexList = await _plex.GetPlaylistImdbsAsync(playlistName);
 
                 var result = dblist.Concat(plexList).OrderBy(x => x).Distinct().ToList();
                 var pLists = await _plex.GetPlaylistsAsync(update: true);
@@ -892,8 +898,15 @@ img:hover{{transform: scale(1.5)}}
         {
             try
             {
-                var items = await _plex.GetWatchlistItemsAsync(_liteDB);
-                SetStatusLabelText($"Generating watchlist for {items.Count} items (movies)");
+                List<Item> items = null;
+                if (sender.Equals(buttonVisualizePlex))
+                {
+                    items = await _plex.GetWatchlistItemsAsync(_liteDB);
+                }
+                else { items = await _plex.GetPlaylistItemsAsync(comboBoxWatchLists.Text); }
+                SetStatusLabelText($"Generating list {(sender as Control).Text} for {items.Count} items (movies)");
+
+
                 if (sender.Equals(buttonVisualizePlex))
                 {
                     DisplayHtml(true, items, buttonVisualizePlex.Text);
@@ -918,21 +931,23 @@ img:hover{{transform: scale(1.5)}}
             }
         }
 
-        private  async   void buttonVisualizeDBPlaylist_Click(object sender, EventArgs e)
+        private  async void buttonVisualizePlaylist_Click(object sender, EventArgs e)
         {
-
-
             try
             {
-                var res = _liteDB.WatchListFindAll(watchListName: comboBoxWatchLists.Text).ToList();
-                List<Item> items = res.Select(item => (Item)item).ToList();
-
-                if (sender.Equals(buttonVisualizeDBPlaylist))
+                List<Item> items = null;
+                if (radioButtonDB.Checked)
                 {
-                    DisplayHtml(true, items, comboBoxWatchLists.Text);
-                    return;
+                    var res = _liteDB.WatchListFindAll(watchListName: comboBoxWatchLists.Text).ToList();
+                    items = res.Select(item => (Item)item).ToList();
+                }
+                else
+                {
+                    items = await _plex.GetPlaylistItemsAsync(comboBoxWatchLists.Text);
                 }
 
+                DisplayHtml(true, items, comboBoxWatchLists.Text);
+                return;
             }
             catch (Exception ex)
             {

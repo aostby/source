@@ -1,0 +1,200 @@
+@page "/"
+@inherits KinoPage
+@inject MovieController Movies
+@inject LastSearch LastSearch
+@inject NavigationManager Nav
+
+@* Port of KinoForm: search the library or OMDb, filter by type, sort, import. The search is in the address,
+   so Back from a movie returns to the same results. *@
+
+<PageTitle>Library · Kolibri Kino</PageTitle>
+
+<h1>@(Online ? "Search OMDb" : "Library")</h1>
+
+<form class="searchbar" @onsubmit="SearchLibrary">
+    <input type="search" @bind="_text" placeholder="Title…" aria-label="Title" disabled="@Busy" />
+    <button type="submit" class="primary" disabled="@Busy">Search library</button>
+    <button type="button" disabled="@(Busy || string.IsNullOrWhiteSpace(_text))" @onclick="SearchOmdb">Search OMDb</button>
+</form>
+
+<div class="toolbar">
+    <div class="chips" role="group" aria-label="Type">
+        @foreach (var (key, label, count) in _typeCounts)
+        {
+            <button class="chip @(key == SelectedType ? "on" : "")" @onclick="() => Go(type: UrlType(key), page: 1)">@label (@count.ToString("N0"))</button>
+        }
+    </div>
+    <label class="sort">
+        Sort
+        <select value="@SortKey" @onchange="e => Go(sort: e.Value as string, page: 1)">
+            <option value="listed">As listed</option>
+            <option value="title">Title</option>
+            <option value="year">Year (newest)</option>
+            <option value="rating">Rating (best)</option>
+            <option value="genre">Genre</option>
+        </select>
+    </label>
+</div>
+
+<StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
+
+<div class="cards">
+    @foreach (var hit in PageOfHits)
+    {
+        <article class="card">
+            <a href="movie/@hit.ImdbId" class="card-link">
+                <PosterImage Src="@hit.PosterUrl" />
+                <div class="card-body">
+                    <h2 class="card-title">@hit.Title</h2>
+                    <div class="card-meta">
+                        <span>@hit.Year</span>
+                        @if (!string.IsNullOrWhiteSpace(hit.Type) && hit.Type != "movie")
+                        {
+                            <span class="tag">@hit.Type</span>
+                        }
+                        <Rating Value="@hit.Rating" />
+                    </div>
+                </div>
+            </a>
+            @if (Online)
+            {
+                <button class="card-action" disabled="@Busy" @onclick="() => ImportAsync(hit)">Import</button>
+            }
+        </article>
+    }
+</div>
+
+@if (PageCount > 1)
+{
+    <nav class="pager" aria-label="Pages">
+        <button disabled="@(CurrentPage <= 1)" @onclick="() => Go(page: CurrentPage - 1)">‹ Previous</button>
+        <span>Page @CurrentPage of @PageCount</span>
+        <button disabled="@(CurrentPage >= PageCount)" @onclick="() => Go(page: CurrentPage + 1)">Next ›</button>
+    </nav>
+}
+
+@code {
+    private const int PageSize = 60;
+
+    [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
+    [SupplyParameterFromQuery(Name = "online")] public bool Online { get; set; }
+    [SupplyParameterFromQuery(Name = "type")] public string? Type { get; set; }
+    [SupplyParameterFromQuery(Name = "sort")] public string? Sort { get; set; }
+    [SupplyParameterFromQuery(Name = "page")] public int? Page { get; set; }
+
+    private string? _text;
+    private IReadOnlyList<Hit> _hits = [];
+    private List<Hit> _shown = [];
+    private List<(string? Key, string Label, int Count)> _typeCounts = [];
+
+    /// <summary>A library item or OMDb search result, as a card.</summary>
+    private sealed record Hit(string ImdbId, string Title, string? Year, string? Type, string? Rating, string? Genre, string? PosterUrl);
+
+    private string SortKey => Sort ?? (Online ? "listed" : "title");
+    private int PageCount => Math.Max(1, (_shown.Count + PageSize - 1) / PageSize);
+    private int CurrentPage => Math.Clamp(Page ?? 1, 1, PageCount);
+    private IEnumerable<Hit> PageOfHits => _shown.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private string Summary
+    {
+        get
+        {
+            var counted = _shown.Count == _hits.Count ? $"{_hits.Count:N0}" : $"{_shown.Count:N0} of {_hits.Count:N0}";
+            return Online ? $"{counted} result(s) from OMDb. Import adds one to the library." : $"{counted} item(s) in library.";
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _text = Query;
+        var key = $"{Online}|{Query?.Trim()}";
+        if (LastSearch.Key != key)
+        {
+            await RunAsync(Online ? "Searching OMDb…" : "Loading library…", async ct =>
+            {
+                if (Online && !string.IsNullOrWhiteSpace(Query))
+                    LastSearch.Remember(key, [], await Movies.SearchOnlineAsync(Query, ct));
+                else
+                    LastSearch.Remember(key, await Movies.SearchLocalAsync(Query ?? string.Empty, ct), []);
+            });
+        }
+
+        _hits = LastSearch.Key != key ? [] // the search failed; the error is shown
+            : Online
+            ? LastSearch.Online.Select(s => new Hit(s.ImdbId, s.Title, s.Year, s.Type, null, null, OnlinePoster(s))).ToList()
+            : LastSearch.Local.Select(i => new Hit(i.ImdbId, i.Title, i.Year, i.Type, i.ImdbRating, i.Genre, $"poster/{i.ImdbId}")).ToList();
+        ApplyFilterAndSort();
+    }
+
+    private void ApplyFilterAndSort()
+    {
+        _typeCounts = [(null, "All", _hits.Count)];
+        _typeCounts.AddRange(_hits.GroupBy(h => TypeKey(h.Type)).OrderByDescending(g => g.Count()).Select(g => ((string?)g.Key, TypeLabel(g.Key), g.Count())));
+        var type = SelectedType;
+
+        var shown = _hits.Where(h => type is null || TypeKey(h.Type) == type);
+        // Stable sorts on top of the title order, so each year, rating or genre is alphabetical, as in KinoForm.
+        var byTitle = shown.OrderBy(h => h.Title, StringComparer.CurrentCultureIgnoreCase);
+        _shown = SortKey switch
+        {
+            "title" => byTitle.ToList(),
+            "year" => byTitle.OrderByDescending(h => h.Year, StringComparer.Ordinal).ToList(),
+            "rating" => byTitle.OrderByDescending(h => WatchlistController.Rating(h.Rating)).ToList(),
+            "genre" => byTitle.OrderBy(h => h.Genre ?? "￿", StringComparer.CurrentCultureIgnoreCase).ToList(),
+            _ => shown.ToList(),
+        };
+    }
+
+    private void SearchLibrary() => Go(q: _text?.Trim() ?? string.Empty, online: false, type: string.Empty, page: 1);
+
+    private void SearchOmdb() => Go(q: _text?.Trim() ?? string.Empty, online: true, type: string.Empty, page: 1);
+
+    /// <summary>Changes the search in the address; <see cref="OnParametersSetAsync"/> does the rest. Null keeps a value, empty removes it.</summary>
+    private void Go(string? q = null, bool? online = null, string? type = null, string? sort = null, int? page = null)
+    {
+        static object? Keep(string? value, string? current) => value is null ? current : value.Length == 0 ? null : value;
+        Nav.NavigateTo(Nav.GetUriWithQueryParameters(new Dictionary<string, object?>
+        {
+            ["q"] = Keep(q, Query),
+            ["online"] = (online ?? Online) ? true : null,
+            ["type"] = Keep(type, Type),
+            ["sort"] = Keep(sort, Sort),
+            ["page"] = (page ?? Page) is > 1 and var p ? p : null,
+        }));
+    }
+
+    private Task ImportAsync(Hit hit) => RunAsync($"Importing {hit.Title}…", async ct =>
+    {
+        var item = await Movies.ImportAsync(hit.ImdbId, ct);
+        Status = item is null ? $"OMDb has no details for {hit.ImdbId}." : $"Saved {item.Title} ({item.Year}) in the library.";
+    });
+
+    /// <summary>The type filter from the address, or null for All (also when no result has that type).</summary>
+    private string? SelectedType
+    {
+        get
+        {
+            var key = Type == "-" ? string.Empty : Type;
+            return key is not null && _typeCounts.Any(t => t.Key == key) ? key : null;
+        }
+    }
+
+    /// <summary>The type in the address: none for All, "-" for items without a type.</summary>
+    private static string UrlType(string? key) => key is null ? string.Empty : key.Length == 0 ? "-" : key;
+
+    private static string? OnlinePoster(SearchItem s) =>
+        Uri.TryCreate(s.Poster, UriKind.Absolute, out var url) && url.Scheme is "http" or "https" ? s.Poster : null;
+
+    /// <summary>OMDb writes "movie", SilverScreen's TMDb import wrote "Movie": compare lower-cased, and "" for none.</summary>
+    private static string TypeKey(string? type) => (type ?? string.Empty).Trim().ToLowerInvariant();
+
+    private static string TypeLabel(string key) => key switch
+    {
+        "" => "(no type)",
+        "movie" => "Movies",
+        "series" => "Series",
+        "episode" => "Episodes",
+        "game" => "Games",
+        _ => char.ToUpperInvariant(key[0]) + key[1..],
+    };
+}

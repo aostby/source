@@ -1,0 +1,185 @@
+@page "/movie/{ImdbId}"
+@inherits KinoPage
+@inject MovieController Movies
+@inject WatchlistController Watchlists
+@inject LastSearch LastSearch
+
+@* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import, remove, add to a watchlist, links. *@
+
+<PageTitle>@(_item?.Title ?? ImdbId) · Kolibri Kino</PageTitle>
+
+<p class="back"><a href="javascript:history.back()">‹ Back</a></p>
+
+@if (_item is null)
+{
+    <StatusLine Busy="Busy" Text="@(Status ?? (Busy ? null : $"No details found for {ImdbId}."))" Error="@Error" />
+}
+else
+{
+    <div class="details">
+        <PosterImage Src="@($"poster/{ImdbId}")" Class="large" />
+
+        <div class="details-text">
+            <h1>@_item.Title</h1>
+            <p class="facts">
+                @Facts
+                <Rating Value="@_item.ImdbRating" />
+            </p>
+            <p class="where">
+                @if (_inLibrary)
+                {
+                    <span class="tag good">In library</span>
+                }
+                else
+                {
+                    <span class="tag">Not in library (from OMDb)</span>
+                }
+                @if (_linkedPath is not null)
+                {
+                    <span class="path" title="Linked file or folder">@_linkedPath</span>
+                }
+            </p>
+
+            @if (Clean(_item.Plot) is { } plot)
+            {
+                <p class="plot">@plot</p>
+            }
+
+            <dl class="facts-list">
+                @foreach (var (label, value) in People)
+                {
+                    <dt>@label</dt>
+                    <dd>@value</dd>
+                }
+                @if (_item.Ratings is { Count: > 0 } ratings)
+                {
+                    <dt>Ratings</dt>
+                    <dd>@string.Join(" · ", ratings.Select(r => $"{r.Source} {r.Value}"))</dd>
+                }
+            </dl>
+
+            <div class="actions">
+                @if (_inLibrary)
+                {
+                    <button disabled="@Busy" @onclick="ImportAsync">Update from OMDb</button>
+                    @if (_confirmRemove)
+                    {
+                        <span class="confirm">
+                            Remove from the library? Its file link goes too; files on disk are not touched.
+                            <button class="danger" disabled="@Busy" @onclick="RemoveAsync">Remove</button>
+                            <button @onclick="() => _confirmRemove = false">Cancel</button>
+                        </span>
+                    }
+                    else
+                    {
+                        <button @onclick="() => _confirmRemove = true">Remove from library…</button>
+                    }
+                }
+                else
+                {
+                    <button class="primary" disabled="@Busy" @onclick="ImportAsync">Import to library</button>
+                }
+            </div>
+
+            <div class="actions">
+                <label>
+                    Watchlist
+                    <select @bind="_list" disabled="@Busy">
+                        @foreach (var name in _listNames)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </label>
+                <button disabled="@(Busy || _list is null)" @onclick="AddToWatchlistAsync">Add to watchlist</button>
+            </div>
+
+            <p class="links">
+                <a href="https://www.imdb.com/title/@ImdbId/" target="_blank" rel="noopener">IMDb</a>
+                @if (_tmdbPage is not null)
+                {
+                    <a href="@_tmdbPage" target="_blank" rel="noopener">TMDb</a>
+                }
+            </p>
+
+            <StatusLine Busy="Busy" Text="@Status" Error="@Error" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string ImdbId { get; set; } = string.Empty;
+
+    private Item? _item;
+    private bool _inLibrary;
+    private string? _linkedPath;
+    private string? _tmdbPage;
+    private IReadOnlyList<string> _listNames = [];
+    private string? _list;
+    private bool _confirmRemove;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        (_item, _inLibrary, _linkedPath, _tmdbPage, _confirmRemove) = (null, false, null, null, false);
+        await RunAsync("Loading…", async ct =>
+        {
+            var local = await Movies.GetFromLibraryAsync(ImdbId, ct);
+            _inLibrary = local is not null;
+            _item = local ?? await Movies.GetDetailsAsync(ImdbId, ct);
+            _linkedPath = _inLibrary ? await Movies.GetLinkedPathAsync(ImdbId, ct) : null;
+            _listNames = await Watchlists.GetListNamesAsync(ct);
+            _list ??= Watchlists.FavoriteList;
+        });
+
+        // TMDb pages use TMDb's own ids: one TMDb request, after the page is shown. A search link if TMDb doesn't know it.
+        if (_item is { } item)
+        {
+            _tmdbPage = await Movies.GetTmdbPageAsync(ImdbId, item.Title);
+            StateHasChanged();
+        }
+    }
+
+    private Task ImportAsync() => RunAsync(_inLibrary ? "Updating from OMDb…" : "Importing…", async ct =>
+    {
+        var item = await Movies.ImportAsync(ImdbId, ct);
+        if (item is null)
+        {
+            Status = $"OMDb has no details for {ImdbId}.";
+            return;
+        }
+        Status = _inLibrary ? "Updated from OMDb." : $"Saved {item.Title} ({item.Year}) in the library.";
+        (_item, _inLibrary) = (item, true);
+        LastSearch.Forget();
+    });
+
+    private Task RemoveAsync() => RunAsync("Removing…", async ct =>
+    {
+        await Movies.RemoveFromLibraryAsync(ImdbId, ct);
+        (_inLibrary, _linkedPath, _confirmRemove) = (false, null, false);
+        Status = $"Removed \"{_item?.Title}\" from the library.";
+        LastSearch.Forget();
+    });
+
+    private Task AddToWatchlistAsync() => RunAsync("Adding…", async ct =>
+    {
+        var result = await Watchlists.AddAsync(ImdbId, _list!, ct);
+        Status = result.MovedFrom is null
+            ? $"Added {result.Title} to {_list}."
+            : $"Moved {result.Title} from {result.MovedFrom} to {_list} (a movie is on one list at a time).";
+    });
+
+    private string Facts => string.Join(" · ", new[]
+    {
+        _item!.Year, _item.Runtime, _item.Genre, _item.Rated,
+        _item.Type is "series" && Clean(_item.TotalSeasons) is { } seasons ? $"{seasons} season(s)" : null,
+    }.Select(Clean).OfType<string>());
+
+    private IEnumerable<(string, string)> People => new (string Label, string? Value)[]
+    {
+        ("Director", _item!.Director), ("Writer", _item.Writer), ("Actors", _item.Actors), ("Released", _item.Released),
+        ("Language", _item.Language), ("Country", _item.Country), ("Awards", _item.Awards), ("Box office", _item.BoxOffice),
+    }.Where(p => Clean(p.Value) is not null).Select(p => (p.Label, p.Value!));
+
+    /// <summary>OMDb writes "N/A" for missing values.</summary>
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) || value == "N/A" ? null : value;
+}

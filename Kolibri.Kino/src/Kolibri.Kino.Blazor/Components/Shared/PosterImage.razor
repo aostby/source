@@ -1,0 +1,18 @@
+@* A poster, or a plain placeholder when there is none. Library posters come from /poster/{id} (cached on the NAS). *@
+@if (_failed || Src is null)
+{
+    <div class="poster placeholder @Class" aria-hidden="true">🎬</div>
+}
+else
+{
+    <img class="poster @Class" src="@Src" alt="" loading="lazy" @onerror="() => _failed = true" />
+}
+
+@code {
+    [Parameter, EditorRequired] public string? Src { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private bool _failed;
+
+    protected override void OnParametersSet() => _failed = false;
+}

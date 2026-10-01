@@ -37,12 +37,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             buttonVisualizePlex = new Button();
             buttonWatchList = new Button();
             groupBoxAddToPlayList = new GroupBox();
+            radioButtonPlex = new RadioButton();
+            radioButtonDB = new RadioButton();
             buttonSyncPlexToDB = new Button();
             buttonSyncDBToPlex = new Button();
-            buttonVisualizeDBPlaylist = new Button();
+            buttonPlaylistHTML = new Button();
             buttonSync = new Button();
             comboBoxWatchLists = new ComboBox();
-            buttonPlaylist = new Button();
+            buttonPlaylistGrid = new Button();
             buttonAddToPlexPlaylist = new Button();
             groupBoxSearcByFolder = new GroupBox();
             checkBoxPrintable = new CheckBox();
@@ -59,12 +61,12 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             checkBoxPoster = new CheckBox();
             buttonSearch = new Button();
             checkBoxDecending = new CheckBox();
-            linkLabelOpenInBrowser = new LinkLabel();
             linkLabelYear = new LinkLabel();
             linkLabelGenre = new LinkLabel();
             tbSearch = new ContainsTextBox();
             comboBoxYear = new ComboBox();
             comboBoxGenre = new ComboBox();
+            linkLabelOpenInBrowser = new LinkLabel();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolTip1 = new ToolTip(components);
@@ -144,12 +146,14 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             // 
             // groupBoxAddToPlayList
             // 
+            groupBoxAddToPlayList.Controls.Add(radioButtonPlex);
+            groupBoxAddToPlayList.Controls.Add(radioButtonDB);
             groupBoxAddToPlayList.Controls.Add(buttonSyncPlexToDB);
             groupBoxAddToPlayList.Controls.Add(buttonSyncDBToPlex);
-            groupBoxAddToPlayList.Controls.Add(buttonVisualizeDBPlaylist);
+            groupBoxAddToPlayList.Controls.Add(buttonPlaylistHTML);
             groupBoxAddToPlayList.Controls.Add(buttonSync);
             groupBoxAddToPlayList.Controls.Add(comboBoxWatchLists);
-            groupBoxAddToPlayList.Controls.Add(buttonPlaylist);
+            groupBoxAddToPlayList.Controls.Add(buttonPlaylistGrid);
             groupBoxAddToPlayList.Controls.Add(buttonAddToPlexPlaylist);
             groupBoxAddToPlayList.Location = new Point(662, 8);
             groupBoxAddToPlayList.Name = "groupBoxAddToPlayList";
@@ -157,6 +161,28 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             groupBoxAddToPlayList.TabIndex = 15;
             groupBoxAddToPlayList.TabStop = false;
             groupBoxAddToPlayList.Text = "Add to Playlist";
+            // 
+            // radioButtonPlex
+            // 
+            radioButtonPlex.AutoSize = true;
+            radioButtonPlex.Location = new Point(251, 19);
+            radioButtonPlex.Name = "radioButtonPlex";
+            radioButtonPlex.Size = new Size(46, 19);
+            radioButtonPlex.TabIndex = 8;
+            radioButtonPlex.Text = "Plex";
+            radioButtonPlex.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonDB
+            // 
+            radioButtonDB.AutoSize = true;
+            radioButtonDB.Checked = true;
+            radioButtonDB.Location = new Point(209, 19);
+            radioButtonDB.Name = "radioButtonDB";
+            radioButtonDB.Size = new Size(40, 19);
+            radioButtonDB.TabIndex = 7;
+            radioButtonDB.TabStop = true;
+            radioButtonDB.Text = "DB";
+            radioButtonDB.UseVisualStyleBackColor = true;
             // 
             // buttonSyncPlexToDB
             // 
@@ -178,16 +204,16 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             buttonSyncDBToPlex.UseVisualStyleBackColor = true;
             buttonSyncDBToPlex.Click += buttonSync_Click;
             // 
-            // buttonVisualizeDBPlaylist
+            // buttonPlaylistHTML
             // 
-            buttonVisualizeDBPlaylist.Location = new Point(203, 49);
-            buttonVisualizeDBPlaylist.Name = "buttonVisualizeDBPlaylist";
-            buttonVisualizeDBPlaylist.Size = new Size(178, 23);
-            buttonVisualizeDBPlaylist.TabIndex = 4;
-            buttonVisualizeDBPlaylist.Text = "HTML of DB Playlist";
-            toolTip1.SetToolTip(buttonVisualizeDBPlaylist, "Vis denne spillelisten som den er lagret i lokal database.");
-            buttonVisualizeDBPlaylist.UseVisualStyleBackColor = true;
-            buttonVisualizeDBPlaylist.Click += buttonVisualizeDBPlaylist_Click;
+            buttonPlaylistHTML.Location = new Point(203, 46);
+            buttonPlaylistHTML.Name = "buttonPlaylistHTML";
+            buttonPlaylistHTML.Size = new Size(76, 23);
+            buttonPlaylistHTML.TabIndex = 4;
+            buttonPlaylistHTML.Text = "HTML Playlist";
+            toolTip1.SetToolTip(buttonPlaylistHTML, "Vis denne spillelisten som den er lagret i lokal database.");
+            buttonPlaylistHTML.UseVisualStyleBackColor = true;
+            buttonPlaylistHTML.Click += buttonVisualizePlaylist_Click;
             // 
             // buttonSync
             // 
@@ -209,16 +235,16 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             comboBoxWatchLists.TabIndex = 1;
             comboBoxWatchLists.SelectedIndexChanged += comboBoxWatchLists_SelectedIndexChanged;
             // 
-            // buttonPlaylist
+            // buttonPlaylistGrid
             // 
-            buttonPlaylist.Location = new Point(203, 17);
-            buttonPlaylist.Name = "buttonPlaylist";
-            buttonPlaylist.Size = new Size(178, 23);
-            buttonPlaylist.TabIndex = 3;
-            buttonPlaylist.Text = "DB Playlist";
-            toolTip1.SetToolTip(buttonPlaylist, "Vis denne spillelisten som den er lagret i lokal database.");
-            buttonPlaylist.UseVisualStyleBackColor = true;
-            buttonPlaylist.Click += buttonDBPlaylist_Click;
+            buttonPlaylistGrid.Location = new Point(285, 46);
+            buttonPlaylistGrid.Name = "buttonPlaylistGrid";
+            buttonPlaylistGrid.Size = new Size(76, 23);
+            buttonPlaylistGrid.TabIndex = 3;
+            buttonPlaylistGrid.Text = "GRID Playlist";
+            toolTip1.SetToolTip(buttonPlaylistGrid, "Vis denne spillelisten som den er lagret i lokal database.");
+            buttonPlaylistGrid.UseVisualStyleBackColor = true;
+            buttonPlaylistGrid.Click += buttonPlaylistGrid_Click;
             // 
             // buttonAddToPlexPlaylist
             // 
@@ -418,18 +444,6 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             checkBoxDecending.Text = "Decending";
             checkBoxDecending.UseVisualStyleBackColor = true;
             // 
-            // linkLabelOpenInBrowser
-            // 
-            linkLabelOpenInBrowser.AutoSize = true;
-            linkLabelOpenInBrowser.Location = new Point(33, 124);
-            linkLabelOpenInBrowser.Margin = new Padding(4, 0, 4, 0);
-            linkLabelOpenInBrowser.Name = "linkLabelOpenInBrowser";
-            linkLabelOpenInBrowser.Size = new Size(94, 15);
-            linkLabelOpenInBrowser.TabIndex = 9;
-            linkLabelOpenInBrowser.TabStop = true;
-            linkLabelOpenInBrowser.Text = "Open In Browser";
-            linkLabelOpenInBrowser.LinkClicked += linkLabelOpenInBrowser_LinkClicked;
-            // 
             // linkLabelYear
             // 
             linkLabelYear.AutoSize = true;
@@ -478,6 +492,18 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             comboBoxGenre.Size = new Size(140, 23);
             comboBoxGenre.TabIndex = 2;
             // 
+            // linkLabelOpenInBrowser
+            // 
+            linkLabelOpenInBrowser.AutoSize = true;
+            linkLabelOpenInBrowser.Location = new Point(33, 124);
+            linkLabelOpenInBrowser.Margin = new Padding(4, 0, 4, 0);
+            linkLabelOpenInBrowser.Name = "linkLabelOpenInBrowser";
+            linkLabelOpenInBrowser.Size = new Size(94, 15);
+            linkLabelOpenInBrowser.TabIndex = 9;
+            linkLabelOpenInBrowser.TabStop = true;
+            linkLabelOpenInBrowser.Text = "Open In Browser";
+            linkLabelOpenInBrowser.LinkClicked += linkLabelOpenInBrowser_LinkClicked;
+            // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
@@ -513,6 +539,7 @@ namespace Kolibri.net.Common.MovieAPI.Forms
             splitContainer1.ResumeLayout(false);
             groupBoxPlex.ResumeLayout(false);
             groupBoxAddToPlayList.ResumeLayout(false);
+            groupBoxAddToPlayList.PerformLayout();
             groupBoxSearcByFolder.ResumeLayout(false);
             groupBoxSearcByFolder.PerformLayout();
             groupBoxVisualize.ResumeLayout(false);
@@ -558,11 +585,13 @@ namespace Kolibri.net.Common.MovieAPI.Forms
         private ToolStripStatusLabel toolStripStatusLabel1;
         private GroupBox groupBoxPlex;
         private Button buttonWatchList;
-        private Button buttonPlaylist;
+        private Button buttonPlaylistGrid;
         private Button buttonVisualizePlex;
-        private Button buttonVisualizeDBPlaylist;
+        private Button buttonPlaylistHTML;
         private Button buttonSyncDBToPlex;
         private Button buttonSyncPlexToDB;
         private Label labelLine;
+        private RadioButton radioButtonDB;
+        private RadioButton radioButtonPlex;
     }
 }

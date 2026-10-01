@@ -1,0 +1,15 @@
+@* The page's busy text, result message or error, like the status bar in the WinForms windows. *@
+@if (Error is not null)
+{
+    <p class="status error" role="alert">@Error</p>
+}
+else if (Text is not null)
+{
+    <p class="status @(Busy ? "busy" : "")" role="status">@Text</p>
+}
+
+@code {
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? Error { get; set; }
+}
