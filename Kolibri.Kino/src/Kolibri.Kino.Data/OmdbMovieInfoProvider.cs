@@ -69,13 +69,13 @@ public sealed class OmdbMovieInfoProvider(ISettingsStore settings) : IMovieInfoP
                 || ex.Message.Contains("Incorrect IMDb ID", StringComparison.OrdinalIgnoreCase))
                 return null;
 
-            throw new MovieInfoUnavailableException($"OMDb: {ex.Message}", ex);
+            throw new MovieInfoUnavailableException(OmdbErrors.WithKeyHint(ex.Message, settings.Current.UsesDefaultKeys()), ex);
         }
         catch (NullReferenceException ex) when (OmdbErrors.IsLibraryCrash(ex))
         {
             // OMDbApiNet crashes on HTTP 401 (daily limit, bad key); ask OMDb for the real message.
             var message = await OmdbErrors.ExplainAsync(settings.Current.OMDBkey ?? "", ct).ConfigureAwait(false);
-            throw new MovieInfoUnavailableException($"OMDb: {message}", ex);
+            throw new MovieInfoUnavailableException(OmdbErrors.WithKeyHint(message, settings.Current.UsesDefaultKeys()), ex);
         }
     }
 

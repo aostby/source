@@ -35,6 +35,25 @@ public sealed class LiteDbSettingsStore : ISettingsStore
         _user = string.IsNullOrWhiteSpace(user) ? Environment.UserName : user;
     }
 
+    /// <summary>
+    /// The LiteDBFilePath saved in <paramref name="dbPath"/>'s user settings for <paramref name="user"/> (SilverScreen
+    /// and Kino's Settings save it), or null. A missing file is never created here.
+    /// </summary>
+    public static string? ReadStoredDbPath(string? dbPath, string user)
+    {
+        if (string.IsNullOrWhiteSpace(dbPath) || !File.Exists(dbPath)) return null;
+        try
+        {
+            using var db = new LiteDatabase(new ConnectionString { Filename = dbPath, Connection = ConnectionType.Shared });
+            var value = db.GetCollection("UserSettings").FindById(user)?["LiteDBFilePath"];
+            return value is { IsString: true } && !string.IsNullOrWhiteSpace(value.AsString) ? value.AsString : null;
+        }
+        catch (Exception ex) when (ex is LiteException or IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     public event EventHandler? Changed;
 
     public UserSettings Current
@@ -69,6 +88,7 @@ public sealed class LiteDbSettingsStore : ISettingsStore
         if (string.IsNullOrWhiteSpace(settings.OMDBkey)) settings.OMDBkey = UserSettings.DefaultOmdbKey;
         if (string.IsNullOrWhiteSpace(settings.TMDBkey)) settings.TMDBkey = UserSettings.DefaultTmdbKey;
         if (string.IsNullOrWhiteSpace(settings.IMDbDataFiles)) settings.IMDbDataFiles = UserSettings.DefaultImdbDataFiles;
+        if (string.IsNullOrWhiteSpace(settings.SubtitleLanguages)) settings.SubtitleLanguages = UserSettings.DefaultSubtitleLanguages;
         if (!string.IsNullOrWhiteSpace(_dbPath)) settings.LiteDBFilePath = _dbPath;
         return settings;
     }

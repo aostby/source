@@ -7,6 +7,8 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// </summary>
 public partial class AddToWatchlistDialog : AsyncForm
 {
+    public override string HelpTopic => "watchlists";
+
     private readonly WatchlistController _watchlists;
     private readonly string _imdbId;
 

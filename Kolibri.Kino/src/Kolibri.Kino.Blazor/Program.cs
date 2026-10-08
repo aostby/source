@@ -21,6 +21,7 @@ if (builder.Configuration["DataProtectionKeysPath"] is { Length: > 0 } keysPath)
     builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
 var app = builder.Build();
+app.Services.StartApiUsageCounting();
 
 if (!app.Environment.IsDevelopment())
 {

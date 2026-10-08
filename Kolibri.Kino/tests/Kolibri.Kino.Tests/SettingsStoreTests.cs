@@ -135,6 +135,18 @@ public sealed class SettingsStoreTests : IDisposable
         Assert.Contains("Settings", ex.Message);
     }
 
+    [Fact]
+    public void Reads_the_database_path_stored_in_the_database_without_creating_missing_files()
+    {
+        SilverScreenSaves(new BsonDocument { ["LiteDBFilePath"] = @"E:\RELEASE\SilverScreenDB\SilverScreen.db" });
+        var missing = System.IO.Path.ChangeExtension(_temp.Path, ".missing.db");
+
+        Assert.Equal(@"E:\RELEASE\SilverScreenDB\SilverScreen.db", LiteDbSettingsStore.ReadStoredDbPath(_temp.Path, Environment.UserName));
+        Assert.Null(LiteDbSettingsStore.ReadStoredDbPath(_temp.Path, "someone-else"));
+        Assert.Null(LiteDbSettingsStore.ReadStoredDbPath(missing, Environment.UserName));
+        Assert.False(File.Exists(missing));
+    }
+
     private void SilverScreenSaves(BsonDocument settings)
     {
         using var legacy = new LiteDatabase(_temp.Path);

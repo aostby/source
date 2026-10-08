@@ -14,6 +14,12 @@ public sealed class KinoOptions
     /// <summary>Image cache file. Empty means next to <see cref="LiteDbPath"/> with extension .imgdb, like SilverScreen.</summary>
     public string ImageDbPath { get; set; } = string.Empty;
 
+    /// <summary>The log (what Kino's windows and controllers reported). Empty means next to <see cref="LiteDbPath"/> with extension .logdb.</summary>
+    public string LogDbPath { get; set; } = string.Empty;
+
+    /// <summary>Log entries older than this many days are deleted.</summary>
+    public int LogRetentionDays { get; set; } = 30;
+
     /// <summary>
     /// Whose UserSettings document to use (its _id). Empty means the Windows user running the app, as SilverScreen does.
     /// Set it where the user name differs, e.g. in a container, to share the settings saved on Windows.
@@ -23,6 +29,11 @@ public sealed class KinoOptions
     public CleanupOptions Cleanup { get; set; } = new();
 
     public string ResolveSettingsUser() => string.IsNullOrWhiteSpace(SettingsUser) ? Environment.UserName : SettingsUser.Trim();
+
+    public string ResolveLogDbPath() =>
+        string.IsNullOrWhiteSpace(LogDbPath) && !string.IsNullOrWhiteSpace(LiteDbPath)
+            ? Path.ChangeExtension(LiteDbPath, ".logdb")
+            : LogDbPath;
 
     public string ResolveImageDbPath() =>
         string.IsNullOrWhiteSpace(ImageDbPath) && !string.IsNullOrWhiteSpace(LiteDbPath)

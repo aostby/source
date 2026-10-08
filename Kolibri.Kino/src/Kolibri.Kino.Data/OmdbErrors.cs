@@ -18,6 +18,21 @@ internal static class OmdbErrors
     public static bool IsLibraryCrash(Exception ex) =>
         ex is NullReferenceException && ex.StackTrace?.Contains("OMDbApiNet", StringComparison.Ordinal) == true;
 
+    /// <summary>
+    /// "OMDb: <paramref name="message"/>", plus what to do when it's about the key or the daily limit: with the shared
+    /// test key, get a key of your own; else check the key in Settings.
+    /// </summary>
+    public static string WithKeyHint(string message, bool usesTestKey)
+    {
+        var aboutKey = message.Contains("key", StringComparison.OrdinalIgnoreCase)
+                       || message.Contains("limit", StringComparison.OrdinalIgnoreCase);
+        if (!aboutKey) return $"OMDb: {message}";
+        return usesTestKey
+            ? $"OMDb: {message} You're using the shared test key, whose daily limit everyone shares. " +
+              "Get a free key of your own (Help, Prerequisites) and enter it in Settings."
+            : $"OMDb: {message} Check the OMDb key in Settings.";
+    }
+
     /// <summary>OMDb's error for this key, e.g. "Request limit reached!", or a generic text if it can't be read.</summary>
     public static async Task<string> ExplainAsync(string apiKey, CancellationToken ct)
     {

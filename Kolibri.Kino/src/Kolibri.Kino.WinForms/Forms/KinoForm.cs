@@ -8,14 +8,13 @@ using Kolibri.Kino.WinForms.Controls;
 namespace Kolibri.Kino.WinForms.Forms;
 
 /// <summary>
-/// Kino's start window: search the library or OMDb, and open the other windows.
+/// Kino's search window (opened in <see cref="MainForm"/> at start): search the library or OMDb, and open the other windows.
 /// Thin UI: collects input, awaits the controller, shows the result. No data access here.
 /// </summary>
-/// <remarks>
-/// Named KinoForm rather than MainForm to leave room for an MDI main window with menus later.
-/// </remarks>
 public partial class KinoForm : AsyncForm
 {
+    public override string HelpTopic => "search";
+
     private static readonly string[] VisibleColumns =
         [nameof(Item.Title), nameof(Item.Year), nameof(Item.Type), nameof(Item.ImdbRating), nameof(Item.Genre), nameof(Item.ImdbId)];
 
@@ -44,7 +43,13 @@ public partial class KinoForm : AsyncForm
 
     private async void btnSearchOnline_Click(object sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(txtSearch.Text)) return;
+        // OMDb can't list everything, so it needs a title. (An empty OMDb key can't happen: empty means the shared test key.)
+        if (string.IsNullOrWhiteSpace(txtSearch.Text))
+        {
+            ShowStatus("Enter a title (or part of one) to search OMDb.");
+            txtSearch.Focus();
+            return;
+        }
         await RunAsync("Searching OMDb…", async ct => ShowOnline(await _movies.SearchOnlineAsync(txtSearch.Text, ct)));
     }
 
@@ -59,15 +64,12 @@ public partial class KinoForm : AsyncForm
         });
     }
 
-    // ActivatorUtilities: the container doesn't track the form, so a closed window can be collected.
-    private void btnLocalMovies_Click(object sender, EventArgs e) =>
-        ActivatorUtilities.CreateInstance<LocalMoviesForm>(_services).Show(this);
+    // Inside the MDI main window, like its menu items (Controls/Mdi.cs).
+    private void btnLocalMovies_Click(object sender, EventArgs e) => this.ShowSingle<LocalMoviesForm>(_services);
 
-    private void btnLocalSeries_Click(object sender, EventArgs e) =>
-        ActivatorUtilities.CreateInstance<LocalSeriesForm>(_services).Show(this);
+    private void btnLocalSeries_Click(object sender, EventArgs e) => this.ShowSingle<LocalSeriesForm>(_services);
 
-    private void btnWatchlists_Click(object sender, EventArgs e) =>
-        ActivatorUtilities.CreateInstance<WatchlistsForm>(_services).Show(this);
+    private void btnWatchlists_Click(object sender, EventArgs e) => this.ShowSingle<WatchlistsForm>(_services);
 
     private void btnSettings_Click(object sender, EventArgs e)
     {
@@ -79,7 +81,7 @@ public partial class KinoForm : AsyncForm
     private void lnkSetKeys_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => btnSettings.PerformClick();
 
     /// <summary>The yellow bar asking for real keys, shown while a shared default key is in use (it still works).</summary>
-    private void UpdateDefaultKeysBanner() => defaultKeysBanner.Visible = _settings.UsesDefaultKeys;
+    internal void UpdateDefaultKeysBanner() => defaultKeysBanner.Visible = _settings.UsesDefaultKeys;
 
     private void btnAddToWatchlist_Click(object sender, EventArgs e)
     {
@@ -134,7 +136,7 @@ public partial class KinoForm : AsyncForm
     {
         var (imdbId, _) = SelectedIdAndTitle();
         if (imdbId is null) return;
-        ActivatorUtilities.CreateInstance<MovieDetailsForm>(_services, imdbId).Show(this);
+        ActivatorUtilities.CreateInstance<MovieDetailsForm>(_services, imdbId).ShowFrom(this);
     }
 
     /// <summary>IMDb ratings in colour: red below 6, orange 6–6.9, green from 7.</summary>
@@ -375,5 +377,5 @@ public partial class KinoForm : AsyncForm
         btnImport.Enabled = !busy && _showingOnlineResults;
     }
 
-    protected override void ShowStatus(string text) => lblStatus.Text = text;
+    protected override void DisplayStatus(string text) => lblStatus.Text = text;
 }

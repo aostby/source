@@ -25,6 +25,8 @@ public enum SeriesLookupChoice
 /// </summary>
 public partial class SeriesLookupDialog : AsyncForm
 {
+    public override string HelpTopic => "local-series";
+
     private readonly NewSeriesController _controller;
     private readonly string _position;
     private readonly string _note;
@@ -273,7 +275,7 @@ public partial class SeriesLookupDialog : AsyncForm
         }
     }
 
-    protected override void ShowStatus(string text)
+    protected override void DisplayStatus(string text)
     {
         if (!IsGone) lblStatus.Text = text;
     }
