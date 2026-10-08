@@ -16,6 +16,8 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// </summary>
 public partial class LocalMoviesForm : AsyncForm
 {
+    public override string HelpTopic => "local-movies";
+
     private readonly LocalMoviesController _controller;
     private readonly MovieScanController _scan;
     private readonly CleanupController _cleanup;
@@ -125,7 +127,7 @@ public partial class LocalMoviesForm : AsyncForm
             var linked = FindMovieForFile(path);
             if (linked) _ = ReloadAsync();
             return linked;
-        }).Show(this);
+        }).ShowFrom(this);
     }
 
     private async void btnCleanup_Click(object sender, EventArgs e)
@@ -192,9 +194,19 @@ public partial class LocalMoviesForm : AsyncForm
         if (dialog.ShowDialog(this) == DialogResult.OK) ShowStatus(dialog.ResultMessage);
     }
 
+    /// <summary>A movie: its details window, as in the Kolibri.Kino window. A file not in the library: Find movie for it.</summary>
     private void dgvMovies_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
     {
-        if (e.RowIndex >= 0 && dgvMovies.ItemAt(e.RowIndex) is FileRow) btnFindMovie.PerformClick();
+        if (e.RowIndex < 0) return;
+        switch (dgvMovies.ItemAt(e.RowIndex))
+        {
+            case MovieRow { Movie.ImdbId: { Length: > 0 } imdbId }:
+                ActivatorUtilities.CreateInstance<MovieDetailsForm>(_services, imdbId).ShowFrom(this);
+                break;
+            case FileRow:
+                btnFindMovie.PerformClick();
+                break;
+        }
     }
 
     /// <summary>Opens the manual lookup for one file; true when the user linked it.</summary>
@@ -313,7 +325,7 @@ public partial class LocalMoviesForm : AsyncForm
         if (!busy) progress.Style = ProgressBarStyle.Marquee;
     }
 
-    protected override void ShowStatus(string text) => lblStatus.Text = text;
+    protected override void DisplayStatus(string text) => lblStatus.Text = text;
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {

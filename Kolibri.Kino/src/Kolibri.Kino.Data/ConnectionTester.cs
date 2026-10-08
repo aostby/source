@@ -16,7 +16,8 @@ public sealed class ConnectionTester(HttpClient http) : IConnectionTester
 
     public async Task<IReadOnlyList<ConnectionCheck>> TestAsync(UserSettings settings, CancellationToken ct = default)
     {
-        var checks = await Task.WhenAll(OmdbAsync(settings.OMDBkey, ct), TmdbAsync(settings.TMDBkey, ct), PlexAsync(settings, ct))
+        var checks = await Task.WhenAll(OmdbAsync(settings.OMDBkey, ct), TmdbAsync(settings.TMDBkey, ct), SubDlAsync(settings.SUBDLkey, ct),
+                PlexAsync(settings, ct))
             .ConfigureAwait(false);
         return checks;
     }
@@ -52,6 +53,22 @@ public sealed class ConnectionTester(HttpClient http) : IConnectionTester
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             return new("TMDb", false, ex.Message);
+        }
+    }
+
+    private async Task<ConnectionCheck> SubDlAsync(string? key, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return new("SubDL", true, "No key; subtitles can't be downloaded (optional).");
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(Timeout);
+            await SubDlApi.SearchAsync(http, key.Trim(), "tt0133093", "EN", timeout.Token).ConfigureAwait(false);
+            return new("SubDL", true, "Key works.");
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            return new("SubDL", false, ex.Message);
         }
     }
 

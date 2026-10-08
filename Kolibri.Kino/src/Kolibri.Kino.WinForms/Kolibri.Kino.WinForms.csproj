@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <!-- Web pages inside Kino (Forms/WebPageForm.cs), as in SilverScreen. -->
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -15,6 +17,9 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Shown in the main window's title: "Kolibri.Kino 1.0.0". -->
+    <Product>Kolibri.Kino</Product>
+    <Version>1.0.0</Version>
     <!-- The .exe icon (Explorer, taskbar, shortcuts). Built from assets/kino.svg by assets/make-icon.cs. -->
     <ApplicationIcon>..\..\assets\kino.ico</ApplicationIcon>
   </PropertyGroup>
@@ -23,6 +28,15 @@
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- The same icon for every window's title bar (see Controls/AppIcon.cs). -->
     <EmbeddedResource Include="..\..\assets\kino.ico" LogicalName="Kolibri.Kino.WinForms.kino.ico" />
+    <!-- The help shown with F1 (Forms/HelpForm.cs). -->
+    <EmbeddedResource Include="Help\help.html" LogicalName="Kolibri.Kino.WinForms.help.html" />
   </ItemGroup>
+
+  <!-- WebView2's package also references its WPF control, which this WinForms app doesn't use (and which warns MSB3277). -->
+  <Target Name="DropWebView2Wpf" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

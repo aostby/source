@@ -13,6 +13,8 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// </summary>
 public partial class WatchlistsForm : AsyncForm
 {
+    public override string HelpTopic => "watchlists";
+
     private readonly WatchlistController _watchlists;
     private IReadOnlyList<WatchListItem> _items = [];
     private CancellationTokenSource? _posterCts;
@@ -209,7 +211,7 @@ public partial class WatchlistsForm : AsyncForm
         progress.Visible = busy;
     }
 
-    protected override void ShowStatus(string text) => lblStatus.Text = text;
+    protected override void DisplayStatus(string text) => lblStatus.Text = text;
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Kolibri.Kino help</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; font-size: 10pt; line-height: 1.45; margin: 16px 24px; color: #222; background: #fff; }
+  h1 { font-size: 18pt; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 13pt; font-weight: 600; margin: 28px 0 6px; padding-bottom: 3px; border-bottom: 1px solid #ddd; }
+  h3 { font-size: 11pt; font-weight: 600; margin: 18px 0 4px; }
+  p, li { max-width: 760px; }
+  ol, ul { padding-left: 22px; }
+  li { margin: 3px 0; }
+  code, kbd { font-family: Consolas, monospace; font-size: 9.5pt; background: #f2f2f2; padding: 0 3px; border-radius: 2px; }
+  kbd { border: 1px solid #ccc; }
+  .lead { color: #555; margin-top: 0; }
+  .note { background: #fff8d6; border-left: 3px solid #e0c040; padding: 6px 10px; max-width: 740px; }
+  .toc { columns: 2; max-width: 560px; }
+  table { border-collapse: collapse; }
+  td, th { text-align: left; padding: 3px 12px 3px 0; vertical-align: top; }
+  a { color: #0b5cad; }
+</style>
+</head>
+<body>
+
+<h1 id="start">Kolibri.Kino</h1>
+<p class="lead">Your movie and series library: find titles, link them to the files on your disks, keep watchlists and copy them to Plex.
+Kino uses the same database as SilverScreen. Press <kbd>F1</kbd> in any window to come here.</p>
+
+<ul class="toc">
+  <li><a href="#keys">Prerequisites: API keys</a></li>
+  <li><a href="#omdb">OMDb key</a></li>
+  <li><a href="#tmdb">TMDb key</a></li>
+  <li><a href="#subdl">SubDL key</a></li>
+  <li><a href="#plex">Plex token</a></li>
+  <li><a href="#first-start">First start</a></li>
+  <li><a href="#database">The database</a></li>
+  <li><a href="#settings">Settings</a></li>
+  <li><a href="#search">Search library and OMDb</a></li>
+  <li><a href="#local-movies">Local movies</a></li>
+  <li><a href="#local-series">Local series</a></li>
+  <li><a href="#watchlists">Watchlists</a></li>
+  <li><a href="#usage">API usage report</a></li>
+  <li><a href="#log">Log</a></li>
+  <li><a href="#windows">Windows and keys</a></li>
+</ul>
+
+<h2 id="keys">Prerequisites (works best if you have these API keys)</h2>
+<p>Kino gets movie and series details from online services, and each of them wants a key. Get your own free keys before you
+start using Kino for real, and enter them in <b>File → Settings…</b>. The keys are stored in your database, so SilverScreen uses them too.
+Keep them to yourself, like passwords.</p>
+<p class="note"><b>Default test keys.</b> Kino comes with shared test keys for OMDb and TMDb, used until you enter your own. They let you try Kino
+at once, but everyone using them shares the same daily limit (OMDb allows 1,000 lookups a day per key), so searches, imports and scans
+can stop early with an error. The yellow bar in the search window tells you when the test keys are in use. SubDL and Plex have no test keys.</p>
+<table>
+  <tr><th>Setting</th><th>Used for</th><th>Needed?</th></tr>
+  <tr><td>OMDb key</td><td>Movie details, posters, ratings, online search</td><td>Yes (test key until then, with limited lookups)</td></tr>
+  <tr><td>TMDb key</td><td>Episode details, finding IMDb ids when scanning</td><td>Recommended (test key until then)</td></tr>
+  <tr><td>SubDL key</td><td>Downloading <a href="#subtitles">subtitles</a></td><td>Only for subtitles</td></tr>
+  <tr><td>Plex token + server name</td><td>Matching files against Plex, copying watchlists to Plex playlists</td><td>Only with Plex</td></tr>
+</table>
+
+<h3 id="omdb">OMDb key (omdbapi.com)</h3>
+<ol>
+  <li>Go to <a href="https://www.omdbapi.com/apikey.aspx">https://www.omdbapi.com/apikey.aspx</a>.</li>
+  <li>Choose <b>FREE</b> (1,000 requests a day), enter your e-mail address, name and a short note on use (e.g. "personal movie library"), and submit.</li>
+  <li>You get an e-mail with the key and an activation link. <b>Click the activation link</b>: the key doesn't work until you do.</li>
+  <li>Paste the key into <b>Settings → OMDb key</b> and click <b>Test connections</b>.</li>
+</ol>
+<p>Want more than 1,000 requests a day? OMDb's paid Patreon tiers give a higher limit.</p>
+
+<h3 id="tmdb">TMDb key (themoviedb.org)</h3>
+<ol>
+  <li>Create a free account at <a href="https://www.themoviedb.org/signup">https://www.themoviedb.org/signup</a> and confirm your e-mail address.</li>
+  <li>Open <a href="https://www.themoviedb.org/settings/api">https://www.themoviedb.org/settings/api</a> (your profile → <b>Settings → API</b>).</li>
+  <li>Request an API key, choose <b>Developer</b> (personal use), accept the terms and fill in the short form.
+      For the application URL, any address of yours will do.</li>
+  <li>Copy the <b>API Key</b> (the short one, not the long "API Read Access Token") into <b>Settings → TMDb key</b>, and test.</li>
+</ol>
+
+<h3 id="subdl">SubDL key (subdl.com)</h3>
+<ol>
+  <li>Create a free account at <a href="https://subdl.com">https://subdl.com</a> and log in.</li>
+  <li>Open your account panel and its <b>API</b> page, then copy the API key with its copy button.</li>
+  <li>Paste it into <b>Settings → SubDL key</b>, and test.</li>
+</ol>
+<p>SubDL limits each key to a number of calls a day, so use a key of your own. Kino uses it for the <a href="#subtitles">Subtitles</a> button
+in the details window, and SilverScreen uses it too.</p>
+
+<h3 id="plex">Plex token (X-Plex-Token) and server name</h3>
+<p>The token lets Kino read your Plex libraries and playlists. It is as powerful as your Plex user name and password together.</p>
+<ol>
+  <li>Open the Plex web app <b>on your Plex server</b>: <code>http://&lt;server&gt;:32400/web</code>, e.g. <code>http://HTPC:32400/web</code>, and sign in.
+      (The token isn't shown on app.plex.tv.)</li>
+  <li>Open any movie in a library, click <b>⋯</b> (More) → <b>Get Info</b>, then <b>View XML</b>.</li>
+  <li>A new tab opens with XML. At the end of its address is <code>X-Plex-Token=…</code>: copy the value after the <code>=</code>.</li>
+  <li>Paste it into <b>Settings → Plex token</b>, and enter the server's network name (e.g. <code>HTPC</code>) as <b>Plex server name</b>.
+      Kino connects to <code>http://&lt;name&gt;:32400</code>. Then test.</li>
+</ol>
+<p>Plex's own guide: <a href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/">Finding an authentication token / X-Plex-Token</a>.
+A token found this way can stop working, e.g. when you sign out of all devices or change your Plex password; then fetch a new one the same way.</p>
+
+<h2 id="first-start">First start</h2>
+<ol>
+  <li>Open <b>File → Settings…</b>.</li>
+  <li>Under <b>LiteDB file</b>, choose where your database is, or where a new one should be (see <a href="#database">The database</a>).</li>
+  <li>Enter your own <a href="#omdb">OMDb</a> and <a href="#tmdb">TMDb</a> keys, and the <a href="#plex">Plex</a> server and token if you use Plex.</li>
+  <li>Click <b>Test connections</b>, then <b>Save</b>.</li>
+</ol>
+<p>Until you enter your own keys, Kino uses the shared <a href="#keys">test keys</a>, with limited lookups.</p>
+
+<h2 id="database">The database</h2>
+<p>Everything Kino knows (movies, file links, series, watchlists, your settings) is in one LiteDB file, normally <code>SilverScreen.db</code>.
+Posters are cached next to it in <code>SilverScreen.imgdb</code>. SilverScreen and Kino can use the same file at the same time.</p>
+<p>Kino finds the database in this order:</p>
+<ol>
+  <li>The file you chose in <b>Settings → LiteDB file</b> (remembered in <code>%LOCALAPPDATA%\Kolibri.Kino\usersettings.json</code>).</li>
+  <li>Otherwise <code>Kino:LiteDbPath</code> in <code>appsettings.json</code> next to the program, the default for a first start.</li>
+  <li>If that database names another existing database file in its settings, that one.</li>
+</ol>
+<p>To move to another database, enter a file or a folder under <b>LiteDB file</b> in Settings, e.g. <code>E:\RELEASE\SilverScreenDB</code>
+(a folder means <code>SilverScreen.db</code> in it). The folder must exist. If it has no database, Kino asks before making a new, empty one.
+The change takes effect after a restart; Kino offers to restart at once. <b>Help → About</b> shows the database in use.</p>
+
+<h2 id="settings">Settings</h2>
+<p><b>File → Settings…</b> edits your user settings, stored in the database for your Windows user name and shared with SilverScreen.</p>
+<ul>
+  <li><b>General</b>: the database file (see <a href="#database">The database</a>) and your favorite watchlist, opened by default.</li>
+  <li><b>Movie services</b>: the <a href="#keys">API keys</a>. Empty OMDb/TMDb keys mean the shared test keys.</li>
+  <li><b>Plex</b>: server name and <a href="#plex">token</a>.</li>
+  <li><b>Folders</b>: where your movies and series are; Local movies starts in the movies folder.</li>
+</ul>
+<p><b>Test connections</b> tries the OMDb, TMDb and SubDL keys and the Plex token without saving. New keys apply at once after <b>Save</b>.</p>
+
+<h2 id="search">Search library and OMDb</h2>
+<p><b>Library → Search library and OMDb</b> opens at start and lists your library.</p>
+<ul>
+  <li>Type a title and press <kbd>Enter</kbd> or <b>Search library</b> to search what you have; <b>Search OMDb</b> searches online.</li>
+  <li>Select an online result and click <b>Import selected</b> to add it to your library.</li>
+  <li>Filter by type with the buttons above the list, sort with the Sort options, or click a column header.</li>
+  <li>Double-click a row for all details: plot, ratings, cast, poster, and Play / Open on disk when you have the file.</li>
+  <li>Right-click a row to open it on IMDb or TMDb, open the file's folder, or remove it from the library.</li>
+  <li><b>Add to watchlist…</b> puts the selected title on a watchlist.</li>
+</ul>
+<h3 id="subtitles">Subtitles (in the details window)</h3>
+<p>The <b>Subtitles</b> button shows whether the movie file has subtitles, as in SilverScreen:</p>
+<table>
+  <tr><td style="background:#90ee90">&nbsp;green&nbsp;</td><td>a <code>.srt</code> with the movie's name next to it (e.g. <code>Movie.srt</code>, <code>Movie.en.srt</code>). Click to show it.</td></tr>
+  <tr><td style="background:#87cefa">&nbsp;light blue&nbsp;</td><td>a <code>Subs</code> folder with subtitle files (e.g. downloaded from SubDL), but no <code>.srt</code>
+      with the movie's name next to it. Click: if one in <code>Subs</code> is for this release, it's copied next to the movie with the movie's name
+      and the button turns green; if none is, Kino lists them all by size, largest first and selected (often the right one).
+      <b>Use selected</b> (or a double-click) copies the one you pick next to the movie (green); <b>Cancel</b> changes nothing.</td></tr>
+  <tr><td style="background:#ffefd5">&nbsp;light orange&nbsp;</td><td>none found, but the file is an <code>.mkv</code>, which often has subtitles built in.</td></tr>
+  <tr><td style="background:#ffa07a">&nbsp;salmon&nbsp;</td><td>none found.</td></tr>
+</table>
+<p>Without subtitles, a click downloads them from SubDL: every subtitle SubDL has for the movie (by IMDb id) in your
+<b>Subtitle languages</b> (Settings, default <code>NO,EN</code>) is unpacked into the <code>Subs</code> folder. If one is for your release,
+it's copied next to the movie with the movie's name at once (green); otherwise Kino offers the largest, as above.
+A subtitle is "for your release" when its name starts with the movie file's name (e.g. <code>Movie.1080p.WEB-GRP.en.srt</code>),
+or has the same release group (<code>GRP</code>, after the last <code>-</code>). Subtitles are timed to one release, so others may be out of sync. Needs a <a href="#subdl">SubDL key</a>.
+The button is off when the title isn't linked to a movie file.</p>
+<p>IMDb ratings are coloured: red below 6, orange from 6 to 6.9, green from 7.</p>
+
+<h2 id="local-movies">Local movies</h2>
+<p>The movie files in a folder and how they match your library.</p>
+<ul>
+  <li><b>Browse…</b> picks the folder. <b>All</b> / <b>Missing on disk</b> / <b>Not in library</b> filter the list.</li>
+  <li>Double-click a movie for its details window (as in the search window); double-click a file that isn't in the library to find the movie for it.</li>
+  <li><b>Scan new files</b> matches new video files to movies; <b>Scan all + refresh details</b> also fetches the details again.
+      A scan tries, in order: an IMDb id in the file or folder name (<code>{imdb-tt1234567}</code>), your library, Plex, TMDb and OMDb.
+      The scan report lists what was linked and what wasn't.</li>
+  <li><b>Find movie for file…</b> (or <b>Find movie…</b> in the scan report) lets you search and pick the right movie for a file the scan couldn't match.
+      Its <b>Open on IMDb</b> opens IMDb in a window in Kino: the selected movie, or, when nothing was found, IMDb's own search for your text.
+      Find the movie there and click <b>Use tt…</b>: its IMDb id goes into the search, and the movie is found.</li>
+  <li><b>Remove missing…</b> removes links to files that no longer exist; the movie details are kept.</li>
+  <li><b>Clean up folder…</b> deletes leftover files (.nfo, .txt, foreign subtitles …) after asking. They are deleted permanently. Video files are never deleted.</li>
+</ul>
+<p id="cleanup" class="note"><b>Check the cleanup list before you scan.</b> Which files are deleted (after a scan, and with <b>Clean up folder…</b>)
+is the list <code>Kino:Cleanup:FilePatterns</code> in <code>appsettings.json</code> next to the program. It deletes subtitles in many languages,
+for example Bulgarian, Russian, Greek, French, German and Spanish. If you speak one of them, remove its lines from the list, or those subtitles are deleted too.
+For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</code>; most languages are listed both by name and by a three-letter code
+(e.g. <code>"german.srt"</code>, <code>"deu.srt"</code> and <code>"ger.srt"</code>). Remove a line with its comma, keep the rest of the list as it is, and restart Kino.
+<code>Kino:Cleanup:AfterScan</code> decides when it runs: <code>Ask</code> (the default: list the files and ask first), <code>Always</code> or <code>Never</code>.</p>
+
+<h2 id="local-series">Local series</h2>
+<ul>
+  <li>Select a series to see its seasons and episodes, one tab per season. Episodes you have on disk are green; double-click to play.</li>
+  <li>Episode details are fetched once and remembered. <b>Refresh episodes</b> fetches them again (TMDb gives the most; without a TMDb key, OMDb).</li>
+  <li>Files are matched to episodes by names like <code>S01E02</code>, <code>1x02</code> or <code>Episode 6</code> in a <code>Season 2</code> folder.</li>
+  <li><b>Find new series…</b> looks through the series folder for series not in the library and asks about the ones it can't match.</li>
+  <li><b>Set folder…</b> links the selected series to its folder. Right-click a series to change its IMDb id or open it on IMDb.</li>
+</ul>
+
+<h2 id="watchlists">Watchlists</h2>
+<ul>
+  <li>Choose a list, or make one with <b>New list…</b>. A movie is on one list at a time; adding it to another list moves it.</li>
+  <li><b>Mark watched</b> / <b>Mark not watched</b>, and filter with All / Not watched / Watched.</li>
+  <li><b>Copy</b> copies the list to the clipboard (pastes into Excel), <b>Export CSV…</b> saves it as a file.</li>
+  <li><b>Copy to Plex playlist</b> adds the movies to the Plex playlist of the same name (made if missing). Needs the <a href="#plex">Plex token</a>.</li>
+</ul>
+
+<h2 id="usage">API usage report</h2>
+<p><b>Help → API usage report</b> (or the button in <b>Help → About</b>) shows how many calls Kino has made to OMDb, TMDb, SubDL and Plex,
+and how many of them failed. The services don't tell how many calls you have left, so Kino counts its own.</p>
+<ul>
+  <li><b>Show</b>: the last 30 days (per day), a month (per day), a year (per month) or everything (per month). The line at the top shows today.</li>
+  <li>OMDb's free keys allow 1,000 calls a day; days above that are red. Failed calls are often "Request limit reached" or a wrong key
+      (see <a href="#keys">Prerequisites</a>).</li>
+  <li>TMDb has no daily limit, only a limit per second. Plex is free; it's counted so you can see how much a scan uses.</li>
+  <li>Every Kino using the same database is counted (also the web version, if it uses this file). SilverScreen's calls are not counted,
+      and with the shared test keys, other people's calls aren't either.</li>
+  <li>The counts are kept in the database (collection <code>KinoApiUsage</code>, one entry per day) and saved every half minute and when Kino closes.</li>
+</ul>
+
+<h2 id="log">Log</h2>
+<p><b>Help → Log</b> (or the button in <b>Help → About</b>) shows what Kino has done: the messages each window showed in its status bar,
+errors with their details, and what Kino's controllers reported (e.g. "Settings saved"). Use it to find out what went wrong, and when.</p>
+<ul>
+  <li><b>Show</b> today, the last 7 or 30 days, or everything kept; <b>Level</b> picks errors only, warnings and errors, information and up,
+      or everything; type in the search box and press <kbd>Enter</kbd> to find a title, a file or a message.</li>
+  <li>Errors are red, warnings orange. Select a line to see all of it below, with the error's details.</li>
+  <li>The log is its own database next to the library (<code>SilverScreen.logdb</code>, as the posters are in <code>SilverScreen.imgdb</code>).
+      Entries older than <code>Kino:LogRetentionDays</code> in <code>appsettings.json</code> (30) are deleted.</li>
+  <li>Which levels are written is set by <code>Logging:LogLevel:Default</code> in <code>appsettings.json</code>: <code>Information</code> (the default)
+      writes results and errors; <code>Debug</code> also writes work in progress ("Scanning 12 of 340 …"), which makes the log much longer;
+      <code>Warning</code> only problems.</li>
+</ul>
+
+<h2 id="windows">Windows and keys</h2>
+<table>
+  <tr><td><kbd>F1</kbd></td><td>This help, at the part about the window you're in</td></tr>
+  <tr><td><kbd>Alt</kbd>+<kbd>F4</kbd></td><td>Exit (File → Exit)</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>F4</kbd></td><td>Close the active window</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td>Next window</td></tr>
+</table>
+<p>All windows open inside the main window. The <b>Window</b> menu arranges them (Cascade, Tile, Arrange Icons), closes them all, and lists the open windows.
+The status bar at the bottom shows messages, including errors from any window.</p>
+
+</body>
+</html>

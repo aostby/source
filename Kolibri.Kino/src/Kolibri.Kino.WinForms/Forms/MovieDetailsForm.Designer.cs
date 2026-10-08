@@ -44,6 +44,7 @@ partial class MovieDetailsForm
         btnOpenOnDisk = new Button();
         btnImdb = new Button();
         btnTmdb = new Button();
+        btnSubtitles = new Button();
         btnWatchlist = new Button();
         btnClose = new Button();
         statusStrip = new StatusStrip();
@@ -163,6 +164,7 @@ partial class MovieDetailsForm
         buttons.Controls.Add(btnOpenOnDisk);
         buttons.Controls.Add(btnImdb);
         buttons.Controls.Add(btnTmdb);
+        buttons.Controls.Add(btnSubtitles);
         buttons.Controls.Add(btnWatchlist);
         buttons.Controls.Add(btnClose);
         buttons.Dock = DockStyle.Bottom;
@@ -206,12 +208,21 @@ partial class MovieDetailsForm
         btnTmdb.Text = "Open on TMDb";
         btnTmdb.Click += btnTmdb_Click;
         //
+        // btnSubtitles
+        //
+        btnSubtitles.AutoSize = true;
+        btnSubtitles.Enabled = false;
+        btnSubtitles.Name = "btnSubtitles";
+        btnSubtitles.TabIndex = 4;
+        btnSubtitles.Text = "Subtitles";
+        btnSubtitles.Click += btnSubtitles_Click;
+        //
         // btnWatchlist
         //
         btnWatchlist.AutoSize = true;
         btnWatchlist.Enabled = false;
         btnWatchlist.Name = "btnWatchlist";
-        btnWatchlist.TabIndex = 4;
+        btnWatchlist.TabIndex = 5;
         btnWatchlist.Text = "Add to watchlist…";
         btnWatchlist.Click += btnWatchlist_Click;
         //
@@ -220,7 +231,7 @@ partial class MovieDetailsForm
         btnClose.AutoSize = true;
         btnClose.Margin = new Padding(24, 3, 3, 3);
         btnClose.Name = "btnClose";
-        btnClose.TabIndex = 5;
+        btnClose.TabIndex = 6;
         btnClose.Text = "Close";
         btnClose.Click += btnClose_Click;
         //
@@ -284,6 +295,7 @@ partial class MovieDetailsForm
     private Button btnOpenOnDisk;
     private Button btnImdb;
     private Button btnTmdb;
+    private Button btnSubtitles;
     private Button btnWatchlist;
     private Button btnClose;
     private StatusStrip statusStrip;

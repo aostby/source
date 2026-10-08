@@ -12,6 +12,8 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// </summary>
 public partial class ManualLookupForm : AsyncForm
 {
+    public override string HelpTopic => "local-movies";
+
     private readonly ManualLookupController _lookup;
     private readonly string _filePath;
     private CancellationTokenSource? _detailsCts;
@@ -126,10 +128,41 @@ public partial class ManualLookupForm : AsyncForm
         });
     }
 
+    /// <summary>
+    /// IMDb in a web window: the selected movie's page, or with none (nothing found) IMDb's own title search for the
+    /// search text and year (the file name when the search text is empty), or the page of an IMDb id typed in.
+    /// On a movie's page, "Use tt…" puts its id in the search here and searches.
+    /// </summary>
     private void btnImdb_Click(object sender, EventArgs e)
     {
+        string url;
         if (Selected is { } row)
-            Process.Start(new ProcessStartInfo($"https://www.imdb.com/title/{row.ImdbId}/") { UseShellExecute = true });
+        {
+            url = $"https://www.imdb.com/title/{row.ImdbId}/";
+        }
+        else
+        {
+            var query = txtQuery.Text.Trim() is { Length: > 0 } text ? text : Path.GetFileNameWithoutExtension(_filePath);
+            if (System.Text.RegularExpressions.Regex.Match(query, @"\btt\d{7,9}\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase) is { Success: true } id)
+            {
+                url = $"https://www.imdb.com/title/{id.Value.ToLowerInvariant()}/";
+            }
+            else
+            {
+                var search = txtYear.Text.Trim() is { Length: 4 } year ? $"{query} {year}" : query;
+                url = $"https://www.imdb.com/find/?q={Uri.EscapeDataString(search)}&s=tt";
+                ShowStatus($"Opened IMDb's search for \"{search}\".");
+            }
+        }
+
+        WebPageForm.Show(this, url, useImdbId: async imdbId =>
+        {
+            if (IsGone) return;
+            txtQuery.Text = imdbId;
+            txtYear.Text = string.Empty;
+            Activate();
+            await SearchAsync();
+        });
     }
 
     private void dgvCandidates_CellDoubleClick(object sender, DataGridViewCellEventArgs e) => btnLink.PerformClick();
@@ -141,7 +174,7 @@ public partial class ManualLookupForm : AsyncForm
         progress.Visible = busy;
     }
 
-    protected override void ShowStatus(string text) => lblStatus.Text = text;
+    protected override void DisplayStatus(string text) => lblStatus.Text = text;
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {

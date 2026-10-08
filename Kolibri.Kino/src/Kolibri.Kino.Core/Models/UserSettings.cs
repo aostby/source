@@ -25,8 +25,9 @@ public sealed class UserSettings
     [Category("General"), ReadOnly(true), Description("Windows user these settings belong to.")]
     public string UserName { get; set; } = Environment.UserName;
 
-    [Category("General"), ReadOnly(true), DisplayName("LiteDB file"),
-     Description("The library database. Kino reads this from Kino:LiteDbPath in appsettings.json; change it there.")]
+    [Category("General"), DisplayName("LiteDB file"),
+     Description("The library database: a file, or a folder (then SilverScreen.db in it). If the folder has no database, " +
+                 "a new, empty one is made there. Used after a restart. The first default is Kino:LiteDbPath in appsettings.json.")]
     public string? LiteDBFilePath { get; set; }
 
     [Category("General"), DisplayName("Favorite watchlist"), Description("The watchlist opened by default.")]
@@ -47,8 +48,17 @@ public sealed class UserSettings
         string.IsNullOrWhiteSpace(OMDBkey) || OMDBkey.Trim() == DefaultOmdbKey
         || string.IsNullOrWhiteSpace(TMDBkey) || TMDBkey.Trim() == DefaultTmdbKey;
 
-    [Category("Movie services"), DisplayName("SubDL key"), Description("API key for subdl.com (subtitles; used by SilverScreen).")]
+    [Category("Movie services"), DisplayName("SubDL key"),
+     Description("API key for subdl.com: downloads subtitles from the details window (and in SilverScreen). " +
+                 "Get your own free key at https://subdl.com (see Help, Prerequisites).")]
     public string? SUBDLkey { get; set; }
+
+    /// <summary>The languages SilverScreen asked SubDL for.</summary>
+    public const string DefaultSubtitleLanguages = "NO,EN";
+
+    [Category("Movie services"), DisplayName("Subtitle languages"),
+     Description("Languages to download from SubDL, as codes separated by commas, e.g. NO,EN or NO,SV,DA,EN. Empty means NO,EN.")]
+    public string? SubtitleLanguages { get; set; } = DefaultSubtitleLanguages;
 
     [Category("Movie services"), DisplayName("IMDb data files"),
      Description("Where IMDb publishes its free data sets (title.basics.tsv.gz and so on). The default is IMDb's official " +

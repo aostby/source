@@ -14,6 +14,8 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// </summary>
 public partial class LocalSeriesForm : AsyncForm
 {
+    public override string HelpTopic => "local-series";
+
     private readonly LocalSeriesController _controller;
     private readonly NewSeriesController _newSeries;
     private readonly IServiceProvider _services;
@@ -483,7 +485,7 @@ public partial class LocalSeriesForm : AsyncForm
         progress.Visible = busy;
     }
 
-    protected override void ShowStatus(string text) => lblStatus.Text = text;
+    protected override void DisplayStatus(string text) => lblStatus.Text = text;
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {

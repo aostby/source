@@ -7,7 +7,7 @@ public sealed class TempDatabase : IDisposable
 
     public void Dispose()
     {
-        foreach (var file in new[] { Path, Path.Replace(".db", "-log.db") })
+        foreach (var file in new[] { Path, Path.Replace(".db", "-log.db"), System.IO.Path.ChangeExtension(Path, ".logdb"), System.IO.Path.ChangeExtension(Path, ".imgdb") })
             if (File.Exists(file)) File.Delete(file);
     }
 }

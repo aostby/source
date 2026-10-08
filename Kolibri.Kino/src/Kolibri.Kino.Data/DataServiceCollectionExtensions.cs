@@ -20,6 +20,13 @@ public static class DataServiceCollectionExtensions
         services.AddSingleton<LiteDbImageStore>();
 
         services.AddSingleton<ISettingsStore, LiteDbSettingsStore>();
+        // Counts calls to OMDb, TMDb, SubDL and Plex; resolve it at startup (StartApiUsageCounting) so it listens from the first call.
+        services.AddSingleton<IApiUsageRepository, LiteDbApiUsageRepository>();
+        services.AddSingleton<IApiUsageTracker, ApiUsageTracker>();
+        // Kino's own log (Logging:LogLevel decides the levels) in its own file next to the library, read in Help → Log.
+        services.AddSingleton<LiteDbLogStore>();
+        services.AddSingleton<ILogStore>(sp => sp.GetRequiredService<LiteDbLogStore>());
+        services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider, LiteDbLoggerProvider>();
         services.AddSingleton<IMovieRepository, LiteDbMovieRepository>();
         services.AddSingleton<IFileItemRepository, LiteDbFileItemRepository>();
         services.AddSingleton<IWatchListRepository, LiteDbWatchListRepository>();
@@ -38,12 +45,21 @@ public static class DataServiceCollectionExtensions
         services.AddSingleton<IEpisodeFileFinder, EpisodeFileFinder>();
         services.AddSingleton<IImdbIdResolver, TmdbImdbIdResolver>();
         services.AddSingleton<ITmdbLinks, TmdbLinks>();
+        services.AddSingleton<ISubtitleProvider, SubDlSubtitleProvider>();
+        services.AddSingleton<ISubtitleFolder, FileSystemSubtitleFolder>();
 
         // Plex's movie sections can be large, so it gets its own client with a longer timeout.
         services.AddSingleton(sp => new PlexLibrary(new HttpClient { Timeout = TimeSpan.FromMinutes(2) }, sp.GetRequiredService<ISettingsStore>()));
         services.AddSingleton<IMediaServerLibrary>(sp => sp.GetRequiredService<PlexLibrary>());
         services.AddSingleton<IMediaServerPlaylists>(sp => sp.GetRequiredService<PlexLibrary>());
 
+        return services;
+    }
+
+    /// <summary>Starts counting calls to the online services (the tracker listens from when it is created).</summary>
+    public static IServiceProvider StartApiUsageCounting(this IServiceProvider services)
+    {
+        services.GetRequiredService<IApiUsageTracker>();
         return services;
     }
 }

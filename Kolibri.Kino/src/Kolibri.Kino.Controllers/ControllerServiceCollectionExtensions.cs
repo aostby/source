@@ -1,10 +1,13 @@
 using Kolibri.Kino.Controllers.Cleanup;
 using Kolibri.Kino.Controllers.Library;
 using Kolibri.Kino.Controllers.LocalMovies;
+using Kolibri.Kino.Controllers.Logging;
 using Kolibri.Kino.Controllers.Lookup;
 using Kolibri.Kino.Controllers.Scanning;
 using Kolibri.Kino.Controllers.Series;
 using Kolibri.Kino.Controllers.Settings;
+using Kolibri.Kino.Controllers.Subtitles;
+using Kolibri.Kino.Controllers.Usage;
 using Kolibri.Kino.Controllers.Watchlists;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +27,9 @@ public static class ControllerServiceCollectionExtensions
         services.AddTransient<WatchlistController>();
         services.AddTransient<LocalSeriesController>();
         services.AddTransient<NewSeriesController>();
+        services.AddTransient<ApiUsageController>();
+        services.AddTransient<SubtitleController>();
+        services.AddTransient<LogController>();
         return services;
     }
 }

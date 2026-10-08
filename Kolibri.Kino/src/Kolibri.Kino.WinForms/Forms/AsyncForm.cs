@@ -1,3 +1,6 @@
+using Kolibri.Kino.WinForms.Controls;
+using Microsoft.Extensions.Logging;
+
 namespace Kolibri.Kino.WinForms.Forms;
 
 /// <summary>
@@ -11,8 +14,22 @@ namespace Kolibri.Kino.WinForms.Forms;
 public class AsyncForm : Form
 {
     private CancellationTokenSource? _cts;
+    private ILogger? _log;
+    private string? _lastLogged;
 
-    public AsyncForm() => Kolibri.Kino.WinForms.Controls.AppIcon.Apply(this);
+    public AsyncForm() => AppIcon.Apply(this);
+
+    /// <summary>The part of the help F1 opens at: an id in Help/help.html. Null for the start.</summary>
+    public virtual string? HelpTopic => null;
+
+    /// <summary>F1 in a dialog. (In the main window's windows, its Help menu takes F1 and asks <see cref="HelpTopic"/>.)</summary>
+    protected override void OnHelpRequested(HelpEventArgs hevent)
+    {
+        base.OnHelpRequested(hevent);
+        if (hevent.Handled) return;
+        HelpForm.Show(this, HelpTopic);
+        hevent.Handled = true;
+    }
 
     /// <summary>Closed and disposed (or being disposed): its controls must not be touched any more.</summary>
     protected bool IsGone => IsDisposed || Disposing;
@@ -36,12 +53,15 @@ public class AsyncForm : Form
         }
         catch (Exception ex) when (!IsGone)
         {
-            ShowStatus("Error: " + ex.Message);
+            Log.LogError(ex, "{Window}: {Message}", Text, ex.Message);
+            DisplayStatus("Error: " + ex.Message);
+            this.ShowMainStatus($"{Text}: {ex.Message}");
             MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
-        catch (Exception) when (IsGone)
+        catch (Exception ex) when (IsGone)
         {
-            // The window is closed; nobody to tell.
+            // The window is closed; nobody to tell but the log.
+            Log.LogError(ex, "{Window} (closed): {Message}", Text, ex.Message);
         }
         finally
         {
@@ -71,7 +91,22 @@ public class AsyncForm : Form
     /// <summary>Enable or disable input while a call runs.</summary>
     protected virtual void OnBusyChanged(bool busy) => UseWaitCursor = busy;
 
-    protected virtual void ShowStatus(string text) { }
+    /// <summary>This window's log (category = the form's class, e.g. LocalMoviesForm), read in Help → Log.</summary>
+    protected ILogger Log => _log ??= KinoLog.Factory.CreateLogger(GetType());
+
+    /// <summary>Shows <paramref name="text"/> in the window's status bar and writes it to the log (see <see cref="KinoLog.LevelOf"/>).</summary>
+    protected void ShowStatus(string text)
+    {
+        if (text != _lastLogged)
+        {
+            _lastLogged = text;
+            Log.Log(KinoLog.LevelOf(text), "{Status}", text);
+        }
+        if (!IsGone) DisplayStatus(text);
+    }
+
+    /// <summary>Puts <paramref name="text"/> in the status bar; the form decides where that is.</summary>
+    protected virtual void DisplayStatus(string text) { }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
