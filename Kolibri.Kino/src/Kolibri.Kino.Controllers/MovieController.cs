@@ -223,6 +223,25 @@ public sealed partial class MovieController(
         return item;
     }
 
+    /// <summary>
+    /// TMDb's score for the title (its users' average, 0–10, rounded to one decimal) and the number of votes, to fill in
+    /// when IMDb's own rating is missing. Null when TMDb has none or can't be asked (no key, offline).
+    /// </summary>
+    public async Task<(double Rating, int Votes)?> GetTmdbRatingAsync(string imdbId, CancellationToken ct = default)
+    {
+        try
+        {
+            return await tmdb.FindRatingAsync(imdbId, ct).ConfigureAwait(false) is { } score
+                ? (Math.Round(score.Rating, 1, MidpointRounding.AwayFromZero), score.Votes)
+                : null;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning("No TMDb rating for {ImdbId}: {Reason}", imdbId, ex.Message);
+            return null;
+        }
+    }
+
     /// <summary>"7.3", "7,3" or "7.3/10" as 7.3; null for anything else, or outside 0–10.</summary>
     public static double? ParseImdbRating(string? text)
     {

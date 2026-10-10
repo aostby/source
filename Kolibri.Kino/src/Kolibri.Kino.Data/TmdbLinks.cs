@@ -38,6 +38,18 @@ public sealed class TmdbLinks(ISettingsStore settings) : ITmdbLinks, IDisposable
         return string.IsNullOrEmpty(path) ? null : $"{PosterBase}{path}";
     }
 
+    public async Task<(double Rating, int Votes)?> FindRatingAsync(string imdbId, CancellationToken ct = default)
+    {
+        if (Client() is not { } client) return null;
+
+        var found = await client.FindAsync(FindExternalSource.Imdb, imdbId, ct).ConfigureAwait(false);
+        (double Rating, int Votes)? score =
+            found?.MovieResults?.FirstOrDefault() is { } movie ? (movie.VoteAverage, movie.VoteCount)
+            : found?.TvResults?.FirstOrDefault() is { } tv ? (tv.VoteAverage, tv.VoteCount)
+            : null;
+        return score is { Votes: > 0 } ? score : null;
+    }
+
     private TMDbClient? Client()
     {
         var key = settings.Current.TMDBkey;

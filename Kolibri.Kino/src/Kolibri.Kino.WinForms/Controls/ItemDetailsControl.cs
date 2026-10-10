@@ -15,6 +15,10 @@ public partial class ItemDetailsControl : UserControl
     public ItemDetailsControl()
     {
         InitializeComponent();
+        CopyOnDoubleClick.Enable(lblTitle, "Title");
+        CopyOnDoubleClick.Enable(lblFacts);
+        CopyOnDoubleClick.Enable(lblPeople);
+        CopyOnDoubleClick.Enable(lblFile, "Path", () => _filePath);
         Clear();
     }
 

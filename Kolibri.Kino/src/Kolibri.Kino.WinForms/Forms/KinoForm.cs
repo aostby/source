@@ -248,7 +248,7 @@ public partial class KinoForm : AsyncForm
     {
         if (dgvItems.CurrentItem() is not Item item) return;
 
-        using var dialog = new ImdbRatingDialog(item.ImdbId, $"{item.Title} ({item.Year})", item.ImdbRating);
+        using var dialog = new ImdbRatingDialog(_movies, item.ImdbId, item.Title, item.Year, item.ImdbRating);
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
 
         var rating = dialog.Rating;

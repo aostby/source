@@ -80,6 +80,18 @@ public sealed class MovieControllerTests : IDisposable
         Assert.Null(await _controller.SetImdbRatingAsync("tt0000404", 5));
     }
 
+    [Fact]
+    public async Task TMDbs_score_is_rounded_and_missing_or_failing_gives_none()
+    {
+        _tmdb.Ratings["tt6933238"] = (6.849, 1234);
+
+        Assert.Equal((6.8, 1234), await _controller.GetTmdbRatingAsync("tt6933238"));
+        Assert.Null(await _controller.GetTmdbRatingAsync("tt0000404"));
+
+        _tmdb.Throws = new HttpRequestException("401 Unauthorized");
+        Assert.Null(await _controller.GetTmdbRatingAsync("tt6933238"));
+    }
+
     [Theory]
     [InlineData("tt33510831", "tt33510831")]
     [InlineData("  TT0133093 ", "tt0133093")]
@@ -205,7 +217,12 @@ public sealed class MovieControllerTests : IDisposable
     {
         public Dictionary<string, string> Pages { get; } = [];
         public Dictionary<string, string> Posters { get; } = [];
+        public Dictionary<string, (double, int)> Ratings { get; } = [];
         public Exception? Throws { get; set; }
+
+        public Task<(double Rating, int Votes)?> FindRatingAsync(string imdbId, CancellationToken ct = default) =>
+            Throws is not null ? Task.FromException<(double, int)?>(Throws)
+            : Task.FromResult<(double, int)?>(Ratings.TryGetValue(imdbId, out var r) ? r : null);
 
         public Task<string?> FindPosterAsync(string imdbId, CancellationToken ct = default) =>
             Throws is not null ? Task.FromException<string?>(Throws) : Task.FromResult(Posters.GetValueOrDefault(imdbId));
