@@ -80,7 +80,8 @@ if ($WithDatabases) {
         Copy-Item $source (Join-Path $staging $name) -Force
         Write-Host "  $name ($([math]::Round((Get-Item $source).Length / 1MB)) MB)"
     }
-    $swap = ' && sudo rm -f data/*-log.db && sudo cp data-new/SilverScreen.* data/ && rm -rf data-new'
+    # Skipped when data-new is gone (the command was run before), so running it twice still starts Kino.
+    $swap = ' && if [ -d data-new ]; then sudo rm -f data/*-log.db && sudo cp data-new/SilverScreen.* data/ && sudo rm -rf data-new; fi'
 }
 
 $command = "cd $NasFolder && sudo docker compose down$swap && sudo docker load -i kolibri-kino.tar && sudo docker compose up -d"
