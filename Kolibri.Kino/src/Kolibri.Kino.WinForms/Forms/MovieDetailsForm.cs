@@ -33,6 +33,25 @@ public partial class MovieDetailsForm : AsyncForm
         _services = services;
         _imdbId = imdbId;
         InitializeComponent();
+        SiteIcons.Imdb(btnImdb);
+        SiteIcons.Tmdb(btnTmdb);
+        SiteIcons.SubDl(btnSubtitles);
+        SiteIcons.Play(btnPlay);
+        SiteIcons.Folder(btnOpenOnDisk);
+        SiteIcons.Watchlist(btnWatchlist);
+        SiteIcons.Close(btnClose);
+        CopyOnDoubleClick.Enable(lblTitle, "Title", () => _item?.Title);
+        CopyOnDoubleClick.Enable(lblRating, "IMDb rating", () => Clean(_item?.ImdbRating));
+        CopyOnDoubleClick.Enable(lblVotes, "IMDb votes", () => Clean(_item?.ImdbVotes));
+        CopyOnDoubleClick.Enable(lblHeadline);
+        CopyOnDoubleClick.Enable(lblGenre, "Genre");
+        CopyOnDoubleClick.Enable(lblPlot, "Plot");
+        this.Describe(
+            (btnPlay, "Plays the movie file in your default player."),
+            (btnOpenOnDisk, "Shows the movie file in Explorer."),
+            (btnImdb, "Opens the title's page on IMDb."),
+            (btnTmdb, "Opens the title's page on TMDb (found by its IMDb id)."),
+            (btnWatchlist, "Puts this title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."));
         Text = imdbId;
     }
 
@@ -128,13 +147,16 @@ public partial class MovieDetailsForm : AsyncForm
             Margin = new Padding(0, 3, 12, 3),
             Text = name,
         }, 0, row);
-        facts.Controls.Add(new Label
+        var valueLabel = new Label
         {
             AutoSize = true,
             Dock = DockStyle.Fill,
             Margin = new Padding(0, 3, 0, 3),
             Text = text,
-        }, 1, row);
+        };
+        // The file row says "(not found)" after a missing path; copy just the path.
+        CopyOnDoubleClick.Enable(valueLabel, name, name == "File" ? () => _path : null);
+        facts.Controls.Add(valueLabel, 1, row);
     }
 
     private void UpdateButtons()

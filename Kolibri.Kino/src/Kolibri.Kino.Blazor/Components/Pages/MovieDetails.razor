@@ -1,10 +1,17 @@
 @page "/movie/{ImdbId}"
+@page "/series/{ImdbId}"
+@using Kolibri.Kino.Controllers.Library
+@using Kolibri.Kino.Controllers.Playback
 @inherits KinoPage
 @inject MovieController Movies
-@inject WatchlistController Watchlists
 @inject LastSearch LastSearch
+@inject PlaybackController Playback
+@inject NavigationManager Nav
 
-@* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import, remove, add to a watchlist, links. *@
+@* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links. Removing
+   and adding to a watchlist are left to the Windows app: the NAS copy of the library is replaced from Windows.
+   A series lives at /series/{id} (a /movie/ link is turned into that) and lists its episodes by season, each
+   with Play (the own file) and Plex. *@
 
 <PageTitle>@(_item?.Title ?? ImdbId) · Kolibri Kino</PageTitle>
 
@@ -22,7 +29,24 @@ else
         <div class="details-text">
             <h1>@_item.Title</h1>
             <p class="facts">
-                @Facts
+                <span>
+                    @for (var i = 0; i < FactParts.Count; i++)
+                    {
+                        @(i > 0 ? " · " : "")
+                        @if (FactParts[i] == GenreFact)
+                        {
+                            var genres = LibraryFilter.GenresOf(_item).ToList();
+                            @for (var g = 0; g < genres.Count; g++)
+                            {
+                                @(g > 0 ? ", " : "")<a href="@LibraryLink("genre", genres[g])" title="More @genres[g] in the library">@genres[g]</a>
+                            }
+                        }
+                        else
+                        {
+                            @FactParts[i]
+                        }
+                    }
+                </span>
                 <Rating Value="@_item.ImdbRating" />
             </p>
             <p class="where">
@@ -40,6 +64,13 @@ else
                 }
             </p>
 
+            @if (!IsSeries && (_canPlay || _plexPage is not null))
+            {
+                <p class="actions">
+                    <a class="button primary play" href="play/@ImdbId">▶ Play</a>
+                </p>
+            }
+
             @if (Clean(_item.Plot) is { } plot)
             {
                 <p class="plot">@plot</p>
@@ -49,7 +80,20 @@ else
                 @foreach (var (label, value) in People)
                 {
                     <dt>@label</dt>
-                    <dd>@value</dd>
+                    @if (label is "Director" or "Actors")
+                    {
+                        var names = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                        <dd>
+                            @for (var n = 0; n < names.Length; n++)
+                            {
+                                @(n > 0 ? ", " : "")<a href="@LibraryLink("person", names[n])" title="@names[n] in the library">@names[n]</a>
+                            }
+                        </dd>
+                    }
+                    else
+                    {
+                        <dd>@value</dd>
+                    }
                 }
                 @if (_item.Ratings is { Count: > 0 } ratings)
                 {
@@ -62,18 +106,6 @@ else
                 @if (_inLibrary)
                 {
                     <button disabled="@Busy" @onclick="ImportAsync">Update from OMDb</button>
-                    @if (_confirmRemove)
-                    {
-                        <span class="confirm">
-                            Remove from the library? Its file link goes too; files on disk are not touched.
-                            <button class="danger" disabled="@Busy" @onclick="RemoveAsync">Remove</button>
-                            <button @onclick="() => _confirmRemove = false">Cancel</button>
-                        </span>
-                    }
-                    else
-                    {
-                        <button @onclick="() => _confirmRemove = true">Remove from library…</button>
-                    }
                 }
                 else
                 {
@@ -81,18 +113,6 @@ else
                 }
             </div>
 
-            <div class="actions">
-                <label>
-                    Watchlist
-                    <select @bind="_list" disabled="@Busy">
-                        @foreach (var name in _listNames)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                </label>
-                <button disabled="@(Busy || _list is null)" @onclick="AddToWatchlistAsync">Add to watchlist</button>
-            </div>
 
             <p class="links">
                 <a href="https://www.imdb.com/title/@ImdbId/" target="_blank" rel="noopener">IMDb</a>
@@ -100,11 +120,47 @@ else
                 {
                     <a href="@_tmdbPage" target="_blank" rel="noopener">TMDb</a>
                 }
+                @if (_plexPage is not null)
+                {
+                    <a href="@_plexPage" target="_blank" rel="noopener">Plex</a>
+                }
             </p>
 
             <StatusLine Busy="Busy" Text="@Status" Error="@Error" />
         </div>
     </div>
+
+    @if (IsSeries && _episodes.Count > 0)
+    {
+        <section class="episodes-section">
+            <h2>Episodes <span class="muted">@_episodes.Count</span></h2>
+            @* Newest season first (like Plex's season list read from the top); "Other files" last. *@
+    @foreach (var season in _episodes.GroupBy(e => e.Season).OrderByDescending(g => g.Key == 0 ? -1 : g.Key))
+            {
+                <section class="season">
+                    <h3 class="period-title">@(season.Key == 0 ? "Other files" : $"Season {season.Key}") <span class="muted">@season.Count()</span></h3>
+                    <ol class="episodes">
+                        @foreach (var episode in season)
+                        {
+                            <li>
+                                <div class="episode-row">
+                                    <span class="ep-label">@episode.Label</span>
+                                    <span class="path">@episode.FileName</span>
+                                    <span class="episode-actions">
+                                        <a class="button primary" href="play/@ImdbId?ep=@Uri.EscapeDataString(episode.Key)">▶ Play</a>
+                                        @if (PlaybackController.PlexPageOf(episode, _plexEpisodes) is { } plexPage)
+                                        {
+                                            <a class="button" href="@plexPage" target="_blank" rel="noopener">Plex</a>
+                                        }
+                                    </span>
+                                </div>
+                            </li>
+                        }
+                    </ol>
+                </section>
+            }
+        </section>
+    }
 }
 
 @code {
@@ -114,30 +170,48 @@ else
     private bool _inLibrary;
     private string? _linkedPath;
     private string? _tmdbPage;
-    private IReadOnlyList<string> _listNames = [];
-    private string? _list;
-    private bool _confirmRemove;
+    private bool _canPlay;
+    private string? _plexPage;
+    private IReadOnlyList<PlayableEpisode> _episodes = [];
+    private IReadOnlyDictionary<(int Season, int Episode), string> _plexEpisodes = new Dictionary<(int, int), string>();
 
     protected override async Task OnParametersSetAsync()
     {
-        (_item, _inLibrary, _linkedPath, _tmdbPage, _confirmRemove) = (null, false, null, null, false);
+        (_item, _inLibrary, _linkedPath, _tmdbPage, _canPlay, _plexPage) = (null, false, null, null, false, null);
+        (_episodes, _plexEpisodes) = ([], new Dictionary<(int, int), string>());
         await RunAsync("Loading…", async ct =>
         {
             var local = await Movies.GetFromLibraryAsync(ImdbId, ct);
             _inLibrary = local is not null;
             _item = local ?? await Movies.GetDetailsAsync(ImdbId, ct);
             _linkedPath = _inLibrary ? await Movies.GetLinkedPathAsync(ImdbId, ct) : null;
-            _listNames = await Watchlists.GetListNamesAsync(ct);
-            _list ??= Watchlists.FavoriteList;
         });
 
         // TMDb pages use TMDb's own ids: one TMDb request, after the page is shown. A search link if TMDb doesn't know it.
         if (_item is { } item)
         {
+            // A series has its own address; Back still works, as the /movie/ entry is replaced. The same page stays
+            // (same id, so Blazor doesn't set the parameters again), so loading carries on below.
+            if (IsSeries && Nav.ToBaseRelativePath(Nav.Uri).StartsWith("movie/", StringComparison.OrdinalIgnoreCase))
+                Nav.NavigateTo($"series/{ImdbId}", replace: true);
+
+            // Play shows at once for the own file or a series' episodes; TMDb and Plex follow (Plex loads its lists once, then keeps them).
+            if (IsSeries) _episodes = _inLibrary ? await Playback.GetEpisodesAsync(ImdbId) : [];
+            else _canPlay = _inLibrary && await Playback.HasLocalVideoAsync(ImdbId);
+            StateHasChanged();
             _tmdbPage = await Movies.GetTmdbPageAsync(ImdbId, item.Title);
+            StateHasChanged();
+            _plexPage = await Playback.GetPlexPageAsync(ImdbId);
+            if (IsSeries && _episodes.Count > 0) _plexEpisodes = await Playback.GetPlexEpisodePagesAsync(ImdbId);
             StateHasChanged();
         }
     }
+
+    private bool IsSeries => string.Equals(_item?.Type, "series", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>The details address for an item: /series/ for a series, else /movie/.</summary>
+    public static string DetailsUrl(string imdbId, string? type) =>
+        string.Equals(type, "series", StringComparison.OrdinalIgnoreCase) ? $"series/{imdbId}" : $"movie/{imdbId}";
 
     private Task ImportAsync() => RunAsync(_inLibrary ? "Updating from OMDb…" : "Importing…", async ct =>
     {
@@ -152,27 +226,17 @@ else
         LastSearch.Forget();
     });
 
-    private Task RemoveAsync() => RunAsync("Removing…", async ct =>
-    {
-        await Movies.RemoveFromLibraryAsync(ImdbId, ct);
-        (_inLibrary, _linkedPath, _confirmRemove) = (false, null, false);
-        Status = $"Removed \"{_item?.Title}\" from the library.";
-        LastSearch.Forget();
-    });
+    /// <summary>Stands for the genres in <see cref="FactParts"/>, which are shown as links.</summary>
+    private const string GenreFact = "genre";
 
-    private Task AddToWatchlistAsync() => RunAsync("Adding…", async ct =>
+    private List<string> FactParts => new[]
     {
-        var result = await Watchlists.AddAsync(ImdbId, _list!, ct);
-        Status = result.MovedFrom is null
-            ? $"Added {result.Title} to {_list}."
-            : $"Moved {result.Title} from {result.MovedFrom} to {_list} (a movie is on one list at a time).";
-    });
-
-    private string Facts => string.Join(" · ", new[]
-    {
-        _item!.Year, _item.Runtime, _item.Genre, _item.Rated,
+        _item!.Year, _item.Runtime, LibraryFilter.GenresOf(_item).Any() ? GenreFact : null, _item.Rated,
         _item.Type is "series" && Clean(_item.TotalSeasons) is { } seasons ? $"{seasons} season(s)" : null,
-    }.Select(Clean).OfType<string>());
+    }.Select(Clean).OfType<string>().ToList();
+
+    /// <summary>The Library filtered by a genre or person, best rated first.</summary>
+    private static string LibraryLink(string filter, string value) => $"./?{filter}={Uri.EscapeDataString(value)}&sort=rating";
 
     private IEnumerable<(string, string)> People => new (string Label, string? Value)[]
     {

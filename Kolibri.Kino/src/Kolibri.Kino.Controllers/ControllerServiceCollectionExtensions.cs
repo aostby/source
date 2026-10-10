@@ -3,6 +3,7 @@ using Kolibri.Kino.Controllers.Library;
 using Kolibri.Kino.Controllers.LocalMovies;
 using Kolibri.Kino.Controllers.Logging;
 using Kolibri.Kino.Controllers.Lookup;
+using Kolibri.Kino.Controllers.Playback;
 using Kolibri.Kino.Controllers.Scanning;
 using Kolibri.Kino.Controllers.Series;
 using Kolibri.Kino.Controllers.Settings;
@@ -19,6 +20,8 @@ public static class ControllerServiceCollectionExtensions
     {
         services.AddTransient<MovieLinker>();
         services.AddTransient<MovieController>();
+        services.AddTransient<RecentlyAddedController>();
+        services.AddTransient<PlaybackController>();
         services.AddTransient<LocalMoviesController>();
         services.AddTransient<MovieScanController>();
         services.AddTransient<CleanupController>();
@@ -27,6 +30,7 @@ public static class ControllerServiceCollectionExtensions
         services.AddTransient<WatchlistController>();
         services.AddTransient<LocalSeriesController>();
         services.AddTransient<NewSeriesController>();
+        services.AddTransient<RecentSeriesController>();
         services.AddTransient<ApiUsageController>();
         services.AddTransient<SubtitleController>();
         services.AddTransient<LogController>();

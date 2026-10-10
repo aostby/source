@@ -1,0 +1,164 @@
+@page "/play/{ImdbId}"
+@using Kolibri.Kino.Controllers.Playback
+@inherits KinoPage
+@inject MovieController Movies
+@inject PlaybackController Playback
+@inject NavigationManager Nav
+
+@* Plays the library's own file in the browser: just the player, nothing else to click past. For a series the
+   episodes in its folder are listed by season and ?ep= picks one. Browsers play MP4 and WebM, but often not MKV
+   with HEVC or AC3 sound, nor AVI; then the page says so and offers Plex, which converts any format. *@
+
+<PageTitle>▶ @(Current?.Label is { } label ? $"{label} · " : "")@(_title ?? ImdbId) · Kolibri Kino</PageTitle>
+
+<p class="back"><a href="@MovieDetails.DetailsUrl(ImdbId, _episodes.Count > 0 ? "series" : null)">‹ @(_title ?? "Back")</a></p>
+
+@if (_file is not null && !_failed)
+{
+    @* @key: a new episode gets a new player instead of the old one keeping its position. *@
+    @* Subtitles as tracks: the standard one (Movie.srt) is on from the start, others are in the player's CC menu. *@
+    <video @key="_file.LocalPath" class="player" src="@StreamUrl" controls autoplay playsinline @onerror="() => _failed = true">
+        @foreach (var subtitle in _subtitles)
+        {
+            <track kind="subtitles" src="@SubtitleUrl(subtitle)" label="@subtitle.Label" srclang="@subtitle.Language" default="@subtitle.IsDefault" />
+        }
+    </video>
+    <p class="player-meta">
+        @if (Current is { } episode)
+        {
+            <strong>@episode.Label</strong>
+        }
+        <span class="path">@_file.FileName</span>
+        @if (_subtitles.Count > 0)
+        {
+            <span class="hint">Subtitles: @string.Join(", ", _subtitles.Select(s => s.Label)) (CC in the player)</span>
+        }
+        @if (!_file.LikelyPlays)
+        {
+            <span class="hint">This format often doesn't play in a browser. If the picture or sound is missing, use Plex.</span>
+        }
+    </p>
+}
+else if (!Busy && (_failed || _episodes.Count == 0 || Ep is not null))
+{
+    <div class="player-missing">
+        <p>@(_failed
+            ? "The browser can't play this file (its video or sound format isn't supported)."
+            : Ep is not null ? "That episode isn't in the series folder any more."
+            : "There's no video file for this title that the server can reach.")</p>
+        @if (_plexPage is null)
+        {
+            <p class="hint">Plex doesn't have it either, or isn't set up in Settings.</p>
+        }
+    </div>
+}
+
+<StatusLine Busy="Busy" Text="@Status" Error="@Error" />
+
+<p class="actions">
+    @if (_episodes.Count > 0)
+    {
+        @if (Previous is { } previous)
+        {
+            <a class="button" href="@PlayUrl(previous)">‹ @previous.Label</a>
+        }
+        @if (Next is { } next)
+        {
+            <a class="button @(Current is null ? "" : "primary")" href="@PlayUrl(next)">@next.Label ›</a>
+        }
+        @if (Current is null)
+        {
+            <a class="button primary" href="@PlayUrl(_episodes[0])">▶ First episode</a>
+            <a class="button" href="@PlayUrl(Latest!)">▶ Latest episode (@Latest!.Label)</a>
+        }
+    }
+    @if (_plexPage is not null)
+    {
+        <a class="button @(_failed || (_file is null && _episodes.Count == 0) ? "primary" : "")" href="@PlexUrl">▶ Play in Plex</a>
+        <span class="hint">Plex plays every format. It may ask you to sign in the first time.</span>
+    }
+</p>
+
+@if (_episodes.Count > 0)
+{
+    @* Newest season first (like Plex's season list read from the top); "Other files" last. *@
+    @foreach (var season in _episodes.GroupBy(e => e.Season).OrderByDescending(g => g.Key == 0 ? -1 : g.Key))
+    {
+        <section class="season">
+            <h2 class="period-title">@(season.Key == 0 ? "Other files" : $"Season {season.Key}") <span class="muted">@season.Count()</span></h2>
+            <ol class="episodes">
+                @foreach (var episode in season)
+                {
+                    <li class="@(episode == Current ? "on" : "")">
+                        <a href="@PlayUrl(episode)">
+                            <span class="ep-label">@episode.Label</span>
+                            <span class="path">@episode.FileName</span>
+                        </a>
+                    </li>
+                }
+            </ol>
+        </section>
+    }
+}
+
+@code {
+    [Parameter] public string ImdbId { get; set; } = string.Empty;
+    [SupplyParameterFromQuery(Name = "ep")] public string? Ep { get; set; }
+
+    private string? _title;
+    private string? _loadedFor;
+    private PlayableFile? _file;
+    private IReadOnlyList<PlayableSubtitle> _subtitles = [];
+    private IReadOnlyList<PlayableEpisode> _episodes = [];
+    private string? _plexPage;
+    private IReadOnlyDictionary<(int Season, int Episode), string> _plexEpisodes = new Dictionary<(int, int), string>();
+    private bool _failed;
+
+    /// <summary>The episode playing on Plex when Plex has it, else the title's page.</summary>
+    private string? PlexUrl => (Current is { } episode ? PlaybackController.PlexPageOf(episode, _plexEpisodes) : null) ?? _plexPage;
+
+    private PlayableEpisode? Current => Ep is null ? null : _episodes.FirstOrDefault(e => e.Key == Ep);
+    private int CurrentIndex => Current is { } current ? IndexOf(current) : -1;
+    private PlayableEpisode? Previous => CurrentIndex > 0 ? _episodes[CurrentIndex - 1] : null;
+    private PlayableEpisode? Next => CurrentIndex >= 0 && CurrentIndex < _episodes.Count - 1 ? _episodes[CurrentIndex + 1] : null;
+
+    /// <summary>The last numbered episode (the folder's newest by season and number).</summary>
+    private PlayableEpisode? Latest => _episodes.LastOrDefault(e => e.Season > 0) ?? _episodes.LastOrDefault();
+
+    private string StreamUrl => Ep is null ? $"stream/{ImdbId}" : $"stream/{ImdbId}?ep={Uri.EscapeDataString(Ep)}";
+
+    private string SubtitleUrl(PlayableSubtitle subtitle) =>
+        $"subtitle/{ImdbId}?file={Uri.EscapeDataString(subtitle.FileName)}{(Ep is null ? "" : $"&ep={Uri.EscapeDataString(Ep)}")}";
+
+    private string PlayUrl(PlayableEpisode episode) => $"play/{ImdbId}?ep={Uri.EscapeDataString(episode.Key)}";
+
+    private int IndexOf(PlayableEpisode episode)
+    {
+        for (var i = 0; i < _episodes.Count; i++)
+            if (_episodes[i] == episode) return i;
+        return -1;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        (_file, _failed, _subtitles) = (null, false, []);
+        await RunAsync("Finding the file…", async ct =>
+        {
+            // The title, the episode list and Plex once per title; only the file changes between episodes.
+            if (_loadedFor != ImdbId)
+            {
+                _title = (await Movies.GetFromLibraryAsync(ImdbId, ct))?.Title;
+                _episodes = await Playback.GetEpisodesAsync(ImdbId, ct);
+                _plexPage = null;
+                _loadedFor = ImdbId;
+            }
+            _file = _episodes.Count > 0 && Ep is null ? null : await Playback.GetFileAsync(ImdbId, Ep, ct);
+            if (_file is not null) _subtitles = await Playback.GetSubtitlesAsync(ImdbId, Ep, ct);
+            if (_plexPage is null)
+            {
+                _plexPage = await Playback.GetPlexPageAsync(ImdbId, ct);
+                if (_episodes.Count > 0) _plexEpisodes = await Playback.GetPlexEpisodePagesAsync(ImdbId, ct);
+            }
+        });
+    }
+}

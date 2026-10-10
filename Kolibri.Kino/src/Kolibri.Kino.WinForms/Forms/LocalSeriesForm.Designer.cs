@@ -35,6 +35,7 @@ partial class LocalSeriesForm
         btnSetFolder = new Button();
         btnAddToWatchlist = new Button();
         btnFindNew = new Button();
+        btnRecent = new Button();
         mainSplit = new SplitContainer();
         dgvSeries = new DataGridView();
         seriesMenu = new ContextMenuStrip(components);
@@ -71,6 +72,7 @@ partial class LocalSeriesForm
         //
         toolbar.AutoSize = true;
         toolbar.Controls.Add(txtFilter);
+        toolbar.Controls.Add(btnRecent);
         toolbar.Controls.Add(btnRefresh);
         toolbar.Controls.Add(btnSetFolder);
         toolbar.Controls.Add(btnAddToWatchlist);
@@ -95,7 +97,7 @@ partial class LocalSeriesForm
         btnRefresh.Margin = new Padding(24, 6, 3, 3);
         btnRefresh.Name = "btnRefresh";
         btnRefresh.Size = new Size(110, 25);
-        btnRefresh.TabIndex = 1;
+        btnRefresh.TabIndex = 2;
         btnRefresh.Text = "Refresh episodes";
         btnRefresh.Click += btnRefresh_Click;
         //
@@ -105,7 +107,7 @@ partial class LocalSeriesForm
         btnSetFolder.Margin = new Padding(3, 6, 3, 3);
         btnSetFolder.Name = "btnSetFolder";
         btnSetFolder.Size = new Size(85, 25);
-        btnSetFolder.TabIndex = 2;
+        btnSetFolder.TabIndex = 3;
         btnSetFolder.Text = "Set folder…";
         btnSetFolder.Click += btnSetFolder_Click;
         //
@@ -115,9 +117,20 @@ partial class LocalSeriesForm
         btnAddToWatchlist.Margin = new Padding(3, 6, 3, 3);
         btnAddToWatchlist.Name = "btnAddToWatchlist";
         btnAddToWatchlist.Size = new Size(110, 25);
-        btnAddToWatchlist.TabIndex = 3;
+        btnAddToWatchlist.TabIndex = 4;
         btnAddToWatchlist.Text = "Add to watchlist…";
         btnAddToWatchlist.Click += btnAddToWatchlist_Click;
+        //
+        // btnRecent
+        //
+        btnRecent.AutoSize = true;
+        btnRecent.Margin = new Padding(12, 6, 12, 3);
+        btnRecent.Name = "btnRecent";
+        btnRecent.Size = new Size(110, 25);
+        btnRecent.TabIndex = 1;
+        btnRecent.Text = "Recently updated";
+        btnRecent.Visible = false;
+        btnRecent.Click += btnRecent_Click;
         //
         // btnFindNew
         //
@@ -125,7 +138,7 @@ partial class LocalSeriesForm
         btnFindNew.Margin = new Padding(24, 6, 3, 3);
         btnFindNew.Name = "btnFindNew";
         btnFindNew.Size = new Size(110, 25);
-        btnFindNew.TabIndex = 4;
+        btnFindNew.TabIndex = 5;
         btnFindNew.Text = "Find new series…";
         btnFindNew.Click += btnFindNew_Click;
         //
@@ -279,6 +292,7 @@ partial class LocalSeriesForm
     private Button btnSetFolder;
     private Button btnAddToWatchlist;
     private Button btnFindNew;
+    private Button btnRecent;
     private SplitContainer mainSplit;
     private DataGridView dgvSeries;
     private ContextMenuStrip seriesMenu;

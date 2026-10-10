@@ -108,6 +108,12 @@ public class AsyncForm : Form
     /// <summary>Puts <paramref name="text"/> in the status bar; the form decides where that is.</summary>
     protected virtual void DisplayStatus(string text) { }
 
+    /// <summary>The status bar for "Copied … to the clipboard" (<see cref="CopyOnDoubleClick"/>), without logging it.</summary>
+    internal void DisplayCopyStatus(string text)
+    {
+        if (!IsGone) DisplayStatus(text);
+    }
+
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
         _cts?.Cancel();

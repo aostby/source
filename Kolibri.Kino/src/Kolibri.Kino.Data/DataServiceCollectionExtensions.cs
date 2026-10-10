@@ -31,6 +31,8 @@ public static class DataServiceCollectionExtensions
         services.AddSingleton<IFileItemRepository, LiteDbFileItemRepository>();
         services.AddSingleton<IWatchListRepository, LiteDbWatchListRepository>();
         services.AddSingleton<IMediaFileScanner, FileSystemMediaScanner>();
+        services.AddSingleton<LiteDbFileDateStore>();
+        services.AddSingleton<IFileDates, FileSystemFileDates>();
         services.AddSingleton<IMovieFileNameParser, MovieFileNameParser>();
         services.AddSingleton<IFolderCleaner, FileSystemFolderCleaner>();
         services.AddSingleton<IFolderRenamer, FileSystemFolderRenamer>();
@@ -52,6 +54,7 @@ public static class DataServiceCollectionExtensions
         services.AddSingleton(sp => new PlexLibrary(new HttpClient { Timeout = TimeSpan.FromMinutes(2) }, sp.GetRequiredService<ISettingsStore>()));
         services.AddSingleton<IMediaServerLibrary>(sp => sp.GetRequiredService<PlexLibrary>());
         services.AddSingleton<IMediaServerPlaylists>(sp => sp.GetRequiredService<PlexLibrary>());
+        services.AddSingleton<IMediaServerSeries>(sp => sp.GetRequiredService<PlexLibrary>());
 
         return services;
     }

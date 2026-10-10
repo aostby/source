@@ -23,6 +23,11 @@ public partial class ManualLookupForm : AsyncForm
         _lookup = lookup;
         _filePath = filePath;
         InitializeComponent();
+        SiteIcons.Imdb(btnImdb);
+        this.Describe(
+            (btnSearch, "Searches your library, Plex and OMDb for the title (or IMDb id) and year."),
+            (btnLink, "Links the file to the selected movie, adding the movie to the library if needed."),
+            (btnImdb, "Opens IMDb in a window: the selected movie, or IMDb's own search for your text. On a movie's page, Use tt… brings its IMDb id back here."));
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvCandidates.AutoGenerateColumns = true;
 

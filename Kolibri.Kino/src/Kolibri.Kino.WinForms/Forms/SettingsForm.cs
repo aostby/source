@@ -1,5 +1,6 @@
 using Kolibri.Kino.Controllers.Settings;
 using Kolibri.Kino.Core.Models;
+using Kolibri.Kino.WinForms.Controls;
 
 namespace Kolibri.Kino.WinForms.Forms;
 
@@ -21,6 +22,9 @@ public partial class SettingsForm : AsyncForm
         _edited = controller.GetEditableCopy();
         _current = _edited.LiteDBFilePath;
         InitializeComponent();
+        this.Describe(
+            (btnTest, "Tries the OMDb, TMDb and SubDL keys and the Plex token as entered, without saving."),
+            (btnSave, "Saves the settings. New keys apply at once; a new database after a restart."));
         grid.SelectedObject = _edited;
         txtResults.Text = _edited.UsesDefaultKeys()
             ? SettingsController.DefaultKeysMessage

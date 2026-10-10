@@ -1,5 +1,6 @@
 using System.Globalization;
 using Kolibri.Kino.Controllers.Usage;
+using Kolibri.Kino.WinForms.Controls;
 
 namespace Kolibri.Kino.WinForms.Forms;
 
@@ -18,6 +19,8 @@ public partial class UsageReportForm : AsyncForm
     {
         _usage = usage;
         InitializeComponent();
+        this.Describe(
+            (btnRefresh, "Reads the counts again, including calls made since the window opened."));
         _filling = true;
         cboPeriod.Items.AddRange(Periods);
         cboPeriod.SelectedIndex = 0;

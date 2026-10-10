@@ -40,6 +40,17 @@ public partial class SeriesLookupDialog : AsyncForm
         _position = position;
         _note = note;
         InitializeComponent();
+        SiteIcons.Imdb(btnImdb);
+        this.Describe(
+            (btnEnterId, "Links the folder to the IMDb id you type (pasting an IMDb link works too)."),
+            (btnRemoveTag, "The IMDb id in the folder name is wrong: renames the folder without it, then searches by its title."),
+            (btnSearch, "Searches for series with this title (or IMDb id) and year."),
+            (btnLink, "Links the folder to the selected series and adds the series to the library."),
+            (btnImdb, "Opens the selected series on IMDb."),
+            (btnOpenFolder, "Shows the folder in Explorer."),
+            (btnSkip, "Leaves this folder for now and goes on to the next."),
+            (btnIgnore, "Never asks about this folder again (hold Shift on Find new series… to be asked anyway)."),
+            (btnStop, "Stops going through the folders. The ones linked so far are kept."));
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvCandidates.AutoGenerateColumns = true;
         ShowFolder();

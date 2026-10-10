@@ -33,6 +33,16 @@ public partial class LocalMoviesForm : AsyncForm
         _cleanup = cleanup;
         _services = services;
         InitializeComponent();
+        this.Describe(
+            (btnBrowse, "Chooses the movie folder to show."),
+            (btnRefresh, "Reads the folder and the library again and compares them. Nothing is looked up online."),
+            (btnScanNew, "Finds the movie for each video file the library doesn't know yet (IMDb id in the name, library, Plex, TMDb, OMDb) and links it. Shows a report."),
+            (btnScanAll, "Like Scan new files, but for every file, and fetches each movie's details again. Slower."),
+            (btnRemoveMissing, "Removes the library's links to files in this folder that no longer exist. The movie details are kept. Asks first."),
+            (btnFindMovie, "Finds the movie for the selected file (or a file you pick) by hand: search the library, Plex and OMDb, and link it."),
+            (btnCleanup, "Deletes leftover files in the folder (.nfo, .txt, subtitles in other languages …) after listing them. Video files are never deleted. The list is Kino:Cleanup in appsettings.json; see Help."),
+            (btnAddToWatchlist, "Puts the selected movie on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."));
+        btnCancel.ToolTipText = "Stops the scan that is running.";
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvMovies.AutoGenerateColumns = true;
     }

@@ -12,6 +12,8 @@ public partial class SubtitleChoiceDialog : Form
     public SubtitleChoiceDialog(IReadOnlyList<SubtitleFile> files, string movieFile)
     {
         InitializeComponent();
+        this.Describe(
+            (btnUse, "Copies the selected subtitle next to the movie with the movie's name, so the Subtitles button turns green."));
         AppIcon.Apply(this);
         lblInfo.Text = $"None of the {files.Count} downloaded subtitle(s) is named for this release. The largest is often the right one." +
                        $"{Environment.NewLine}The one you choose is copied next to the movie as {Path.GetFileNameWithoutExtension(movieFile)}.srt.";

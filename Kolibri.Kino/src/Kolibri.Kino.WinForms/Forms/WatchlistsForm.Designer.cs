@@ -43,6 +43,8 @@ partial class WatchlistsForm
         btnCopy = new Button();
         btnExport = new Button();
         btnPlex = new Button();
+        btnSyncFromPlex = new Button();
+        btnOpenOnPlex = new Button();
         split = new SplitContainer();
         dgvItems = new DataGridView();
         bindingSource = new BindingSource(components);
@@ -76,6 +78,8 @@ partial class WatchlistsForm
         toolbar.Controls.Add(btnCopy);
         toolbar.Controls.Add(btnExport);
         toolbar.Controls.Add(btnPlex);
+        toolbar.Controls.Add(btnSyncFromPlex);
+        toolbar.Controls.Add(btnOpenOnPlex);
         toolbar.Dock = DockStyle.Top;
         toolbar.Name = "toolbar";
         toolbar.Padding = new Padding(6);
@@ -183,7 +187,7 @@ partial class WatchlistsForm
         btnCopy.Name = "btnCopy";
         btnCopy.Size = new Size(75, 25);
         btnCopy.TabIndex = 10;
-        btnCopy.Text = "Copy";
+        btnCopy.Text = "Copy to clipboard";
         btnCopy.Click += btnCopy_Click;
         //
         // btnExport
@@ -205,6 +209,26 @@ partial class WatchlistsForm
         btnPlex.TabIndex = 12;
         btnPlex.Text = "Copy to Plex playlist";
         btnPlex.Click += btnPlex_Click;
+        //
+        // btnSyncFromPlex
+        //
+        btnSyncFromPlex.AutoSize = true;
+        btnSyncFromPlex.Margin = new Padding(3, 6, 3, 3);
+        btnSyncFromPlex.Name = "btnSyncFromPlex";
+        btnSyncFromPlex.Size = new Size(150, 25);
+        btnSyncFromPlex.TabIndex = 13;
+        btnSyncFromPlex.Text = "Sync from Plex playlist";
+        btnSyncFromPlex.Click += btnSyncFromPlex_Click;
+        //
+        // btnOpenOnPlex
+        //
+        btnOpenOnPlex.AutoSize = true;
+        btnOpenOnPlex.Margin = new Padding(3, 6, 3, 3);
+        btnOpenOnPlex.Name = "btnOpenOnPlex";
+        btnOpenOnPlex.Size = new Size(90, 25);
+        btnOpenOnPlex.TabIndex = 14;
+        btnOpenOnPlex.Text = "Open on Plex";
+        btnOpenOnPlex.Click += btnOpenOnPlex_Click;
         //
         // split
         //
@@ -308,6 +332,8 @@ partial class WatchlistsForm
     private Button btnCopy;
     private Button btnExport;
     private Button btnPlex;
+    private Button btnSyncFromPlex;
+    private Button btnOpenOnPlex;
     private SplitContainer split;
     private DataGridView dgvItems;
     private BindingSource bindingSource;

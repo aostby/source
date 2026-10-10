@@ -1,4 +1,5 @@
 ﻿using Kolibri.Kino.Controllers.Cleanup;
+using Kolibri.Kino.WinForms.Controls;
 
 namespace Kolibri.Kino.WinForms.Forms;
 
@@ -10,6 +11,9 @@ public partial class CleanupConfirmForm : Form
     public CleanupConfirmForm(CleanupPlan plan, string rootFolder, bool deleteEmptyFolders)
     {
         InitializeComponent();
+        this.Describe(
+            (btnDelete, "Deletes the listed files permanently (not to the Recycle Bin). Video files are never on the list."),
+            (btnCancel, "Keeps every file; nothing is deleted."));
         Kolibri.Kino.WinForms.Controls.AppIcon.Apply(this);
 
         lblInfo.Text =

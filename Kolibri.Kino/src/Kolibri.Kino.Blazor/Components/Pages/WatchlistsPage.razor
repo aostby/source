@@ -61,7 +61,7 @@
             {
                 <tr class="@(item.Watched == "Y" ? "watched" : "")">
                     <td><PosterImage Src="@($"poster/{item.ImdbId}")" Class="thumb" /></td>
-                    <td><a href="movie/@item.ImdbId">@item.Title</a></td>
+                    <td><a href="@MovieDetails.DetailsUrl(item.ImdbId, item.Type)">@item.Title</a></td>
                     <td>@item.Year</td>
                     <td><Rating Value="@item.ImdbRating" /></td>
                     <td class="wide">@item.Genre</td>

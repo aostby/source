@@ -11,6 +11,9 @@ public partial class AboutForm : Form
     public AboutForm(IOptions<KinoOptions> options)
     {
         InitializeComponent();
+        this.Describe(
+            (btnUsage, "How many calls Kino made to OMDb, TMDb, SubDL and Plex, per day or month."),
+            (btnLog, "What Kino's windows reported, with errors and their details."));
         AppIcon.Apply(this);
         if (AppIcon.Icon is { } icon) picIcon.Image = new Icon(icon, 64, 64).ToBitmap();
 

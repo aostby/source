@@ -5,11 +5,14 @@ using TMDbLib.Objects.Find;
 namespace Kolibri.Kino.Data;
 
 /// <summary>
-/// Finds a TMDb page by IMDb id with TMDb's "find" request (one request), using the TMDb key from the settings.
+/// Finds a TMDb page or poster by IMDb id with TMDb's "find" request (one request), using the TMDb key from the settings.
 /// </summary>
 public sealed class TmdbLinks(ISettingsStore settings) : ITmdbLinks, IDisposable
 {
     private const string Site = "https://www.themoviedb.org";
+
+    /// <summary>TMDb's image server; w500 is a poster about as large as OMDb's.</summary>
+    private const string PosterBase = "https://image.tmdb.org/t/p/w500";
 
     private readonly Lock _lock = new();
     private (string Key, TMDbClient Client)? _client;
@@ -24,6 +27,27 @@ public sealed class TmdbLinks(ISettingsStore settings) : ITmdbLinks, IDisposable
         if (found?.TvEpisode?.FirstOrDefault() is { } episode)
             return $"{Site}/tv/{episode.ShowId}/season/{episode.SeasonNumber}/episode/{episode.EpisodeNumber}";
         return null;
+    }
+
+    public async Task<string?> FindPosterAsync(string imdbId, CancellationToken ct = default)
+    {
+        if (Client() is not { } client) return null;
+
+        var found = await client.FindAsync(FindExternalSource.Imdb, imdbId, ct).ConfigureAwait(false);
+        var path = found?.MovieResults?.FirstOrDefault()?.PosterPath ?? found?.TvResults?.FirstOrDefault()?.PosterPath;
+        return string.IsNullOrEmpty(path) ? null : $"{PosterBase}{path}";
+    }
+
+    public async Task<(double Rating, int Votes)?> FindRatingAsync(string imdbId, CancellationToken ct = default)
+    {
+        if (Client() is not { } client) return null;
+
+        var found = await client.FindAsync(FindExternalSource.Imdb, imdbId, ct).ConfigureAwait(false);
+        (double Rating, int Votes)? score =
+            found?.MovieResults?.FirstOrDefault() is { } movie ? (movie.VoteAverage, movie.VoteCount)
+            : found?.TvResults?.FirstOrDefault() is { } tv ? (tv.VoteAverage, tv.VoteCount)
+            : null;
+        return score is { Votes: > 0 } ? score : null;
     }
 
     private TMDbClient? Client()

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Kolibri.Kino.Controllers.Series;
+using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.WinForms.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using OMDbApiNet.Model;
@@ -18,6 +19,9 @@ public partial class LocalSeriesForm : AsyncForm
 
     private readonly LocalSeriesController _controller;
     private readonly NewSeriesController _newSeries;
+    private readonly RecentSeriesController _recent;
+    private RecentSeriesReport? _recentReport;
+    private readonly ToolTip _toolTip = new();
     private readonly IServiceProvider _services;
     private IReadOnlyList<LocalSeries> _all = [];
     private LocalSeries? _current;
@@ -25,14 +29,25 @@ public partial class LocalSeriesForm : AsyncForm
     private CancellationTokenSource? _posterCts;
     private CancellationTokenSource? _stillCts;
 
-    public LocalSeriesForm(LocalSeriesController controller, NewSeriesController newSeries, IServiceProvider services)
+    public LocalSeriesForm(LocalSeriesController controller, NewSeriesController newSeries, RecentSeriesController recent,
+        IServiceProvider services)
     {
         _controller = controller;
         _newSeries = newSeries;
+        _recent = recent;
         _services = services;
         InitializeComponent();
+        SiteIcons.Imdb(menuOpenImdb);
+        this.Describe(
+            (btnRefresh, "Fetches the selected series' seasons and episodes again (TMDb, else OMDb) instead of the saved copy."),
+            (btnSetFolder, "Links the selected series to its folder on disk, so its episode files are found."),
+            (btnAddToWatchlist, "Puts the selected series on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
+            (btnFindNew, "Looks through the series folder for series not in the library, adds the ones it recognises and asks about the rest. Hold Shift to also be asked about folders marked Don't ask again."));
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvSeries.AutoGenerateColumns = true;
+        dgvSeries.CellToolTipTextNeeded += dgvSeries_CellToolTipTextNeeded;
+        _toolTip.SetToolTip(btnRecent, "Asks Plex which series got new episodes in the last 30 days and lists them first, newest first. " +
+            "Shown when the Plex server and token are set in Settings.");
         episodeDetails.PosterAspect = 16.0 / 9.0;
     }
 
@@ -42,6 +57,41 @@ public partial class LocalSeriesForm : AsyncForm
             _all = await _controller.GetSeriesAsync(ct);
             ApplyFilter();
         });
+
+    /// <summary>"Recently updated" only with Plex's server and token in Settings (checked again when Settings may have changed).</summary>
+    protected override void OnActivated(EventArgs e)
+    {
+        base.OnActivated(e);
+        btnRecent.Visible = _recent.IsAvailable;
+    }
+
+    /// <summary>
+    /// Asks Plex which series got new episodes in the last 30 days, and lists those first, newest first
+    /// (hover over a title for its new episodes). Click a column header to sort otherwise.
+    /// </summary>
+    private async void btnRecent_Click(object sender, EventArgs e)
+    {
+        await RunAsync("Asking Plex for new episodes…", async ct =>
+        {
+            _recentReport = await _recent.GetAsync(_all, ct: ct);
+            ApplyFilter();
+
+            var r = _recentReport;
+            var notInLibrary = r.NotInLibrary.Count == 0 ? ""
+                : $" Not in the library: {string.Join(", ", r.NotInLibrary.Take(5).Select(u => u.Title))}" +
+                  (r.NotInLibrary.Count > 5 ? $" and {r.NotInLibrary.Count - 5} more." : ".");
+            var summary = r.InLibrary.Count + r.NotInLibrary.Count == 0
+                ? $"No new episodes on Plex in the last {r.Days} days."
+                : $"{r.InLibrary.Count + r.NotInLibrary.Count} series got new episodes on Plex in the last {r.Days} days; " +
+                  $"the {r.InLibrary.Count} in the library are listed first." + notInLibrary;
+            // Here, in the main window's status bar (this one shows the selected series next), and on the button.
+            ShowStatus(summary);
+            this.ShowMainStatus(summary);
+            _toolTip.SetToolTip(btnRecent, summary + (r.NotInLibrary.Count == 0 ? ""
+                : Environment.NewLine + Environment.NewLine + "Not in the library:" + Environment.NewLine +
+                  string.Join(Environment.NewLine, r.NotInLibrary.Select(u => $"{u.Title}: {u.Describe()}"))));
+        });
+    }
 
     /// <summary>
     /// Filters on Enter, not on every letter: each new filter selects the first match, and selecting a series
@@ -80,11 +130,25 @@ public partial class LocalSeriesForm : AsyncForm
     {
         var text = txtFilter.Text.Trim();
         var shown = _all.Where(s => text.Length == 0 || s.Item.Title.Contains(text, StringComparison.CurrentCultureIgnoreCase)).ToList();
-        bindingSource.SetRows(shown.Select(SeriesRow.From));
+        var recent = _recentReport?.InLibrary;
+        var rows = shown.Select(s => SeriesRow.From(s, recent?.GetValueOrDefault(s.Item.ImdbId)));
+        // After "Recently updated": the series with new episodes on Plex first, newest first; the rest as before.
+        if (recent is not null) rows = rows.OrderByDescending(r => r.LastOnPlex ?? DateTime.MinValue);
+        bindingSource.SetRows(rows);
         if (dgvSeries.Columns[nameof(SeriesRow.Title)] is { } title) title.FillWeight = 300;
         var tooBroad = _all.Count(s => s.FolderTooBroad);
         ShowStatus($"{shown.Count} of {_all.Count} series; {_all.Count(s => !s.FolderExists)} without a folder on disk"
             + (tooBroad > 0 ? $", {tooBroad} linked to a folder that holds other series (Folder: too broad)." : "."));
+    }
+
+    /// <summary>After "Recently updated", on a series' title: its new episodes on Plex, with titles and when they were added.</summary>
+    private void dgvSeries_CellToolTipTextNeeded(object? sender, DataGridViewCellToolTipTextNeededEventArgs e)
+    {
+        if (e.RowIndex < 0 || dgvSeries.ItemAt(e.RowIndex) is not SeriesRow { Recent: { } recent }) return;
+        if (dgvSeries.Columns[e.ColumnIndex].DataPropertyName != nameof(SeriesRow.Title)) return;
+        e.ToolTipText = $"New on Plex: {recent.Describe()}" + Environment.NewLine + string.Join(Environment.NewLine, recent.Episodes
+            .OrderBy(ep => ep.Season).ThenBy(ep => ep.Episode)
+            .Select(ep => $"{ep.Code}  {ep.Title}  (added {ep.Added:yyyy-MM-dd HH:mm})"));
     }
 
     private async void dgvSeries_SelectionChanged(object sender, EventArgs e)
@@ -489,6 +553,7 @@ public partial class LocalSeriesForm : AsyncForm
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        _toolTip.Dispose();
         _posterCts?.Cancel();
         _posterCts?.Dispose();
         _stillCts?.Cancel();
@@ -498,11 +563,15 @@ public partial class LocalSeriesForm : AsyncForm
 
     internal sealed record SeriesRow(
         string Title, string Year, int Seasons, string Rating, string Folder,
-        [property: Browsable(false)] LocalSeries Series)
+        [property: Browsable(false)] LocalSeries Series, [property: Browsable(false)] RecentSeriesUpdate? Recent)
     {
-        public static SeriesRow From(LocalSeries s) => new(
+        /// <summary>When Plex last got an episode of it (after "Recently updated"); sorts the list, not shown.</summary>
+        [Browsable(false)] public DateTime? LastOnPlex => Recent?.LastAdded;
+
+        /// <param name="recent">The series' new episodes on Plex, after "Recently updated".</param>
+        public static SeriesRow From(LocalSeries s, RecentSeriesUpdate? recent = null) => new(
             s.Item.Title, s.Item.Year ?? "", s.TotalSeasons, s.Item.ImdbRating ?? "",
-            s.FolderPath is null ? "none" : !s.FolderExists ? "missing" : s.FolderTooBroad ? "too broad" : "yes", s);
+            s.FolderPath is null ? "none" : !s.FolderExists ? "missing" : s.FolderTooBroad ? "too broad" : "yes", s, recent);
     }
 
     internal sealed record EpisodeRow(

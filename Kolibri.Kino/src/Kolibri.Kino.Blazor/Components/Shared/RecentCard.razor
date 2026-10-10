@@ -1,0 +1,29 @@
+@using Kolibri.Kino.Controllers.Library
+@* A library card with how long ago its file arrived, for Recently added and the shelf on the Library page. *@
+
+<article class="card">
+    <a href="@MovieDetails.DetailsUrl(Entry.Item.ImdbId, Entry.Item.Type)" class="card-link">
+        <div class="poster-wrap">
+            <PosterImage Src="@($"poster/{Entry.Item.ImdbId}")" />
+            <span class="added" title="@Entry.AddedUtc.ToLocalTime().ToString("f")">@RecentlyAddedController.Ago(Entry.AddedUtc, Now)</span>
+        </div>
+        <div class="card-body">
+            <h2 class="card-title">@Entry.Item.Title</h2>
+            <div class="card-meta">
+                <span>@Entry.Item.Year</span>
+                @if (string.Equals(Entry.Item.Type, "series", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span class="tag">series</span>
+                }
+                <Rating Value="@Entry.Item.ImdbRating" />
+            </div>
+        </div>
+    </a>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public RecentlyAddedItem Entry { get; set; } = default!;
+
+    /// <summary>The same "now" for every card on the page (UTC).</summary>
+    [Parameter] public DateTime Now { get; set; } = DateTime.UtcNow;
+}
