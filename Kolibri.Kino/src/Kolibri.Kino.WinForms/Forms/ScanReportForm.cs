@@ -23,6 +23,9 @@ public partial class ScanReportForm : Form
         _report = report;
         _findMovie = findMovie;
         InitializeComponent();
+        this.Describe(
+            (btnOpenFolder, "Shows the file in Explorer; for a duplicate, also the file the movie is already linked to, to compare them."),
+            (btnFindMovie, "Finds the movie for the selected file by hand, as Find movie for file in Local movies."));
         Kolibri.Kino.WinForms.Controls.AppIcon.Apply(this);
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvEntries.AutoGenerateColumns = true;

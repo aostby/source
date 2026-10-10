@@ -135,6 +135,9 @@ public partial class ItemDetailsControl : UserControl
         btnPlay.Enabled = filePath is not null && fileExists && Kolibri.Kino.Core.MovieFileRules.IsVideoFile(filePath);
     }
 
+    /// <summary>A window's own button next to Open folder and Play (e.g. Watchlists' Mark watched).</summary>
+    public void AddButton(Button button) => buttons.Controls.Add(button);
+
     private void btnOpenFolder_Click(object sender, EventArgs e)
     {
         if (_filePath is null) return;

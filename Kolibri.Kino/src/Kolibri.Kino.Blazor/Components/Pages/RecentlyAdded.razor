@@ -1,0 +1,85 @@
+@page "/recent"
+@using Kolibri.Kino.Controllers.Library
+@inherits KinoPage
+@inject RecentlyAddedController Recent
+@inject NavigationManager Nav
+
+@* Plex's "Recently added": the library newest first, by when the files arrived on the NAS, under Today,
+   Yesterday, Last 7 days … headings. The filter is in the address, so Back from a movie returns here. *@
+
+<PageTitle>Recently added · Kolibri Kino</PageTitle>
+
+<h1>Recently added</h1>
+
+<div class="toolbar">
+    <div class="chips" role="group" aria-label="Type">
+        @foreach (var (key, label) in Types)
+        {
+            <button class="chip @(key == TypeKey ? "on" : "")" @onclick="() => Go(type: key, shown: 0)">@label (@Count(key).ToString("N0"))</button>
+        }
+    </div>
+</div>
+
+<StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
+
+@foreach (var period in Shown.GroupBy(r => RecentlyAddedController.PeriodOf(r.AddedUtc.ToLocalTime(), _now.ToLocalTime())))
+{
+    <section class="period">
+        <h2 class="period-title">@period.Key <span class="muted">@period.Count()</span></h2>
+        <div class="cards">
+            @foreach (var entry in period)
+            {
+                <RecentCard Entry="entry" Now="_now" />
+            }
+        </div>
+    </section>
+}
+
+@if (Filtered.Count > ShownCount)
+{
+    <nav class="pager">
+        <button @onclick="() => Go(shown: ShownCount + PageSize)">Show @Math.Min(PageSize, Filtered.Count - ShownCount) more</button>
+    </nav>
+}
+
+@code {
+    private const int PageSize = 120;
+
+    private static readonly (string Key, string Label)[] Types = [("", "All"), ("movie", "Movies"), ("series", "Series")];
+
+    [SupplyParameterFromQuery(Name = "type")] public string? Type { get; set; }
+    [SupplyParameterFromQuery(Name = "shown")] public int? ShownParameter { get; set; }
+
+    private RecentlyAddedReport? _report;
+    private DateTime _now = DateTime.UtcNow;
+
+    private string TypeKey => Types.Any(t => t.Key == Type) ? Type! : "";
+    private int ShownCount => Math.Max(PageSize, ShownParameter ?? 0);
+    private List<RecentlyAddedItem> Filtered => Of(TypeKey);
+    private IEnumerable<RecentlyAddedItem> Shown => Filtered.Take(ShownCount);
+
+    private string? Summary => _report is null ? null
+        : _report.WithoutDate == 0 ? $"{Filtered.Count:N0} item(s), newest first."
+        : $"{Filtered.Count:N0} item(s), newest first. {_report.WithoutDate:N0} more have no file this server can reach (another PC's share or a moved file).";
+
+    protected override async Task OnInitializedAsync() =>
+        await RunAsync("Reading file dates…", async ct =>
+        {
+            _report = await Recent.GetAsync(ct);
+            _now = DateTime.UtcNow;
+        });
+
+    private List<RecentlyAddedItem> Of(string type) => _report is null ? []
+        : type.Length == 0 ? _report.Items.ToList()
+        : _report.Items.Where(r => string.Equals(r.Item.Type, type, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int Count(string type) => Of(type).Count;
+
+    /// <summary>Changes the filter in the address. Null keeps a value; empty type or 0 shown removes it.</summary>
+    private void Go(string? type = null, int? shown = null) =>
+        Nav.NavigateTo(Nav.GetUriWithQueryParameters(new Dictionary<string, object?>
+        {
+            ["type"] = (type ?? Type) is { Length: > 0 } t ? t : null,
+            ["shown"] = (shown ?? ShownParameter) is > PageSize and var n ? n : null,
+        }));
+}

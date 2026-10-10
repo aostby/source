@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 using Kolibri.Kino.Core.Abstractions;
+using Kolibri.Kino.Core.Models;
 using OMDbApiNet.Model;
 
 namespace Kolibri.Kino.Data;
@@ -13,10 +14,12 @@ namespace Kolibri.Kino.Data;
 /// Settings: one request for the section list and one per movie section. Movies without an IMDb guid are ignored,
 /// as in SilverScreen. SilverScreen's title fallback (first word only) is not ported: it linked files to the wrong movie.
 /// </remarks>
-public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMediaServerLibrary, IMediaServerPlaylists
+public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMediaServerLibrary, IMediaServerPlaylists, IMediaServerSeries
 {
     private readonly SemaphoreSlim _loadLock = new(1, 1);
     private Loaded? _loaded;
+    private (Connection Connection, string Identifier)? _machine;
+    private (Connection Connection, IReadOnlyDictionary<string, string> ByImdbId)? _shows;
 
     public bool IsConfigured => CurrentConnection() is not null;
 
@@ -37,6 +40,21 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
     public async Task<Item?> FindByImdbIdAsync(string imdbId, CancellationToken ct = default) =>
         (await MoviesAsync(ct).ConfigureAwait(false))?.GetValueOrDefault(imdbId)?.Item;
 
+    public async Task<string?> FindPosterAsync(string imdbId, CancellationToken ct = default) =>
+        await FindByImdbIdAsync(imdbId, ct).ConfigureAwait(false) is { } item ? PosterSized(item.Poster) : null;
+
+    /// <summary>
+    /// The thumb through Plex's photo transcoder at about 600×900: the thumb itself is the full original (often over
+    /// 1 MB). Null for no poster.
+    /// </summary>
+    internal static string? PosterSized(string? thumbUrl)
+    {
+        if (!Uri.TryCreate(thumbUrl, UriKind.Absolute, out var thumb)) return null;
+        var token = thumb.Query.TrimStart('?');
+        return $"{thumb.GetLeftPart(UriPartial.Authority)}/photo/:/transcode?width=600&height=900&minSize=1&upscale=0" +
+               $"&url={Uri.EscapeDataString(thumb.AbsolutePath)}{(token.Length > 0 ? "&" + token : "")}";
+    }
+
     public async Task<Item?> FindMovieByTitleAsync(string title, int? year, CancellationToken ct = default)
     {
         if (await MoviesAsync(ct).ConfigureAwait(false) is not { } movies) return null;
@@ -52,6 +70,82 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
         return (sameTitle.FirstOrDefault(m => m.Year == year) ?? sameTitle.FirstOrDefault(m => Math.Abs((m.Year ?? 0) - year.Value) == 1))?.Item;
     }
 
+    public async Task<IReadOnlyList<string>> GetWatchedImdbIdsAsync(CancellationToken ct = default) =>
+        (await MoviesAsync(ct).ConfigureAwait(false))?.Values.Where(m => m.Watched).Select(m => m.Item.ImdbId).ToList() ?? [];
+
+    /// <summary>Plex's "mark as played" (/:/scrobble), for the user the token belongs to.</summary>
+    public async Task<MarkWatchedOutcome> MarkWatchedAsync(string imdbId, CancellationToken ct = default)
+    {
+        var connection = CurrentConnection() ?? throw new InvalidOperationException("Plex is not configured.");
+        if ((await MoviesAsync(ct).ConfigureAwait(false))?.GetValueOrDefault(imdbId) is not { } movie) return MarkWatchedOutcome.NotOnServer;
+        if (movie.Watched) return MarkWatchedOutcome.AlreadyWatched;
+        await SendAsync(connection, HttpMethod.Get,
+            $"/:/scrobble?identifier=com.plexapp.plugins.library&key={Uri.EscapeDataString(movie.RatingKey)}", ct).ConfigureAwait(false);
+        movie.Watched = true;
+        return MarkWatchedOutcome.Marked;
+    }
+
+    /// <summary>{server}:32400/web/index.html#!/server/{machineIdentifier}/details?key=/library/metadata/{ratingKey}.</summary>
+    /// <remarks>A movie first; else a show (series), from the TV sections' show lists, loaded once per server.</remarks>
+    public async Task<string?> GetWebPageAsync(string imdbId, CancellationToken ct = default)
+    {
+        if (CurrentConnection() is not { } connection) return null;
+        var ratingKey = (await MoviesAsync(ct).ConfigureAwait(false))?.GetValueOrDefault(imdbId)?.RatingKey is { Length: > 0 } movieKey
+            ? movieKey
+            : (await ShowsAsync(connection, ct).ConfigureAwait(false)).GetValueOrDefault(imdbId);
+        if (string.IsNullOrEmpty(ratingKey)) return null;
+
+        var machine = await MachineIdentifierAsync(connection, ct).ConfigureAwait(false);
+        return WebPage(connection.BaseUrl, machine, ratingKey);
+    }
+
+    /// <summary>/library/metadata/{showKey}/allLeaves: every episode with its season (parentIndex) and number (index).</summary>
+    public async Task<IReadOnlyDictionary<(int Season, int Episode), string>> GetEpisodeWebPagesAsync(string seriesImdbId, CancellationToken ct = default)
+    {
+        if (CurrentConnection() is not { } connection) return new Dictionary<(int, int), string>();
+        if ((await ShowsAsync(connection, ct).ConfigureAwait(false)).GetValueOrDefault(seriesImdbId) is not { } showKey) return new Dictionary<(int, int), string>();
+
+        var leaves = await SendAsync(connection, HttpMethod.Get, $"/library/metadata/{Uri.EscapeDataString(showKey)}/allLeaves", ct).ConfigureAwait(false);
+        var machine = await MachineIdentifierAsync(connection, ct).ConfigureAwait(false);
+        return EpisodeKeysFrom(leaves).ToDictionary(e => e.Key, e => WebPage(connection.BaseUrl, machine, e.Value));
+    }
+
+    internal static IReadOnlyDictionary<(int Season, int Episode), string> EpisodeKeysFrom(XDocument? allLeaves)
+    {
+        var keys = new Dictionary<(int, int), string>();
+        foreach (var video in allLeaves?.Descendants("Video") ?? [])
+            if (int.TryParse((string?)video.Attribute("parentIndex"), out var season)
+                && int.TryParse((string?)video.Attribute("index"), out var episode)
+                && (string?)video.Attribute("ratingKey") is { Length: > 0 } ratingKey)
+                keys.TryAdd((season, episode), ratingKey);
+        return keys;
+    }
+
+    /// <summary>IMDb id → ratingKey of each show in the TV sections (/library/sections/{key}/all?type=2&amp;includeGuids=1).</summary>
+    private async Task<IReadOnlyDictionary<string, string>> ShowsAsync(Connection connection, CancellationToken ct)
+    {
+        if (_shows is { } known && known.Connection == connection) return known.ByImdbId;
+
+        var sections = await SendAsync(connection, HttpMethod.Get, "/library/sections", ct).ConfigureAwait(false);
+        var shows = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in (sections?.Descendants("Directory") ?? []).Where(d => (string?)d.Attribute("type") == "show").Select(d => (string?)d.Attribute("key")).OfType<string>())
+        {
+            var list = await SendAsync(connection, HttpMethod.Get, $"/library/sections/{key}/all?type=2&includeGuids=1", ct).ConfigureAwait(false);
+            foreach (var (imdbId, ratingKey) in ShowKeysFrom(list)) shows.TryAdd(imdbId, ratingKey);
+        }
+        _shows = (connection, shows);
+        return shows;
+    }
+
+    internal static IEnumerable<(string ImdbId, string RatingKey)> ShowKeysFrom(XDocument? shows) =>
+        (shows?.Descendants("Directory") ?? [])
+            .Select(d => (ImdbId: ImdbIdOf(d), RatingKey: (string?)d.Attribute("ratingKey")))
+            .Where(s => !string.IsNullOrEmpty(s.ImdbId) && !string.IsNullOrEmpty(s.RatingKey))
+            .Select(s => (s.ImdbId!, s.RatingKey!));
+
+    internal static string WebPage(string baseUrl, string machineIdentifier, string ratingKey) =>
+        $"{baseUrl}/web/index.html#!/server/{machineIdentifier}/details?key={Uri.EscapeDataString($"/library/metadata/{ratingKey}")}";
+
     public async Task<IReadOnlyList<Item>> SearchAsync(string text, CancellationToken ct = default)
     {
         if (await MoviesAsync(ct).ConfigureAwait(false) is not { } movies) return [];
@@ -63,6 +157,82 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
             .Select(m => m.Item)
             .ToList();
     }
+
+    #region Recently updated series
+
+    /// <summary>Episodes are read newest first in pages of this many, until they are older than asked.</summary>
+    private const int EpisodePage = 200;
+
+    /// <summary>At most this many episodes per section, however long ago is asked for.</summary>
+    private const int MaxEpisodes = 3000;
+
+    /// <summary>
+    /// Per TV section: the shows with their IMDb ids (one request), then the episodes newest first
+    /// (/library/sections/{key}/all?type=4&amp;sort=addedAt:desc, paged) back to <paramref name="since"/>.
+    /// </summary>
+    public async Task<IReadOnlyList<RecentSeriesUpdate>> GetRecentlyUpdatedSeriesAsync(DateTime since, CancellationToken ct = default)
+    {
+        var connection = CurrentConnection() ?? throw new InvalidOperationException("Plex is not configured.");
+        var sections = await SendAsync(connection, HttpMethod.Get, "/library/sections", ct).ConfigureAwait(false);
+        var showSectionKeys = (sections?.Descendants("Directory") ?? [])
+            .Where(d => (string?)d.Attribute("type") == "show")
+            .Select(d => (string?)d.Attribute("key"))
+            .OfType<string>();
+
+        var updates = new List<RecentSeriesUpdate>();
+        foreach (var key in showSectionKeys)
+        {
+            var shows = await SendAsync(connection, HttpMethod.Get, $"/library/sections/{key}/all?type=2&includeGuids=1", ct).ConfigureAwait(false);
+            var pages = new List<XDocument>();
+            for (var start = 0; start < MaxEpisodes; start += EpisodePage)
+            {
+                var page = await SendAsync(connection, HttpMethod.Get,
+                    $"/library/sections/{key}/all?type=4&sort=addedAt:desc&X-Plex-Container-Start={start}&X-Plex-Container-Size={EpisodePage}",
+                    ct).ConfigureAwait(false);
+                if (page is null) break;
+                pages.Add(page);
+                var videos = page.Descendants("Video").ToList();
+                if (videos.Count < EpisodePage || videos.Any(v => AddedAt(v) < since)) break;
+            }
+            updates.AddRange(RecentFrom(shows, pages, since));
+        }
+        return updates.OrderByDescending(u => u.LastAdded).ToList();
+    }
+
+    /// <summary>The episodes in <paramref name="episodePages"/> added since <paramref name="since"/>, grouped by show.</summary>
+    internal static IReadOnlyList<RecentSeriesUpdate> RecentFrom(XDocument? shows, IEnumerable<XDocument> episodePages, DateTime since)
+    {
+        var imdbIds = (shows?.Descendants("Directory") ?? [])
+            .GroupBy(d => (string?)d.Attribute("ratingKey") ?? "")
+            .ToDictionary(g => g.Key, g => ImdbIdOf(g.First()));
+
+        return episodePages
+            .SelectMany(p => p.Descendants("Video"))
+            .Where(v => AddedAt(v) >= since)
+            .GroupBy(v => (string?)v.Attribute("grandparentRatingKey") ?? (string?)v.Attribute("grandparentTitle") ?? "")
+            .Select(g => new RecentSeriesUpdate(
+                imdbIds.GetValueOrDefault(g.Key),
+                (string?)g.First().Attribute("grandparentTitle") ?? "?",
+                g.Select(v => new RecentEpisode(
+                        Int(v, "parentIndex"), Int(v, "index"), (string?)v.Attribute("title") ?? "", AddedAt(v)))
+                    .OrderByDescending(e => e.Added)
+                    .ToList()))
+            .OrderByDescending(u => u.LastAdded)
+            .ToList();
+
+        static int Int(XElement e, string name) => int.TryParse((string?)e.Attribute(name), out var n) ? n : 0;
+    }
+
+    private static DateTime AddedAt(XElement video) =>
+        long.TryParse((string?)video.Attribute("addedAt"), out var unix)
+            ? DateTimeOffset.FromUnixTimeSeconds(unix).LocalDateTime
+            : DateTime.MinValue;
+
+    private static string? ImdbIdOf(XElement element) => element.Elements("Guid")
+        .Select(g => (string?)g.Attribute("id"))
+        .FirstOrDefault(id => id?.StartsWith("imdb://", StringComparison.Ordinal) == true)?["imdb://".Length..];
+
+    #endregion
 
     #region Playlists
 
@@ -81,7 +251,7 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
         var wanted = imdbIds.Where(movies.ContainsKey).Select(id => movies[id].RatingKey).Distinct().ToList();
 
         var playlists = await PlaylistsAsync(connection, ct).ConfigureAwait(false);
-        if (!playlists.TryGetValue(playlistName, out var playlistKey))
+        if (!playlists.TryGetValue(playlistName.Trim(), out var playlistKey))
         {
             if (wanted.Count == 0) return new PlaylistSyncResult(0, 0, notOnServer, Created: false);
 
@@ -102,11 +272,47 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
         return new PlaylistSyncResult(toAdd.Count, wanted.Count - toAdd.Count, notOnServer, Created: false);
     }
 
+    /// <summary>
+    /// The playlist in Plex Web on the server itself: {server}:32400/web/index.html#!/server/{machineIdentifier}/playlist?key=/playlists/{key}.
+    /// Plex Web may ask to sign in the first time; the web window remembers it.
+    /// </summary>
+    public async Task<string?> GetPlaylistWebPageAsync(string playlistName, CancellationToken ct = default)
+    {
+        var connection = CurrentConnection() ?? throw new InvalidOperationException("Plex is not configured.");
+        if (!(await PlaylistsAsync(connection, ct).ConfigureAwait(false)).TryGetValue(playlistName.Trim(), out var playlistKey)) return null;
+        var identity = await SendAsync(connection, HttpMethod.Get, "/identity", ct).ConfigureAwait(false);
+        var machine = (string?)identity?.Root?.Attribute("machineIdentifier")
+            ?? throw new InvalidOperationException("Plex did not report its machine identifier.");
+        return $"{connection.BaseUrl}/web/index.html#!/server/{machine}/playlist?key={Uri.EscapeDataString($"/playlists/{playlistKey}")}";
+    }
+
+    /// <summary>
+    /// /playlists/{key}/items?includeGuids=1: each title with its IMDb id and whether it's watched (viewCount &gt; 0;
+    /// a title only started has lastViewedAt but no viewCount, so it isn't).
+    /// </summary>
+    public async Task<IReadOnlyList<PlaylistEntry>?> GetPlaylistEntriesAsync(string playlistName, CancellationToken ct = default)
+    {
+        var connection = CurrentConnection() ?? throw new InvalidOperationException("Plex is not configured.");
+        if (!(await PlaylistsAsync(connection, ct).ConfigureAwait(false)).TryGetValue(playlistName.Trim(), out var playlistKey)) return null;
+        var doc = await SendAsync(connection, HttpMethod.Get, $"/playlists/{playlistKey}/items?includeGuids=1", ct).ConfigureAwait(false);
+        return EntriesFrom(doc);
+    }
+
+    internal static IReadOnlyList<PlaylistEntry> EntriesFrom(XDocument? playlistItems) =>
+        (playlistItems?.Descendants("Video") ?? [])
+            .Select(v => new PlaylistEntry(
+                ImdbIdOf(v),
+                (string?)v.Attribute("title") ?? "?",
+                (string?)v.Attribute("year"),
+                (string?)v.Attribute("type"),
+                int.TryParse((string?)v.Attribute("viewCount"), out var views) && views > 0))
+            .ToList();
+
     public async Task<bool> RemoveFromPlaylistAsync(string playlistName, string imdbId, CancellationToken ct = default)
     {
         var connection = CurrentConnection() ?? throw new InvalidOperationException("Plex is not configured.");
         if ((await MoviesAsync(ct).ConfigureAwait(false))?.GetValueOrDefault(imdbId) is not { } movie) return false;
-        if (!(await PlaylistsAsync(connection, ct).ConfigureAwait(false)).TryGetValue(playlistName, out var playlistKey)) return false;
+        if (!(await PlaylistsAsync(connection, ct).ConfigureAwait(false)).TryGetValue(playlistName.Trim(), out var playlistKey)) return false;
 
         var entry = (await PlaylistItemsAsync(connection, playlistKey, ct).ConfigureAwait(false))
             .FirstOrDefault(i => i.RatingKey == movie.RatingKey);
@@ -122,7 +328,7 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var p in doc?.Descendants("Playlist") ?? [])
             if ((string?)p.Attribute("title") is { } title && (string?)p.Attribute("ratingKey") is { } key)
-                result.TryAdd(title, key);
+                result.TryAdd(title.Trim(), key); // "KrigsFilms " on Plex is "KrigsFilms" in Kino
         return result;
     }
 
@@ -143,6 +349,18 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
     }
 
     #endregion
+
+    /// <summary>The server's machine identifier, asked once per server.</summary>
+    private async Task<string> MachineIdentifierAsync(Connection connection, CancellationToken ct)
+    {
+        if (_machine is { } known && known.Connection == connection) return known.Identifier;
+
+        var identity = await SendAsync(connection, HttpMethod.Get, "/identity", ct).ConfigureAwait(false);
+        var machine = (string?)identity?.Root?.Attribute("machineIdentifier")
+            ?? throw new InvalidOperationException("Plex did not report its machine identifier.");
+        _machine = (connection, machine);
+        return machine;
+    }
 
     private Connection? CurrentConnection()
     {
@@ -226,12 +444,19 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
             Poster = thumb is null ? "N/A" : $"{connection.BaseUrl}{thumb}?X-Plex-Token={connection.Token}",
             Response = "True",
         };
-        return new PlexMovie(item, (string?)video.Attribute("originalTitle"), year, (string?)video.Attribute("ratingKey") ?? "");
+        return new PlexMovie(item, (string?)video.Attribute("originalTitle"), year, (string?)video.Attribute("ratingKey") ?? "")
+        {
+            Watched = int.TryParse((string?)video.Attribute("viewCount"), out var views) && views > 0,
+        };
     }
 
     private sealed record Connection(string BaseUrl, string Token);
 
     private sealed record Loaded(Connection Connection, IReadOnlyDictionary<string, PlexMovie> Movies);
 
-    private sealed record PlexMovie(Item Item, string? OriginalTitle, int? Year, string RatingKey);
+    private sealed record PlexMovie(Item Item, string? OriginalTitle, int? Year, string RatingKey)
+    {
+        /// <summary>Played to the end on Plex (viewCount &gt; 0), for the token's user.</summary>
+        public bool Watched { get; set; }
+    }
 }

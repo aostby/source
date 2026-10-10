@@ -21,6 +21,11 @@ public partial class WebPageForm : Form
         _startUrl = url;
         _useImdbId = useImdbId;
         InitializeComponent();
+        this.Describe(
+            (btnBack, "Back"),
+            (btnForward, "Forward"),
+            (btnUseId, "Puts this movie's IMDb id in Find movie's search, searches, and closes this window."),
+            (btnBrowser, "Opens this page in your default browser."));
         AppIcon.Apply(this);
         btnUseId.Visible = useImdbId is not null;
         txtAddress.Text = url;

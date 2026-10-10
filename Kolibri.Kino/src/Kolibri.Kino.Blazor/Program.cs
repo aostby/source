@@ -11,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddKinoData(builder.Configuration)
     .AddKinoControllers()
-    .AddScoped<LastSearch>();
+    .AddScoped<LastSearch>()
+    .AddHostedService<RecentlyAddedWarmUp>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

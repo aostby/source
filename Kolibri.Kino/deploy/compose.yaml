@@ -13,5 +13,26 @@ services:
       # Whose settings (API keys, Plex, favorite watchlist) to use: your Windows user name, as SilverScreen stored them.
       Kino__SettingsUser: ${KINO_SETTINGS_USER}
       TZ: ${TZ:-Europe/Oslo}
+      # The library stores Windows paths; these say where those shares are mounted below (Recently added reads
+      # the files' dates). Forward slashes, so YAML needs no escaping; case doesn't matter.
+      Kino__PathMappings__0__From: //GREENLANTERN/Movies
+      Kino__PathMappings__0__To: /media/Movies
+      Kino__PathMappings__1__From: //GREENLANTERN/Multimedia
+      Kino__PathMappings__1__To: /media/Multimedia
+      Kino__PathMappings__2__From: //GREENLANTERN/Series
+      Kino__PathMappings__2__To: /media/Series
+      # Plex links sent to the browser use this name instead of PLEX_HOST_NAME: phones can't look up Windows
+      # names like HTPC, but find htpc.local (or use the IP address).
+      Kino__BrowserHosts__0__From: ${PLEX_HOST_NAME:-HTPC}
+      Kino__BrowserHosts__0__To: ${PLEX_BROWSER_HOST:-}
+    # Library posters often point at the Plex server by its Windows name (http://HTPC:32400/...), which the
+    # container can't resolve; this gives it the address.
+    extra_hosts:
+      - "${PLEX_HOST_NAME:-HTPC}:${PLEX_HOST_IP}"
     volumes:
       - ./data:/data
+      # The NAS's media shares, read-only: Kino only reads file dates there. On the DH4300 Plus they're on
+      # different volumes (ls -d /volume*/Movies shows where).
+      - ${MOVIES_DIR:-/volume2/Movies}:/media/Movies:ro
+      - ${MULTIMEDIA_DIR:-/volume3/Multimedia}:/media/Multimedia:ro
+      - ${SERIES_DIR:-/volume3/Series}:/media/Series:ro

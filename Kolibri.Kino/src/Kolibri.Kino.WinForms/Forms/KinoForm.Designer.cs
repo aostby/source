@@ -35,10 +35,6 @@ partial class KinoForm
         btnSearchOnline = new Button();
         btnImport = new Button();
         btnAddToWatchlist = new Button();
-        btnLocalMovies = new Button();
-        btnLocalSeries = new Button();
-        btnWatchlists = new Button();
-        btnSettings = new Button();
         typeFilter = new FlowLayoutPanel();
         sortRow = new FlowLayoutPanel();
         lblSort = new Label();
@@ -59,6 +55,7 @@ partial class KinoForm
         menuOpenImdb = new ToolStripMenuItem();
         menuOpenTmdb = new ToolStripMenuItem();
         menuRemove = new ToolStripMenuItem();
+        menuSetRating = new ToolStripMenuItem();
         bindingSource = new BindingSource(components);
         statusStrip = new StatusStrip();
         lblStatus = new ToolStripStatusLabel();
@@ -78,10 +75,6 @@ partial class KinoForm
         toolbar.Controls.Add(btnSearchOnline);
         toolbar.Controls.Add(btnImport);
         toolbar.Controls.Add(btnAddToWatchlist);
-        toolbar.Controls.Add(btnLocalMovies);
-        toolbar.Controls.Add(btnLocalSeries);
-        toolbar.Controls.Add(btnWatchlists);
-        toolbar.Controls.Add(btnSettings);
         toolbar.Dock = DockStyle.Top;
         toolbar.Location = new Point(0, 44);
         toolbar.Name = "toolbar";
@@ -138,47 +131,6 @@ partial class KinoForm
         btnAddToWatchlist.TabIndex = 5;
         btnAddToWatchlist.Text = "Add to watchlist…";
         btnAddToWatchlist.Click += btnAddToWatchlist_Click;
-        // 
-        // btnLocalMovies
-        // 
-        btnLocalMovies.AutoSize = true;
-        btnLocalMovies.Location = new Point(792, 9);
-        btnLocalMovies.Margin = new Padding(24, 3, 3, 3);
-        btnLocalMovies.Name = "btnLocalMovies";
-        btnLocalMovies.Size = new Size(100, 25);
-        btnLocalMovies.TabIndex = 4;
-        btnLocalMovies.Text = "Local movies…";
-        btnLocalMovies.Click += btnLocalMovies_Click;
-        // 
-        // btnLocalSeries
-        // 
-        btnLocalSeries.AutoSize = true;
-        btnLocalSeries.Location = new Point(9, 40);
-        btnLocalSeries.Name = "btnLocalSeries";
-        btnLocalSeries.Size = new Size(100, 25);
-        btnLocalSeries.TabIndex = 8;
-        btnLocalSeries.Text = "Local series…";
-        btnLocalSeries.Click += btnLocalSeries_Click;
-        // 
-        // btnWatchlists
-        // 
-        btnWatchlists.AutoSize = true;
-        btnWatchlists.Location = new Point(115, 40);
-        btnWatchlists.Name = "btnWatchlists";
-        btnWatchlists.Size = new Size(90, 25);
-        btnWatchlists.TabIndex = 6;
-        btnWatchlists.Text = "Watchlists…";
-        btnWatchlists.Click += btnWatchlists_Click;
-        // 
-        // btnSettings
-        // 
-        btnSettings.AutoSize = true;
-        btnSettings.Location = new Point(211, 40);
-        btnSettings.Name = "btnSettings";
-        btnSettings.Size = new Size(80, 25);
-        btnSettings.TabIndex = 7;
-        btnSettings.Text = "Settings…";
-        btnSettings.Click += btnSettings_Click;
         // 
         // typeFilter
         // 
@@ -311,7 +263,7 @@ partial class KinoForm
         //
         // itemMenu
         //
-        itemMenu.Items.AddRange(new ToolStripItem[] { menuDetails, menuSeparator1, menuOpenOnDisk, menuOpenImdb, menuOpenTmdb, menuSeparator2, menuRemove });
+        itemMenu.Items.AddRange(new ToolStripItem[] { menuDetails, menuSeparator1, menuOpenOnDisk, menuOpenImdb, menuOpenTmdb, menuSetRating, menuSeparator2, menuRemove });
         itemMenu.Name = "itemMenu";
         itemMenu.Size = new Size(192, 92);
         itemMenu.Opening += itemMenu_Opening;
@@ -354,6 +306,13 @@ partial class KinoForm
         menuOpenTmdb.Size = new Size(191, 22);
         menuOpenTmdb.Text = "Open on TMDb";
         menuOpenTmdb.Click += menuOpenTmdb_Click;
+        // 
+        // menuSetRating
+        // 
+        menuSetRating.Name = "menuSetRating";
+        menuSetRating.Size = new Size(191, 22);
+        menuSetRating.Text = "Set IMDb rating…";
+        menuSetRating.Click += menuSetRating_Click;
         // 
         // menuRemove
         // 
@@ -411,11 +370,7 @@ partial class KinoForm
     private Button btnSearchLocal;
     private Button btnSearchOnline;
     private Button btnImport;
-    private Button btnLocalMovies;
     private Button btnAddToWatchlist;
-    private Button btnWatchlists;
-    private Button btnLocalSeries;
-    private Button btnSettings;
     private FlowLayoutPanel typeFilter;
     private FlowLayoutPanel sortRow;
     private Label lblSort;
@@ -430,6 +385,7 @@ partial class KinoForm
     private DataGridView dgvItems;
     private ContextMenuStrip itemMenu;
     private ToolStripMenuItem menuRemove;
+    private ToolStripMenuItem menuSetRating;
     private ToolStripMenuItem menuOpenImdb;
     private ToolStripMenuItem menuOpenTmdb;
     private ToolStripMenuItem menuOpenOnDisk;

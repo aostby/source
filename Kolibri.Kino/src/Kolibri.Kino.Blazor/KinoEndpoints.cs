@@ -1,20 +1,46 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Kolibri.Kino.Controllers;
+using Kolibri.Kino.Controllers.Playback;
 using Kolibri.Kino.Controllers.Watchlists;
 
 namespace Kolibri.Kino.Blazor;
 
 /// <summary>
-/// Plain HTTP endpoints next to the pages: poster images (so the browser loads and caches them itself)
-/// and the watchlist CSV download.
+/// Plain HTTP endpoints next to the pages: poster images (so the browser loads and caches them itself),
+/// the video file and its subtitles for the Play page, and the watchlist CSV download.
 /// </summary>
 internal static partial class KinoEndpoints
 {
     public static void MapKinoEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/poster/{imdbId}", PosterAsync);
+        app.MapGet("/stream/{imdbId}", StreamAsync);
+        app.MapGet("/subtitle/{imdbId}", SubtitleAsync);
         app.MapGet("/export/watchlist", ExportWatchlistAsync);
+    }
+
+    /// <summary>
+    /// The movie's own file (or with ?ep=, an episode in the series folder), with range requests so the player
+    /// can seek. Only the file the library links to the id, or one inside the linked folder.
+    /// </summary>
+    private static async Task<IResult> StreamAsync(string imdbId, string? ep, PlaybackController playback, CancellationToken ct)
+    {
+        if (!ImdbId().IsMatch(imdbId)) return Results.NotFound();
+
+        return await playback.GetFileAsync(imdbId, ep, ct) is { } file
+            ? Results.File(file.LocalPath, file.ContentType, enableRangeProcessing: true)
+            : Results.NotFound();
+    }
+
+    /// <summary>A subtitle next to the file /stream gives (?file= its name), as WebVTT for the player's track.</summary>
+    private static async Task<IResult> SubtitleAsync(string imdbId, string? ep, string file, PlaybackController playback, CancellationToken ct)
+    {
+        if (!ImdbId().IsMatch(imdbId)) return Results.NotFound();
+
+        return await playback.GetSubtitleVttAsync(imdbId, ep, file, ct) is { } vtt
+            ? Results.Text(vtt, "text/vtt", Encoding.UTF8)
+            : Results.NotFound();
     }
 
     private static async Task<IResult> PosterAsync(string imdbId, MovieController movies, HttpContext http, CancellationToken ct)

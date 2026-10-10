@@ -1,3 +1,4 @@
+using Kolibri.Kino.Controllers.Watchlists;
 using Kolibri.Kino.WinForms.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -49,6 +50,31 @@ public partial class MainForm : Form, IStatusDisplay
         var kino = _services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Kolibri.Kino.Core.KinoOptions>>().Value;
         _log.LogInformation("{Title} started; database {Database}", Text, kino.LiteDbPath);
         this.ShowSingle<KinoForm>(_services);
+        _ = ImportPlexPlaylistsAsync();
+    }
+
+    /// <summary>
+    /// In the background at start, with Plex set up: Plex playlists that aren't Kino watchlists yet become watchlists
+    /// (see <see cref="WatchlistController.ImportPlexPlaylistsAsync"/>). Reported in the status bar and the log.
+    /// </summary>
+    private async Task ImportPlexPlaylistsAsync()
+    {
+        var watchlists = ActivatorUtilities.CreateInstance<WatchlistController>(_services);
+        if (!watchlists.PlexConfigured) return;
+        try
+        {
+            var r = await watchlists.ImportPlexPlaylistsAsync();
+            if (r.PlexError is not null) Report($"Error: Plex playlists couldn't be read: {r.PlexError}");
+            var made = r.Lists.Where(l => l.Added > 0).Select(l => $"{l.Name} ({l.Added})").ToList();
+            if (made.Count > 0 || r.ToWatched > 0)
+                Report($"From Plex: {made.Count} new watchlist(s){(made.Count > 0 ? ": " + string.Join(", ", made) : "")}" +
+                       (r.ToWatched > 0 ? $"; {r.ToWatched} watched movie(s) to {WatchlistController.WatchedList}" : "") +
+                       (r.Skipped > 0 ? $"; {r.Skipped} left out (already on a list, or no IMDb id; see Help → Log)." : "."));
+        }
+        catch (Exception ex)
+        {
+            Report($"Error: bringing in Plex's playlists failed: {ex.Message}");
+        }
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)

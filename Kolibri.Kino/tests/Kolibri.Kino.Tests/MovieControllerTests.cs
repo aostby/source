@@ -19,7 +19,7 @@ public sealed class MovieControllerTests : IDisposable
         _db = new KinoDatabase(_temp.Path);
         _repo = new LiteDbMovieRepository(_db);
         _files = new LiteDbFileItemRepository(_db);
-        _controller = new MovieController(_repo, _omdb, _files, _tmdb, new NoPosters(), NullLogger<MovieController>.Instance);
+        _controller = new MovieController(_repo, _omdb, _files, _tmdb, new NoPosters(), new FakePlex(), NullLogger<MovieController>.Instance);
     }
 
     public void Dispose()
@@ -39,6 +39,72 @@ public sealed class MovieControllerTests : IDisposable
 
         _tmdb.Throws = new HttpRequestException("401 Unauthorized");
         Assert.StartsWith("https://www.themoviedb.org/search?query=", await _controller.GetTmdbPageAsync("tt0133093", "The Matrix"));
+    }
+
+    [Theory]
+    [InlineData("7.3", 7.3)]
+    [InlineData(" 7,3 ", 7.3)]
+    [InlineData("7.3/10", 7.3)]
+    [InlineData("8", 8.0)]
+    [InlineData("6.66", 6.7)]
+    [InlineData("10.1", null)]
+    [InlineData("-1", null)]
+    [InlineData("N/A", null)]
+    [InlineData("", null)]
+    public void A_typed_imdb_rating_is_read(string text, double? expected)
+    {
+        Assert.Equal(expected, MovieController.ParseImdbRating(text));
+    }
+
+    [Fact]
+    public async Task An_imdb_rating_can_be_set_and_cleared_by_hand()
+    {
+        await _repo.UpsertAsync(new OMDbApiNet.Model.Item
+        {
+            ImdbId = "tt6933238", Title = "No Rating", ImdbRating = "N/A", Response = "True",
+            Ratings = [new OMDbApiNet.Model.Rating { Source = "Rotten Tomatoes", Value = "80%" }],
+        });
+
+        var updated = await _controller.SetImdbRatingAsync("tt6933238", 7.25);
+        var stored = await _repo.GetByImdbIdAsync("tt6933238");
+
+        Assert.Equal("7.3", updated?.ImdbRating);
+        Assert.Equal("7.3", stored?.ImdbRating);
+        Assert.Equal(["Internet Movie Database 7.3/10", "Rotten Tomatoes 80%"], stored!.Ratings.Select(r => $"{r.Source} {r.Value}"));
+
+        await _controller.SetImdbRatingAsync("tt6933238", null);
+        stored = await _repo.GetByImdbIdAsync("tt6933238");
+        Assert.Equal("N/A", stored?.ImdbRating);
+        Assert.Equal(["Rotten Tomatoes 80%"], stored!.Ratings.Select(r => $"{r.Source} {r.Value}"));
+
+        Assert.Null(await _controller.SetImdbRatingAsync("tt0000404", 5));
+    }
+
+    [Theory]
+    [InlineData("tt33510831", "tt33510831")]
+    [InlineData("  TT0133093 ", "tt0133093")]
+    [InlineData("https://www.imdb.com/title/tt0133093/", "tt0133093")]
+    [InlineData("https://m.imdb.com/title/tt0133093/?ref_=nv_sr_1", "tt0133093")]
+    [InlineData("The Matrix", null)]
+    [InlineData("tt123", null)] // too short
+    [InlineData("matrix tt0133093", null)] // a title that happens to contain one
+    public void An_imdb_id_or_link_is_recognised(string text, string? expected)
+    {
+        Assert.Equal(expected, MovieController.ImdbIdIn(text));
+    }
+
+    [Fact]
+    public async Task Searching_for_an_imdb_id_finds_that_title()
+    {
+        await _repo.UpsertAsync(new OMDbApiNet.Model.Item { ImdbId = "tt0133093", Title = "The Matrix", Year = "1999", Response = "True" });
+        _omdb.Add(new OMDbApiNet.Model.Item { ImdbId = "tt33510831", Title = "Online Only", Year = "2026", Type = "movie" });
+
+        Assert.Equal(["The Matrix"], (await _controller.SearchLocalAsync("tt0133093")).Select(i => i.Title));
+        Assert.Empty(await _controller.SearchLocalAsync("tt33510831"));
+
+        var online = Assert.Single(await _controller.SearchOnlineAsync("https://www.imdb.com/title/tt33510831/"));
+        Assert.Equal(("tt33510831", "Online Only", "2026"), (online.ImdbId, online.Title, online.Year));
+        Assert.Empty(await _controller.SearchOnlineAsync("tt9999999"));
     }
 
     [Fact]
@@ -83,7 +149,7 @@ public sealed class MovieControllerTests : IDisposable
     public async Task A_poster_by_id_comes_from_the_cache_without_asking_OMDb_else_via_the_details()
     {
         var posters = new CachePosters { Cached = { ["tt0000001"] = [1] }, Downloadable = { ["https://example.test/2.jpg"] = [2] } };
-        var controller = new MovieController(_repo, _omdb, _files, _tmdb, posters, NullLogger<MovieController>.Instance);
+        var controller = new MovieController(_repo, _omdb, _files, _tmdb, posters, new FakePlex { IsConfigured = false }, NullLogger<MovieController>.Instance);
         _omdb.Add(new OMDbApiNet.Model.Item { ImdbId = "tt0000002", Title = "Online" });
         _omdb.ById["tt0000002"].Poster = "https://example.test/2.jpg";
 
@@ -96,6 +162,28 @@ public sealed class MovieControllerTests : IDisposable
 
         _omdb.UnavailableMessage = "Request limit reached!";
         Assert.Null(await controller.GetPosterAsync("tt0000003"));
+    }
+
+    [Fact]
+    public async Task A_missing_poster_comes_from_Plex_else_TMDb_and_a_miss_is_remembered()
+    {
+        var posters = new CachePosters { Downloadable = { ["http://htpc:32400/thumb/1"] = [1], ["https://image.tmdb.org/t/p/w500/2.jpg"] = [2] } };
+        var plex = new FakePlex().Add(new OMDbApiNet.Model.Item { ImdbId = "tt0000001", Title = "On Plex", Poster = "http://htpc:32400/thumb/1" });
+        _tmdb.Posters["tt0000001"] = "https://image.tmdb.org/t/p/w500/1.jpg";
+        _tmdb.Posters["tt0000002"] = "https://image.tmdb.org/t/p/w500/2.jpg";
+        var controller = new MovieController(_repo, _omdb, _files, _tmdb, posters, plex, NullLogger<MovieController>.Instance);
+
+        // OMDb's address is gone (not downloadable): Plex first, then TMDb.
+        Assert.Equal([1], await controller.GetPosterAsync(new OMDbApiNet.Model.Item { ImdbId = "tt0000001", Poster = "https://m.media-amazon.com/gone.jpg" }));
+        Assert.Equal([2], await controller.GetPosterAsync(new OMDbApiNet.Model.Item { ImdbId = "tt0000002", Poster = "N/A" }));
+
+        Assert.Null(await controller.GetPosterAsync(new OMDbApiNet.Model.Item { ImdbId = "tt0000003" }));
+        _tmdb.Posters["tt0000003"] = "https://image.tmdb.org/t/p/w500/2.jpg";
+        Assert.Null(await controller.GetPosterAsync(new OMDbApiNet.Model.Item { ImdbId = "tt0000003" })); // not asked again
+
+        // Episode stills use made-up ids; those are never looked up elsewhere.
+        _tmdb.Posters["tt0000004_S01E01"] = "https://image.tmdb.org/t/p/w500/2.jpg";
+        Assert.Null(await controller.GetPosterAsync(new OMDbApiNet.Model.Item { ImdbId = "tt0000004_S01E01" }));
     }
 
     /// <summary>Like CachedPosterProvider: the cache by id, else a download of the item's poster address.</summary>
@@ -116,7 +204,11 @@ public sealed class MovieControllerTests : IDisposable
     private sealed class FakeTmdbLinks : Kolibri.Kino.Core.Abstractions.ITmdbLinks
     {
         public Dictionary<string, string> Pages { get; } = [];
+        public Dictionary<string, string> Posters { get; } = [];
         public Exception? Throws { get; set; }
+
+        public Task<string?> FindPosterAsync(string imdbId, CancellationToken ct = default) =>
+            Throws is not null ? Task.FromException<string?>(Throws) : Task.FromResult(Posters.GetValueOrDefault(imdbId));
 
         public Task<string?> FindPageAsync(string imdbId, CancellationToken ct = default) =>
             Throws is not null ? Task.FromException<string?>(Throws) : Task.FromResult(Pages.GetValueOrDefault(imdbId));

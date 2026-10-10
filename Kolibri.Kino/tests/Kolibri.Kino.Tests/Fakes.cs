@@ -99,6 +99,25 @@ internal sealed class FakePlex : IMediaServerLibrary, IMediaServerPlaylists
         return Task.FromResult(new PlaylistSyncResult(added.Count, known.Count - added.Count, imdbIds.Except(known).ToList(), created));
     }
 
+    /// <summary>IMDb ids watched on the fake Plex.</summary>
+    public HashSet<string> Watched { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<IReadOnlyList<string>> GetWatchedImdbIdsAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<string>>(Movies.Where(m => Watched.Contains(m.ImdbId)).Select(m => m.ImdbId).ToList());
+
+    public Task<MarkWatchedOutcome> MarkWatchedAsync(string imdbId, CancellationToken ct = default) =>
+        Task.FromResult(!Movies.Any(m => m.ImdbId == imdbId) ? MarkWatchedOutcome.NotOnServer
+            : Watched.Add(imdbId) ? MarkWatchedOutcome.Marked
+            : MarkWatchedOutcome.AlreadyWatched);
+
+    public Task<string?> GetPlaylistWebPageAsync(string playlistName, CancellationToken ct = default) =>
+        Task.FromResult(Playlists.ContainsKey(playlistName.Trim()) ? $"http://plex/web/playlist/{playlistName.Trim()}" : null);
+
+    public Task<IReadOnlyList<PlaylistEntry>?> GetPlaylistEntriesAsync(string playlistName, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<PlaylistEntry>?>(Playlists.TryGetValue(playlistName.Trim(), out var ids)
+            ? ids.Select(id => new PlaylistEntry(id, Movies.FirstOrDefault(m => m.ImdbId == id)?.Title ?? id, null, "movie", Watched.Contains(id))).ToList()
+            : null);
+
     public Task<bool> RemoveFromPlaylistAsync(string playlistName, string imdbId, CancellationToken ct = default) =>
         Task.FromResult(Playlists.TryGetValue(playlistName, out var list) && list.Remove(imdbId));
 
@@ -117,6 +136,9 @@ internal sealed class FakePlex : IMediaServerLibrary, IMediaServerPlaylists
     public Task<Item?> FindByImdbIdAsync(string imdbId, CancellationToken ct = default) =>
         Answer(Movies.FirstOrDefault(m => m.ImdbId == imdbId));
 
+    public Task<string?> FindPosterAsync(string imdbId, CancellationToken ct = default) =>
+        Throws is not null ? Task.FromException<string?>(Throws) : Task.FromResult(Movies.FirstOrDefault(m => m.ImdbId == imdbId)?.Poster);
+
     public Task<Item?> FindMovieByTitleAsync(string title, int? year, CancellationToken ct = default) =>
         Answer(Movies.FirstOrDefault(m => string.Equals(m.Title, title, StringComparison.OrdinalIgnoreCase) && (year is null || m.Year == year.ToString())));
 
@@ -124,6 +146,18 @@ internal sealed class FakePlex : IMediaServerLibrary, IMediaServerPlaylists
         Throws is not null
             ? Task.FromException<IReadOnlyList<Item>>(Throws)
             : Task.FromResult<IReadOnlyList<Item>>(Movies.Where(m => m.Title.Contains(text, StringComparison.OrdinalIgnoreCase)).ToList());
+
+    public Task<string?> GetWebPageAsync(string imdbId, CancellationToken ct = default) =>
+        Throws is not null
+            ? Task.FromException<string?>(Throws)
+            : Task.FromResult(Movies.Any(m => m.ImdbId == imdbId) ? $"http://plex/web/{imdbId}" : null);
+
+    public Dictionary<(int Season, int Episode), string> EpisodePages { get; } = [];
+
+    public Task<IReadOnlyDictionary<(int Season, int Episode), string>> GetEpisodeWebPagesAsync(string seriesImdbId, CancellationToken ct = default) =>
+        Throws is not null
+            ? Task.FromException<IReadOnlyDictionary<(int, int), string>>(Throws)
+            : Task.FromResult<IReadOnlyDictionary<(int, int), string>>(EpisodePages);
 
     private Task<Item?> Answer(Item? item) => Throws is not null ? Task.FromException<Item?>(Throws) : Task.FromResult(item);
 }

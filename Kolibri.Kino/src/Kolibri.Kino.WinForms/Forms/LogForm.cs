@@ -1,6 +1,7 @@
 using Kolibri.Kino.Controllers.Logging;
 using Kolibri.Kino.Core.Models;
 using Microsoft.Extensions.Logging;
+using Kolibri.Kino.WinForms.Controls;
 
 namespace Kolibri.Kino.WinForms.Forms;
 
@@ -28,6 +29,8 @@ public partial class LogForm : AsyncForm
     {
         _log = log;
         InitializeComponent();
+        this.Describe(
+            (btnRefresh, "Reads the log again, with what happened since the window opened."));
         cboPeriod.Items.AddRange(Periods.Select(p => (object)p.Text).ToArray());
         cboPeriod.SelectedIndex = 0;
         cboLevel.Items.AddRange(Levels.Select(l => (object)l.Text).ToArray());

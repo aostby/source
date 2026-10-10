@@ -1,0 +1,56 @@
+@using Kolibri.Kino.Controllers.Library
+@implements IDisposable
+@inject RecentlyAddedController Recent
+
+@* The newest few movies and series as scrolling rows, like "Recently Added Movies" and "Recently Added TV" on
+   Plex's home page. Loads on its own, so the library below doesn't wait for the file dates; a row with
+   nothing in it is left out. *@
+
+@foreach (var (title, type, items) in _rows)
+{
+    <section class="shelf" aria-label="@title">
+        <div class="shelf-head">
+            <h2>@title</h2>
+            <a href="recent?type=@type">See all ›</a>
+        </div>
+        <div class="shelf-row">
+            @foreach (var entry in items)
+            {
+                <RecentCard Entry="entry" Now="_now" />
+            }
+        </div>
+    </section>
+}
+
+@code {
+    private static readonly (string Title, string Type)[] Rows = [("Recently added movies", "movie"), ("Recently added series", "series")];
+
+    [Parameter] public int Count { get; set; } = 20;
+
+    private readonly CancellationTokenSource _cts = new();
+    private List<(string Title, string Type, List<RecentlyAddedItem> Items)> _rows = [];
+    private DateTime _now = DateTime.UtcNow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var report = await Recent.GetAsync(_cts.Token);
+            _now = DateTime.UtcNow;
+            _rows = Rows
+                .Select(r => (r.Title, r.Type, report.Items.Where(i => string.Equals(i.Item.Type, r.Type, StringComparison.OrdinalIgnoreCase)).Take(Count).ToList()))
+                .Where(r => r.Item3.Count > 0)
+                .ToList();
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or IOException or UnauthorizedAccessException)
+        {
+            // Missing rows are fine; the Recently added page shows the error if there is one.
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

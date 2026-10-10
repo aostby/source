@@ -77,7 +77,7 @@ button.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(
 button.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
 button.quiet { background: transparent; border-color: transparent; color: var(--muted); }
 
-.searchbar, .toolbar, .actions, form.inline {
+.searchbar, .filters, .toolbar, .actions, form.inline {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -86,6 +86,8 @@ button.quiet { background: transparent; border-color: transparent; color: var(--
 }
 
 .searchbar input { flex: 1 1 280px; min-width: 0; }
+.filters select { flex: 0 1 auto; min-width: 0; }
+.filters input[type=search] { flex: 1 1 200px; min-width: 0; }
 .toolbar label, .actions label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
 .toolbar input[type=search] { flex: 0 1 260px; min-width: 0; }
 form.inline { margin: 0; }
@@ -144,6 +146,37 @@ form.inline { margin: 0; }
 .card-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: 0.85rem; }
 .card-action { margin: 0 10px 10px; }
 
+/* Recently added: the "added" badge on the poster, the period headings and the Library shelf */
+.poster-wrap { position: relative; }
+.added {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.period { margin: 0 0 28px; }
+.period-title { font-size: 1.15rem; margin: 0 0 12px; }
+.muted { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
+.shelf { margin: 4px 0 28px; }
+.shelf-head { display: flex; align-items: baseline; gap: 16px; margin: 0 0 10px; }
+.shelf-head h2 { font-size: 1.15rem; margin: 0; }
+.shelf-head a { text-decoration: none; font-size: 0.9rem; }
+.shelf-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 150px;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x proximity;
+}
+.shelf-row .card { scroll-snap-align: start; }
+
 .pager { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 24px; color: var(--muted); }
 
 /* Details */
@@ -159,8 +192,32 @@ form.inline { margin: 0; }
 .facts-list { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 20px; }
 .facts-list dt { color: var(--muted); }
 .facts-list dd { margin: 0; }
+.facts a, .facts-list dd a { color: inherit; }
 .confirm { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); }
 .links { display: flex; gap: 16px; }
+
+/* Play */
+a.button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+a.button.primary:hover { filter: brightness(1.08); background: var(--accent); }
+.play { font-size: 1.05rem; padding: 8px 22px; }
+.player { display: block; width: 100%; max-height: calc(100vh - 200px); background: #000; border-radius: var(--radius); }
+.player-meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 12px; }
+.player-missing { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); margin: 0 0 12px; }
+.player-missing p { margin: 0 0 6px; }
+.season { margin: 8px 0 20px; }
+.episodes { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.episodes a { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; padding: 6px 10px; border-radius: 6px; color: var(--text); text-decoration: none; border: 1px solid transparent; }
+.episodes a:hover { background: var(--hover); }
+.episodes li.on a { border-color: var(--accent); background: var(--accent-soft); }
+.ep-label { font-weight: 600; min-width: 7ch; }
+.episodes-section { margin-top: 28px; }
+.episodes-section > h2 { font-size: 1.3rem; margin: 0 0 8px; }
+.season h3.period-title { font-size: 1.05rem; }
+.episode-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 6px 10px; border-radius: 6px; }
+.episode-row:hover { background: var(--surface); }
+.episode-row .path { flex: 1 1 260px; min-width: 0; }
+.episode-actions { display: flex; gap: 8px; }
+.episode-actions .button { padding: 4px 12px; font-size: 0.9rem; }
 
 /* Watchlist table */
 .table-wrap { overflow-x: auto; }
@@ -180,6 +237,7 @@ table.list td a:hover { color: var(--accent); }
     .wide { display: none; }
     .sort { margin-left: 0; }
     .cards { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+    .shelf-row { grid-auto-columns: 120px; gap: 10px; }
 }
 
 /* Settings */

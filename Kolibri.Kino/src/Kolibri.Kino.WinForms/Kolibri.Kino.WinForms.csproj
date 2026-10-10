@@ -28,6 +28,8 @@
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- The same icon for every window's title bar (see Controls/AppIcon.cs). -->
     <EmbeddedResource Include="..\..\assets\kino.ico" LogicalName="Kolibri.Kino.WinForms.kino.ico" />
+    <!-- Button and menu icons from the user's icon pack (see Controls/SiteIcons.cs). -->
+    <EmbeddedResource Include="..\..\assets\icons\*.ico" LogicalName="Kolibri.Kino.WinForms.icons.%(Filename).ico" />
     <!-- The help shown with F1 (Forms/HelpForm.cs). -->
     <EmbeddedResource Include="Help\help.html" LogicalName="Kolibri.Kino.WinForms.help.html" />
   </ItemGroup>

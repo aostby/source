@@ -9,14 +9,18 @@ namespace Kolibri.Kino.Controllers;
 /// Movie use cases for the UI: browse the local library, search OMDb, and import into the library.
 /// Forms talk to this class only; they never touch LiteDB or OMDb directly.
 /// </summary>
-public sealed class MovieController(
+public sealed partial class MovieController(
     IMovieRepository repository,
     IMovieInfoProvider infoProvider,
     IFileItemRepository files,
     ITmdbLinks tmdb,
     IPosterProvider posters,
+    IMediaServerLibrary plex,
     ILogger<MovieController> logger)
 {
+    /// <summary>IMDb ids neither Plex nor TMDb had a poster for, so a list of them doesn't ask again this session.</summary>
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _noPosterElsewhere = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Everything known about the title, for the details window: the library entry, or else OMDb's full record
     /// (not stored). Null when neither has it.
@@ -38,12 +42,10 @@ public sealed class MovieController(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(imdbId);
         // Without a poster address the provider only looks in the cache.
-        if (await GetPosterAsync(new Item { ImdbId = imdbId }, ct).ConfigureAwait(false) is { } cached) return cached;
+        if (await posters.GetPosterAsync(new Item { ImdbId = imdbId }, ct).ConfigureAwait(false) is { } cached) return cached;
         try
         {
-            return await GetDetailsAsync(imdbId, ct).ConfigureAwait(false) is { } item
-                ? await GetPosterAsync(item, ct).ConfigureAwait(false)
-                : null;
+            return await GetPosterAsync(await GetDetailsAsync(imdbId, ct).ConfigureAwait(false) ?? new Item { ImdbId = imdbId }, ct).ConfigureAwait(false);
         }
         catch (MovieInfoUnavailableException ex)
         {
@@ -52,18 +54,52 @@ public sealed class MovieController(
         }
     }
 
-    /// <summary>The poster, or null if there is none or it can't be fetched right now.</summary>
+    /// <summary>
+    /// The poster, or null if there is none or it can't be fetched right now. When the item's own poster is missing
+    /// or gone (OMDb's links to Amazon's image server expire), Plex's poster is used, else TMDb's, as SilverScreen's
+    /// poster fix did with Plex. The one found is kept in the image cache, so it is looked up only once.
+    /// </summary>
     public async Task<byte[]?> GetPosterAsync(Item item, CancellationToken ct = default)
     {
         try
         {
-            return await posters.GetPosterAsync(item, ct).ConfigureAwait(false);
+            if (await posters.GetPosterAsync(item, ct).ConfigureAwait(false) is { } poster) return poster;
         }
         catch (HttpRequestException ex)
         {
             logger.LogWarning(ex, "Poster download failed for {ImdbId}", item.ImdbId);
-            return null;
         }
+        return await GetPosterElsewhereAsync(item.ImdbId, ct).ConfigureAwait(false);
+    }
+
+    private async Task<byte[]?> GetPosterElsewhereAsync(string? imdbId, CancellationToken ct)
+    {
+        // Only real ids: series episodes use made-up ones (tt…_S01E02) for their stills.
+        if (ImdbIdIn(imdbId) is not { } id || id != imdbId?.Trim().ToLowerInvariant() || _noPosterElsewhere.ContainsKey(id)) return null;
+
+        foreach (var (source, find) in new (string, Func<Task<string?>>)[]
+                 {
+                     ("Plex", async () => plex.IsConfigured ? await plex.FindPosterAsync(id, ct).ConfigureAwait(false) : null),
+                     ("TMDb", () => tmdb.FindPosterAsync(id, ct)),
+                 })
+        {
+            try
+            {
+                if (await find().ConfigureAwait(false) is not { Length: > 0 } url || url == "N/A") continue;
+                // Downloads it and keeps it in the image cache under the IMDb id.
+                if (await posters.GetPosterAsync(new Item { ImdbId = imdbId!, Poster = url }, ct).ConfigureAwait(false) is { } found)
+                {
+                    logger.LogInformation("Poster for {ImdbId} from {Source}", imdbId, source);
+                    return found;
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException { CancellationToken.IsCancellationRequested: false } or InvalidOperationException)
+            {
+                logger.LogWarning("No poster for {ImdbId} from {Source}: {Reason}", imdbId, source, ex.Message);
+            }
+        }
+        _noPosterElsewhere[id] = true;
+        return null;
     }
 
     /// <summary>
@@ -96,16 +132,41 @@ public sealed class MovieController(
     public Task<IReadOnlyList<Item>> GetLocalAsync(string? type = null, CancellationToken ct = default) =>
         repository.GetAllAsync(type, ct);
 
-    public Task<IReadOnlyList<Item>> SearchLocalAsync(string text, CancellationToken ct = default) =>
-        string.IsNullOrWhiteSpace(text)
-            ? repository.GetAllAsync(ct: ct)
-            : repository.SearchByTitleAsync(text.Trim(), ct);
+    /// <summary>
+    /// Titles containing the text, or the whole library for none. An IMDb id (tt33510831, or an IMDb title link)
+    /// finds that entry instead, or nothing when it isn't in the library.
+    /// </summary>
+    public async Task<IReadOnlyList<Item>> SearchLocalAsync(string text, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return await repository.GetAllAsync(ct: ct).ConfigureAwait(false);
+        if (ImdbIdIn(text) is { } imdbId)
+            return await repository.GetByImdbIdAsync(imdbId, ct).ConfigureAwait(false) is { } item ? [item] : [];
+        return await repository.SearchByTitleAsync(text.Trim(), ct).ConfigureAwait(false);
+    }
 
-    public Task<IReadOnlyList<SearchItem>> SearchOnlineAsync(string query, CancellationToken ct = default)
+    /// <summary>OMDb's search for the text; an IMDb id (or IMDb title link) looks up that one title.</summary>
+    public async Task<IReadOnlyList<SearchItem>> SearchOnlineAsync(string query, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
-        return infoProvider.SearchAsync(query.Trim(), ct: ct);
+        if (ImdbIdIn(query) is not { } imdbId) return await infoProvider.SearchAsync(query.Trim(), ct: ct).ConfigureAwait(false);
+
+        return await infoProvider.GetByImdbIdAsync(imdbId, ct).ConfigureAwait(false) is { } item
+            ? [new SearchItem { ImdbId = item.ImdbId, Title = item.Title, Year = item.Year, Type = item.Type, Poster = item.Poster }]
+            : [];
     }
+
+    /// <summary>
+    /// The IMDb id when the text is one ("tt33510831", any case) or an IMDb title link
+    /// (https://www.imdb.com/title/tt33510831/…); otherwise null, so it's searched as a title.
+    /// </summary>
+    public static string? ImdbIdIn(string? text)
+    {
+        var match = ImdbIdPattern().Match(text?.Trim() ?? string.Empty);
+        return match.Success ? match.Groups[1].Value.ToLowerInvariant() : null;
+    }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"^(?:\S*imdb\.com/(?:[a-z-]+/)?title/)?(tt\d{7,10})(?:[/?#]\S*)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex ImdbIdPattern();
 
     /// <summary>
     /// Fetches full details from OMDb and stores them locally.
@@ -138,5 +199,36 @@ public sealed class MovieController(
         var unlinked = await files.DeleteAsync(imdbId, ct).ConfigureAwait(false);
         logger.LogInformation("Removed {ImdbId} from the library{Link}", imdbId, unlinked ? " with its file link" : "");
         return removed;
+    }
+
+    /// <summary>
+    /// Sets the library entry's IMDb rating by hand (when OMDb/TMDb had none), also in its list of ratings, which
+    /// the details show. Null clears it ("N/A"). Returns the updated entry, or null if it isn't in the library.
+    /// </summary>
+    public async Task<Item?> SetImdbRatingAsync(string imdbId, double? rating, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(imdbId);
+        if (rating is < 0 or > 10) throw new ArgumentOutOfRangeException(nameof(rating), rating, "An IMDb rating is from 0 to 10.");
+        if (await repository.GetByImdbIdAsync(imdbId, ct).ConfigureAwait(false) is not { } item) return null;
+
+        var text = rating is { } r ? Math.Round(r, 1, MidpointRounding.AwayFromZero).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "N/A";
+        item.ImdbRating = text;
+        const string source = "Internet Movie Database";
+        var ratings = (item.Ratings ?? []).Where(x => x.Source != source).ToList();
+        if (rating is not null) ratings.Insert(0, new Rating { Source = source, Value = $"{text}/10" });
+        item.Ratings = ratings;
+
+        await repository.UpsertAsync(item, ct).ConfigureAwait(false);
+        logger.LogInformation("Set the IMDb rating of {ImdbId} ({Title}) to {Rating} by hand", imdbId, item.Title, text);
+        return item;
+    }
+
+    /// <summary>"7.3", "7,3" or "7.3/10" as 7.3; null for anything else, or outside 0–10.</summary>
+    public static double? ParseImdbRating(string? text)
+    {
+        var value = (text ?? string.Empty).Trim();
+        if (value.EndsWith("/10", StringComparison.Ordinal)) value = value[..^3].Trim();
+        return double.TryParse(value.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var r)
+               && r is >= 0 and <= 10 ? Math.Round(r, 1, MidpointRounding.AwayFromZero) : null;
     }
 }

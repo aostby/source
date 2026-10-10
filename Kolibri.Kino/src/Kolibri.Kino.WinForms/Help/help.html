@@ -137,11 +137,16 @@ The change takes effect after a restart; Kino offers to restart at once. <b>Help
 <p><b>Library → Search library and OMDb</b> opens at start and lists your library.</p>
 <ul>
   <li>Type a title and press <kbd>Enter</kbd> or <b>Search library</b> to search what you have; <b>Search OMDb</b> searches online.</li>
+  <li>An IMDb id such as <code>tt33510831</code>, or an IMDb title link, finds that one title. If it isn't in your library, <b>Search library</b> shows OMDb's entry instead, ready to import.</li>
   <li>Select an online result and click <b>Import selected</b> to add it to your library.</li>
   <li>Filter by type with the buttons above the list, sort with the Sort options, or click a column header.</li>
   <li>Double-click a row for all details: plot, ratings, cast, poster, and Play / Open on disk when you have the file.</li>
   <li>Right-click a row to open it on IMDb or TMDb, open the file's folder, or remove it from the library.</li>
-  <li><b>Add to watchlist…</b> puts the selected title on a watchlist.</li>
+  <li>When a title has no IMDb rating (OMDb and TMDb didn't give one), right-click it and choose <b>Set IMDb rating…</b>: open it on IMDb from the dialog, read the rating there and type it in (e.g. 7.3). Leave the box empty to clear it.</li>
+  <li><b>Add to watchlist…</b> puts the selected title on a list: a Kino watchlist, the Plex playlist of that name, or both.
+      The list shows Kino's watchlists and Plex's playlists, and says where the chosen one is ("a Kino watchlist only",
+      "a Plex playlist only", or both); the boxes <b>Kino watchlist</b> and <b>Plex playlist</b> start ticked where it is.
+      Tick a box where it isn't, and the list is made there. Plex playlists can only hold titles that are on your Plex server.</li>
 </ul>
 <h3 id="subtitles">Subtitles (in the details window)</h3>
 <p>The <b>Subtitles</b> button shows whether the movie file has subtitles, as in SilverScreen:</p>
@@ -189,15 +194,34 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
   <li>Episode details are fetched once and remembered. <b>Refresh episodes</b> fetches them again (TMDb gives the most; without a TMDb key, OMDb).</li>
   <li>Files are matched to episodes by names like <code>S01E02</code>, <code>1x02</code> or <code>Episode 6</code> in a <code>Season 2</code> folder.</li>
   <li><b>Find new series…</b> looks through the series folder for series not in the library and asks about the ones it can't match.</li>
+  <li><b>Recently updated</b> (shown when the Plex server and token are set in Settings) asks Plex which series got new
+      episodes in the last 30 days, and lists those first, newest first. Hover over a title to see its new episodes
+      (e.g. <code>S02E01, S02E03</code>, with titles and when they were added). The status bar names the series on Plex that
+      aren't in the library. Click a column header to sort otherwise.</li>
   <li><b>Set folder…</b> links the selected series to its folder. Right-click a series to change its IMDb id or open it on IMDb.</li>
 </ul>
 
 <h2 id="watchlists">Watchlists</h2>
 <ul>
   <li>Choose a list, or make one with <b>New list…</b>. A movie is on one list at a time; adding it to another list moves it.</li>
-  <li><b>Mark watched</b> / <b>Mark not watched</b>, and filter with All / Not watched / Watched.</li>
-  <li><b>Copy</b> copies the list to the clipboard (pastes into Excel), <b>Export CSV…</b> saves it as a file.</li>
+  <li>Below the selected movie, <b>Open folder</b> and <b>Play</b> work when it's linked to a file; <b>Mark watched</b> there is the same as at the top.</li>
+  <li><b>Mark watched</b> / <b>Mark not watched</b>, and filter with All / Not watched / Watched. <b>Mark watched</b> moves the movie to the
+      <b>Watched</b> list, where watched movies are kept, and with Plex set up asks whether to mark it watched (played) on Plex too, for
+      the Plex user of your token. <b>Mark not watched</b> only takes the mark away, in Kino.</li>
+  <li><b>Copy to clipboard</b> copies the movies shown as a table (pastes into Excel or an e-mail), <b>Export CSV…</b> saves it as a file.</li>
   <li><b>Copy to Plex playlist</b> adds the movies to the Plex playlist of the same name (made if missing). Needs the <a href="#plex">Plex token</a>.</li>
+  <li><b>Plex playlists in Kino:</b> when Kino starts with the Plex server and token set, Plex playlists that aren't Kino watchlists
+      yet become watchlists of the same name (as SilverScreen kept them in step). Lists already in Kino, and Plex itself, are left alone.
+      A title already on another Kino watchlist is left out (a title is on one Kino list at a time), and so are titles without an IMDb id
+      (episodes); a title watched on Plex goes on <b>Watched</b>, marked watched. A list that would be empty isn't made. The status bar
+      says what came in; <b>Help → Log</b> lists what was left out.</li>
+  <li><b>Open on Plex</b> opens the Plex playlist of the same name in Plex's own web app (on your Plex server), in a window in Kino.
+      Plex may ask you to sign in the first time; the window remembers it.</li>
+  <li><b>Sync from Plex playlist</b> goes the other way: titles in the Plex playlist of the same name that aren't on the watchlist are added,
+      and titles watched on Plex are marked watched here (a title only started on Plex isn't watched; one watched here stays watched).
+      Titles only on the watchlist are kept. If Plex has no playlist of that name, it's made from the watchlist (the movies Plex has).
+      A title that was on another watchlist is moved, since a title is on one list
+      at a time. Shown when the Plex server and token are set in Settings.</li>
 </ul>
 
 <h2 id="usage">API usage report</h2>

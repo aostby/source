@@ -1,11 +1,14 @@
 @page "/"
+@using System.Globalization
+@using Kolibri.Kino.Controllers.Library
 @inherits KinoPage
 @inject MovieController Movies
 @inject LastSearch LastSearch
 @inject NavigationManager Nav
 
-@* Port of KinoForm: search the library or OMDb, filter by type, sort, import. The search is in the address,
-   so Back from a movie returns to the same results. *@
+@* Port of KinoForm: search the library or OMDb, filter by type, genre, year, rating and person, sort, import.
+   With no search and no filters the library is shown by genre, one row each, like Plex's home page. The
+   search is in the address, so Back from a movie returns to the same results. *@
 
 <PageTitle>Library · Kolibri Kino</PageTitle>
 
@@ -17,6 +20,48 @@
     <button type="button" disabled="@(Busy || string.IsNullOrWhiteSpace(_text))" @onclick="SearchOmdb">Search OMDb</button>
 </form>
 
+@if (!Online)
+{
+    <div class="filters" role="group" aria-label="Filters">
+        @* @key: the options arrive with the library, after the first render; a new select picks up the value. *@
+        <select @key="@($"genre-{_genres.Count}")" aria-label="Genre" value="@(Genre ?? "")" @onchange="e => Go(genre: e.Value as string ?? string.Empty, page: 1)">
+            <option value="">All genres</option>
+            @foreach (var (genre, count) in _genres)
+            {
+                <option value="@genre">@genre (@count.ToString("N0"))</option>
+            }
+            @if (Genre is not null && !_genres.Any(g => string.Equals(g.Genre, Genre, StringComparison.OrdinalIgnoreCase)))
+            {
+                <option value="@Genre">@Genre (0)</option>
+            }
+        </select>
+        <select @key="@($"year-{_hits.Count}")" aria-label="Year" value="@YearValue" @onchange="e => GoYears(e.Value as string)">
+            @foreach (var (value, label) in YearChoices())
+            {
+                <option value="@value">@label</option>
+            }
+        </select>
+        <select aria-label="IMDb rating" value="@(MinRating?.ToString(CultureInfo.InvariantCulture) ?? "")" @onchange="e => Go(rating: e.Value as string ?? string.Empty, page: 1)">
+            <option value="">Any rating</option>
+            @foreach (var r in RatingChoices)
+            {
+                <option value="@r.ToString(CultureInfo.InvariantCulture)">IMDb @r.ToString("0.#", CultureInfo.InvariantCulture)+</option>
+            }
+        </select>
+        <input type="search" placeholder="Actor or director…" aria-label="Actor or director"
+               @bind="_person" @bind:after="() => Go(person: _person?.Trim() ?? string.Empty, page: 1)" />
+        @if (!Filter.IsEmpty)
+        {
+            <button type="button" class="quiet" @onclick="ClearFilters">Clear filters</button>
+        }
+    </div>
+}
+
+@if (ByCategory && CurrentPage == 1)
+{
+    <RecentShelf />
+}
+
 <div class="toolbar">
     <div class="chips" role="group" aria-label="Type">
         @foreach (var (key, label, count) in _typeCounts)
@@ -24,25 +69,115 @@
             <button class="chip @(key == SelectedType ? "on" : "")" @onclick="() => Go(type: UrlType(key), page: 1)">@label (@count.ToString("N0"))</button>
         }
     </div>
-    <label class="sort">
-        Sort
-        <select value="@SortKey" @onchange="e => Go(sort: e.Value as string, page: 1)">
-            <option value="listed">As listed</option>
-            <option value="title">Title</option>
-            <option value="year">Year (newest)</option>
-            <option value="rating">Rating (best)</option>
-            <option value="genre">Genre</option>
-        </select>
-    </label>
+    @if (ByCategory && _shown.Count > 0)
+    {
+        <a class="sort" href="@Nav.GetUriWithQueryParameter("view", "all")">Browse all @_shown.Count.ToString("N0") ›</a>
+    }
+    else
+    {
+        <label class="sort">
+            Sort
+            <select value="@SortKey" @onchange="e => Go(sort: e.Value as string, page: 1)">
+                <option value="listed">As listed</option>
+                <option value="title">Title</option>
+                <option value="year">Year (newest)</option>
+                <option value="rating">Rating (best)</option>
+                <option value="genre">Genre</option>
+            </select>
+        </label>
+    }
 </div>
 
 <StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
 
-<div class="cards">
-    @foreach (var hit in PageOfHits)
+@if (ByCategory)
+{
+    @foreach (var (genre, hits) in _shelves)
     {
-        <article class="card">
-            <a href="movie/@hit.ImdbId" class="card-link">
+        <section class="shelf" aria-label="@genre">
+            <div class="shelf-head">
+                <h2>@genre <span class="muted">@hits.Count.ToString("N0")</span></h2>
+                <a href="@Nav.GetUriWithQueryParameters(new Dictionary<string, object?> { ["genre"] = genre, ["sort"] = "rating", ["page"] = null })">See all ›</a>
+            </div>
+            <div class="shelf-row">
+                @foreach (var hit in hits.Take(ShelfSize))
+                {
+                    @Card(hit)
+                }
+            </div>
+        </section>
+    }
+}
+else
+{
+    <div class="cards">
+        @foreach (var hit in PageOfHits)
+        {
+            @Card(hit)
+        }
+    </div>
+
+    @if (PageCount > 1)
+    {
+        <nav class="pager" aria-label="Pages">
+            <button disabled="@(CurrentPage <= 1)" @onclick="() => Go(page: CurrentPage - 1)">‹ Previous</button>
+            <span>Page @CurrentPage of @PageCount</span>
+            <button disabled="@(CurrentPage >= PageCount)" @onclick="() => Go(page: CurrentPage + 1)">Next ›</button>
+        </nav>
+    }
+}
+
+@code {
+    private const int PageSize = 60;
+    private const int ShelfSize = 20;
+    private static readonly double[] RatingChoices = [9, 8.5, 8, 7.5, 7, 6, 5];
+
+    [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
+    [SupplyParameterFromQuery(Name = "online")] public bool Online { get; set; }
+    [SupplyParameterFromQuery(Name = "type")] public string? Type { get; set; }
+    [SupplyParameterFromQuery(Name = "sort")] public string? Sort { get; set; }
+    [SupplyParameterFromQuery(Name = "page")] public int? Page { get; set; }
+    [SupplyParameterFromQuery(Name = "genre")] public string? Genre { get; set; }
+    [SupplyParameterFromQuery(Name = "from")] public int? YearFrom { get; set; }
+    [SupplyParameterFromQuery(Name = "to")] public int? YearTo { get; set; }
+    [SupplyParameterFromQuery(Name = "rating")] public double? MinRating { get; set; }
+    [SupplyParameterFromQuery(Name = "person")] public string? Person { get; set; }
+    [SupplyParameterFromQuery(Name = "view")] public string? View { get; set; }
+
+    private string? _text;
+    private string? _person;
+    private IReadOnlyList<Hit> _hits = [];
+    private List<Hit> _shown = [];
+    private List<(string? Key, string Label, int Count)> _typeCounts = [];
+    private IReadOnlyList<(string Genre, int Count)> _genres = [];
+    private List<(string Genre, List<Hit> Hits)> _shelves = [];
+
+    /// <summary>A library item (<see cref="Source"/>) or OMDb search result, as a card.</summary>
+    private sealed record Hit(string ImdbId, string Title, string? Year, string? Type, string? Rating, string? Genre, string? PosterUrl, Item? Source = null);
+
+    private LibraryFilter Filter => new(string.IsNullOrWhiteSpace(Genre) ? null : Genre.Trim(), YearFrom, YearTo, MinRating, Person);
+
+    /// <summary>Nothing searched or filtered: the library by genre instead of one long list (until "Browse all").</summary>
+    private bool ByCategory => !Online && string.IsNullOrWhiteSpace(Query) && Filter.IsEmpty && View != "all";
+
+    private string SortKey => Sort ?? (Online ? "listed" : "title");
+    private int PageCount => Math.Max(1, (_shown.Count + PageSize - 1) / PageSize);
+    private int CurrentPage => Math.Clamp(Page ?? 1, 1, PageCount);
+    private IEnumerable<Hit> PageOfHits => _shown.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private string Summary
+    {
+        get
+        {
+            if (ByCategory) return $"{_shown.Count:N0} item(s) in library, in {_shelves.Count} genres.";
+            var counted = _shown.Count == _hits.Count ? $"{_hits.Count:N0}" : $"{_shown.Count:N0} of {_hits.Count:N0}";
+            return Online ? $"{counted} result(s) from OMDb. Import adds one to the library." : $"{counted} item(s) in library.";
+        }
+    }
+
+    private RenderFragment Card(Hit hit) =>
+        @<article class="card">
+            <a href="@MovieDetails.DetailsUrl(hit.ImdbId, hit.Type)" class="card-link">
                 <PosterImage Src="@hit.PosterUrl" />
                 <div class="card-body">
                     <h2 class="card-title">@hit.Title</h2>
@@ -60,53 +195,11 @@
             {
                 <button class="card-action" disabled="@Busy" @onclick="() => ImportAsync(hit)">Import</button>
             }
-        </article>
-    }
-</div>
-
-@if (PageCount > 1)
-{
-    <nav class="pager" aria-label="Pages">
-        <button disabled="@(CurrentPage <= 1)" @onclick="() => Go(page: CurrentPage - 1)">‹ Previous</button>
-        <span>Page @CurrentPage of @PageCount</span>
-        <button disabled="@(CurrentPage >= PageCount)" @onclick="() => Go(page: CurrentPage + 1)">Next ›</button>
-    </nav>
-}
-
-@code {
-    private const int PageSize = 60;
-
-    [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
-    [SupplyParameterFromQuery(Name = "online")] public bool Online { get; set; }
-    [SupplyParameterFromQuery(Name = "type")] public string? Type { get; set; }
-    [SupplyParameterFromQuery(Name = "sort")] public string? Sort { get; set; }
-    [SupplyParameterFromQuery(Name = "page")] public int? Page { get; set; }
-
-    private string? _text;
-    private IReadOnlyList<Hit> _hits = [];
-    private List<Hit> _shown = [];
-    private List<(string? Key, string Label, int Count)> _typeCounts = [];
-
-    /// <summary>A library item or OMDb search result, as a card.</summary>
-    private sealed record Hit(string ImdbId, string Title, string? Year, string? Type, string? Rating, string? Genre, string? PosterUrl);
-
-    private string SortKey => Sort ?? (Online ? "listed" : "title");
-    private int PageCount => Math.Max(1, (_shown.Count + PageSize - 1) / PageSize);
-    private int CurrentPage => Math.Clamp(Page ?? 1, 1, PageCount);
-    private IEnumerable<Hit> PageOfHits => _shown.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-
-    private string Summary
-    {
-        get
-        {
-            var counted = _shown.Count == _hits.Count ? $"{_hits.Count:N0}" : $"{_shown.Count:N0} of {_hits.Count:N0}";
-            return Online ? $"{counted} result(s) from OMDb. Import adds one to the library." : $"{counted} item(s) in library.";
-        }
-    }
+        </article>;
 
     protected override async Task OnParametersSetAsync()
     {
-        _text = Query;
+        (_text, _person) = (Query, Person);
         var key = $"{Online}|{Query?.Trim()}";
         if (LastSearch.Key != key)
         {
@@ -122,17 +215,22 @@
         _hits = LastSearch.Key != key ? [] // the search failed; the error is shown
             : Online
             ? LastSearch.Online.Select(s => new Hit(s.ImdbId, s.Title, s.Year, s.Type, null, null, OnlinePoster(s))).ToList()
-            : LastSearch.Local.Select(i => new Hit(i.ImdbId, i.Title, i.Year, i.Type, i.ImdbRating, i.Genre, $"poster/{i.ImdbId}")).ToList();
+            : LastSearch.Local.Select(i => new Hit(i.ImdbId, i.Title, i.Year, i.Type, i.ImdbRating, i.Genre, $"poster/{i.ImdbId}", i)).ToList();
         ApplyFilterAndSort();
     }
 
     private void ApplyFilterAndSort()
     {
-        _typeCounts = [(null, "All", _hits.Count)];
-        _typeCounts.AddRange(_hits.GroupBy(h => TypeKey(h.Type)).OrderByDescending(g => g.Count()).Select(g => ((string?)g.Key, TypeLabel(g.Key), g.Count())));
+        // The genre list comes from the title search alone, so another genre can be picked while one is chosen.
+        _genres = LibraryFilter.Genres(_hits.Select(h => h.Source).OfType<Item>());
+        var filter = Filter;
+        var filtered = _hits.Where(h => h.Source is null || filter.Matches(h.Source)).ToList();
+
+        _typeCounts = [(null, "All", filtered.Count)];
+        _typeCounts.AddRange(filtered.GroupBy(h => TypeKey(h.Type)).OrderByDescending(g => g.Count()).Select(g => ((string?)g.Key, TypeLabel(g.Key), g.Count())));
         var type = SelectedType;
 
-        var shown = _hits.Where(h => type is null || TypeKey(h.Type) == type);
+        var shown = filtered.Where(h => type is null || TypeKey(h.Type) == type);
         // Stable sorts on top of the title order, so each year, rating or genre is alphabetical, as in KinoForm.
         var byTitle = shown.OrderBy(h => h.Title, StringComparer.CurrentCultureIgnoreCase);
         _shown = SortKey switch
@@ -143,16 +241,50 @@
             "genre" => byTitle.OrderBy(h => h.Genre ?? "￿", StringComparer.CurrentCultureIgnoreCase).ToList(),
             _ => shown.ToList(),
         };
+
+        // One row per genre, biggest first, each best rated first; an item is in every genre it has.
+        _shelves = !ByCategory ? [] : _shown
+            .Where(h => h.Source is not null)
+            .SelectMany(h => LibraryFilter.GenresOf(h.Source!).Select(g => (Genre: g, Hit: h)))
+            .GroupBy(x => x.Genre, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.CurrentCultureIgnoreCase)
+            .Select(g => (g.First().Genre, g.Select(x => x.Hit).OrderByDescending(h => WatchlistController.Rating(h.Rating)).ToList()))
+            .ToList();
     }
 
     private void SearchLibrary() => Go(q: _text?.Trim() ?? string.Empty, online: false, type: string.Empty, page: 1);
 
     private void SearchOmdb() => Go(q: _text?.Trim() ?? string.Empty, online: true, type: string.Empty, page: 1);
 
-    /// <summary>Changes the search in the address; <see cref="OnParametersSetAsync"/> does the rest. Null keeps a value, empty removes it.</summary>
-    private void Go(string? q = null, bool? online = null, string? type = null, string? sort = null, int? page = null)
+    private void ClearFilters() => Go(genre: string.Empty, from: string.Empty, to: string.Empty, rating: string.Empty, person: string.Empty, page: 1);
+
+    /// <summary>A year choice is "from-to", either side may be empty.</summary>
+    private void GoYears(string? value)
     {
-        static object? Keep(string? value, string? current) => value is null ? current : value.Length == 0 ? null : value;
+        var parts = (value ?? string.Empty).Split('-');
+        Go(from: parts[0], to: parts.Length > 1 ? parts[1] : string.Empty, page: 1);
+    }
+
+    private string YearValue => YearFrom is null && YearTo is null ? "" : $"{YearFrom}-{YearTo}";
+
+    /// <summary>Any year, this year, the last 5 and 10 years, then each decade back to the oldest in the library.</summary>
+    private IEnumerable<(string Value, string Label)> YearChoices()
+    {
+        var now = DateTime.Today.Year;
+        var choices = new List<(string, string)> { ("", "Any year"), ($"{now}-{now}", $"{now}"), ($"{now - 4}-", "Last 5 years"), ($"{now - 9}-", "Last 10 years") };
+        var oldest = _hits.Select(h => h.Source).OfType<Item>().Select(LibraryFilter.YearOf).Min() ?? now;
+        for (var decade = now / 10 * 10; decade >= oldest / 10 * 10; decade -= 10)
+            choices.Add(($"{decade}-{decade + 9}", $"{decade}s"));
+        if (YearValue is { Length: > 0 } current && choices.All(c => c.Item1 != current))
+            choices.Add((current, $"{YearFrom}–{YearTo}"));
+        return choices;
+    }
+
+    /// <summary>Changes the search in the address; <see cref="OnParametersSetAsync"/> does the rest. Null keeps a value, empty removes it.</summary>
+    private void Go(string? q = null, bool? online = null, string? type = null, string? sort = null, int? page = null,
+        string? genre = null, string? from = null, string? to = null, string? rating = null, string? person = null)
+    {
+        static object? Keep(string? value, object? current) => value is null ? current : value.Length == 0 ? null : value;
         Nav.NavigateTo(Nav.GetUriWithQueryParameters(new Dictionary<string, object?>
         {
             ["q"] = Keep(q, Query),
@@ -160,6 +292,12 @@
             ["type"] = Keep(type, Type),
             ["sort"] = Keep(sort, Sort),
             ["page"] = (page ?? Page) is > 1 and var p ? p : null,
+            ["genre"] = Keep(genre, Genre),
+            ["from"] = Keep(from, YearFrom),
+            ["to"] = Keep(to, YearTo),
+            ["rating"] = Keep(rating, MinRating?.ToString(CultureInfo.InvariantCulture)),
+            ["person"] = Keep(person, Person),
+            ["view"] = q is null ? View : null, // a new title search leaves "Browse all"
         }));
     }
 

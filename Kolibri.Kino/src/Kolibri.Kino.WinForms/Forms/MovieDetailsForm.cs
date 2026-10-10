@@ -33,6 +33,19 @@ public partial class MovieDetailsForm : AsyncForm
         _services = services;
         _imdbId = imdbId;
         InitializeComponent();
+        SiteIcons.Imdb(btnImdb);
+        SiteIcons.Tmdb(btnTmdb);
+        SiteIcons.SubDl(btnSubtitles);
+        SiteIcons.Play(btnPlay);
+        SiteIcons.Folder(btnOpenOnDisk);
+        SiteIcons.Watchlist(btnWatchlist);
+        SiteIcons.Close(btnClose);
+        this.Describe(
+            (btnPlay, "Plays the movie file in your default player."),
+            (btnOpenOnDisk, "Shows the movie file in Explorer."),
+            (btnImdb, "Opens the title's page on IMDb."),
+            (btnTmdb, "Opens the title's page on TMDb (found by its IMDb id)."),
+            (btnWatchlist, "Puts this title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."));
         Text = imdbId;
     }
 

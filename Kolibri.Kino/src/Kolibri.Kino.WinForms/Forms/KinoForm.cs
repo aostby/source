@@ -8,7 +8,7 @@ using Kolibri.Kino.WinForms.Controls;
 namespace Kolibri.Kino.WinForms.Forms;
 
 /// <summary>
-/// Kino's search window (opened in <see cref="MainForm"/> at start): search the library or OMDb, and open the other windows.
+/// Kino's search window (opened in <see cref="MainForm"/> at start): search the library or OMDb. The other windows are in the main window's menus.
 /// Thin UI: collects input, awaits the controller, shows the result. No data access here.
 /// </summary>
 public partial class KinoForm : AsyncForm
@@ -29,6 +29,18 @@ public partial class KinoForm : AsyncForm
         _settings = settings;
         _services = services;
         InitializeComponent();
+        SiteIcons.Imdb(menuOpenImdb);
+        SiteIcons.Tmdb(menuOpenTmdb);
+        SiteIcons.Details(menuDetails);
+        SiteIcons.Folder(menuOpenOnDisk);
+        SiteIcons.RemoveFromLibrary(menuRemove);
+        SiteIcons.Edit(menuSetRating);
+        this.Describe(
+            (btnSearchLocal, "Searches your library for titles containing the text (Enter does the same). With no text, shows the whole library. An IMDb id (tt33510831) or IMDb link finds that title, on OMDb if it isn't in the library."),
+            (btnSearchOnline, "Searches OMDb online for the text, or looks up an IMDb id (tt33510831). Select a result and click Import selected to add it to your library."),
+            (btnImport, "Adds the selected OMDb result to your library, with all its details."),
+            (btnAddToWatchlist, "Puts the selected title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
+            (lnkSetKeys, "Opens Settings to enter your own OMDb and TMDb keys (also File → Settings). See Help, Prerequisites."));
         lblDefaultKeys.Text = SettingsController.DefaultKeysMessage;
         UpdateDefaultKeysBanner();
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
@@ -39,7 +51,20 @@ public partial class KinoForm : AsyncForm
         await RunAsync("Loading library…", async ct => ShowLocal(await _movies.GetLocalAsync(ct: ct)));
 
     private async void btnSearchLocal_Click(object sender, EventArgs e) =>
-        await RunAsync("Searching library…", async ct => ShowLocal(await _movies.SearchLocalAsync(txtSearch.Text, ct)));
+        await RunAsync("Searching library…", async ct =>
+        {
+            var found = await _movies.SearchLocalAsync(txtSearch.Text, ct);
+            // An IMDb id that isn't in the library: look it up on OMDb, so it can be imported straight away.
+            if (found.Count == 0 && MovieController.ImdbIdIn(txtSearch.Text) is { } imdbId)
+            {
+                var online = await _movies.SearchOnlineAsync(imdbId, ct);
+                ShowOnline(online);
+                ShowStatus(online.Count == 0 ? $"{imdbId} is neither in your library nor on OMDb."
+                    : $"{imdbId} isn't in your library; this is OMDb's entry. Import selected adds it.");
+                return;
+            }
+            ShowLocal(found);
+        });
 
     private async void btnSearchOnline_Click(object sender, EventArgs e)
     {
@@ -64,21 +89,13 @@ public partial class KinoForm : AsyncForm
         });
     }
 
-    // Inside the MDI main window, like its menu items (Controls/Mdi.cs).
-    private void btnLocalMovies_Click(object sender, EventArgs e) => this.ShowSingle<LocalMoviesForm>(_services);
-
-    private void btnLocalSeries_Click(object sender, EventArgs e) => this.ShowSingle<LocalSeriesForm>(_services);
-
-    private void btnWatchlists_Click(object sender, EventArgs e) => this.ShowSingle<WatchlistsForm>(_services);
-
-    private void btnSettings_Click(object sender, EventArgs e)
+    /// <summary>The yellow bar's "Set your own keys…": Settings (also File → Settings), then the bar again.</summary>
+    private void lnkSetKeys_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
     {
         using var form = ActivatorUtilities.CreateInstance<SettingsForm>(_services);
         if (form.ShowDialog(this) == DialogResult.OK) ShowStatus("Settings saved.");
         UpdateDefaultKeysBanner();
     }
-
-    private void lnkSetKeys_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => btnSettings.PerformClick();
 
     /// <summary>The yellow bar asking for real keys, shown while a shared default key is in use (it still works).</summary>
     internal void UpdateDefaultKeysBanner() => defaultKeysBanner.Visible = _settings.UsesDefaultKeys;
@@ -166,7 +183,7 @@ public partial class KinoForm : AsyncForm
         var selected = dgvItems.CurrentItem();
         if (selected is null) e.Cancel = true;
         // Only library entries can be removed or have files; OMDb search results aren't in the library.
-        menuRemove.Enabled = menuOpenOnDisk.Enabled = selected is Item;
+        menuRemove.Enabled = menuOpenOnDisk.Enabled = menuSetRating.Enabled = selected is Item;
     }
 
     private (string? ImdbId, string? Title) SelectedIdAndTitle() => dgvItems.CurrentItem() switch
@@ -223,6 +240,28 @@ public partial class KinoForm : AsyncForm
             BuildTypeFilter(_localResults.Select(i => i.Type));
             ApplyTypeFilter();
             ShowStatus($"Removed \"{item.Title}\" from the library.");
+        });
+    }
+
+    /// <summary>The IMDb rating by hand, for titles OMDb and TMDb gave none: read it on imdb.com and type it in.</summary>
+    private async void menuSetRating_Click(object sender, EventArgs e)
+    {
+        if (dgvItems.CurrentItem() is not Item item) return;
+
+        using var dialog = new ImdbRatingDialog(item.ImdbId, $"{item.Title} ({item.Year})", item.ImdbRating);
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        var rating = dialog.Rating;
+        await RunAsync($"Saving the rating of {item.Title}…", async ct =>
+        {
+            if (await _movies.SetImdbRatingAsync(item.ImdbId, rating, ct) is not { } updated)
+            {
+                ShowStatus($"\"{item.Title}\" is no longer in the library.");
+                return;
+            }
+            _localResults = _localResults.Select(i => i.ImdbId == updated.ImdbId ? updated : i).ToList();
+            ApplyTypeFilter();
+            ShowStatus(rating is null ? $"Cleared the IMDb rating of \"{item.Title}\"." : $"Set the IMDb rating of \"{item.Title}\" to {updated.ImdbRating}.");
         });
     }
 
