@@ -19,6 +19,11 @@ static class Program
             ContentRootPath = AppContext.BaseDirectory,
         });
 
+        // appsettings.json is also built into the .exe, under the file next to it, so the released .exe runs on its own.
+        using var defaultsJson = typeof(Program).Assembly.GetManifestResourceStream("Kolibri.Kino.WinForms.appsettings.json")!;
+        var defaults = new ConfigurationBuilder().AddJsonStream(defaultsJson).Build();
+        builder.Configuration.Sources.Insert(0, new ChainedConfigurationSource { Configuration = defaults });
+
         // API keys and the Plex token are user settings in the database (Settings window), not configuration.
         // The database itself: the file chosen in Settings, else appsettings.json (see DatabaseLocation).
         builder.Configuration[DatabaseLocation.ConfigKey] = DatabaseLocation.Resolve(builder.Configuration);

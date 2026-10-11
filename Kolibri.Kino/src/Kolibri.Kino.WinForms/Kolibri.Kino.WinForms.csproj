@@ -17,15 +17,17 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Shown in the main window's title: "Kolibri.Kino 1.0.0". -->
+    <!-- Shown in the main window's title: "Kolibri.Kino 1.0.1". -->
     <Product>Kolibri.Kino</Product>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <!-- The .exe icon (Explorer, taskbar, shortcuts). Built from assets/kino.svg by assets/make-icon.cs. -->
     <ApplicationIcon>..\..\assets\kino.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The defaults when there's no appsettings.json next to the .exe (see Program.cs). -->
+    <EmbeddedResource Include="appsettings.json" LogicalName="Kolibri.Kino.WinForms.appsettings.json" />
     <!-- The same icon for every window's title bar (see Controls/AppIcon.cs). -->
     <EmbeddedResource Include="..\..\assets\kino.ico" LogicalName="Kolibri.Kino.WinForms.kino.ico" />
     <!-- Button and menu icons from the user's icon pack (see Controls/SiteIcons.cs). -->
