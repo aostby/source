@@ -1,12 +1,13 @@
 namespace Kolibri.Etiketter;
 
 /// <summary>
-/// Miniatyr av A4-arket (3 x 8). Klikk på en rute for å slå den av eller på.
+/// Miniatyr av etikettarket. Klikk på en rute for å slå den av eller på.
 /// Klikk og dra for å gi flere ruter samme valg.
 /// </summary>
 public sealed class SheetMapControl : Control
 {
-    private readonly bool[] _selected = Enumerable.Repeat(true, LabelSheet.LabelsPerSheet).ToArray();
+    private LabelSheet _sheet = LabelSheet.Default;
+    private bool[] _selected = Enumerable.Repeat(true, LabelSheet.Default.LabelsPerSheet).ToArray();
     private bool? _dragValue;
 
     public SheetMapControl()
@@ -16,18 +17,34 @@ public sealed class SheetMapControl : Control
         Cursor = Cursors.Hand;
     }
 
-    /// <summary>Valgte posisjoner (0–23), sortert.</summary>
+    /// <summary>Arket som vises. Et nytt ark starter med alle etikettene valgt.</summary>
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public LabelSheet Sheet
+    {
+        get => _sheet;
+        set
+        {
+            if (ReferenceEquals(value, _sheet)) return;
+            _sheet = value;
+            _selected = Enumerable.Repeat(true, value.LabelsPerSheet).ToArray();
+            Invalidate();
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>Valgte posisjoner (fra 0), sortert.</summary>
     [System.ComponentModel.Browsable(false)]
     [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public IReadOnlyList<int> SelectedIndices
     {
-        get => Enumerable.Range(0, LabelSheet.LabelsPerSheet).Where(i => _selected[i]).ToArray();
+        get => Enumerable.Range(0, _sheet.LabelsPerSheet).Where(i => _selected[i]).ToArray();
         set
         {
             Array.Clear(_selected);
             foreach (int i in value)
             {
-                if (i >= 0 && i < LabelSheet.LabelsPerSheet)
+                if (i >= 0 && i < _sheet.LabelsPerSheet)
                     _selected[i] = true;
             }
             Invalidate();
@@ -62,13 +79,13 @@ public sealed class SheetMapControl : Control
     {
         RectangleF sheet = SheetBounds();
         float scale = sheet.Width / LabelSheet.PageWidthMm;
-        RectangleF mm = LabelSheet.GetLabelRect(index);
+        RectangleF mm = _sheet.GetLabelRect(index);
         return new RectangleF(sheet.X + mm.X * scale, sheet.Y + mm.Y * scale, mm.Width * scale, mm.Height * scale);
     }
 
     private int HitTest(Point location)
     {
-        for (int i = 0; i < LabelSheet.LabelsPerSheet; i++)
+        for (int i = 0; i < _sheet.LabelsPerSheet; i++)
         {
             if (CellBounds(i).Contains(location))
                 return i;
@@ -80,6 +97,7 @@ public sealed class SheetMapControl : Control
     {
         Graphics g = e.Graphics;
         g.Clear(Parent?.BackColor ?? SystemColors.Control);
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         RectangleF sheet = SheetBounds();
         g.FillRectangle(Brushes.White, sheet);
 
@@ -88,12 +106,25 @@ public sealed class SheetMapControl : Control
         using var printBrush = new SolidBrush(Color.FromArgb(0, 120, 215));
         using var skipBrush = new SolidBrush(Color.FromArgb(225, 225, 225));
 
-        for (int i = 0; i < LabelSheet.LabelsPerSheet; i++)
+        for (int i = 0; i < _sheet.LabelsPerSheet; i++)
         {
             RectangleF cell = CellBounds(i);
-            g.FillRectangle(_selected[i] ? printBrush : skipBrush, cell);
-            g.DrawRectangle(Pens.DarkGray, cell.X, cell.Y, cell.Width, cell.Height);
-            g.DrawString((i + 1).ToString(), font, _selected[i] ? Brushes.White : Brushes.DimGray, cell, format);
+            Brush fill = _selected[i] ? printBrush : skipBrush;
+            if (_sheet.IsRound)
+            {
+                g.FillEllipse(fill, cell);
+                g.DrawEllipse(Pens.DarkGray, cell);
+            }
+            else
+            {
+                g.FillRectangle(fill, cell);
+                g.DrawRectangle(Pens.DarkGray, cell.X, cell.Y, cell.Width, cell.Height);
+            }
+            // Numrene vises bare når de får plass.
+            string number = (i + 1).ToString();
+            SizeF size = g.MeasureString(number, font);
+            if (size.Width <= cell.Width && size.Height <= cell.Height + 2f)
+                g.DrawString(number, font, _selected[i] ? Brushes.White : Brushes.DimGray, cell, format);
         }
         g.DrawRectangle(Pens.Black, sheet.X, sheet.Y, sheet.Width, sheet.Height);
     }

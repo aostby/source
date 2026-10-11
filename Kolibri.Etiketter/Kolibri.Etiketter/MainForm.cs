@@ -23,6 +23,7 @@ public sealed class MainForm : Form
     private readonly Button _removeImage = new();
     private readonly NumericUpDown _imageWidth = new();
     private readonly ComboBox _imagePosition = new();
+    private readonly ComboBox _sheetType = new();
     private readonly SheetMapControl _sheetMap = new();
     private readonly NumericUpDown _sheetCount = new();
     private readonly Label _sheetInfo = new();
@@ -50,6 +51,9 @@ public sealed class MainForm : Form
         LoadStartupDesign();
         LoadSettingsIntoUi();
     }
+
+    /// <summary>Etikettarket som er valgt.</summary>
+    private LabelSheet Sheet => _sheetMap.Sheet;
 
     // ---------------------------------------------------------------- oppsett av skjermbildet
 
@@ -241,6 +245,16 @@ public sealed class MainForm : Form
 
     private GroupBox BuildPrintGroup()
     {
+        _sheetType.DropDownStyle = ComboBoxStyle.DropDownList;
+        _sheetType.Width = 290;
+        _sheetType.DropDownWidth = 420;
+        _sheetType.Items.AddRange(LabelSheet.All.ToArray<object>());
+        _sheetType.SelectedIndexChanged += (_, _) =>
+        {
+            if (_loading || _sheetType.SelectedItem is not LabelSheet sheet) return;
+            ShowSheet(sheet);
+        };
+
         _sheetMap.Size = new Size(120, 170);
         _sheetMap.Margin = new Padding(3, 3, 12, 3);
         _sheetMap.SelectionChanged += (_, _) => UpdateSheetInfo();
@@ -295,6 +309,8 @@ public sealed class MainForm : Form
         offsetHint.ForeColor = SystemColors.GrayText;
 
         return Group("Utskrift",
+            Caption("Etikettark:"),
+            _sheetType,
             hint,
             Row(_sheetMap, positionColumn),
             _printGuides,
@@ -376,7 +392,10 @@ public sealed class MainForm : Form
         _loading = true;
         try
         {
-            IEnumerable<int> positions = _settings.SelectedPositions ?? Enumerable.Range(1, LabelSheet.LabelsPerSheet);
+            LabelSheet sheet = LabelSheet.FindById(_settings.SheetId);
+            _sheetType.SelectedItem = sheet;
+            ShowSheet(sheet);
+            IEnumerable<int> positions = _settings.SelectedPositions ?? Enumerable.Range(1, sheet.LabelsPerSheet);
             _sheetMap.SelectedIndices = positions.Select(p => p - 1).ToArray();
             _sheetCount.Value = Math.Clamp(_settings.SheetCount, 1, (int)_sheetCount.Maximum);
             _printGuides.Checked = _settings.PrintGuides;
@@ -392,12 +411,21 @@ public sealed class MainForm : Form
 
     private void SaveUiToSettings()
     {
+        _settings.SheetId = Sheet.Id;
         _settings.SelectedPositions = _sheetMap.SelectedIndices.Select(i => i + 1).ToList();
         _settings.SheetCount = (int)_sheetCount.Value;
         _settings.PrintGuides = _printGuides.Checked;
         _settings.OffsetXMm = (float)_offsetX.Value;
         _settings.OffsetYMm = (float)_offsetY.Value;
         _settings.Save();
+    }
+
+    /// <summary>Bytter ark: miniatyrarket (alle etiketter valgt), etiketten på skjermen og tittelen.</summary>
+    private void ShowSheet(LabelSheet sheet)
+    {
+        _sheetMap.Sheet = sheet;
+        _preview.Sheet = sheet;
+        UpdateTitle();
     }
 
     private void DesignChanged()
@@ -410,7 +438,7 @@ public sealed class MainForm : Form
     private void UpdateTitle()
     {
         string name = _currentFile is null ? "Ny etikett" : Path.GetFileNameWithoutExtension(_currentFile);
-        Text = $"{name}{(_dirty && _currentFile is not null ? " *" : "")} – Kolibri.Etiketter (Lyreco 24 per A4, 70 x 37 mm)";
+        Text = $"{name}{(_dirty && _currentFile is not null ? " *" : "")} – Kolibri.Etiketter ({Sheet.Name}, {Sheet.Products})";
     }
 
     private void UpdateFontInfo()
@@ -618,6 +646,7 @@ public sealed class MainForm : Form
     {
         var job = new LabelPrintJob(
             _design,
+            Sheet,
             _sheetMap.SelectedIndices,
             (int)_sheetCount.Value,
             (float)_offsetX.Value,

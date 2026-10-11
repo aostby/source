@@ -4,6 +4,7 @@ namespace Kolibri.Etiketter;
 public sealed class LabelPreviewControl : Control
 {
     private LabelDesign? _design;
+    private LabelSheet _sheet = LabelSheet.Default;
     private bool _textOverflow;
     private float _usedFontSize;
 
@@ -20,6 +21,15 @@ public sealed class LabelPreviewControl : Control
     {
         get => _design;
         set { _design = value; Invalidate(); }
+    }
+
+    /// <summary>Arket etiketten skal på; bestemmer størrelse og form.</summary>
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public LabelSheet Sheet
+    {
+        get => _sheet;
+        set { _sheet = value; Invalidate(); }
     }
 
     /// <summary>True dersom teksten ikke fikk plass ved siste opptegning.</summary>
@@ -40,8 +50,8 @@ public sealed class LabelPreviewControl : Control
 
         const float paddingPx = 24f;
         float pxPerMm = Math.Min(
-            (ClientSize.Width - 2 * paddingPx) / LabelSheet.LabelWidthMm,
-            (ClientSize.Height - 2 * paddingPx) / LabelSheet.LabelHeightMm);
+            (ClientSize.Width - 2 * paddingPx) / _sheet.LabelWidthMm,
+            (ClientSize.Height - 2 * paddingPx) / _sheet.LabelHeightMm);
         if (pxPerMm <= 0.1f)
             return;
 
@@ -49,16 +59,21 @@ public sealed class LabelPreviewControl : Control
         g.PageUnit = GraphicsUnit.Millimeter;
         g.PageScale = pxPerMm / (g.DpiX / 25.4f);
 
-        float x = (ClientSize.Width - LabelSheet.LabelWidthMm * pxPerMm) / 2f / pxPerMm;
-        float y = (ClientSize.Height - LabelSheet.LabelHeightMm * pxPerMm) / 2f / pxPerMm;
-        var label = new RectangleF(x, y, LabelSheet.LabelWidthMm, LabelSheet.LabelHeightMm);
+        float x = (ClientSize.Width - _sheet.LabelWidthMm * pxPerMm) / 2f / pxPerMm;
+        float y = (ClientSize.Height - _sheet.LabelHeightMm * pxPerMm) / 2f / pxPerMm;
+        var label = new RectangleF(x, y, _sheet.LabelWidthMm, _sheet.LabelHeightMm);
 
         float shadow = 3f / pxPerMm;
         using (var shadowBrush = new SolidBrush(Color.FromArgb(60, 0, 0, 0)))
-            g.FillRectangle(shadowBrush, label.X + shadow, label.Y + shadow, label.Width, label.Height);
-        g.FillRectangle(Brushes.White, label);
+        {
+            var shadowRect = new RectangleF(label.X + shadow, label.Y + shadow, label.Width, label.Height);
+            if (_sheet.IsRound) g.FillEllipse(shadowBrush, shadowRect);
+            else g.FillRectangle(shadowBrush, shadowRect);
+        }
+        if (_sheet.IsRound) g.FillEllipse(Brushes.White, label);
+        else g.FillRectangle(Brushes.White, label);
 
-        LabelDrawResult result = LabelRenderer.Draw(g, _design, label, LabelRenderMode.Screen);
+        LabelDrawResult result = LabelRenderer.Draw(g, _design, _sheet, label, LabelRenderMode.Screen);
         if (result.TextOverflow != _textOverflow || result.FontSize != _usedFontSize)
         {
             _textOverflow = result.TextOverflow;
