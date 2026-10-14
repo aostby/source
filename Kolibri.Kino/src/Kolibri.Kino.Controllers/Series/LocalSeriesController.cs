@@ -128,16 +128,25 @@ public sealed class LocalSeriesController(
     }
 
     /// <summary>
-    /// The episode list: Kino's cache unless <paramref name="refresh"/>; else fetched online and cached; else (offline,
-    /// no key, limit) the cache anyway, then what SilverScreen stored. <c>Note</c> says why fetching failed.
+    /// The episode list, from the database first: Kino's cache, else what SilverScreen stored. Only when neither has it
+    /// (or with <paramref name="refresh"/>) it is fetched online and stored, and a series no source knows is remembered,
+    /// so it isn't asked about again for a while. When fetching fails (offline, no key, limit) the stored lists are used
+    /// anyway. <c>Note</c> says why fetching failed.
     /// </summary>
     private async Task<(IReadOnlyList<SeriesSeason> Known, bool FromCache, string? Note)> LoadSeasonsAsync(
         LocalSeries series, bool refresh, CancellationToken ct)
     {
         var id = series.Item.ImdbId;
-        var known = refresh ? [] : await seasons.GetCachedSeasonsAsync(id, ct).ConfigureAwait(false);
-        if (known.Count > 0) return (known, true, null);
+        if (!refresh)
+        {
+            // Locally first: Kino's list, then what SilverScreen stored. Online only when neither knows the series.
+            var cached = await seasons.GetCachedSeasonsAsync(id, ct).ConfigureAwait(false);
+            if (cached.Count > 0) return (cached, true, null);
+            var stored = await seasons.GetSilverScreenSeasonsAsync(id, ct).ConfigureAwait(false);
+            if (stored.Count > 0) return (stored, false, null);
+        }
 
+        IReadOnlyList<SeriesSeason> known = [];
         var info = await seasons.GetFetchInfoAsync(id, ct).ConfigureAwait(false);
         string? note;
         if (!refresh && RecentlyNotFound(info))

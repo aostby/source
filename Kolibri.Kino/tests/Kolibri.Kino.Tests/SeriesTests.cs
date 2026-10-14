@@ -121,19 +121,41 @@ public sealed class LocalSeriesControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task Falls_back_to_what_SilverScreen_stored_when_nothing_can_be_fetched()
+    public async Task Uses_what_SilverScreen_stored_before_going_online()
     {
         SilverScreenStoredSeason1();
-        _online.Throws = new MovieInfoUnavailableException("OMDb: Request limit reached!");
 
         var details = await _controller.GetDetailsAsync(Local(), refresh: false);
 
-        Assert.Equal(("OMDb", "OMDb: Request limit reached!"), (details.Source, details.Note));
+        Assert.Equal(0, _online.Calls);
+        Assert.Equal(("OMDb", (string?)null), (details.Source, details.Note));
         var episode = Assert.Single(details.Seasons.Single().Episodes).Episode;
         Assert.Equal(("Welcome to the Hellmouth", "tt0452716", 8.1, 43, new DateTime(1997, 3, 10)),
             (episode.Title, episode.ImdbId, episode.Rating, episode.RuntimeMinutes, episode.AirDate));
         Assert.StartsWith("When teen vampire slayer", episode.Plot);
         Assert.Empty(await _seasons.GetCachedSeasonsAsync(SeriesId)); // SilverScreen's data isn't copied into Kino's cache
+    }
+
+    [Fact]
+    public async Task Refresh_falls_back_to_what_SilverScreen_stored_when_nothing_can_be_fetched()
+    {
+        SilverScreenStoredSeason1();
+        _online.Throws = new MovieInfoUnavailableException("OMDb: Request limit reached!");
+
+        var details = await _controller.GetDetailsAsync(Local(), refresh: true);
+
+        Assert.Equal(("OMDb", "OMDb: Request limit reached!", 1), (details.Source, details.Note, details.Seasons.Count));
+    }
+
+    [Fact]
+    public async Task A_series_only_known_online_is_fetched_once_then_read_from_the_database()
+    {
+        _online.Seasons = [Season(1, 2, "TMDb")];
+
+        await _controller.GetDetailsAsync(Local(), refresh: false);
+        var again = await _controller.GetDetailsAsync(Local(), refresh: false);
+
+        Assert.Equal((1, true), (_online.Calls, again.FromCache));
     }
 
     [Fact]

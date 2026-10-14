@@ -196,7 +196,9 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
 <h2 id="local-series">Local series</h2>
 <ul>
   <li>Select a series to see its seasons and episodes, one tab per season. Episodes you have on disk are green; double-click to play.</li>
-  <li>Episode details are fetched once and remembered. <b>Refresh episodes</b> fetches them again (TMDb gives the most; without a TMDb key, OMDb).</li>
+  <li>Episode details come from the database first: Kino's own, else what SilverScreen stored. Only a series neither has is looked up
+      online, once, and remembered (also when no one knows it, then it isn't asked about again for 30 days).
+      <b>Refresh episodes</b> fetches them again (TMDb gives the most, with plots and pictures; without a TMDb key, OMDb).</li>
   <li>Files are matched to episodes by names like <code>S01E02</code>, <code>1x02</code> or <code>Episode 6</code> in a <code>Season 2</code> folder.</li>
   <li><b>Find new series…</b> looks through the series folder for series not in the library and asks about the ones it can't match.</li>
   <li><b>Recently updated</b> (shown when the Plex server and token are set in Settings) asks Plex which series got new
