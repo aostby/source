@@ -13,11 +13,13 @@ public partial class MissingEpisodesForm : AsyncForm
     public override string HelpTopic => "missing-episodes";
 
     private readonly LocalSeriesController _controller;
+    private readonly IServiceProvider _services;
     private IReadOnlyList<MissingEpisodesRow> _rows = [];
 
-    public MissingEpisodesForm(LocalSeriesController controller)
+    public MissingEpisodesForm(LocalSeriesController controller, IServiceProvider services)
     {
         _controller = controller;
+        _services = services;
         InitializeComponent();
         this.Describe(
             (btnRun, "Goes through every series folder and compares the files with the episode lists in the database (Kino's, else SilverScreen's). Only a series with no list is fetched online, once."),
@@ -72,6 +74,13 @@ public partial class MissingEpisodesForm : AsyncForm
             + (noList > 0 ? $" {noList} series have no episode list." : "")
             + $" {(fetched == 0 ? "All lists" : $"{rows.Count - fetched} lists")} from the database"
             + (fetched > 0 ? $", {fetched} fetched online." : "."));
+    }
+
+    /// <summary>Local series, filtered on the series' title, with the series and its episodes shown.</summary>
+    private void dgvSeries_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex < 0 || dgvSeries.ItemAt(e.RowIndex) is not ReportRow { Source.Series.Item: var item }) return;
+        this.ShowSingle<LocalSeriesForm>(_services).ShowSeries(item.Title ?? item.ImdbId, item.ImdbId);
     }
 
     /// <summary>An ended series' missing episodes in red: they have all aired, and nothing more is coming.</summary>

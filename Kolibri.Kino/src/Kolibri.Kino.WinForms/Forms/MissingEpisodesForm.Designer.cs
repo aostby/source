@@ -99,6 +99,7 @@ partial class MissingEpisodesForm
         dgvSeries.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         dgvSeries.TabIndex = 1;
         dgvSeries.CellFormatting += dgvSeries_CellFormatting;
+        dgvSeries.CellDoubleClick += dgvSeries_CellDoubleClick;
         //
         // statusStrip
         //

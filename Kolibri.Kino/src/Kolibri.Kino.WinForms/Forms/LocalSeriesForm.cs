@@ -52,12 +52,45 @@ public partial class LocalSeriesForm : AsyncForm
         episodeDetails.PosterAspect = 16.0 / 9.0;
     }
 
-    private async void LocalSeriesForm_Load(object sender, EventArgs e) =>
+    private async void LocalSeriesForm_Load(object sender, EventArgs e)
+    {
         await RunAsync("Loading series…", async ct =>
         {
             _all = await _controller.GetSeriesAsync(ct);
             ApplyFilter();
         });
+        _loaded = true;
+        if (_pending is { } pending)
+        {
+            _pending = null;
+            await ShowFilteredAsync(pending.Title, pending.ImdbId);
+        }
+    }
+
+    private bool _loaded;
+    private (string Title, string ImdbId)? _pending;
+
+    /// <summary>
+    /// Filters the list on <paramref name="title"/> and shows the series <paramref name="imdbId"/> with its episodes
+    /// (from the missing episodes report). Waits for the list when the window is still loading.
+    /// </summary>
+    public async void ShowSeries(string title, string imdbId)
+    {
+        if (!_loaded)
+        {
+            _pending = (title, imdbId);
+            return;
+        }
+        await ShowFilteredAsync(title, imdbId);
+    }
+
+    private async Task ShowFilteredAsync(string title, string imdbId)
+    {
+        txtFilter.Text = title;
+        ApplyFilter();
+        if (_all.FirstOrDefault(s => s.Item.ImdbId == imdbId) is { } series) SelectSeries(series);
+        await ShowSelectedSeriesAsync();
+    }
 
     /// <summary>"Recently updated" only with Plex's server and token in Settings (checked again when Settings may have changed).</summary>
     protected override void OnActivated(EventArgs e)
