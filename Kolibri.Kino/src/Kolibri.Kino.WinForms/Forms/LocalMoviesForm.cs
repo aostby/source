@@ -14,7 +14,7 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// library entries whose file is gone and files on disk the library doesn't know, and a scan ("Oppdater")
 /// that matches new files to movies.
 /// </summary>
-public partial class LocalMoviesForm : AsyncForm
+public partial class LocalMoviesForm : AsyncForm, IWritesToExcel
 {
     public override string HelpTopic => "local-movies";
 
@@ -100,9 +100,11 @@ public partial class LocalMoviesForm : AsyncForm
     private void btnCancel_Click(object sender, EventArgs e) => CancelRunning();
 
     /// <summary>Saves the list shown as CSV, named after the filter ("Missing on disk - Movies - 2026-10-14.csv"), and opens it in Excel.</summary>
-    private void btnExcel_Click(object sender, EventArgs e)
+    private void btnExcel_Click(object sender, EventArgs e) => WriteToExcel();
+
+    public void WriteToExcel()
     {
-        if (_shown is null) return;
+        if (_shown is null || !btnExcel.Enabled) return;
 
         var filter = _shown.Filter switch
         {

@@ -11,7 +11,7 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// Kino's search window (opened in <see cref="MainForm"/> at start): search the library or OMDb. The other windows are in the main window's menus.
 /// Thin UI: collects input, awaits the controller, shows the result. No data access here.
 /// </summary>
-public partial class KinoForm : AsyncForm
+public partial class KinoForm : AsyncForm, IWritesToExcel
 {
     public override string HelpTopic => "search";
 
@@ -406,8 +406,11 @@ public partial class KinoForm : AsyncForm
     /// Saves the rows shown (type filter and sort applied) as CSV, named after the type filter and where they came from,
     /// e.g. "Movies - Library - 2026-10-14.csv" or "All - OMDb matrix - 2026-10-14.csv", and opens it in Excel.
     /// </summary>
-    private void btnExcel_Click(object sender, EventArgs e)
+    private void btnExcel_Click(object sender, EventArgs e) => WriteToExcel();
+
+    public void WriteToExcel()
     {
+        if (!btnExcel.Enabled) return;
         var rows = bindingSource.List.Cast<object>().ToList();
         if (rows.Count == 0)
         {

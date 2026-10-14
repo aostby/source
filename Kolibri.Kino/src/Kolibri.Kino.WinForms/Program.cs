@@ -36,6 +36,7 @@ static class Program
         using var host = builder.Build();
         host.Services.StartApiUsageCounting();
         KinoLog.Factory = host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>();
+        Application.AddMessageFilter(new Controls.ExcelExport.Shortcut());
         Application.Run(host.Services.GetRequiredService<MainForm>());
     }
 }

@@ -9,7 +9,7 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// <summary>
 /// Result of a folder scan (replaces SilverScreen's CurrentLog text box).
 /// </summary>
-public partial class ScanReportForm : Form
+public partial class ScanReportForm : Form, IWritesToExcel
 {
     private const string ChangesAndProblems = "Changes and problems";
     private const string Everything = "Everything";
@@ -131,8 +131,11 @@ public partial class ScanReportForm : Form
     }
 
     /// <summary>Saves the rows shown as CSV, named after the Show choice ("Changes and problems - Movies - 2026-10-14.csv"), and opens it in Excel.</summary>
-    private void btnExcel_Click(object sender, EventArgs e)
+    private void btnExcel_Click(object sender, EventArgs e) => WriteToExcel();
+
+    public void WriteToExcel()
     {
+        if (_rows.Count == 0) return;
         var csv = new System.Text.StringBuilder();
         csv.AppendLine(Csv.Line("Outcome", "Title", "IMDb id", "Source", "File", "Detail"));
         foreach (var r in _rows)
