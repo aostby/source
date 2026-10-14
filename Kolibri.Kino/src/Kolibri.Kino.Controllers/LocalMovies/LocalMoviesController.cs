@@ -79,6 +79,28 @@ public sealed class LocalMoviesController(
         }
     }
 
+    /// <summary>
+    /// What the window shows, as CSV for Excel (see <see cref="Csv"/>): the movies for All and Missing on disk,
+    /// the video files for Not in library.
+    /// </summary>
+    public static string ToCsv(LocalMoviesResult result)
+    {
+        var csv = new System.Text.StringBuilder();
+        if (result.Filter == LocalMoviesFilter.NotInLibrary)
+        {
+            csv.AppendLine(Csv.Line("File", "Folder", "Multipart", "Path"));
+            foreach (var f in result.UnmatchedFiles)
+                csv.AppendLine(Csv.Line(Path.GetFileName(f.FilePath), Path.GetDirectoryName(f.FilePath), f.IsMultipart ? "Yes" : "No", f.FilePath));
+        }
+        else
+        {
+            csv.AppendLine(Csv.Line("Title", "Year", "IMDb rating", "Genre", "On disk", "File", "IMDb id"));
+            foreach (var m in result.Movies)
+                csv.AppendLine(Csv.Line(m.Title, m.Item?.Year, m.Item?.ImdbRating, m.Item?.Genre, m.FileExists ? "Yes" : "No", m.FilePath, m.ImdbId));
+        }
+        return csv.ToString();
+    }
+
     private static double Rating(Item? item) =>
         double.TryParse(item?.ImdbRating, NumberStyles.Float, CultureInfo.InvariantCulture, out var rating) ? rating : -1;
 }

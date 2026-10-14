@@ -181,6 +181,8 @@ The button is off when the title isn't linked to a movie file.</p>
       Find the movie there and click <b>Use tt…</b>: its IMDb id goes into the search, and the movie is found.</li>
   <li><b>Remove missing…</b> removes links to files that no longer exist; the movie details are kept.</li>
   <li><b>Clean up folder…</b> deletes leftover files (.nfo, .txt, foreign subtitles …) after asking. They are deleted permanently. Video files are never deleted.</li>
+  <li><b>Write to Excel…</b> (right in the status bar) saves the list shown as a CSV file and opens it in Excel. The name starts with the filter,
+      e.g. <code>Missing on disk - Movies - 2026-10-14.csv</code>. The scan report has the same button; there the name starts with the <b>Show</b> choice.</li>
 </ul>
 <p id="cleanup" class="note"><b>Check the cleanup list before you scan.</b> Which files are deleted (after a scan, and with <b>Clean up folder…</b>)
 is the list <code>Kino:Cleanup:FilePatterns</code> in <code>appsettings.json</code> next to the program. It deletes subtitles in many languages,

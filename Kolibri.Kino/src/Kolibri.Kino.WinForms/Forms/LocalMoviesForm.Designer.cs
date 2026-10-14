@@ -51,6 +51,7 @@ partial class LocalMoviesForm
         lblStatus = new ToolStripStatusLabel();
         progress = new ToolStripProgressBar();
         btnCancel = new ToolStripButton();
+        btnExcel = new ToolStripButton();
         toolbar.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)split).BeginInit();
         split.Panel1.SuspendLayout();
@@ -251,7 +252,7 @@ partial class LocalMoviesForm
         //
         // statusStrip
         //
-        statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus, progress, btnCancel });
+        statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus, progress, btnCancel, btnExcel });
         statusStrip.Location = new Point(0, 639);
         statusStrip.Name = "statusStrip";
         statusStrip.Size = new Size(1184, 22);
@@ -279,6 +280,14 @@ partial class LocalMoviesForm
         btnCancel.Text = "Cancel";
         btnCancel.Visible = false;
         btnCancel.Click += btnCancel_Click;
+        //
+        // btnExcel
+        //
+        btnExcel.Alignment = ToolStripItemAlignment.Right;
+        btnExcel.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnExcel.Name = "btnExcel";
+        btnExcel.Text = "Write to Excel…";
+        btnExcel.Click += btnExcel_Click;
         //
         // LocalMoviesForm
         //
@@ -330,4 +339,5 @@ partial class LocalMoviesForm
     private ToolStripStatusLabel lblStatus;
     private ToolStripProgressBar progress;
     private ToolStripButton btnCancel;
+    private ToolStripButton btnExcel;
 }

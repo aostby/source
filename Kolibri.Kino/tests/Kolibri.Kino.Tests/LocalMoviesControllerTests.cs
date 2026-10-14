@@ -40,6 +40,25 @@ public sealed class LocalMoviesControllerTests : IDisposable
     }
 
     [Fact]
+    public void Csv_lists_movies_with_on_disk_and_quotes_separators()
+    {
+        var movie = new LocalMovie("tt1", @"M:\A; B\A.mkv", false, new Item { Title = "A; B", Year = "2001", ImdbRating = "N/A", Genre = "Drama" });
+        var csv = LocalMoviesController.ToCsv(new LocalMoviesResult(@"M:\", LocalMoviesFilter.MissingFiles, [movie], [], 1));
+
+        Assert.StartsWith("Title;Year;IMDb rating;Genre;On disk;File;IMDb id", csv);
+        Assert.Contains("\"A; B\";2001;;Drama;No;\"M:\\A; B\\A.mkv\";tt1", csv);
+    }
+
+    [Fact]
+    public void Csv_lists_files_for_not_in_library()
+    {
+        var csv = LocalMoviesController.ToCsv(new LocalMoviesResult(@"M:\", LocalMoviesFilter.NotInLibrary, [], [new UnmatchedFile(@"M:\Long\Long.CD1.avi", true)], 0));
+
+        Assert.StartsWith("File;Folder;Multipart;Path", csv);
+        Assert.Contains(@"Long.CD1.avi;M:\Long;Yes;M:\Long\Long.CD1.avi", csv);
+    }
+
+    [Fact]
     public async Task All_lists_library_files_in_folder_best_rated_first()
     {
         using var db = new KinoDatabase(_temp.Path);

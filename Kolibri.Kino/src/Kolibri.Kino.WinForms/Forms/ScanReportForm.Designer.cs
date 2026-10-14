@@ -37,7 +37,11 @@ partial class ScanReportForm
         btnFindMovie = new Button();
         dgvEntries = new DataGridView();
         bindingSource = new BindingSource(components);
+        statusStrip = new StatusStrip();
+        lblStatus = new ToolStripStatusLabel();
+        btnExcel = new ToolStripButton();
         toolbar.SuspendLayout();
+        statusStrip.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)dgvEntries).BeginInit();
         ((System.ComponentModel.ISupportInitialize)bindingSource).BeginInit();
         SuspendLayout();
@@ -128,6 +132,28 @@ partial class ScanReportForm
         dgvEntries.TabIndex = 2;
         dgvEntries.CellDoubleClick += dgvEntries_CellDoubleClick;
         dgvEntries.SelectionChanged += dgvEntries_SelectionChanged;
+        //
+        // statusStrip
+        //
+        statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus, btnExcel });
+        statusStrip.Location = new Point(0, 578);
+        statusStrip.Name = "statusStrip";
+        statusStrip.Size = new Size(1184, 22);
+        statusStrip.TabIndex = 3;
+        //
+        // lblStatus
+        //
+        lblStatus.Name = "lblStatus";
+        lblStatus.Spring = true;
+        lblStatus.TextAlign = ContentAlignment.MiddleLeft;
+        //
+        // btnExcel
+        //
+        btnExcel.Alignment = ToolStripItemAlignment.Right;
+        btnExcel.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnExcel.Name = "btnExcel";
+        btnExcel.Text = "Write to Excel…";
+        btnExcel.Click += btnExcel_Click;
         // 
         // ScanReportForm
         // 
@@ -135,6 +161,7 @@ partial class ScanReportForm
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(1184, 600);
         Controls.Add(dgvEntries);
+        Controls.Add(statusStrip);
         Controls.Add(toolbar);
         Controls.Add(lblSummary);
         Name = "ScanReportForm";
@@ -144,6 +171,8 @@ partial class ScanReportForm
         toolbar.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)dgvEntries).EndInit();
         ((System.ComponentModel.ISupportInitialize)bindingSource).EndInit();
+        statusStrip.ResumeLayout(false);
+        statusStrip.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -158,4 +187,7 @@ partial class ScanReportForm
     private Button btnFindMovie;
     private DataGridView dgvEntries;
     private BindingSource bindingSource;
+    private StatusStrip statusStrip;
+    private ToolStripStatusLabel lblStatus;
+    private ToolStripButton btnExcel;
 }
