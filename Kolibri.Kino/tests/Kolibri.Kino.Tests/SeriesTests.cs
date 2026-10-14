@@ -204,10 +204,74 @@ public sealed class LocalSeriesControllerTests : IDisposable
         Assert.Equal(_folder, (await _files.GetByImdbIdAsync(SeriesId))?.FullName);
     }
 
+    [Fact]
+    public async Task Missing_episodes_lists_aired_episodes_without_files_ongoing_first_then_newest()
+    {
+        var ended = Directory.CreateDirectory(Path.Combine(_folder, "Buffy")).FullName;
+        var ongoing = Directory.CreateDirectory(Path.Combine(_folder, "Marshals")).FullName;
+        var older = Directory.CreateDirectory(Path.Combine(_folder, "Older")).FullName;
+        File.WriteAllText(Path.Combine(ended, "Buffy.S01E01.mkv"), "x");
+        File.WriteAllText(Path.Combine(ended, "Buffy.S01E02E03.mkv"), "x");
+        File.WriteAllText(Path.Combine(ongoing, "Marshals.S01E02.mkv"), "x");
+
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "1997–2003"));
+        await _movies.UpsertAsync(Series("tt0000002", "Marshals", "7.0", year: "2025–"));
+        await _movies.UpsertAsync(Series("tt0000003", "Older", "7.0", year: "1990–"));
+        await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = ended });
+        await _files.UpsertAsync(new FileItem { ImdbId = "tt0000002", FullName = ongoing });
+        await _files.UpsertAsync(new FileItem { ImdbId = "tt0000003", FullName = older });
+
+        var past = new DateTime(2020, 1, 1);
+        await _seasons.SaveSeasonsAsync(SeriesId, [Season(1, 5, "TMDb"), Season(0, 2, "TMDb")]);   // specials are left out
+        await _seasons.SaveSeasonsAsync("tt0000002", [new SeriesSeason(1, "Season 1",
+        [
+            new(1, 1, "Pilot", past, null, null, null, null, null),
+            new(1, 2, "Two", past, null, null, null, null, null),
+            new(1, 3, "Next week", DateTime.Today.AddDays(7), null, null, null, null, null),   // not aired yet
+        ], "TMDb")]);
+        await _seasons.SaveSeasonsAsync("tt0000003", [Season(1, 1, "TMDb")]);
+
+        var report = await _controller.GetMissingEpisodesAsync(refreshOngoing: false);
+
+        Assert.Equal(0, _online.Calls);
+        Assert.Equal([("Marshals", true, 2, 1, "S01E01"), ("Older", true, 1, 0, "S01E01"), ("Buffy", false, 5, 3, "S01E04–E05")],
+            report.Select(r => (r.Series.Item.Title, r.Ongoing, r.Aired, r.OnDisk, LocalSeriesController.Describe(r.Missing))));
+    }
+
+    [Fact]
+    public async Task Missing_episodes_fetches_ongoing_series_again_only_when_asked()
+    {
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "2025–"));
+        await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = _folder });
+        await _seasons.SaveSeasonsAsync(SeriesId, [Season(1, 2, "TMDb")]);
+        _online.Seasons = [Season(1, 4, "TMDb")];
+
+        var cached = await _controller.GetMissingEpisodesAsync(refreshOngoing: false);
+        var refreshed = await _controller.GetMissingEpisodesAsync(refreshOngoing: true);
+
+        Assert.Equal((2, 4, 1), (cached[0].Missing.Count, refreshed[0].Missing.Count, _online.Calls));
+    }
+
+    [Theory]
+    [InlineData("2018–", true)]
+    [InlineData("2018-", true)]
+    [InlineData("2010–2015", false)]
+    [InlineData("2019", false)]
+    [InlineData(null, false)]
+    public void Ongoing_is_an_open_year_range(string? year, bool ongoing) => Assert.Equal(ongoing, LocalSeriesController.IsOngoing(year));
+
+    [Fact]
+    public void Describe_shortens_runs_of_episodes()
+    {
+        SeriesEpisode E(int s, int e) => new(s, e, "", null, null, null, null, null, null);
+        Assert.Equal("S01E03, S02E01–E05, S02E07, S10E01",
+            LocalSeriesController.Describe([E(2, 7), E(1, 3), E(2, 1), E(2, 2), E(2, 3), E(2, 4), E(2, 5), E(10, 1)]));
+    }
+
     private LocalSeries Local() => new(Series(SeriesId, "Buffy", "8.3"), _folder, FolderExists: true);
 
-    private static Item Series(string id, string title, string rating, string? tomatoUrl = null) =>
-        new() { ImdbId = id, Title = title, Type = "series", ImdbRating = rating, TotalSeasons = "7", TomatoUrl = tomatoUrl, Response = "True" };
+    private static Item Series(string id, string title, string rating, string? tomatoUrl = null, string? year = null) =>
+        new() { ImdbId = id, Title = title, Type = "series", ImdbRating = rating, TotalSeasons = "7", TomatoUrl = tomatoUrl, Year = year, Response = "True" };
 
     private static SeriesSeason Season(int number, int episodes, string source) => new(number, $"Season {number}",
         Enumerable.Range(1, episodes).Select(e => new SeriesEpisode(number, e, $"Episode {e}", null, "Plot", 8.0, 42, null, null)).ToList(), source);

@@ -42,7 +42,8 @@ public partial class LocalSeriesForm : AsyncForm
             (btnRefresh, "Fetches the selected series' seasons and episodes again (TMDb, else OMDb) instead of the saved copy."),
             (btnSetFolder, "Links the selected series to its folder on disk, so its episode files are found."),
             (btnAddToWatchlist, "Puts the selected series on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
-            (btnFindNew, "Looks through the series folder for series not in the library, adds the ones it recognises and asks about the rest. Hold Shift to also be asked about folders marked Don't ask again."));
+            (btnFindNew, "Looks through the series folder for series not in the library, adds the ones it recognises and asks about the rest. Hold Shift to also be asked about folders marked Don't ask again."),
+            (btnMissing, "A report of the aired episodes you don't have, for every series: ongoing series first, then ended ones, newest first."));
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvSeries.AutoGenerateColumns = true;
         dgvSeries.CellToolTipTextNeeded += dgvSeries_CellToolTipTextNeeded;
@@ -455,6 +456,9 @@ public partial class LocalSeriesForm : AsyncForm
     /// or a title and year that match clearly, otherwise by asking, one folder at a time. Hold Shift to be asked
     /// about folders answered with "Don't ask again" too.
     /// </summary>
+    private void btnMissing_Click(object sender, EventArgs e) =>
+        ActivatorUtilities.CreateInstance<MissingEpisodesForm>(_services).ShowFrom(this);
+
     private async void btnFindNew_Click(object sender, EventArgs e)
     {
         var includeIgnored = (ModifierKeys & Keys.Shift) != 0;

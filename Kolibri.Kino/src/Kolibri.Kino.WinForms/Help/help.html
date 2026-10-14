@@ -204,6 +204,19 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
       (e.g. <code>S02E01, S02E03</code>, with titles and when they were added). The status bar names the series on Plex that
       aren't in the library. Click a column header to sort otherwise.</li>
   <li><b>Set folder…</b> links the selected series to its folder. Right-click a series to change its IMDb id or open it on IMDb.</li>
+  <li><b>Missing episodes…</b> opens the report below.</li>
+</ul>
+
+<h3 id="missing-episodes">Missing episodes</h3>
+<p>For every series with a folder, the aired episodes you don't have a file for (season 1 and up; specials are left out).</p>
+<ul>
+  <li>Ongoing series (OMDb years like <code>2018–</code>) come first, ended ones (<code>2010–2015</code>) last; newest first within each.</li>
+  <li>In an ended series the missing episodes are in <span style="color:firebrick"><b>red</b></span>: they have all aired, and nothing more is coming.</li>
+  <li><b>Missing episodes</b> lists them short: <code>S01E03, S02E01–E05</code> is episode 3 of season 1 and episodes 1 to 5 of season 2.</li>
+  <li>The episode lists already fetched are used. A series without one is fetched once (TMDb, else OMDb) and remembered.
+      An ongoing series' list can be old: tick <b>Fetch episode lists of ongoing series again</b> to include episodes aired since (one request per season).</li>
+  <li>Series without a folder, or whose folder also holds other series, are left out. <b>Show complete series too</b> lists the ones that miss nothing.</li>
+  <li><b>Write to Excel…</b> (or <kbd>Ctrl</kbd>+<kbd>S</kbd>) saves the report.</li>
 </ul>
 
 <h2 id="watchlists">Watchlists</h2>
