@@ -59,6 +59,7 @@ partial class KinoForm
         bindingSource = new BindingSource(components);
         statusStrip = new StatusStrip();
         lblStatus = new ToolStripStatusLabel();
+        btnExcel = new ToolStripButton();
         toolbar.SuspendLayout();
         defaultKeysBanner.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)dgvItems).BeginInit();
@@ -323,7 +324,7 @@ partial class KinoForm
         // 
         // statusStrip
         // 
-        statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus });
+        statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus, btnExcel });
         statusStrip.Location = new Point(0, 539);
         statusStrip.Name = "statusStrip";
         statusStrip.Size = new Size(984, 22);
@@ -334,7 +335,15 @@ partial class KinoForm
         lblStatus.Name = "lblStatus";
         lblStatus.Size = new Size(39, 17);
         lblStatus.Text = "Ready";
-        // 
+        //
+        // btnExcel
+        //
+        btnExcel.Alignment = ToolStripItemAlignment.Right;
+        btnExcel.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnExcel.Name = "btnExcel";
+        btnExcel.Text = "Write to Excel…";
+        btnExcel.Click += btnExcel_Click;
+        //
         // KinoForm
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
@@ -395,4 +404,5 @@ partial class KinoForm
     private BindingSource bindingSource;
     private StatusStrip statusStrip;
     private ToolStripStatusLabel lblStatus;
+    private ToolStripButton btnExcel;
 }

@@ -8,13 +8,14 @@ namespace Kolibri.Kino.WinForms.Controls;
 internal static class ExcelExport
 {
     /// <summary>
-    /// Asks where to save, suggesting "&lt;what&gt; - &lt;folder&gt; - &lt;date&gt;.csv" in Documents, writes the file and opens it.
-    /// Returns the saved file, or null when cancelled or it failed (the user has been told).
+    /// Asks where to save, suggesting "&lt;parts joined by ' - '&gt; - &lt;date&gt;.csv" in Documents, writes the file and opens it.
+    /// The first part is the filter shown, so the file name says what's in it. Returns the saved file, or null when
+    /// cancelled or it failed (the user has been told).
     /// </summary>
-    public static string? Save(IWin32Window owner, string what, string folder, string csv)
+    public static string? Save(IWin32Window owner, string csv, params string[] nameParts)
     {
-        var folderName = Path.GetFileName(Path.TrimEndingDirectorySeparator(folder));
-        var name = string.Join("_", $"{what} - {folderName} - {DateTime.Now:yyyy-MM-dd}.csv".Split(Path.GetInvalidFileNameChars()));
+        var parts = nameParts.Where(p => !string.IsNullOrWhiteSpace(p)).Append($"{DateTime.Now:yyyy-MM-dd}");
+        var name = string.Join("_", $"{string.Join(" - ", parts)}.csv".Split(Path.GetInvalidFileNameChars()));
         using var dialog = new SaveFileDialog
         {
             Title = "Write to Excel",
@@ -36,4 +37,7 @@ internal static class ExcelExport
             return null;
         }
     }
+
+    /// <summary>The last folder name of a path, e.g. "Movies" for \\GREENLANTERN\Movies\.</summary>
+    public static string FolderName(string path) => Path.GetFileName(Path.TrimEndingDirectorySeparator(path));
 }

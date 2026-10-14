@@ -110,7 +110,7 @@ public partial class LocalMoviesForm : AsyncForm
             LocalMoviesFilter.NotInLibrary => rbNotInLibrary.Text,
             _ => rbAll.Text,
         };
-        if (ExcelExport.Save(this, filter, _shown.Folder, LocalMoviesController.ToCsv(_shown)) is { } file)
+        if (ExcelExport.Save(this, LocalMoviesController.ToCsv(_shown), filter, ExcelExport.FolderName(_shown.Folder)) is { } file)
             ShowStatus($"Saved {Path.GetFileName(file)}.");
     }
 

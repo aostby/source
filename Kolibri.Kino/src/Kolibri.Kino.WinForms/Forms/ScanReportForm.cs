@@ -138,7 +138,7 @@ public partial class ScanReportForm : Form
         foreach (var r in _rows)
             csv.AppendLine(Csv.Line(r.Outcome, r.Title, r.ImdbId, r.Source, r.File, r.Detail));
 
-        if (ExcelExport.Save(this, cboShow.Text, _report.Folder, csv.ToString()) is { } file)
+        if (ExcelExport.Save(this, csv.ToString(), cboShow.Text, ExcelExport.FolderName(_report.Folder)) is { } file)
             lblStatus.Text = $"Saved {Path.GetFileName(file)}.";
     }
 
