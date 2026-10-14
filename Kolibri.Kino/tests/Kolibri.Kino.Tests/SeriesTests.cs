@@ -239,17 +239,81 @@ public sealed class LocalSeriesControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task Missing_episodes_fetches_ongoing_series_again_only_when_asked()
+    public async Task Missing_episodes_fetches_ongoing_series_again_only_when_asked_and_the_list_is_old()
     {
         await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "2025–"));
         await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = _folder });
         await _seasons.SaveSeasonsAsync(SeriesId, [Season(1, 2, "TMDb")]);
         _online.Seasons = [Season(1, 4, "TMDb")];
 
+        var fresh = await _controller.GetMissingEpisodesAsync(refreshOngoing: true);       // fetched just now: not again
+        await _seasons.SaveFetchInfoAsync(SeriesId, new SeriesFetchInfo(DateTime.UtcNow.AddDays(-4), true, 1399));
         var cached = await _controller.GetMissingEpisodesAsync(refreshOngoing: false);
         var refreshed = await _controller.GetMissingEpisodesAsync(refreshOngoing: true);
 
-        Assert.Equal((2, 4, 1), (cached[0].Missing.Count, refreshed[0].Missing.Count, _online.Calls));
+        Assert.Equal((2, 2, 4), (fresh[0].Missing.Count, cached[0].Missing.Count, refreshed[0].Missing.Count));
+        Assert.Equal((1, 1399), (_online.Calls, _online.LastTmdbId));   // the stored TMDb id is passed on
+        Assert.True(refreshed[0].FetchedOnline);
+    }
+
+    [Fact]
+    public async Task Refreshing_an_ongoing_series_fetches_only_its_last_season_and_later_ones()
+    {
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "2025–"));
+        await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = _folder });
+        await _seasons.SaveSeasonsAsync(SeriesId, [Season(1, 3, "TMDb"), Season(2, 1, "TMDb"), Season(0, 1, "TMDb")]);
+        await _seasons.SaveFetchInfoAsync(SeriesId, new SeriesFetchInfo(DateTime.UtcNow.AddDays(-5), true, 7));
+        _online.Seasons = [Season(1, 99, "TMDb"), Season(2, 4, "TMDb"), Season(3, 2, "TMDb")];
+
+        var report = await _controller.GetMissingEpisodesAsync(refreshOngoing: true);
+        var stored = await _seasons.GetCachedSeasonsAsync(SeriesId);
+
+        Assert.Equal(2, _online.LastFromSeason);
+        Assert.Equal([(1, 3), (2, 4), (3, 2), (0, 1)], stored.Select(s => (s.SeasonNumber, s.Episodes.Count)));   // season 1 and specials kept
+        Assert.Equal(9, report[0].Aired);
+    }
+
+    [Fact]
+    public async Task Missing_episodes_does_not_fetch_an_ongoing_list_with_an_episode_still_to_air()
+    {
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "2025–"));
+        await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = _folder });
+        await _seasons.SaveSeasonsAsync(SeriesId, [new SeriesSeason(1, null, [new(1, 1, "Soon", DateTime.Today.AddDays(3), null, null, null, null, null)], "TMDb")]);
+        await _seasons.SaveFetchInfoAsync(SeriesId, new SeriesFetchInfo(DateTime.UtcNow.AddDays(-10), true, null));
+
+        await _controller.GetMissingEpisodesAsync(refreshOngoing: true);
+
+        Assert.Equal(0, _online.Calls);
+    }
+
+    [Fact]
+    public async Task Missing_episodes_uses_what_SilverScreen_stored_without_fetching()
+    {
+        SilverScreenStoredSeason1();
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "1997–2003"));
+        await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = _folder });
+
+        var report = await _controller.GetMissingEpisodesAsync(refreshOngoing: false);
+
+        Assert.Equal((0, "OMDb", 1, false), (_online.Calls, report[0].Source, report[0].Missing.Count, report[0].FetchedOnline));
+    }
+
+    [Fact]
+    public async Task A_series_nobody_knows_is_not_asked_about_again_for_a_while()
+    {
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "1997–2003"));
+        await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = _folder });
+        _online.Seasons = [];
+
+        var first = await _controller.GetMissingEpisodesAsync(refreshOngoing: true);
+        var second = await _controller.GetMissingEpisodesAsync(refreshOngoing: true);
+        var details = await _controller.GetDetailsAsync(Local(), refresh: false);
+        await _controller.GetDetailsAsync(Local(), refresh: true);   // Refresh episodes always asks
+
+        Assert.Equal(2, _online.Calls);
+        Assert.Equal("Not found on TMDb or OMDb", first[0].Note);
+        Assert.StartsWith("Not found on TMDb or OMDb on", second[0].Note);
+        Assert.StartsWith("Not found on TMDb or OMDb on", details.Note);
     }
 
     [Theory]
@@ -306,11 +370,17 @@ public sealed class LocalSeriesControllerTests : IDisposable
         public IReadOnlyList<SeriesSeason> Seasons { get; set; } = [];
         public Exception? Throws { get; set; }
         public int Calls { get; private set; }
+        public int? LastTmdbId { get; private set; }
+        public int LastFromSeason { get; private set; }
 
-        public Task<IReadOnlyList<SeriesSeason>> GetSeasonsAsync(string seriesImdbId, int totalSeasonsHint, CancellationToken ct = default)
+        public Task<SeriesFetchResult> GetSeasonsAsync(string seriesImdbId, int totalSeasonsHint, int? tmdbId = null, int fromSeason = 0, CancellationToken ct = default)
         {
             Calls++;
-            return Throws is not null ? Task.FromException<IReadOnlyList<SeriesSeason>>(Throws) : Task.FromResult(Seasons);
+            LastTmdbId = tmdbId;
+            LastFromSeason = fromSeason;
+            return Throws is not null
+                ? Task.FromException<SeriesFetchResult>(Throws)
+                : Task.FromResult(new SeriesFetchResult(Seasons.Where(s => s.SeasonNumber >= fromSeason).ToList(), tmdbId));
         }
     }
 

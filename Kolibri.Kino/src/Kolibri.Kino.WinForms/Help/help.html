@@ -213,8 +213,12 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
   <li>Ongoing series (OMDb years like <code>2018–</code>) come first, ended ones (<code>2010–2015</code>) last; newest first within each.</li>
   <li>In an ended series the missing episodes are in <span style="color:firebrick"><b>red</b></span>: they have all aired, and nothing more is coming.</li>
   <li><b>Missing episodes</b> lists them short: <code>S01E03, S02E01–E05</code> is episode 3 of season 1 and episodes 1 to 5 of season 2.</li>
-  <li>The episode lists already fetched are used. A series without one is fetched once (TMDb, else OMDb) and remembered.
-      An ongoing series' list can be old: tick <b>Fetch episode lists of ongoing series again</b> to include episodes aired since (one request per season).</li>
+  <li>The episode lists come from the database: Kino's own, else what SilverScreen stored. Only a series with no list at all is
+      fetched online (TMDb, else OMDb), once, and remembered. A series no one knows is asked about again only after 30 days.
+      The status bar says how many lists came from the database and how many were fetched.</li>
+  <li>An ongoing series' list can be old: tick <b>Fetch episode lists of ongoing series again</b> to include episodes aired since.
+      Only lists over 3 days old with no episode still to air are fetched (a list with one still to come already has it).
+      With TMDb that is about one request per series: the show and its seasons come in one answer.</li>
   <li>Series without a folder, or whose folder also holds other series, are left out. <b>Show complete series too</b> lists the ones that miss nothing.</li>
   <li><b>Write to Excel…</b> (or <kbd>Ctrl</kbd>+<kbd>S</kbd>) saves the report.</li>
 </ul>

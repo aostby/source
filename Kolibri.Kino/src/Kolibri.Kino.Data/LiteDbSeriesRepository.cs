@@ -9,6 +9,7 @@ namespace Kolibri.Kino.Data;
 /// Season/episode storage. Kino's cache is "KinoSeason" (_id = "{seriesId}_{season}"); SilverScreen's data is read
 /// from "KolibriSeason" (same _id form, OMDb season with an episode list) and "Episode" (_id = episode IMDb id,
 /// OMDb details), and never written. "KinoIgnoredFolder" (_id = folder path) holds folders "Find new series" skips.
+/// "KinoSeriesFetch" (_id = series IMDb id) records the last online fetch: when, whether anything was found, TMDb id.
 /// </summary>
 public sealed class LiteDbSeriesRepository(KinoDatabase db) : ISeriesRepository
 {
@@ -16,6 +17,7 @@ public sealed class LiteDbSeriesRepository(KinoDatabase db) : ISeriesRepository
     private readonly ILiteCollection<BsonDocument> _silverScreenSeasons = db.Database.GetCollection("KolibriSeason");
     private readonly ILiteCollection<BsonDocument> _silverScreenEpisodes = db.Database.GetCollection("Episode");
     private readonly ILiteCollection<BsonDocument> _ignored = db.Database.GetCollection("KinoIgnoredFolder");
+    private readonly ILiteCollection<BsonDocument> _fetches = db.Database.GetCollection("KinoSeriesFetch");
 
     public Task<IReadOnlySet<string>> GetIgnoredFoldersAsync(CancellationToken ct = default) =>
         Task.Run(() => (IReadOnlySet<string>)_ignored.FindAll().Select(d => d["_id"].AsString).ToHashSet(StringComparer.OrdinalIgnoreCase), ct);
@@ -55,6 +57,26 @@ public sealed class LiteDbSeriesRepository(KinoDatabase db) : ISeriesRepository
             _kino.DeleteMany(Query.EQ("SeriesId", seriesImdbId));
             _kino.InsertBulk(seasons.Select(s => ToKinoDocument(seriesImdbId, s)));
         }, ct);
+
+    public Task<SeriesFetchInfo?> GetFetchInfoAsync(string seriesImdbId, CancellationToken ct = default) =>
+        Task.Run(() =>
+        {
+            if (_fetches.FindById(seriesImdbId) is { } doc)
+                return new SeriesFetchInfo(doc["Fetched"].AsDateTime, doc["Found"].AsBoolean, doc["TmdbId"].IsNumber ? doc["TmdbId"].AsInt32 : null);
+
+            // Lists cached before fetches were recorded: their seasons carry the time they were fetched.
+            var fetched = _kino.Find(Query.EQ("SeriesId", seriesImdbId)).Select(d => d["Fetched"]).Where(v => v.IsDateTime).Select(v => v.AsDateTime).ToList();
+            return fetched.Count > 0 ? new SeriesFetchInfo(fetched.Min(), true, null) : (SeriesFetchInfo?)null;
+        }, ct);
+
+    public Task SaveFetchInfoAsync(string seriesImdbId, SeriesFetchInfo info, CancellationToken ct = default) =>
+        Task.Run(() => _fetches.Upsert(new BsonDocument
+        {
+            ["_id"] = seriesImdbId,
+            ["Fetched"] = info.FetchedUtc,
+            ["Found"] = info.Found,
+            ["TmdbId"] = info.TmdbId is { } id ? id : BsonValue.Null,
+        }), ct);
 
     /// <summary>A season-list episode enriched with the episode's own OMDb record, when SilverScreen fetched it.</summary>
     private SeriesEpisode? FromOmdbEpisode(BsonDocument listed, int season)

@@ -17,6 +17,11 @@ public interface ISeriesRepository
     /// <summary>Replaces Kino's cached seasons for the series.</summary>
     Task SaveSeasonsAsync(string seriesImdbId, IReadOnlyList<SeriesSeason> seasons, CancellationToken ct = default);
 
+    /// <summary>The last online fetch of the series' seasons (also one that found nothing), or null if never.</summary>
+    Task<SeriesFetchInfo?> GetFetchInfoAsync(string seriesImdbId, CancellationToken ct = default);
+
+    Task SaveFetchInfoAsync(string seriesImdbId, SeriesFetchInfo info, CancellationToken ct = default);
+
     /// <summary>Folders in the series folder that "Find new series" should not ask about (not series, or not wanted).</summary>
     Task<IReadOnlySet<string>> GetIgnoredFoldersAsync(CancellationToken ct = default);
 

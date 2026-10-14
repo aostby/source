@@ -20,8 +20,8 @@ public partial class MissingEpisodesForm : AsyncForm
         _controller = controller;
         InitializeComponent();
         this.Describe(
-            (btnRun, "Goes through every series folder and compares the files with the episode lists. Lists already fetched are used; a series without one is fetched once."),
-            (chkRefreshOngoing, "Fetches the episode lists of ongoing series again, to include episodes aired since they were fetched. One TMDb (or OMDb) request per season."),
+            (btnRun, "Goes through every series folder and compares the files with the episode lists in the database (Kino's, else SilverScreen's). Only a series with no list is fetched online, once."),
+            (chkRefreshOngoing, "Fetches ongoing series' lists again when they are over 3 days old and have no episode still to air, to include episodes aired since. About one TMDb request per series."),
             (chkShowComplete, "Also lists the series where every aired episode is on disk."));
         btnCancel.ToolTipText = "Stops the report; what is done so far is shown.";
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
@@ -66,9 +66,12 @@ public partial class MissingEpisodesForm : AsyncForm
 
         var withMissing = rows.Where(r => r.Missing.Count > 0).ToList();
         var noList = rows.Count(r => r.Source is null);
+        var fetched = rows.Count(r => r.FetchedOnline);
         ShowStatus($"{withMissing.Count} of {rows.Count} series miss episodes: {withMissing.Sum(r => r.Missing.Count):N0} in all, "
             + $"{withMissing.Where(r => !r.Ongoing).Sum(r => r.Missing.Count):N0} in ended series (red)."
-            + (noList > 0 ? $" {noList} series have no episode list." : ""));
+            + (noList > 0 ? $" {noList} series have no episode list." : "")
+            + $" {(fetched == 0 ? "All lists" : $"{rows.Count - fetched} lists")} from the database"
+            + (fetched > 0 ? $", {fetched} fetched online." : "."));
     }
 
     /// <summary>An ended series' missing episodes in red: they have all aired, and nothing more is coming.</summary>
