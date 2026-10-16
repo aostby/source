@@ -18,5 +18,14 @@ public sealed record SeriesEpisode(
     string? StillUrl,
     string? ImdbId);
 
+/// <summary>An online fetch of a series' seasons: the seasons (empty when nothing was found) and its TMDb id, if known.</summary>
+public sealed record SeriesFetchResult(IReadOnlyList<SeriesSeason> Seasons, int? TmdbId);
+
+/// <summary>
+/// When a series' seasons were last fetched online, whether anything was found, and its TMDb id (so the next fetch
+/// skips TMDb's IMDb-id lookup). Kept so a series nobody knows isn't asked about again on every run.
+/// </summary>
+public sealed record SeriesFetchInfo(DateTime FetchedUtc, bool Found, int? TmdbId);
+
 /// <summary>A video file in a series folder and the episode(s) it holds ("S01E01E02" holds two).</summary>
 public sealed record EpisodeFile(string Path, int SeasonNumber, IReadOnlyList<int> EpisodeNumbers);

@@ -31,9 +31,13 @@ public class AsyncForm : Form
         hevent.Handled = true;
     }
 
-    /// <summary>Every window with a grid gets "Write to Excel…" on the right of its status bar (Ctrl+S does the same).</summary>
+    /// <summary>
+    /// Every window with a grid gets "Write to Excel…" on the right of its status bar (Ctrl+S does the same), and
+    /// its grids' data errors handled (see <see cref="DataGridViewExtensions.HandleDataErrors"/>).
+    /// </summary>
     protected override void OnLoad(EventArgs e)
     {
+        this.HandleDataErrors();
         base.OnLoad(e);
         ExcelExport.AddButton(this);
     }

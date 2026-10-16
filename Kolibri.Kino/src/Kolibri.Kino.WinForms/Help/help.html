@@ -141,7 +141,11 @@ The change takes effect after a restart; Kino offers to restart at once. <b>Help
   <li>Select an online result and click <b>Import selected</b> to add it to your library.</li>
   <li>Filter by type with the buttons above the list, sort with the Sort options, or click a column header.</li>
   <li>Double-click a row for all details: plot, ratings, cast, poster, and Play / Open on disk when you have the file.</li>
-  <li>Right-click a row to open it on IMDb or TMDb, open the file's folder, or remove it from the library.</li>
+  <li>Right-click a row to open it on IMDb or TMDb, open the file's folder, or remove it from the library.
+      <kbd>Delete</kbd> in the list does the same as <b>Remove from library…</b> for the selected title (it asks first).</li>
+  <li><b>Mark as watched</b> (right-click a row, or the button in the details window) puts the title on the <b>Watched</b> watchlist,
+      marked watched (moved there if it was on another list), and marks it watched on Plex too when Plex has it.
+      The details window shows <b>✓ Watched</b> next to the IMDb rating for a title marked watched.</li>
   <li>In a details window or pane, double-click a value (title, IMDb id, director, actors, file path …) to copy it to the clipboard.</li>
   <li>When a title has no IMDb rating (OMDb and TMDb didn't give one), right-click it and choose <b>Set IMDb rating…</b>: open it on IMDb from the dialog, read the rating there and type it in (e.g. 7.3). <b>Open on TMDb</b> shows the TMDb page, and <b>Get from TMDb</b> fills in TMDb's own score (with its number of votes) when IMDb has none. Leave the box empty to clear it.</li>
   <li><b>Add to watchlist…</b> puts the selected title on a list: a Kino watchlist, the Plex playlist of that name, or both.
@@ -196,7 +200,9 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
 <h2 id="local-series">Local series</h2>
 <ul>
   <li>Select a series to see its seasons and episodes, one tab per season. Episodes you have on disk are green; double-click to play.</li>
-  <li>Episode details are fetched once and remembered. <b>Refresh episodes</b> fetches them again (TMDb gives the most; without a TMDb key, OMDb).</li>
+  <li>Episode details come from the database first: Kino's own, else what SilverScreen stored. Only a series neither has is looked up
+      online, once, and remembered (also when no one knows it, then it isn't asked about again for 30 days).
+      <b>Refresh episodes</b> fetches them again (TMDb gives the most, with plots and pictures; without a TMDb key, OMDb).</li>
   <li>Files are matched to episodes by names like <code>S01E02</code>, <code>1x02</code> or <code>Episode 6</code> in a <code>Season 2</code> folder.</li>
   <li><b>Find new series…</b> looks through the series folder for series not in the library and asks about the ones it can't match.</li>
   <li><b>Recently updated</b> (shown when the Plex server and token are set in Settings) asks Plex which series got new
@@ -204,6 +210,24 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
       (e.g. <code>S02E01, S02E03</code>, with titles and when they were added). The status bar names the series on Plex that
       aren't in the library. Click a column header to sort otherwise.</li>
   <li><b>Set folder…</b> links the selected series to its folder. Right-click a series to change its IMDb id or open it on IMDb.</li>
+  <li><b>Missing episodes…</b> opens the report below.</li>
+</ul>
+
+<h3 id="missing-episodes">Missing episodes</h3>
+<p>For every series with a folder, the aired episodes you don't have a file for (season 1 and up; specials are left out).</p>
+<ul>
+  <li>Ongoing series (OMDb years like <code>2018–</code>) come first, ended ones (<code>2010–2015</code>) last; newest first within each.</li>
+  <li>In an ended series the missing episodes are in <span style="color:firebrick"><b>red</b></span>: they have all aired, and nothing more is coming.</li>
+  <li>Double-click a series to open it in <b>Local series</b>, filtered on its title, with its seasons and episodes.</li>
+  <li><b>Missing episodes</b> lists them short: <code>S01E03, S02E01–E05</code> is episode 3 of season 1 and episodes 1 to 5 of season 2.</li>
+  <li>The episode lists come from the database: Kino's own, else what SilverScreen stored. Only a series with no list at all is
+      fetched online (TMDb, else OMDb), once, and remembered. A series no one knows is asked about again only after 30 days.
+      The status bar says how many lists came from the database and how many were fetched.</li>
+  <li>An ongoing series' list can be old: tick <b>Fetch episode lists of ongoing series again</b> to include episodes aired since.
+      Only lists over 3 days old with no episode still to air are fetched (a list with one still to come already has it).
+      With TMDb that is about one request per series: the show and its seasons come in one answer.</li>
+  <li>Series without a folder, or whose folder also holds other series, are left out. <b>Show complete series too</b> lists the ones that miss nothing.</li>
+  <li><b>Write to Excel…</b> (or <kbd>Ctrl</kbd>+<kbd>S</kbd>) saves the report.</li>
 </ul>
 
 <h2 id="watchlists">Watchlists</h2>

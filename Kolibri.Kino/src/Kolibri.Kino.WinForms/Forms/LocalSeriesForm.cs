@@ -42,7 +42,8 @@ public partial class LocalSeriesForm : AsyncForm
             (btnRefresh, "Fetches the selected series' seasons and episodes again (TMDb, else OMDb) instead of the saved copy."),
             (btnSetFolder, "Links the selected series to its folder on disk, so its episode files are found."),
             (btnAddToWatchlist, "Puts the selected series on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
-            (btnFindNew, "Looks through the series folder for series not in the library, adds the ones it recognises and asks about the rest. Hold Shift to also be asked about folders marked Don't ask again."));
+            (btnFindNew, "Looks through the series folder for series not in the library, adds the ones it recognises and asks about the rest. Hold Shift to also be asked about folders marked Don't ask again."),
+            (btnMissing, "A report of the aired episodes you don't have, for every series: ongoing series first, then ended ones, newest first."));
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvSeries.AutoGenerateColumns = true;
         dgvSeries.CellToolTipTextNeeded += dgvSeries_CellToolTipTextNeeded;
@@ -51,12 +52,45 @@ public partial class LocalSeriesForm : AsyncForm
         episodeDetails.PosterAspect = 16.0 / 9.0;
     }
 
-    private async void LocalSeriesForm_Load(object sender, EventArgs e) =>
+    private async void LocalSeriesForm_Load(object sender, EventArgs e)
+    {
         await RunAsync("Loading series…", async ct =>
         {
             _all = await _controller.GetSeriesAsync(ct);
             ApplyFilter();
         });
+        _loaded = true;
+        if (_pending is { } pending)
+        {
+            _pending = null;
+            await ShowFilteredAsync(pending.Title, pending.ImdbId);
+        }
+    }
+
+    private bool _loaded;
+    private (string Title, string ImdbId)? _pending;
+
+    /// <summary>
+    /// Filters the list on <paramref name="title"/> and shows the series <paramref name="imdbId"/> with its episodes
+    /// (from the missing episodes report). Waits for the list when the window is still loading.
+    /// </summary>
+    public async void ShowSeries(string title, string imdbId)
+    {
+        if (!_loaded)
+        {
+            _pending = (title, imdbId);
+            return;
+        }
+        await ShowFilteredAsync(title, imdbId);
+    }
+
+    private async Task ShowFilteredAsync(string title, string imdbId)
+    {
+        txtFilter.Text = title;
+        ApplyFilter();
+        if (_all.FirstOrDefault(s => s.Item.ImdbId == imdbId) is { } series) SelectSeries(series);
+        await ShowSelectedSeriesAsync();
+    }
 
     /// <summary>"Recently updated" only with Plex's server and token in Settings (checked again when Settings may have changed).</summary>
     protected override void OnActivated(EventArgs e)
@@ -455,6 +489,9 @@ public partial class LocalSeriesForm : AsyncForm
     /// or a title and year that match clearly, otherwise by asking, one folder at a time. Hold Shift to be asked
     /// about folders answered with "Don't ask again" too.
     /// </summary>
+    private void btnMissing_Click(object sender, EventArgs e) =>
+        ActivatorUtilities.CreateInstance<MissingEpisodesForm>(_services).ShowFrom(this);
+
     private async void btnFindNew_Click(object sender, EventArgs e)
     {
         var includeIgnored = (ModifierKeys & Keys.Shift) != 0;

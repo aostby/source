@@ -233,6 +233,34 @@ public sealed class WatchlistController(
 
     public const string WatchedList = "Watched";
 
+    /// <summary>Whether the title is marked watched on a Kino watchlist (normally <see cref="WatchedList"/>).</summary>
+    public async Task<bool> IsWatchedAsync(string imdbId, CancellationToken ct = default) =>
+        (await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false))?.Watched == "Y";
+
+    /// <summary>
+    /// "Mark as watched" for any title: it goes on <see cref="WatchedList"/>, marked watched (moved there from another
+    /// watchlist, or added with its details from the library, Plex or OMDb), and is marked watched on Plex too when Plex
+    /// has it. Returns a sentence for the status line.
+    /// </summary>
+    public async Task<string> MarkWatchedAsync(string imdbId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(imdbId);
+        string kino, title;
+        if (await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false) is { } existing)
+        {
+            title = existing.Title ?? imdbId;
+            var from = await MarkWatchedAndMoveAsync(imdbId, ct).ConfigureAwait(false);
+            kino = from is null ? $"{title} is on {WatchedList}, marked watched." : $"Moved {title} from {from} to {WatchedList}, marked watched.";
+        }
+        else
+        {
+            title = (await AddAsync(imdbId, WatchedList, ct).ConfigureAwait(false)).Title;
+            await watchlists.SetWatchedAsync(imdbId, true, ct).ConfigureAwait(false);
+            kino = $"Added {title} to {WatchedList}, marked watched.";
+        }
+        return await MarkWatchedOnPlexAsync(imdbId, title, ct).ConfigureAwait(false) is { } plexNote ? $"{kino} {plexNote}" : kino;
+    }
+
     /// <summary>
     /// At startup (Plex set up): Plex playlists with no Kino watchlist of that name become watchlists, as SilverScreen kept
     /// them in step. Lists already in Kino are left alone, and so is Plex. A title already on another Kino watchlist is

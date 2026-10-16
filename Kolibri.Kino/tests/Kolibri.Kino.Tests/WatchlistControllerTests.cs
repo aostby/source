@@ -52,6 +52,34 @@ public sealed class WatchlistControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task Mark_as_watched_adds_a_title_on_no_list_to_Watched_and_marks_it_on_Plex()
+    {
+        await _movies.UpsertAsync(Movie("tt33214716", "Seen It"));
+        _plex.Movies.Add(Movie("tt33214716", "Seen It"));
+
+        var status = await _watchlists.MarkWatchedAsync("tt33214716");
+
+        var item = Assert.Single(await _watchlists.GetItemsAsync(WatchlistController.WatchedList));
+        Assert.Equal(("tt33214716", "Y"), (item.ImdbId, item.Watched));
+        Assert.Contains("tt33214716", _plex.Watched);
+        Assert.True(await _watchlists.IsWatchedAsync("tt33214716"));
+        Assert.Equal("Added Seen It to Watched, marked watched. Also marked watched on Plex.", status);
+    }
+
+    [Fact]
+    public async Task Mark_as_watched_moves_a_title_from_another_list()
+    {
+        await _movies.UpsertAsync(Movie("tt0133093", "The Matrix"));
+        await _watchlists.AddAsync("tt0133093", "Jul");
+
+        var status = await _watchlists.MarkWatchedAsync("tt0133093");
+
+        Assert.Empty(await _watchlists.GetItemsAsync("Jul"));
+        Assert.Equal("Y", Assert.Single(await _watchlists.GetItemsAsync(WatchlistController.WatchedList)).Watched);
+        Assert.StartsWith("Moved The Matrix from Jul to Watched, marked watched. The Matrix isn't on Plex", status);
+    }
+
+    [Fact]
     public async Task List_choices_say_whether_a_list_is_in_Kino_on_Plex_or_both()
     {
         _omdb.Add(Movie("tt0133093", "The Matrix"));

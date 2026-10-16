@@ -3,10 +3,13 @@
 @using Kolibri.Kino.Controllers.Library
 @inherits KinoPage
 @inject MovieController Movies
+@inject WatchlistController Watchlists
 @inject LastSearch LastSearch
 @inject NavigationManager Nav
 
-@* Port of KinoForm: search the library or OMDb, filter by type, genre, year, rating and person, sort, import.
+@* Port of KinoForm: search the library or OMDb, filter by type, genre, year, rating, watched and person, sort, import.
+   Watched = played to the end on Plex or marked watched on a Kino watchlist. By default everything is listed, without
+   asking what's watched (so the page opens quickly); "seen=no" lists what you haven't seen, "seen=yes" what you have.
    With no search and no filters the library is shown by genre, one row each, like Plex's home page. The
    search is in the address, so Back from a movie returns to the same results. *@
 
@@ -48,9 +51,15 @@
                 <option value="@r.ToString(CultureInfo.InvariantCulture)">IMDb @r.ToString("0.#", CultureInfo.InvariantCulture)+</option>
             }
         </select>
+        <select aria-label="Watched" value="@WatchedFilter.Value(SeenKey)" @onchange="e => Go(seen: e.Value as string ?? string.Empty, page: 1)">
+            @foreach (var (value, label) in WatchedFilter.Choices)
+            {
+                <option value="@value">@label</option>
+            }
+        </select>
         <input type="search" placeholder="Actor or director…" aria-label="Actor or director"
                @bind="_person" @bind:after="() => Go(person: _person?.Trim() ?? string.Empty, page: 1)" />
-        @if (!Filter.IsEmpty)
+        @if (!Filter.IsEmpty || SeenKey is not null)
         {
             <button type="button" class="quiet" @onclick="ClearFilters">Clear filters</button>
         }
@@ -59,7 +68,7 @@
 
 @if (ByCategory && CurrentPage == 1)
 {
-    <RecentShelf />
+    <RecentShelf Seen="@SeenKey" Watched="_watched" />
 }
 
 <div class="toolbar">
@@ -143,6 +152,20 @@ else
     [SupplyParameterFromQuery(Name = "rating")] public double? MinRating { get; set; }
     [SupplyParameterFromQuery(Name = "person")] public string? Person { get; set; }
     [SupplyParameterFromQuery(Name = "view")] public string? View { get; set; }
+    [SupplyParameterFromQuery(Name = "seen")] public string? Seen { get; set; }
+
+    /// <summary>
+    /// "no" (not watched, the default: no "seen" in the address), "yes" (watched), or null for all ("seen=all").
+    /// OMDb results aren't in the library, so they aren't filtered.
+    /// </summary>
+    private string? SeenKey => Online ? null : WatchedFilter.Key(Seen);
+
+    /// <summary>Watched on Plex or a watchlist; asked again when older than <see cref="WatchedMaxAge"/>.</summary>
+    /// <remarks>Reloading Plex's whole movie list takes a while (seconds), so not on every click.</remarks>
+    private static readonly TimeSpan WatchedMaxAge = TimeSpan.FromMinutes(30);
+    private IReadOnlySet<string>? _watched;
+    private DateTime _watchedAt;
+    private string? _watchedNote;
 
     private string? _text;
     private string? _person;
@@ -169,9 +192,12 @@ else
     {
         get
         {
-            if (ByCategory) return $"{_shown.Count:N0} item(s) in library, in {_shelves.Count} genres.";
+            if (SeenKey is not null && _watched is null) return "Checking what you've watched…"; // no count until it's right
+            var seen = WatchedFilter.Words(SeenKey);
+            var note = SeenKey is not null && _watchedNote is not null ? $" ({_watchedNote}.)" : "";
+            if (ByCategory) return $"{_shown.Count:N0}{seen} item(s) in library, in {_shelves.Count} genres.{note}";
             var counted = _shown.Count == _hits.Count ? $"{_hits.Count:N0}" : $"{_shown.Count:N0} of {_hits.Count:N0}";
-            return Online ? $"{counted} result(s) from OMDb. Import adds one to the library." : $"{counted} item(s) in library.";
+            return Online ? $"{counted} result(s) from OMDb. Import adds one to the library." : $"{counted}{seen} item(s) in library.{note}";
         }
     }
 
@@ -212,11 +238,43 @@ else
             });
         }
 
+        // What's watched, only when the filter asks for it (it asks Plex), and again after a while (watched since).
+        var syncWatchedList = false;
+        if (SeenKey is not null && (_watched is null || DateTime.UtcNow - _watchedAt > WatchedMaxAge))
+        {
+            await RunAsync("Checking what you've watched…", async ct =>
+            {
+                (_watched, _watchedNote) = await Movies.GetWatchedAsync(refreshPlex: _watched is not null, ct);
+                _watchedAt = DateTime.UtcNow;
+                syncWatchedList = _watchedNote is null;
+            });
+        }
+
         _hits = LastSearch.Key != key ? [] // the search failed; the error is shown
             : Online
             ? LastSearch.Online.Select(s => new Hit(s.ImdbId, s.Title, s.Year, s.Type, null, null, OnlinePoster(s))).ToList()
             : LastSearch.Local.Select(i => new Hit(i.ImdbId, i.Title, i.Year, i.Type, i.ImdbRating, i.Genre, $"poster/{i.ImdbId}", i)).ToList();
         ApplyFilterAndSort();
+
+        if (syncWatchedList) _ = UpdateWatchedListAsync();
+    }
+
+    /// <summary>
+    /// In the background, after the list is shown: movies watched on Plex, and watched ones on other watchlists, go on
+    /// the Watched list (the first time that can be hundreds). It doesn't change what's watched, so the filter doesn't
+    /// wait for it; a failure is only noted below the filters.
+    /// </summary>
+    private async Task UpdateWatchedListAsync()
+    {
+        try
+        {
+            await Watchlists.MoveWatchedToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _watchedNote = $"the {WatchlistController.WatchedList} list couldn't be brought up to date: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private void ApplyFilterAndSort()
@@ -224,7 +282,10 @@ else
         // The genre list comes from the title search alone, so another genre can be picked while one is chosen.
         _genres = LibraryFilter.Genres(_hits.Select(h => h.Source).OfType<Item>());
         var filter = Filter;
-        var filtered = _hits.Where(h => h.Source is null || filter.Matches(h.Source)).ToList();
+        var filtered = _hits
+            .Where(h => h.Source is null || filter.Matches(h.Source))
+            .Where(h => WatchedFilter.Matches(SeenKey, _watched, h.ImdbId))
+            .ToList();
 
         _typeCounts = [(null, "All", filtered.Count)];
         _typeCounts.AddRange(filtered.GroupBy(h => TypeKey(h.Type)).OrderByDescending(g => g.Count()).Select(g => ((string?)g.Key, TypeLabel(g.Key), g.Count())));
@@ -256,7 +317,7 @@ else
 
     private void SearchOmdb() => Go(q: _text?.Trim() ?? string.Empty, online: true, type: string.Empty, page: 1);
 
-    private void ClearFilters() => Go(genre: string.Empty, from: string.Empty, to: string.Empty, rating: string.Empty, person: string.Empty, page: 1);
+    private void ClearFilters() => Go(genre: string.Empty, from: string.Empty, to: string.Empty, rating: string.Empty, person: string.Empty, seen: string.Empty, page: 1);
 
     /// <summary>A year choice is "from-to", either side may be empty.</summary>
     private void GoYears(string? value)
@@ -282,7 +343,7 @@ else
 
     /// <summary>Changes the search in the address; <see cref="OnParametersSetAsync"/> does the rest. Null keeps a value, empty removes it.</summary>
     private void Go(string? q = null, bool? online = null, string? type = null, string? sort = null, int? page = null,
-        string? genre = null, string? from = null, string? to = null, string? rating = null, string? person = null)
+        string? genre = null, string? from = null, string? to = null, string? rating = null, string? person = null, string? seen = null)
     {
         static object? Keep(string? value, object? current) => value is null ? current : value.Length == 0 ? null : value;
         Nav.NavigateTo(Nav.GetUriWithQueryParameters(new Dictionary<string, object?>
@@ -297,6 +358,7 @@ else
             ["to"] = Keep(to, YearTo),
             ["rating"] = Keep(rating, MinRating?.ToString(CultureInfo.InvariantCulture)),
             ["person"] = Keep(person, Person),
+            ["seen"] = Keep(seen, Seen),
             ["view"] = q is null ? View : null, // a new title search leaves "Browse all"
         }));
     }

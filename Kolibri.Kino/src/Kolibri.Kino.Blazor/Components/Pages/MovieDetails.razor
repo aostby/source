@@ -6,10 +6,12 @@
 @inject MovieController Movies
 @inject LastSearch LastSearch
 @inject PlaybackController Playback
+@inject WatchlistController Watchlists
 @inject NavigationManager Nav
 
-@* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links. Removing
-   and adding to a watchlist are left to the Windows app: the NAS copy of the library is replaced from Windows.
+@* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links, and Mark as
+   watched (onto the Watched watchlist, and on Plex). Removing and adding to other watchlists are left to the Windows
+   app. Note: deploying the library to the NAS again (-WithDatabases) replaces the NAS copy, watched marks included.
    A series lives at /series/{id} (a /movie/ link is turned into that) and lists its episodes by season, each
    with Play (the own file) and Plex. *@
 
@@ -57,6 +59,10 @@ else
                 else
                 {
                     <span class="tag">Not in library (from OMDb)</span>
+                }
+                @if (_watched)
+                {
+                    <span class="tag good">Watched</span>
                 }
                 @if (_linkedPath is not null)
                 {
@@ -110,6 +116,10 @@ else
                 else
                 {
                     <button class="primary" disabled="@Busy" @onclick="ImportAsync">Import to library</button>
+                }
+                @if (!_watched)
+                {
+                    <button disabled="@Busy" @onclick="MarkWatchedAsync">Mark as watched</button>
                 }
             </div>
 
@@ -168,6 +178,7 @@ else
 
     private Item? _item;
     private bool _inLibrary;
+    private bool _watched;
     private string? _linkedPath;
     private string? _tmdbPage;
     private bool _canPlay;
@@ -177,7 +188,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        (_item, _inLibrary, _linkedPath, _tmdbPage, _canPlay, _plexPage) = (null, false, null, null, false, null);
+        (_item, _inLibrary, _linkedPath, _tmdbPage, _canPlay, _plexPage, _watched) = (null, false, null, null, false, null, false);
         (_episodes, _plexEpisodes) = ([], new Dictionary<(int, int), string>());
         await RunAsync("Loading…", async ct =>
         {
@@ -185,6 +196,7 @@ else
             _inLibrary = local is not null;
             _item = local ?? await Movies.GetDetailsAsync(ImdbId, ct);
             _linkedPath = _inLibrary ? await Movies.GetLinkedPathAsync(ImdbId, ct) : null;
+            _watched = await Watchlists.IsWatchedAsync(ImdbId, ct);
         });
 
         // TMDb pages use TMDb's own ids: one TMDb request, after the page is shown. A search link if TMDb doesn't know it.
@@ -224,6 +236,13 @@ else
         Status = _inLibrary ? "Updated from OMDb." : $"Saved {item.Title} ({item.Year}) in the library.";
         (_item, _inLibrary) = (item, true);
         LastSearch.Forget();
+    });
+
+    /// <summary>Onto the Watched watchlist (moved from another list if it's on one), and watched on Plex when Plex has it.</summary>
+    private Task MarkWatchedAsync() => RunAsync("Marking as watched…", async ct =>
+    {
+        Status = await Watchlists.MarkWatchedAsync(ImdbId, ct);
+        _watched = true;
     });
 
     /// <summary>Stands for the genres in <see cref="FactParts"/>, which are shown as links.</summary>

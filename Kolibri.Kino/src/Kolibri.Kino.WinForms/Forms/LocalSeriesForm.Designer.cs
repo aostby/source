@@ -36,6 +36,7 @@ partial class LocalSeriesForm
         btnAddToWatchlist = new Button();
         btnFindNew = new Button();
         btnRecent = new Button();
+        btnMissing = new Button();
         mainSplit = new SplitContainer();
         dgvSeries = new DataGridView();
         seriesMenu = new ContextMenuStrip(components);
@@ -77,6 +78,7 @@ partial class LocalSeriesForm
         toolbar.Controls.Add(btnSetFolder);
         toolbar.Controls.Add(btnAddToWatchlist);
         toolbar.Controls.Add(btnFindNew);
+        toolbar.Controls.Add(btnMissing);
         toolbar.Dock = DockStyle.Top;
         toolbar.Name = "toolbar";
         toolbar.Padding = new Padding(6);
@@ -141,6 +143,16 @@ partial class LocalSeriesForm
         btnFindNew.TabIndex = 5;
         btnFindNew.Text = "Find new series…";
         btnFindNew.Click += btnFindNew_Click;
+        //
+        // btnMissing
+        //
+        btnMissing.AutoSize = true;
+        btnMissing.Margin = new Padding(3, 6, 3, 3);
+        btnMissing.Name = "btnMissing";
+        btnMissing.Size = new Size(120, 25);
+        btnMissing.TabIndex = 6;
+        btnMissing.Text = "Missing episodes…";
+        btnMissing.Click += btnMissing_Click;
         //
         // mainSplit: series list | details
         //
@@ -292,6 +304,7 @@ partial class LocalSeriesForm
     private Button btnSetFolder;
     private Button btnAddToWatchlist;
     private Button btnFindNew;
+    private Button btnMissing;
     private Button btnRecent;
     private SplitContainer mainSplit;
     private DataGridView dgvSeries;

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Kolibri.Kino.Controllers;
 using Kolibri.Kino.Controllers.Subtitles;
+using Kolibri.Kino.Controllers.Watchlists;
 using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.Core;
 using Kolibri.Kino.WinForms.Controls;
@@ -20,16 +21,19 @@ public partial class MovieDetailsForm : AsyncForm
 
     private readonly MovieController _movies;
     private readonly SubtitleController _subtitles;
+    private readonly WatchlistController _watchlists;
     private readonly ToolTip _toolTip = new();
     private readonly IServiceProvider _services;
     private readonly string _imdbId;
     private Item? _item;
     private string? _path;
+    private bool _watched;
 
-    public MovieDetailsForm(MovieController movies, SubtitleController subtitles, IServiceProvider services, string imdbId)
+    public MovieDetailsForm(MovieController movies, SubtitleController subtitles, WatchlistController watchlists, IServiceProvider services, string imdbId)
     {
         _movies = movies;
         _subtitles = subtitles;
+        _watchlists = watchlists;
         _services = services;
         _imdbId = imdbId;
         InitializeComponent();
@@ -51,7 +55,8 @@ public partial class MovieDetailsForm : AsyncForm
             (btnOpenOnDisk, "Shows the movie file in Explorer."),
             (btnImdb, "Opens the title's page on IMDb."),
             (btnTmdb, "Opens the title's page on TMDb (found by its IMDb id)."),
-            (btnWatchlist, "Puts this title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."));
+            (btnWatchlist, "Puts this title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
+            (btnMarkWatched, "Puts this title on the Watched list (moving it from another watchlist), marked watched, and marks it watched on Plex too when Plex has it."));
         Text = imdbId;
     }
 
@@ -67,6 +72,7 @@ public partial class MovieDetailsForm : AsyncForm
             }
 
             _path = await _movies.GetLinkedPathAsync(_imdbId, ct);
+            _watched = await _watchlists.IsWatchedAsync(_imdbId, ct);
             ShowItem(_item);
             ShowStatus(_path is null ? "Not linked to a file." : File.Exists(_path) || Directory.Exists(_path) ? _path : $"{_path} (not found)");
 
@@ -165,7 +171,27 @@ public partial class MovieDetailsForm : AsyncForm
         btnPlay.Enabled = _path is not null && MovieFileRules.IsVideoFile(_path) && File.Exists(_path);
         btnOpenOnDisk.Enabled = _path is not null;
         btnImdb.Enabled = btnTmdb.Enabled = btnWatchlist.Enabled = hasItem;
+        ShowWatched();
         ShowSubtitleStatus();
+    }
+
+    /// <summary>The "✓ Watched" badge next to the rating, as the web page's tag; Mark as watched only while it isn't.</summary>
+    private void ShowWatched()
+    {
+        lblWatched.Visible = _watched;
+        btnMarkWatched.Enabled = _item is not null && !_watched;
+        btnMarkWatched.Text = _watched ? "Watched ✓" : "Mark as watched";
+    }
+
+    private async void btnMarkWatched_Click(object sender, EventArgs e)
+    {
+        if (_item is null || _watched) return;
+        await RunAsync($"Marking {_item.Title} as watched…", async ct =>
+        {
+            ShowStatus(await _watchlists.MarkWatchedAsync(_imdbId, ct));
+            _watched = true;
+            ShowWatched();
+        });
     }
 
     /// <summary>

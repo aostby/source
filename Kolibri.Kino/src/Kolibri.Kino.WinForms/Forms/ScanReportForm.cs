@@ -32,6 +32,7 @@ public partial class ScanReportForm : Form, IWritesToExcel
         Kolibri.Kino.WinForms.Controls.AppIcon.Apply(this);
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvEntries.AutoGenerateColumns = true;
+        this.HandleDataErrors();
         btnFindMovie.Visible = findMovie is not null;
 
         Text = $"Scan report – {report.Folder}";

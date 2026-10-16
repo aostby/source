@@ -3,15 +3,15 @@
 @inject RecentlyAddedController Recent
 
 @* The newest few movies and series as scrolling rows, like "Recently Added Movies" and "Recently Added TV" on
-   Plex's home page. Loads on its own, so the library below doesn't wait for the file dates; a row with
-   nothing in it is left out. *@
+   Plex's home page, with the Library's Watched filter (by default all). Loads on its own, so
+   the library below doesn't wait for the file dates; a row with nothing in it is left out. *@
 
-@foreach (var (title, type, items) in _rows)
+@foreach (var (title, type, items) in Rows)
 {
     <section class="shelf" aria-label="@title">
         <div class="shelf-head">
             <h2>@title</h2>
-            <a href="recent?type=@type">See all ›</a>
+            <a href="@($"recent?type={type}{(Seen is null ? "" : $"&seen={Seen}")}")">See all ›</a>
         </div>
         <div class="shelf-row">
             @foreach (var entry in items)
@@ -23,24 +23,36 @@
 }
 
 @code {
-    private static readonly (string Title, string Type)[] Rows = [("Recently added movies", "movie"), ("Recently added series", "series")];
+    private static readonly (string Title, string Type)[] Types = [("Recently added movies", "movie"), ("Recently added series", "series")];
 
     [Parameter] public int Count { get; set; } = 20;
 
+    /// <summary>The Watched filter's key: "no", "yes", or null for all, the default (see <see cref="WatchedFilter"/>).</summary>
+    [Parameter] public string? Seen { get; set; }
+
+    /// <summary>What's watched; null while the page is still finding out (then filtered rows wait, so watched titles don't flash by).</summary>
+    [Parameter] public IReadOnlySet<string>? Watched { get; set; }
+
     private readonly CancellationTokenSource _cts = new();
-    private List<(string Title, string Type, List<RecentlyAddedItem> Items)> _rows = [];
+    private RecentlyAddedReport? _report;
     private DateTime _now = DateTime.UtcNow;
+
+    /// <summary>Filtered before the newest <see cref="Count"/> are taken, so a row is full of titles you haven't seen.</summary>
+    private IEnumerable<(string Title, string Type, List<RecentlyAddedItem> Items)> Rows =>
+        _report is null || (Seen is not null && Watched is null) ? []
+        : Types
+            .Select(r => (r.Title, r.Type, _report.Items
+                .Where(i => string.Equals(i.Item.Type, r.Type, StringComparison.OrdinalIgnoreCase))
+                .Where(i => WatchedFilter.Matches(Seen, Watched, i.Item.ImdbId))
+                .Take(Count).ToList()))
+            .Where(r => r.Item3.Count > 0);
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var report = await Recent.GetAsync(_cts.Token);
+            _report = await Recent.GetAsync(_cts.Token);
             _now = DateTime.UtcNow;
-            _rows = Rows
-                .Select(r => (r.Title, r.Type, report.Items.Where(i => string.Equals(i.Item.Type, r.Type, StringComparison.OrdinalIgnoreCase)).Take(Count).ToList()))
-                .Where(r => r.Item3.Count > 0)
-                .ToList();
         }
         catch (Exception ex) when (ex is OperationCanceledException or IOException or UnauthorizedAccessException)
         {

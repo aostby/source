@@ -34,6 +34,16 @@ public sealed record SeasonView(int SeasonNumber, string? Name, IReadOnlyList<Ep
 public sealed record SeriesDetails(
     IReadOnlyList<SeasonView> Seasons, string? Source, bool FromCache, IReadOnlyList<string> UnrecognisedFiles, string? Note);
 
+/// <summary>A series in the missing episodes report.</summary>
+/// <param name="Aired">Episodes aired so far (season 1 and up), by the episode list.</param>
+/// <param name="OnDisk">Of those, the ones with a file.</param>
+/// <param name="Source">Where the episode list came from ("TMDb", "OMDb"), or null without one.</param>
+/// <param name="Note">Why the list couldn't be fetched, or "No episode list".</param>
+/// <param name="FetchedOnline">The list was asked for online in this run (else it came from the database).</param>
+public sealed record MissingEpisodesRow(
+    LocalSeries Series, bool Ongoing, int StartYear, int Aired, int OnDisk, IReadOnlyList<SeriesEpisode> Missing, string? Source, string? Note,
+    bool FetchedOnline = false);
+
 /// <summary>
 /// The local series window (port of SilverScreen's ShowLocalSeriesForm + DetailsFormSeries).
 /// </summary>
@@ -100,36 +110,7 @@ public sealed class LocalSeriesController(
     /// </summary>
     public async Task<SeriesDetails> GetDetailsAsync(LocalSeries series, bool refresh, CancellationToken ct = default)
     {
-        var id = series.Item.ImdbId;
-        string? note = null;
-        var fromCache = false;
-
-        var known = refresh ? [] : await seasons.GetCachedSeasonsAsync(id, ct).ConfigureAwait(false);
-        if (known.Count > 0)
-        {
-            fromCache = true;
-        }
-        else
-        {
-            try
-            {
-                known = await online.GetSeasonsAsync(id, series.TotalSeasons, ct).ConfigureAwait(false);
-                if (known.Count > 0) await seasons.SaveSeasonsAsync(id, known, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogWarning(ex, "Episode details for {ImdbId} could not be fetched", id);
-                note = ex.Message;
-            }
-
-            if (known.Count == 0)
-            {
-                known = await seasons.GetCachedSeasonsAsync(id, ct).ConfigureAwait(false);
-                fromCache = known.Count > 0;
-            }
-            if (known.Count == 0)
-                known = await seasons.GetSilverScreenSeasonsAsync(id, ct).ConfigureAwait(false);
-        }
+        var (known, fromCache, note) = await LoadSeasonsAsync(series, refresh, ct).ConfigureAwait(false);
 
         IReadOnlyList<EpisodeFile> found = [];
         IReadOnlyList<string> unrecognised = [];
@@ -144,6 +125,177 @@ public sealed class LocalSeriesController(
         }
 
         return new SeriesDetails(Merge(known, found), known.FirstOrDefault()?.Source, fromCache, unrecognised, note);
+    }
+
+    /// <summary>
+    /// The episode list, from the database first: Kino's cache, else what SilverScreen stored. Only when neither has it
+    /// (or with <paramref name="refresh"/>) it is fetched online and stored, and a series no source knows is remembered,
+    /// so it isn't asked about again for a while. When fetching fails (offline, no key, limit) the stored lists are used
+    /// anyway. <c>Note</c> says why fetching failed.
+    /// </summary>
+    private async Task<(IReadOnlyList<SeriesSeason> Known, bool FromCache, string? Note)> LoadSeasonsAsync(
+        LocalSeries series, bool refresh, CancellationToken ct)
+    {
+        var id = series.Item.ImdbId;
+        if (!refresh)
+        {
+            // Locally first: Kino's list, then what SilverScreen stored. Online only when neither knows the series.
+            var cached = await seasons.GetCachedSeasonsAsync(id, ct).ConfigureAwait(false);
+            if (cached.Count > 0) return (cached, true, null);
+            var stored = await seasons.GetSilverScreenSeasonsAsync(id, ct).ConfigureAwait(false);
+            if (stored.Count > 0) return (stored, false, null);
+        }
+
+        IReadOnlyList<SeriesSeason> known = [];
+        var info = await seasons.GetFetchInfoAsync(id, ct).ConfigureAwait(false);
+        string? note;
+        if (!refresh && RecentlyNotFound(info))
+        {
+            note = $"Not found on TMDb or OMDb on {info!.FetchedUtc.ToLocalTime():d}; Refresh episodes asks again";
+        }
+        else
+        {
+            (known, note) = await FetchAsync(series, info, ct).ConfigureAwait(false);
+            if (known.Count > 0) return (known, false, null);
+        }
+
+        known = await seasons.GetCachedSeasonsAsync(id, ct).ConfigureAwait(false);
+        if (known.Count > 0) return (known, true, note);
+        return (await seasons.GetSilverScreenSeasonsAsync(id, ct).ConfigureAwait(false), false, note);
+    }
+
+    /// <summary>A series no source knew is asked about again only after this, so it doesn't cost requests on every run.</summary>
+    internal static readonly TimeSpan NotFoundRetryAfter = TimeSpan.FromDays(30);
+
+    /// <summary>An ongoing series' list is fetched again by the report only when it is older than this.</summary>
+    internal static readonly TimeSpan OngoingRefreshAfter = TimeSpan.FromDays(3);
+
+    private static bool RecentlyNotFound(SeriesFetchInfo? info) =>
+        info is { Found: false } && DateTime.UtcNow - info.FetchedUtc < NotFoundRetryAfter;
+
+    /// <summary>
+    /// Fetches the seasons online (with the TMDb id from the last fetch, saving TMDb's lookup), caches them, and records
+    /// the fetch, also when nothing was found. A failure (offline, limit) isn't recorded, so the next run tries again.
+    /// </summary>
+    /// <remarks>
+    /// With <paramref name="stored"/> (an ongoing series' list), only its last season and later ones are fetched, as
+    /// SilverScreen fetched only the seasons it didn't have; the earlier seasons are kept as stored.
+    /// </remarks>
+    private async Task<(IReadOnlyList<SeriesSeason> Known, string? Note)> FetchAsync(
+        LocalSeries series, SeriesFetchInfo? info, CancellationToken ct, IReadOnlyList<SeriesSeason>? stored = null)
+    {
+        var id = series.Item.ImdbId;
+        var from = stored?.Where(s => s.SeasonNumber > 0).Select(s => s.SeasonNumber).DefaultIfEmpty(0).Max() ?? 0;
+        try
+        {
+            var result = await online.GetSeasonsAsync(id, series.TotalSeasons, info?.TmdbId, from, ct).ConfigureAwait(false);
+            var found = result.Seasons.Count > 0;
+            var all = found && from > 1
+                ? stored!.Where(s => s.SeasonNumber < from).Concat(result.Seasons)
+                    .OrderBy(s => s.SeasonNumber == 0 ? int.MaxValue : s.SeasonNumber).ToList()
+                : result.Seasons;
+            if (found) await seasons.SaveSeasonsAsync(id, all, ct).ConfigureAwait(false);
+            await seasons.SaveFetchInfoAsync(id, new SeriesFetchInfo(DateTime.UtcNow, found, result.TmdbId ?? info?.TmdbId), ct).ConfigureAwait(false);
+            return (all, found ? null : "Not found on TMDb or OMDb");
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Episode details for {ImdbId} could not be fetched", id);
+            return ([], ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// The report's episode list, from the database when it can: Kino's cache, else SilverScreen's stored seasons.
+    /// Online only for a series with neither (and not found recently), or, with <paramref name="refreshOngoing"/>,
+    /// an ongoing series whose list is over <see cref="OngoingRefreshAfter"/> old and has no episode still to air
+    /// (a list with one still to come already holds what will air next).
+    /// </summary>
+    private async Task<(IReadOnlyList<SeriesSeason> Known, bool Fetched, string? Note)> ReportSeasonsAsync(
+        LocalSeries series, bool ongoing, bool refreshOngoing, CancellationToken ct)
+    {
+        var id = series.Item.ImdbId;
+        var known = await seasons.GetCachedSeasonsAsync(id, ct).ConfigureAwait(false);
+        if (known.Count == 0) known = await seasons.GetSilverScreenSeasonsAsync(id, ct).ConfigureAwait(false);
+        var info = await seasons.GetFetchInfoAsync(id, ct).ConfigureAwait(false);
+
+        var fetch = known.Count == 0
+            ? !RecentlyNotFound(info)
+            : refreshOngoing && ongoing
+                && (info is null || DateTime.UtcNow - info.FetchedUtc > OngoingRefreshAfter)
+                && !known.SelectMany(s => s.Episodes).Any(e => e.AirDate > DateTime.Today);
+        if (!fetch)
+            return (known, false, known.Count == 0 && info is { Found: false } ? $"Not found on TMDb or OMDb on {info.FetchedUtc.ToLocalTime():d}" : null);
+
+        var (fetched, note) = await FetchAsync(series, info, ct, stored: known.Count > 0 ? known : null).ConfigureAwait(false);
+        return fetched.Count > 0 ? (fetched, true, null) : (known, true, note);
+    }
+
+    /// <summary>
+    /// Missing episodes for every series with a folder: aired episodes (season 1 and up, air date today or earlier,
+    /// or unknown) that have no file. Ongoing series first, then ended ones; newest first within each.
+    /// Episode lists come from the database where possible; see <see cref="ReportSeasonsAsync"/> for when it goes online.
+    /// </summary>
+    public async Task<IReadOnlyList<MissingEpisodesRow>> GetMissingEpisodesAsync(
+        bool refreshOngoing, IProgress<(int Done, int Total, string Title)>? progress = null, CancellationToken ct = default)
+    {
+        var all = await GetSeriesAsync(ct).ConfigureAwait(false);
+        var withFolder = all.Where(s => s.FolderExists && !s.FolderTooBroad).ToList();
+        var today = DateTime.Today;
+        var rows = new List<MissingEpisodesRow>();
+
+        for (var i = 0; i < withFolder.Count; i++)
+        {
+            var series = withFolder[i];
+            progress?.Report((i, withFolder.Count, series.Item.Title));
+            var ongoing = IsOngoing(series.Item.Year);
+
+            var (known, fetched, note) = await ReportSeasonsAsync(series, ongoing, refreshOngoing, ct).ConfigureAwait(false);
+            var (found, _) = await episodeFiles.FindAsync(series.FolderPath!, ct).ConfigureAwait(false);
+            var onDisk = found.SelectMany(f => f.EpisodeNumbers.Select(n => (f.SeasonNumber, n))).ToHashSet();
+
+            var aired = known.Where(s => s.SeasonNumber > 0)
+                .SelectMany(s => s.Episodes)
+                .Where(e => e.AirDate is null || e.AirDate.Value.Date <= today)
+                .OrderBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber)
+                .ToList();
+            var missing = aired.Where(e => !onDisk.Contains((e.SeasonNumber, e.EpisodeNumber))).ToList();
+
+            rows.Add(new MissingEpisodesRow(series, ongoing, StartYear(series.Item.Year), aired.Count, aired.Count - missing.Count,
+                missing, known.FirstOrDefault()?.Source, known.Count == 0 ? note ?? "No episode list" : note, fetched));
+        }
+        progress?.Report((withFolder.Count, withFolder.Count, ""));
+
+        return rows
+            .OrderByDescending(r => r.Ongoing)
+            .ThenByDescending(r => r.StartYear)
+            .ThenBy(r => r.Series.Item.Title, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+    }
+
+    /// <summary>OMDb writes an ongoing series' years as "2010–" (open end); "2010–2015" or "2010" has ended.</summary>
+    public static bool IsOngoing(string? year) => year?.Trim() is { Length: > 0 } y && (y.EndsWith('–') || y.EndsWith('-'));
+
+    /// <summary>The first year in "2010–2015", or 0.</summary>
+    public static int StartYear(string? year) =>
+        year is { Length: >= 4 } && int.TryParse(year[..4], NumberStyles.None, CultureInfo.InvariantCulture, out var y) ? y : 0;
+
+    /// <summary>"S01E03, S02E01–E05, S03E02": runs of following episodes in one season are shortened.</summary>
+    public static string Describe(IEnumerable<SeriesEpisode> episodes)
+    {
+        var parts = new List<string>();
+        foreach (var season in episodes.GroupBy(e => e.SeasonNumber).OrderBy(g => g.Key))
+        {
+            var numbers = season.Select(e => e.EpisodeNumber).Distinct().Order().ToList();
+            for (var i = 0; i < numbers.Count;)
+            {
+                var j = i;
+                while (j + 1 < numbers.Count && numbers[j + 1] == numbers[j] + 1) j++;
+                parts.Add(j == i ? $"S{season.Key:00}E{numbers[i]:00}" : $"S{season.Key:00}E{numbers[i]:00}–E{numbers[j]:00}");
+                i = j + 1;
+            }
+        }
+        return string.Join(", ", parts);
     }
 
     /// <summary>
