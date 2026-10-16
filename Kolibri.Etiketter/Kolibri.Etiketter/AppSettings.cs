@@ -22,8 +22,11 @@ public sealed class AppSettings
     public float OffsetYMm { get; set; }
     public bool PrintGuides { get; set; }
 
-    /// <summary>Posisjoner som skal skrives ut på hvert ark (1–24). Standard er hele arket.</summary>
-    public List<int>? SelectedPositions { get; set; } = Enumerable.Range(1, LabelSheet.LabelsPerSheet).ToList();
+    /// <summary>Etikettarket (<see cref="LabelSheet.Id"/>). Tomt betyr Lyreco 24 per ark, som før arkvalget kom.</summary>
+    public string? SheetId { get; set; }
+
+    /// <summary>Posisjoner som skal skrives ut på hvert ark (fra 1), på arket i <see cref="SheetId"/>. Tomt betyr hele arket.</summary>
+    public List<int>? SelectedPositions { get; set; }
 
     /// <summary>Antall ark som skrives ut.</summary>
     public int SheetCount { get; set; } = 1;

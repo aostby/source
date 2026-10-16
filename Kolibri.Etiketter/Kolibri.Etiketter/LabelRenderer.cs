@@ -27,7 +27,7 @@ public readonly record struct LabelDrawResult(bool TextOverflow, float FontSize)
 public static class LabelRenderer
 {
     /// <summary>Tegner etiketten og forteller om teksten fikk plass, og med hvilken skriftstørrelse.</summary>
-    public static LabelDrawResult Draw(Graphics g, LabelDesign design, RectangleF label, LabelRenderMode mode)
+    public static LabelDrawResult Draw(Graphics g, LabelDesign design, LabelSheet sheet, RectangleF label, LabelRenderMode mode)
     {
         GraphicsState state = g.Save();
         try
@@ -36,7 +36,7 @@ public static class LabelRenderer
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-            RectangleF content = RectangleF.Inflate(label, -LabelSheet.InnerMarginMm, -LabelSheet.InnerMarginMm);
+            RectangleF content = sheet.GetContentRect(label);
             RectangleF textArea = content;
             RectangleF? imageArea = null;
 
@@ -71,12 +71,12 @@ public static class LabelRenderer
                 if (imageArea is { } ia)
                     g.DrawRectangle(marginPen, ia.X, ia.Y, ia.Width, ia.Height);
                 using var borderPen = new Pen(Color.Gray, 0f);
-                g.DrawRectangle(borderPen, label.X, label.Y, label.Width, label.Height);
+                DrawOutline(g, borderPen, sheet, label);
             }
             else if (mode == LabelRenderMode.PrintWithGuides)
             {
                 using var guidePen = new Pen(Color.Gray, 0.1f);
-                g.DrawRectangle(guidePen, label.X, label.Y, label.Width, label.Height);
+                DrawOutline(g, guidePen, sheet, label);
                 using var marginPen = new Pen(Color.LightGray, 0.1f) { DashStyle = DashStyle.Dash };
                 g.DrawRectangle(marginPen, content.X, content.Y, content.Width, content.Height);
             }
@@ -87,6 +87,15 @@ public static class LabelRenderer
         {
             g.Restore(state);
         }
+    }
+
+    /// <summary>Omrisset av etiketten: et rektangel, eller en sirkel for runde etiketter.</summary>
+    public static void DrawOutline(Graphics g, Pen pen, LabelSheet sheet, RectangleF label)
+    {
+        if (sheet.IsRound)
+            g.DrawEllipse(pen, label);
+        else
+            g.DrawRectangle(pen, label.X, label.Y, label.Width, label.Height);
     }
 
     // Teksten tegnes som omriss (GraphicsPath) i mm. Da er linjeskift og bredder helt uavhengige av

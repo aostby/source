@@ -9,7 +9,7 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <RootNamespace>Kolibri.Etiketter</RootNamespace>
     <AssemblyTitle>Kolibri.Etiketter</AssemblyTitle>
-    <Product>Kolibri.Etiketter – Lyreco 24 per A4 (70 x 37 mm)</Product>
+    <Product>Kolibri.Etiketter – etiketter på A4-etikettark</Product>
   </PropertyGroup>
 
   <ItemGroup>

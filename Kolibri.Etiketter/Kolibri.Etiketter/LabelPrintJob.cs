@@ -8,6 +8,7 @@ public sealed class LabelPrintJob : IDisposable
     private const float HundredthInchToMm = 0.254f;
 
     private readonly LabelDesign _design;
+    private readonly LabelSheet _sheet;
     private readonly int[] _positions;
     private readonly int _sheetCount;
     private readonly float _offsetXMm;
@@ -15,10 +16,11 @@ public sealed class LabelPrintJob : IDisposable
     private readonly bool _printGuides;
     private int _sheetsPrinted;
 
-    public LabelPrintJob(LabelDesign design, IEnumerable<int> positions, int sheetCount, float offsetXMm, float offsetYMm, bool printGuides)
+    public LabelPrintJob(LabelDesign design, LabelSheet sheet, IEnumerable<int> positions, int sheetCount, float offsetXMm, float offsetYMm, bool printGuides)
     {
         _design = design;
-        _positions = positions.Where(i => i >= 0 && i < LabelSheet.LabelsPerSheet).Distinct().Order().ToArray();
+        _sheet = sheet;
+        _positions = positions.Where(i => i >= 0 && i < sheet.LabelsPerSheet).Distinct().Order().ToArray();
         _sheetCount = Math.Max(1, sheetCount);
         _offsetXMm = offsetXMm;
         _offsetYMm = offsetYMm;
@@ -91,8 +93,8 @@ public sealed class LabelPrintJob : IDisposable
         LabelRenderMode mode = _printGuides ? LabelRenderMode.PrintWithGuides : LabelRenderMode.Print;
         foreach (int position in _positions)
         {
-            RectangleF label = LabelSheet.GetLabelRect(position, _offsetXMm, _offsetYMm);
-            LabelRenderer.Draw(g, _design, label, mode);
+            RectangleF label = _sheet.GetLabelRect(position, _offsetXMm, _offsetYMm);
+            LabelRenderer.Draw(g, _design, _sheet, label, mode);
         }
 
         _sheetsPrinted++;

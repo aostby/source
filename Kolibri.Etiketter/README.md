@@ -1,7 +1,7 @@
 # Kolibri.Etiketter
 
-Program for å lage og skrive ut Lyreco-etiketter: 24 etiketter per A4-ark, 70 x 37 mm, 3 i bredden og 8 i høyden.
-Laget i C# WinForms (.NET 10).
+Program for å lage og skrive ut etiketter på A4-etikettark, laget for Lyreco 24 per ark (70 x 37 mm).
+Flere ark kan velges, se **Etikettark** under. Laget i C# WinForms (.NET 10).
 
 ## Kom i gang
 1. Åpne `Kolibri.Etiketter.sln` i Visual Studio 2022/2026 (med .NET 10 SDK), eller kjør `dotnet run --project Kolibri.Etiketter`.
@@ -9,9 +9,25 @@ Laget i C# WinForms (.NET 10).
 3. Velg skrift, størrelse, stil og farge med **Velg skrift...**, og velg **Sentrert** eller **Venstrestilt**.
 4. Legg til et bilde med **Legg til bilde...**, ved å dra en bildefil inn på etiketten, eller via **Rediger > Lim inn bilde**.
    Bildet legges til venstre og får 1/3 av bredden, og teksten brytes ved siden av. Bredde og side kan endres.
-5. Velg hvilke posisjoner på arket som skal skrives ut, og hvor mange ark (se under).
+5. Velg etikettark, hvilke posisjoner på arket som skal skrives ut, og hvor mange ark (se under).
 6. **Forhåndsvis ark...** viser hele A4-arket. **Skriv ut...** åpner Windows' skriverdialog, der du kan velge
    HP LaserJet Pro M402dne, en annen skriver eller **Microsoft Print to PDF** for å kontrollere resultatet først.
+
+## Etikettark
+Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes maler.
+
+| Ark | Etikett | Oppsett | Marg topp / venstre | Mellomrom |
+|---|---|---|---|---|
+| Lyreco, Avery Zweckform 3474 (standard) | 70 × 37 mm | 3 × 8 = 24 | 0,5 / 0 mm | ingen |
+| Avery L7160 | 63,5 × 38,1 mm | 3 × 7 = 21 | 15,15 / 7,21 mm | 2,54 mm i bredden |
+| Herma 4360, Herma 4453 | 70 × 36 mm | 3 × 8 = 24 | 4,5 / 0 mm | ingen |
+| Avery Zweckform 3651 | 52,5 × 29,7 mm | 4 × 10 = 40 | 0 / 0 mm | ingen |
+| Avery L7651 | 38,1 × 21,2 mm | 5 × 13 = 65 | 10,7 / 4,75 mm | 2,5 mm i bredden |
+| Avery L7780 (runde) | Ø 40 mm | 4 × 6 = 24 | 13,5 / 16 mm | 6 mm begge veier |
+
+- Etiketten på skjermen og miniatyrarket følger arket. Bytter du ark, velges alle etikettene på det nye arket.
+- På runde etiketter tegnes bilde og tekst i et liggende felt inni sirkelen (stiplet blå linje).
+- Arkene kommer fra etikettverktøyet på nyttig.web.app.
 
 ## Teksten på etiketten
 - Det du ser på skjermen er det du får på papiret. Teksten tegnes som omriss i millimeter, uavhengig av skjerm- og
@@ -34,13 +50,13 @@ Laget i C# WinForms (.NET 10).
 - Er ingen posisjoner valgt, kan du ikke forhåndsvise eller skrive ut.
 
 ## Treffe etikettene
-- Ark: 3 x 70 mm = 210 mm (ingen sidemarg), 8 x 37 mm = 296 mm (0,5 mm topp og bunn).
+- Lyreco-arket: 3 x 70 mm = 210 mm (ingen sidemarg), 8 x 37 mm = 296 mm (0,5 mm topp og bunn).
 - **Skriv ut hjelpelinjer** tegner omrisset av hver etikett. Skriv ut på vanlig papir og legg det over et etikettark
   for å sjekke treffet. Treffer skriveren litt skjevt, juster med **Justering mm** (høyre/ned).
 
 ## Filer
 - Etiketter lagres som `.etikett` (JSON med bildet innebygd) via **Fil > Lagre**.
-- Siste etikett og innstillinger (skriver, justering, valgte posisjoner, antall ark) huskes i `%AppData%\Kolibri.Etiketter`.
+- Siste etikett og innstillinger (skriver, etikettark, justering, valgte posisjoner, antall ark) huskes i `%AppData%\Kolibri.Etiketter`.
   Innstillinger fra den tidligere mappen `%AppData%\Etikettprogram` kopieres over automatisk første gang.
 - **Hjelp > Om** viser denne beskrivelsen inne i programmet.
 
@@ -49,7 +65,7 @@ Alt ligger i namespace `Kolibri.Etiketter`.
 
 | Fil | Innhold |
 |---|---|
-| `LabelSheet.cs` | Arkets geometri (mål og posisjoner i mm) |
+| `LabelSheet.cs` | Arkene man kan velge, og geometrien deres (mål og posisjoner i mm) |
 | `LabelDesign.cs` | Innholdet på etiketten, lagring/lasting |
 | `LabelRenderer.cs` | Tegner etiketten i mm (teksten som omriss), brukes både på skjerm og skriver |
 | `LabelPreviewControl.cs` | Forstørret visning av én etikett |
