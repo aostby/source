@@ -48,8 +48,7 @@ public sealed partial class MovieController(
         }
 
         if (watchlists is not null)
-            foreach (var list in await watchlists.GetListNamesAsync(ct).ConfigureAwait(false))
-                watched.UnionWith((await watchlists.GetItemsAsync(list, ct).ConfigureAwait(false)).Where(i => i.Watched == "Y").Select(i => i.ImdbId));
+            watched.UnionWith(await watchlists.GetWatchedImdbIdsAsync(ct).ConfigureAwait(false));
 
         return (watched, note);
     }

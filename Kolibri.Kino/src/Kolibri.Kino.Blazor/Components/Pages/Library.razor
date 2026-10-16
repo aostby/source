@@ -192,6 +192,7 @@ else
     {
         get
         {
+            if (SeenKey is not null && _watched is null) return "Checking what you've watched…"; // no count until it's right
             var seen = WatchedFilter.Words(SeenKey);
             var note = SeenKey is not null && _watchedNote is not null ? $" ({_watchedNote}.)" : "";
             if (ByCategory) return $"{_shown.Count:N0}{seen} item(s) in library, in {_shelves.Count} genres.{note}";

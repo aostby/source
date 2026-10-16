@@ -36,6 +36,17 @@ public sealed class LiteDbWatchListRepository(KinoDatabase db) : IWatchListRepos
     public Task<WatchListItem?> GetAsync(string imdbId, CancellationToken ct = default) =>
         Task.Run(() => _docs.FindById(imdbId) is { } doc ? BsonMapper.Global.ToObject<WatchListItem>(doc) : null, ct);
 
+    /// <remarks>Only the id is taken from each document (no mapping, and SilverScreen's Picture bytes are skipped).</remarks>
+    public Task<IReadOnlySet<string>> GetWatchedImdbIdsAsync(CancellationToken ct = default) =>
+        Task.Run(() => (IReadOnlySet<string>)_docs.Query()
+            .Where("Watched = 'Y'")
+            .Select("$.ImdbId")
+            .ToEnumerable()
+            .Select(d => d["ImdbId"])
+            .Where(v => v.IsString && v.AsString.Length > 0)
+            .Select(v => v.AsString)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase), ct);
+
     public Task UpsertAsync(WatchListItem item, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(item.ImdbId);

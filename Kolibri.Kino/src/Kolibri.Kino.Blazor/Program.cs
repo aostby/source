@@ -12,7 +12,8 @@ builder.Services
     .AddKinoData(builder.Configuration)
     .AddKinoControllers()
     .AddScoped<LastSearch>()
-    .AddHostedService<RecentlyAddedWarmUp>();
+    .AddHostedService<RecentlyAddedWarmUp>()
+    .AddHostedService<WatchedWarmUp>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

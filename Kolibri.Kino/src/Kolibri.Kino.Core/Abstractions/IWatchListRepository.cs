@@ -11,6 +11,9 @@ public interface IWatchListRepository
 
     Task<WatchListItem?> GetAsync(string imdbId, CancellationToken ct = default);
 
+    /// <summary>The IMDb ids marked watched on any list, in one read (for the Watched filter).</summary>
+    Task<IReadOnlySet<string>> GetWatchedImdbIdsAsync(CancellationToken ct = default);
+
     /// <summary>Adds or replaces the entry for <see cref="OMDbApiNet.Model.Item.ImdbId"/> (moving it if it was on another list).</summary>
     Task UpsertAsync(WatchListItem item, CancellationToken ct = default);
 
