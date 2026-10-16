@@ -17,9 +17,9 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Shown in the main window's title: "Kolibri.Kino 1.0.1". -->
+    <!-- Shown in the main window's title: "Kolibri.Kino 1.1.0". -->
     <Product>Kolibri.Kino</Product>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <!-- The .exe icon (Explorer, taskbar, shortcuts). Built from assets/kino.svg by assets/make-icon.cs. -->
     <ApplicationIcon>..\..\assets\kino.ico</ApplicationIcon>
   </PropertyGroup>
