@@ -1,6 +1,8 @@
 using Kolibri.Kino.Controllers;
+using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.Data;
 using Microsoft.Extensions.Logging.Abstractions;
+using OMDbApiNet.Model;
 
 namespace Kolibri.Kino.Tests;
 
@@ -26,6 +28,37 @@ public sealed class MovieControllerTests : IDisposable
     {
         _db.Dispose();
         _temp.Dispose();
+    }
+
+    [Fact]
+    public async Task Watched_is_what_Plex_played_plus_what_a_watchlist_marked_watched()
+    {
+        var plex = new FakePlex();
+        plex.Movies.AddRange([new Item { ImdbId = "tt1", Title = "On Plex" }, new Item { ImdbId = "tt2", Title = "Unwatched" }]);
+        plex.Watched.Add("tt1");
+        var lists = new LiteDbWatchListRepository(_db);
+        await lists.UpsertAsync(new WatchListItem { ImdbId = "tt3", Title = "Seen", WatchListName = "Favoritter", Watched = "Y" });
+        await lists.UpsertAsync(new WatchListItem { ImdbId = "tt4", Title = "To see", WatchListName = "Favoritter", Watched = "N" });
+        var controller = new MovieController(_repo, _omdb, _files, _tmdb, new NoPosters(), plex, NullLogger<MovieController>.Instance, lists);
+
+        var (ids, note) = await controller.GetWatchedAsync(refreshPlex: true);
+
+        Assert.Equal(["tt1", "tt3"], ids.Order());
+        Assert.Null(note);
+    }
+
+    [Fact]
+    public async Task Watched_without_Plex_comes_from_the_watchlists_with_a_note()
+    {
+        var lists = new LiteDbWatchListRepository(_db);
+        await lists.UpsertAsync(new WatchListItem { ImdbId = "tt3", Title = "Seen", WatchListName = "Favoritter", Watched = "Y" });
+        var controller = new MovieController(_repo, _omdb, _files, _tmdb, new NoPosters(), new FakePlex { IsConfigured = false },
+            NullLogger<MovieController>.Instance, lists);
+
+        var (ids, note) = await controller.GetWatchedAsync();
+
+        Assert.Equal(["tt3"], ids);
+        Assert.Contains("Plex isn't set up", note);
     }
 
     [Fact]

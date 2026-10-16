@@ -16,8 +16,43 @@ public sealed partial class MovieController(
     ITmdbLinks tmdb,
     IPosterProvider posters,
     IMediaServerLibrary plex,
-    ILogger<MovieController> logger)
+    ILogger<MovieController> logger,
+    IWatchListRepository? watchlists = null)
 {
+    /// <summary>
+    /// The titles you have watched: played to the end on Plex (for the token's user; reloaded from Plex first when
+    /// <paramref name="refreshPlex"/>), and marked watched on a Kino watchlist. <c>Note</c> says when Plex couldn't
+    /// be asked (not set up, or offline); the watchlists are used anyway.
+    /// </summary>
+    public async Task<(IReadOnlySet<string> ImdbIds, string? Note)> GetWatchedAsync(bool refreshPlex = false, CancellationToken ct = default)
+    {
+        var watched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        string? note = null;
+        if (!plex.IsConfigured)
+        {
+            note = "Plex isn't set up in Settings, so only watchlists say what's watched";
+        }
+        else
+        {
+            try
+            {
+                if (refreshPlex) await plex.RefreshAsync(ct).ConfigureAwait(false);
+                watched.UnionWith(await plex.GetWatchedImdbIdsAsync(ct).ConfigureAwait(false));
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
+            {
+                logger.LogWarning(ex, "Watched movies could not be read from Plex");
+                note = $"Plex didn't answer ({ex.Message}), so only watchlists say what's watched";
+            }
+        }
+
+        if (watchlists is not null)
+            foreach (var list in await watchlists.GetListNamesAsync(ct).ConfigureAwait(false))
+                watched.UnionWith((await watchlists.GetItemsAsync(list, ct).ConfigureAwait(false)).Where(i => i.Watched == "Y").Select(i => i.ImdbId));
+
+        return (watched, note);
+    }
+
     /// <summary>IMDb ids neither Plex nor TMDb had a poster for, so a list of them doesn't ask again this session.</summary>
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _noPosterElsewhere = new(StringComparer.OrdinalIgnoreCase);
 
