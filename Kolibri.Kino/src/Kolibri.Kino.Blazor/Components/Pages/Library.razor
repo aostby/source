@@ -237,25 +237,14 @@ else
         }
 
         // What's watched, only when the filter asks for it (it asks Plex), and again after a while (watched since).
+        var syncWatchedList = false;
         if (SeenKey is not null && (_watched is null || DateTime.UtcNow - _watchedAt > WatchedMaxAge))
         {
             await RunAsync("Checking what you've watched…", async ct =>
             {
                 (_watched, _watchedNote) = await Movies.GetWatchedAsync(refreshPlex: _watched is not null, ct);
                 _watchedAt = DateTime.UtcNow;
-                // Keep the Watched watchlist complete: movies watched on Plex, and watched ones on other lists, go there.
-                // It doesn't change what's watched, so the filter needn't wait for it to finish well.
-                if (_watchedNote is null)
-                {
-                    try
-                    {
-                        await Watchlists.MoveWatchedToListAsync(ct: ct);
-                    }
-                    catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
-                    {
-                        _watchedNote = $"the {WatchlistController.WatchedList} list couldn't be brought up to date: {ex.Message}";
-                    }
-                }
+                syncWatchedList = _watchedNote is null;
             });
         }
 
@@ -264,6 +253,26 @@ else
             ? LastSearch.Online.Select(s => new Hit(s.ImdbId, s.Title, s.Year, s.Type, null, null, OnlinePoster(s))).ToList()
             : LastSearch.Local.Select(i => new Hit(i.ImdbId, i.Title, i.Year, i.Type, i.ImdbRating, i.Genre, $"poster/{i.ImdbId}", i)).ToList();
         ApplyFilterAndSort();
+
+        if (syncWatchedList) _ = UpdateWatchedListAsync();
+    }
+
+    /// <summary>
+    /// In the background, after the list is shown: movies watched on Plex, and watched ones on other watchlists, go on
+    /// the Watched list (the first time that can be hundreds). It doesn't change what's watched, so the filter doesn't
+    /// wait for it; a failure is only noted below the filters.
+    /// </summary>
+    private async Task UpdateWatchedListAsync()
+    {
+        try
+        {
+            await Watchlists.MoveWatchedToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _watchedNote = $"the {WatchlistController.WatchedList} list couldn't be brought up to date: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private void ApplyFilterAndSort()

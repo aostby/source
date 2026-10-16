@@ -39,7 +39,8 @@ public sealed partial class MovieController(
                 if (refreshPlex) await plex.RefreshAsync(ct).ConfigureAwait(false);
                 watched.UnionWith(await plex.GetWatchedImdbIdsAsync(ct).ConfigureAwait(false));
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
+            // Any Plex trouble (offline, a 500, a cut-off XML answer) leaves the watchlists to say what's watched.
+            catch (Exception ex) when (!ct.IsCancellationRequested)
             {
                 logger.LogWarning(ex, "Watched movies could not be read from Plex");
                 note = $"Plex didn't answer ({ex.Message}), so only watchlists say what's watched";

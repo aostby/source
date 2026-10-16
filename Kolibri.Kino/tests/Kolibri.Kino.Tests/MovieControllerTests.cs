@@ -48,6 +48,20 @@ public sealed class MovieControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task Watched_still_comes_from_the_watchlists_when_Plex_sends_broken_XML()
+    {
+        var lists = new LiteDbWatchListRepository(_db);
+        await lists.UpsertAsync(new WatchListItem { ImdbId = "tt33214716", Title = "The Florist", WatchListName = "Watched", Watched = "Y" });
+        var plex = new FakePlex { Throws = new System.Xml.XmlException("There is an unclosed literal string. Line 19453, position 75.") };
+        var controller = new MovieController(_repo, _omdb, _files, _tmdb, new NoPosters(), plex, NullLogger<MovieController>.Instance, lists);
+
+        var (ids, note) = await controller.GetWatchedAsync(refreshPlex: true);
+
+        Assert.Equal(["tt33214716"], ids);
+        Assert.Contains("unclosed literal string", note);
+    }
+
+    [Fact]
     public async Task Watched_without_Plex_comes_from_the_watchlists_with_a_note()
     {
         var lists = new LiteDbWatchListRepository(_db);
