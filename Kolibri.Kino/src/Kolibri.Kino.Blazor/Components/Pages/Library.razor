@@ -51,10 +51,11 @@
                 <option value="@r.ToString(CultureInfo.InvariantCulture)">IMDb @r.ToString("0.#", CultureInfo.InvariantCulture)+</option>
             }
         </select>
-        <select aria-label="Watched" value="@(SeenKey switch { "no" => "", null => "all", var k => k })" @onchange="e => Go(seen: e.Value as string ?? string.Empty, page: 1)">
-            <option value="">Not watched</option>
-            <option value="all">All</option>
-            <option value="yes">Watched</option>
+        <select aria-label="Watched" value="@WatchedFilter.Value(SeenKey)" @onchange="e => Go(seen: e.Value as string ?? string.Empty, page: 1)">
+            @foreach (var (value, label) in WatchedFilter.Choices)
+            {
+                <option value="@value">@label</option>
+            }
         </select>
         <input type="search" placeholder="Actor or director…" aria-label="Actor or director"
                @bind="_person" @bind:after="() => Go(person: _person?.Trim() ?? string.Empty, page: 1)" />
@@ -67,7 +68,7 @@
 
 @if (ByCategory && CurrentPage == 1)
 {
-    <RecentShelf />
+    <RecentShelf Seen="@SeenKey" Watched="_watched" />
 }
 
 <div class="toolbar">
@@ -157,7 +158,7 @@ else
     /// "no" (not watched, the default: no "seen" in the address), "yes" (watched), or null for all ("seen=all").
     /// OMDb results aren't in the library, so they aren't filtered.
     /// </summary>
-    private string? SeenKey => Online ? null : Seen switch { "all" => null, "yes" => "yes", _ => "no" };
+    private string? SeenKey => Online ? null : WatchedFilter.Key(Seen);
 
     /// <summary>Watched on Plex or a watchlist; asked again when older than <see cref="WatchedMaxAge"/>.</summary>
     /// <remarks>Reloading Plex's whole movie list takes a while (seconds), so not on every click.</remarks>
@@ -191,7 +192,7 @@ else
     {
         get
         {
-            var seen = SeenKey switch { "no" => " not watched", "yes" => " watched", _ => "" };
+            var seen = WatchedFilter.Words(SeenKey);
             var note = SeenKey is not null && _watchedNote is not null ? $" ({_watchedNote}.)" : "";
             if (ByCategory) return $"{_shown.Count:N0}{seen} item(s) in library, in {_shelves.Count} genres.{note}";
             var counted = _shown.Count == _hits.Count ? $"{_hits.Count:N0}" : $"{_shown.Count:N0} of {_hits.Count:N0}";
@@ -280,10 +281,9 @@ else
         // The genre list comes from the title search alone, so another genre can be picked while one is chosen.
         _genres = LibraryFilter.Genres(_hits.Select(h => h.Source).OfType<Item>());
         var filter = Filter;
-        var watched = _watched ?? new HashSet<string>();
         var filtered = _hits
             .Where(h => h.Source is null || filter.Matches(h.Source))
-            .Where(h => SeenKey switch { "no" => !watched.Contains(h.ImdbId), "yes" => watched.Contains(h.ImdbId), _ => true })
+            .Where(h => WatchedFilter.Matches(SeenKey, _watched, h.ImdbId))
             .ToList();
 
         _typeCounts = [(null, "All", filtered.Count)];

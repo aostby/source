@@ -2,10 +2,12 @@
 @using Kolibri.Kino.Controllers.Library
 @inherits KinoPage
 @inject RecentlyAddedController Recent
+@inject MovieController Movies
 @inject NavigationManager Nav
 
 @* Plex's "Recently added": the library newest first, by when the files arrived on the NAS, under Today,
-   Yesterday, Last 7 days … headings. The filter is in the address, so Back from a movie returns here. *@
+   Yesterday, Last 7 days … headings, by default only what you haven't watched (see WatchedFilter). The filters
+   are in the address, so Back from a movie returns here. *@
 
 <PageTitle>Recently added · Kolibri Kino</PageTitle>
 
@@ -18,6 +20,12 @@
             <button class="chip @(key == TypeKey ? "on" : "")" @onclick="() => Go(type: key, shown: 0)">@label (@Count(key).ToString("N0"))</button>
         }
     </div>
+    <select class="sort" aria-label="Watched" value="@WatchedFilter.Value(SeenKey)" @onchange="e => Go(seen: e.Value as string ?? string.Empty, shown: 0)">
+        @foreach (var (value, label) in WatchedFilter.Choices)
+        {
+            <option value="@value">@label</option>
+        }
+    </select>
 </div>
 
 <StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
@@ -49,9 +57,14 @@
 
     [SupplyParameterFromQuery(Name = "type")] public string? Type { get; set; }
     [SupplyParameterFromQuery(Name = "shown")] public int? ShownParameter { get; set; }
+    [SupplyParameterFromQuery(Name = "seen")] public string? Seen { get; set; }
 
     private RecentlyAddedReport? _report;
     private DateTime _now = DateTime.UtcNow;
+    private IReadOnlySet<string>? _watched;
+    private string? _watchedNote;
+
+    private string? SeenKey => WatchedFilter.Key(Seen);
 
     private string TypeKey => Types.Any(t => t.Key == Type) ? Type! : "";
     private int ShownCount => Math.Max(PageSize, ShownParameter ?? 0);
@@ -59,27 +72,37 @@
     private IEnumerable<RecentlyAddedItem> Shown => Filtered.Take(ShownCount);
 
     private string? Summary => _report is null ? null
-        : _report.WithoutDate == 0 ? $"{Filtered.Count:N0} item(s), newest first."
-        : $"{Filtered.Count:N0} item(s), newest first. {_report.WithoutDate:N0} more have no file this server can reach (another PC's share or a moved file).";
+        : $"{Filtered.Count:N0}{WatchedFilter.Words(SeenKey)} item(s), newest first."
+          + (_report.WithoutDate == 0 ? "" : $" {_report.WithoutDate:N0} more have no file this server can reach (another PC's share or a moved file).")
+          + (SeenKey is not null && _watchedNote is not null ? $" ({_watchedNote}.)" : "");
 
-    protected override async Task OnInitializedAsync() =>
+    protected override async Task OnInitializedAsync()
+    {
         await RunAsync("Reading file dates…", async ct =>
         {
             _report = await Recent.GetAsync(ct);
             _now = DateTime.UtcNow;
         });
+        // What's watched: Plex (as already loaded) and the watchlists. Asked once per visit; also for "All", so
+        // switching the filter is instant.
+        await RunAsync("Checking what you've watched…", async ct => (_watched, _watchedNote) = await Movies.GetWatchedAsync(ct: ct));
+    }
 
-    private List<RecentlyAddedItem> Of(string type) => _report is null ? []
-        : type.Length == 0 ? _report.Items.ToList()
-        : _report.Items.Where(r => string.Equals(r.Item.Type, type, StringComparison.OrdinalIgnoreCase)).ToList();
+    /// <summary>The report's items of a type ("" for all) that pass the Watched filter; none until what's watched is known.</summary>
+    private List<RecentlyAddedItem> Of(string type) => _report is null || (SeenKey is not null && _watched is null) ? []
+        : _report.Items
+            .Where(r => type.Length == 0 || string.Equals(r.Item.Type, type, StringComparison.OrdinalIgnoreCase))
+            .Where(r => WatchedFilter.Matches(SeenKey, _watched, r.Item.ImdbId))
+            .ToList();
 
     private int Count(string type) => Of(type).Count;
 
     /// <summary>Changes the filter in the address. Null keeps a value; empty type or 0 shown removes it.</summary>
-    private void Go(string? type = null, int? shown = null) =>
+    private void Go(string? type = null, int? shown = null, string? seen = null) =>
         Nav.NavigateTo(Nav.GetUriWithQueryParameters(new Dictionary<string, object?>
         {
             ["type"] = (type ?? Type) is { Length: > 0 } t ? t : null,
             ["shown"] = (shown ?? ShownParameter) is > PageSize and var n ? n : null,
+            ["seen"] = (seen ?? Seen) is { Length: > 0 } s ? s : null,
         }));
 }
