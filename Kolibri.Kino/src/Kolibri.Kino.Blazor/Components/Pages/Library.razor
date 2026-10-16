@@ -3,6 +3,7 @@
 @using Kolibri.Kino.Controllers.Library
 @inherits KinoPage
 @inject MovieController Movies
+@inject WatchlistController Watchlists
 @inject LastSearch LastSearch
 @inject NavigationManager Nav
 
@@ -242,6 +243,19 @@ else
             {
                 (_watched, _watchedNote) = await Movies.GetWatchedAsync(refreshPlex: _watched is not null, ct);
                 _watchedAt = DateTime.UtcNow;
+                // Keep the Watched watchlist complete: movies watched on Plex, and watched ones on other lists, go there.
+                // It doesn't change what's watched, so the filter needn't wait for it to finish well.
+                if (_watchedNote is null)
+                {
+                    try
+                    {
+                        await Watchlists.MoveWatchedToListAsync(ct: ct);
+                    }
+                    catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+                    {
+                        _watchedNote = $"the {WatchlistController.WatchedList} list couldn't be brought up to date: {ex.Message}";
+                    }
+                }
             });
         }
 

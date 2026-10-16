@@ -75,6 +75,20 @@ public partial class MainForm : Form, IStatusDisplay
         {
             Report($"Error: bringing in Plex's playlists failed: {ex.Message}");
         }
+
+        // Then the Watched list: movies watched on Plex, and watched ones on other lists, go on it (see MoveWatchedToListAsync).
+        try
+        {
+            var w = await watchlists.MoveWatchedToListAsync();
+            if (w.AddedFromPlex.Count + w.Moved.Count + w.PlexMarked > 0)
+                Report($"{WatchlistController.WatchedList} list: {w.AddedFromPlex.Count} watched on Plex added, {w.Moved.Count} moved from other lists" +
+                       (w.PlexMarked > 0 ? $", {w.PlexMarked} marked watched on Plex." : "."));
+            if (w.PlexError is not null) Report($"Error: marking watched movies on Plex stopped: {w.PlexError}");
+        }
+        catch (Exception ex)
+        {
+            Report($"Error: updating the {WatchlistController.WatchedList} list from Plex failed: {ex.Message}");
+        }
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)
