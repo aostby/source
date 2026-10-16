@@ -248,6 +248,7 @@ partial class KinoForm
         dgvItems.AutoGenerateColumns = false;
         dgvItems.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         dgvItems.ContextMenuStrip = itemMenu;
+        dgvItems.KeyDown += dgvItems_KeyDown;
         dgvItems.DataSource = bindingSource;
         dgvItems.Dock = DockStyle.Fill;
         dgvItems.Location = new Point(0, 121);
@@ -320,6 +321,7 @@ partial class KinoForm
         menuRemove.Name = "menuRemove";
         menuRemove.Size = new Size(191, 22);
         menuRemove.Text = "Remove from library…";
+        menuRemove.ShortcutKeyDisplayString = "Del";
         menuRemove.Click += menuRemove_Click;
         // 
         // statusStrip

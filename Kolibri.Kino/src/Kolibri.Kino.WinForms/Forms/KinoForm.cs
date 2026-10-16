@@ -115,6 +115,17 @@ public partial class KinoForm : AsyncForm, IWritesToExcel
         if (dialog.ShowDialog(this) == DialogResult.OK) ShowStatus(dialog.ResultMessage);
     }
 
+    /// <summary>
+    /// Delete in the list: Remove from library… for the selected library title (it asks first). Only in the list, so
+    /// Delete in the search box still deletes text; OMDb results aren't in the library and are left alone.
+    /// </summary>
+    private void dgvItems_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.KeyCode != Keys.Delete || e.Modifiers != Keys.None || !txtSearch.Enabled || dgvItems.CurrentItem() is not Item) return;
+        e.Handled = true;
+        menuRemove_Click(menuRemove, EventArgs.Empty);
+    }
+
     private void txtSearch_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.KeyCode != Keys.Enter) return;
