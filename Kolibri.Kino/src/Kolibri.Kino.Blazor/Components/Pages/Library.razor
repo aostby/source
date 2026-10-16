@@ -7,7 +7,8 @@
 @inject NavigationManager Nav
 
 @* Port of KinoForm: search the library or OMDb, filter by type, genre, year, rating, watched and person, sort, import.
-   Watched = played to the end on Plex or marked watched on a Kino watchlist ("seen=no" lists what you haven't seen).
+   Watched = played to the end on Plex or marked watched on a Kino watchlist. By default only what you haven't seen is
+   listed; "seen=all" lists everything, "seen=yes" what you have seen.
    With no search and no filters the library is shown by genre, one row each, like Plex's home page. The
    search is in the address, so Back from a movie returns to the same results. *@
 
@@ -49,14 +50,14 @@
                 <option value="@r.ToString(CultureInfo.InvariantCulture)">IMDb @r.ToString("0.#", CultureInfo.InvariantCulture)+</option>
             }
         </select>
-        <select aria-label="Watched" value="@(SeenKey ?? "")" @onchange="e => Go(seen: e.Value as string ?? string.Empty, page: 1)">
-            <option value="">Watched or not</option>
-            <option value="no">Not watched</option>
+        <select aria-label="Watched" value="@(SeenKey switch { "no" => "", null => "all", var k => k })" @onchange="e => Go(seen: e.Value as string ?? string.Empty, page: 1)">
+            <option value="">Not watched</option>
+            <option value="all">All</option>
             <option value="yes">Watched</option>
         </select>
         <input type="search" placeholder="Actor or director…" aria-label="Actor or director"
                @bind="_person" @bind:after="() => Go(person: _person?.Trim() ?? string.Empty, page: 1)" />
-        @if (!Filter.IsEmpty || SeenKey is not null)
+        @if (!Filter.IsEmpty || SeenKey != "no")
         {
             <button type="button" class="quiet" @onclick="ClearFilters">Clear filters</button>
         }
@@ -151,8 +152,11 @@ else
     [SupplyParameterFromQuery(Name = "view")] public string? View { get; set; }
     [SupplyParameterFromQuery(Name = "seen")] public string? Seen { get; set; }
 
-    /// <summary>"no" (not watched), "yes" (watched), or null for both.</summary>
-    private string? SeenKey => Online ? null : Seen is "no" or "yes" ? Seen : null;
+    /// <summary>
+    /// "no" (not watched, the default: no "seen" in the address), "yes" (watched), or null for all ("seen=all").
+    /// OMDb results aren't in the library, so they aren't filtered.
+    /// </summary>
+    private string? SeenKey => Online ? null : Seen switch { "all" => null, "yes" => "yes", _ => "no" };
 
     /// <summary>Watched on Plex or a watchlist; asked again when older than <see cref="WatchedMaxAge"/>.</summary>
     /// <remarks>Reloading Plex's whole movie list takes a while (seconds), so not on every click.</remarks>
