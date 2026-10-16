@@ -8,8 +8,8 @@
 @inject NavigationManager Nav
 
 @* Port of KinoForm: search the library or OMDb, filter by type, genre, year, rating, watched and person, sort, import.
-   Watched = played to the end on Plex or marked watched on a Kino watchlist. By default only what you haven't seen is
-   listed; "seen=all" lists everything, "seen=yes" what you have seen.
+   Watched = played to the end on Plex or marked watched on a Kino watchlist. By default everything is listed, without
+   asking what's watched (so the page opens quickly); "seen=no" lists what you haven't seen, "seen=yes" what you have.
    With no search and no filters the library is shown by genre, one row each, like Plex's home page. The
    search is in the address, so Back from a movie returns to the same results. *@
 
@@ -59,7 +59,7 @@
         </select>
         <input type="search" placeholder="Actor or director…" aria-label="Actor or director"
                @bind="_person" @bind:after="() => Go(person: _person?.Trim() ?? string.Empty, page: 1)" />
-        @if (!Filter.IsEmpty || SeenKey != "no")
+        @if (!Filter.IsEmpty || SeenKey is not null)
         {
             <button type="button" class="quiet" @onclick="ClearFilters">Clear filters</button>
         }

@@ -6,7 +6,7 @@
 @inject NavigationManager Nav
 
 @* Plex's "Recently added": the library newest first, by when the files arrived on the NAS, under Today,
-   Yesterday, Last 7 days … headings, by default only what you haven't watched (see WatchedFilter). The filters
+   Yesterday, Last 7 days … headings, all or only what you have / haven't watched (see WatchedFilter). The filters
    are in the address, so Back from a movie returns here. *@
 
 <PageTitle>Recently added · Kolibri Kino</PageTitle>
@@ -76,16 +76,18 @@
           + (_report.WithoutDate == 0 ? "" : $" {_report.WithoutDate:N0} more have no file this server can reach (another PC's share or a moved file).")
           + (SeenKey is not null && _watchedNote is not null ? $" ({_watchedNote}.)" : "");
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() =>
         await RunAsync("Reading file dates…", async ct =>
         {
             _report = await Recent.GetAsync(ct);
             _now = DateTime.UtcNow;
         });
-        // What's watched: Plex (as already loaded) and the watchlists. Asked once per visit; also for "All", so
-        // switching the filter is instant.
-        await RunAsync("Checking what you've watched…", async ct => (_watched, _watchedNote) = await Movies.GetWatchedAsync(ct: ct));
+
+    /// <summary>What's watched (Plex and the watchlists), asked once per visit, and only when Not watched or Watched is chosen.</summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        if (SeenKey is not null && _watched is null)
+            await RunAsync("Checking what you've watched…", async ct => (_watched, _watchedNote) = await Movies.GetWatchedAsync(ct: ct));
     }
 
     /// <summary>The report's items of a type ("" for all) that pass the Watched filter; none until what's watched is known.</summary>

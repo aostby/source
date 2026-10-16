@@ -3,7 +3,7 @@
 @inject RecentlyAddedController Recent
 
 @* The newest few movies and series as scrolling rows, like "Recently Added Movies" and "Recently Added TV" on
-   Plex's home page, with the Library's Watched filter: by default only what you haven't seen. Loads on its own, so
+   Plex's home page, with the Library's Watched filter (by default all). Loads on its own, so
    the library below doesn't wait for the file dates; a row with nothing in it is left out. *@
 
 @foreach (var (title, type, items) in Rows)
@@ -11,7 +11,7 @@
     <section class="shelf" aria-label="@title">
         <div class="shelf-head">
             <h2>@title</h2>
-            <a href="@($"recent?type={type}{(Seen is null ? "&seen=all" : Seen == "yes" ? "&seen=yes" : "")}")">See all ›</a>
+            <a href="@($"recent?type={type}{(Seen is null ? "" : $"&seen={Seen}")}")">See all ›</a>
         </div>
         <div class="shelf-row">
             @foreach (var entry in items)
@@ -27,8 +27,8 @@
 
     [Parameter] public int Count { get; set; } = 20;
 
-    /// <summary>The Watched filter's key: "no" (default), "yes", or null for all (see <see cref="WatchedFilter"/>).</summary>
-    [Parameter] public string? Seen { get; set; } = "no";
+    /// <summary>The Watched filter's key: "no", "yes", or null for all, the default (see <see cref="WatchedFilter"/>).</summary>
+    [Parameter] public string? Seen { get; set; }
 
     /// <summary>What's watched; null while the page is still finding out (then filtered rows wait, so watched titles don't flash by).</summary>
     [Parameter] public IReadOnlySet<string>? Watched { get; set; }
