@@ -44,7 +44,7 @@ public sealed class LiteDbSettingsStore : ISettingsStore
         if (string.IsNullOrWhiteSpace(dbPath) || !File.Exists(dbPath)) return null;
         try
         {
-            using var db = new LiteDatabase(new ConnectionString { Filename = dbPath, Connection = ConnectionType.Shared });
+            using var db = new LiteDatabase(new ConnectionString { Filename = dbPath, Connection = LiteDbFile.Mode });
             var value = db.GetCollection("UserSettings").FindById(user)?["LiteDBFilePath"];
             return value is { IsString: true } && !string.IsNullOrWhiteSpace(value.AsString) ? value.AsString : null;
         }

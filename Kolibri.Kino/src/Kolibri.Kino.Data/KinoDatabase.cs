@@ -38,6 +38,16 @@ internal static class LiteDbFile
             throw new InvalidOperationException($"{settingName} is not configured.");
 
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
-        return new LiteDatabase(new ConnectionString { Filename = path, Connection = ConnectionType.Shared });
+        return new LiteDatabase(new ConnectionString { Filename = path, Connection = Mode });
     }
+
+    /// <summary>
+    /// Shared on Windows. In a container (the .NET images set DOTNET_RUNNING_IN_CONTAINER) Kino is the only program
+    /// using the files, so Direct: Shared locks with a machine-wide named mutex ("Global\…"), which newer .NET runtimes
+    /// won't create for the NAS user the container runs as, and Kino then failed at startup.
+    /// </summary>
+    public static ConnectionType Mode { get; } =
+        string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), "true", StringComparison.OrdinalIgnoreCase)
+            ? ConnectionType.Direct
+            : ConnectionType.Shared;
 }
