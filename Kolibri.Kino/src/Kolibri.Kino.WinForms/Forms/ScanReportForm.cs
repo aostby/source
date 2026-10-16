@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using Kolibri.Kino.Controllers;
 using Kolibri.Kino.Controllers.Scanning;
 using Kolibri.Kino.WinForms.Controls;
 
@@ -8,7 +9,7 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// <summary>
 /// Result of a folder scan (replaces SilverScreen's CurrentLog text box).
 /// </summary>
-public partial class ScanReportForm : Form
+public partial class ScanReportForm : Form, IWritesToExcel
 {
     private const string ChangesAndProblems = "Changes and problems";
     private const string Everything = "Everything";
@@ -16,6 +17,7 @@ public partial class ScanReportForm : Form
     private readonly ScanReport _report;
     private readonly Func<string, bool>? _findMovie;
     private readonly HashSet<string> _linkedByHand = new(StringComparer.OrdinalIgnoreCase);
+    private List<ReportRow> _rows = [];
 
     /// <param name="findMovie">Opens the manual lookup for a file; returns true when it was linked.</param>
     public ScanReportForm(ScanReport report, Func<string, bool>? findMovie = null)
@@ -26,6 +28,7 @@ public partial class ScanReportForm : Form
         this.Describe(
             (btnOpenFolder, "Shows the file in Explorer; for a duplicate, also the file the movie is already linked to, to compare them."),
             (btnFindMovie, "Finds the movie for the selected file by hand, as Find movie for file in Local movies."));
+        btnExcel.ToolTipText = "Saves the rows shown as a file that opens in Excel, named after the Show choice, and opens it.";
         Kolibri.Kino.WinForms.Controls.AppIcon.Apply(this);
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvEntries.AutoGenerateColumns = true;
@@ -72,11 +75,15 @@ public partial class ScanReportForm : Form
             _ => _report.Entries.Where(x => x.Outcome is not (ScanOutcome.AlreadyLinked or ScanOutcome.OtherPart)),
         };
 
-        bindingSource.SetRows(entries
+        _rows = entries
             .OrderBy(x => x.Outcome)
             .ThenBy(x => x.FilePath, StringComparer.OrdinalIgnoreCase)
             .Select(ReportRow.From)
-            .Select(r => _linkedByHand.Contains(r.File) ? r with { Outcome = "linked by hand" } : r));
+            .Select(r => _linkedByHand.Contains(r.File) ? r with { Outcome = "linked by hand" } : r)
+            .ToList();
+        bindingSource.SetRows(_rows);
+        lblStatus.Text = $"{_rows.Count} row(s) shown.";
+        btnExcel.Enabled = _rows.Count > 0;
         if (dgvEntries.Columns[nameof(ReportRow.File)] is { } file) file.FillWeight = 250;
         if (dgvEntries.Columns[nameof(ReportRow.Detail)] is { } detail) detail.FillWeight = 200;
     }
@@ -121,6 +128,21 @@ public partial class ScanReportForm : Form
             _linkedByHand.Add(row.Entry.FilePath);
             cboShow_SelectedIndexChanged(cboShow, EventArgs.Empty);
         }
+    }
+
+    /// <summary>Saves the rows shown as CSV, named after the Show choice ("Changes and problems - Movies - 2026-10-14.csv"), and opens it in Excel.</summary>
+    private void btnExcel_Click(object sender, EventArgs e) => WriteToExcel();
+
+    public void WriteToExcel()
+    {
+        if (_rows.Count == 0) return;
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine(Csv.Line("Outcome", "Title", "IMDb id", "Source", "File", "Detail"));
+        foreach (var r in _rows)
+            csv.AppendLine(Csv.Line(r.Outcome, r.Title, r.ImdbId, r.Source, r.File, r.Detail));
+
+        if (ExcelExport.Save(this, csv.ToString(), cboShow.Text, ExcelExport.FolderName(_report.Folder)) is { } file)
+            lblStatus.Text = $"Saved {Path.GetFileName(file)}.";
     }
 
     internal sealed record ReportRow(

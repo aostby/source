@@ -148,6 +148,8 @@ The change takes effect after a restart; Kino offers to restart at once. <b>Help
       The list shows Kino's watchlists and Plex's playlists, and says where the chosen one is ("a Kino watchlist only",
       "a Plex playlist only", or both); the boxes <b>Kino watchlist</b> and <b>Plex playlist</b> start ticked where it is.
       Tick a box where it isn't, and the list is made there. Plex playlists can only hold titles that are on your Plex server.</li>
+  <li><b>Write to Excel…</b> (right in the status bar) saves the rows shown, with the type filter and sort you chose, as a CSV file and opens it in Excel.
+      The name starts with the filter, e.g. <code>Movies - Library - 2026-10-14.csv</code> or <code>All - OMDb matrix - 2026-10-14.csv</code>.</li>
 </ul>
 <h3 id="subtitles">Subtitles (in the details window)</h3>
 <p>The <b>Subtitles</b> button shows whether the movie file has subtitles, as in SilverScreen:</p>
@@ -181,6 +183,8 @@ The button is off when the title isn't linked to a movie file.</p>
       Find the movie there and click <b>Use tt…</b>: its IMDb id goes into the search, and the movie is found.</li>
   <li><b>Remove missing…</b> removes links to files that no longer exist; the movie details are kept.</li>
   <li><b>Clean up folder…</b> deletes leftover files (.nfo, .txt, foreign subtitles …) after asking. They are deleted permanently. Video files are never deleted.</li>
+  <li><b>Write to Excel…</b> (right in the status bar) saves the list shown as a CSV file and opens it in Excel. The name starts with the filter,
+      e.g. <code>Missing on disk - Movies - 2026-10-14.csv</code>. The scan report has the same button; there the name starts with the <b>Show</b> choice.</li>
 </ul>
 <p id="cleanup" class="note"><b>Check the cleanup list before you scan.</b> Which files are deleted (after a scan, and with <b>Clean up folder…</b>)
 is the list <code>Kino:Cleanup:FilePatterns</code> in <code>appsettings.json</code> next to the program. It deletes subtitles in many languages,
@@ -258,7 +262,11 @@ errors with their details, and what Kino's controllers reported (e.g. "Settings 
   <tr><td><kbd>Alt</kbd>+<kbd>F4</kbd></td><td>Exit (File → Exit)</td></tr>
   <tr><td><kbd>Ctrl</kbd>+<kbd>F4</kbd></td><td>Close the active window</td></tr>
   <tr><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td>Next window</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Write the window's list to Excel (as <b>Write to Excel…</b>)</td></tr>
 </table>
+<p id="excel"><b>Write to Excel…</b>, on the right of the status bar in every window with a list, saves the rows shown as a CSV file and opens it in Excel
+(Office isn't needed to save). The list is saved as you see it: the columns, the order and the filter. The file name starts with the filter
+(e.g. <code>Not watched - Watchlists - 2026-10-14.csv</code>). In a window with more than one list, the one you clicked last is saved.</p>
 <p>All windows open inside the main window. The <b>Window</b> menu arranges them (Cascade, Tile, Arrange Icons), closes them all, and lists the open windows.
 The status bar at the bottom shows messages, including errors from any window.</p>
 

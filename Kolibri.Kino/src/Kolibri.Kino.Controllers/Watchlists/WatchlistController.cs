@@ -528,22 +528,15 @@ public sealed class WatchlistController(
     public Task<byte[]?> GetPosterAsync(Item item, CancellationToken ct = default) => posters.GetPosterAsync(item, ct);
 
     /// <summary>
-    /// The list as CSV (semicolon-separated, UTF-8 with BOM, so Excel opens it directly). Replaces SilverScreen's
-    /// Excel-interop export, which needed Office installed.
+    /// The list as CSV for Excel (see <see cref="Csv"/>).
     /// </summary>
     public static string ToCsv(IEnumerable<WatchListItem> items)
     {
         var csv = new StringBuilder();
         csv.AppendLine("Title;Year;Genre;IMDb rating;Runtime;Watched;IMDb id;Actors;Plot");
         foreach (var i in items)
-            csv.AppendLine(string.Join(';', new[] { i.Title, i.Year, i.Genre, i.ImdbRating, i.Runtime, i.Watched == "Y" ? "Yes" : "No", i.ImdbId, i.Actors, i.Plot }.Select(Field)));
+            csv.AppendLine(Csv.Line(i.Title, i.Year, i.Genre, i.ImdbRating, i.Runtime, i.Watched == "Y" ? "Yes" : "No", i.ImdbId, i.Actors, i.Plot));
         return csv.ToString();
-
-        static string Field(string? value)
-        {
-            var text = value is null or "N/A" ? "" : value;
-            return text.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? $"\"{text.Replace("\"", "\"\"")}\"" : text;
-        }
     }
 
     /// <summary>Every Item field copied onto a new watchlist entry (SilverScreen copied a subset).</summary>

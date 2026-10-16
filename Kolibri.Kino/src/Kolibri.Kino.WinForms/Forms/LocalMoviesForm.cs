@@ -14,7 +14,7 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// library entries whose file is gone and files on disk the library doesn't know, and a scan ("Oppdater")
 /// that matches new files to movies.
 /// </summary>
-public partial class LocalMoviesForm : AsyncForm
+public partial class LocalMoviesForm : AsyncForm, IWritesToExcel
 {
     public override string HelpTopic => "local-movies";
 
@@ -24,6 +24,7 @@ public partial class LocalMoviesForm : AsyncForm
     private readonly IServiceProvider _services;
     private CancellationTokenSource? _posterCts;
     private string? _folder;
+    private LocalMoviesResult? _shown;
     private bool _scanning;
 
     public LocalMoviesForm(LocalMoviesController controller, MovieScanController scan, CleanupController cleanup, IServiceProvider services)
@@ -43,6 +44,8 @@ public partial class LocalMoviesForm : AsyncForm
             (btnCleanup, "Deletes leftover files in the folder (.nfo, .txt, subtitles in other languages …) after listing them. Video files are never deleted. The list is Kino:Cleanup in appsettings.json; see Help."),
             (btnAddToWatchlist, "Puts the selected movie on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."));
         btnCancel.ToolTipText = "Stops the scan that is running.";
+        btnExcel.ToolTipText = "Saves the list shown as a file that opens in Excel, named after the filter (All, Missing on disk or Not in library), and opens it.";
+        btnExcel.Enabled = false;
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvMovies.AutoGenerateColumns = true;
     }
@@ -95,6 +98,23 @@ public partial class LocalMoviesForm : AsyncForm
     private async void btnScanAll_Click(object sender, EventArgs e) => await ScanAsync(ScanMode.All);
 
     private void btnCancel_Click(object sender, EventArgs e) => CancelRunning();
+
+    /// <summary>Saves the list shown as CSV, named after the filter ("Missing on disk - Movies - 2026-10-14.csv"), and opens it in Excel.</summary>
+    private void btnExcel_Click(object sender, EventArgs e) => WriteToExcel();
+
+    public void WriteToExcel()
+    {
+        if (_shown is null || !btnExcel.Enabled) return;
+
+        var filter = _shown.Filter switch
+        {
+            LocalMoviesFilter.MissingFiles => rbMissing.Text,
+            LocalMoviesFilter.NotInLibrary => rbNotInLibrary.Text,
+            _ => rbAll.Text,
+        };
+        if (ExcelExport.Save(this, LocalMoviesController.ToCsv(_shown), filter, ExcelExport.FolderName(_shown.Folder)) is { } file)
+            ShowStatus($"Saved {Path.GetFileName(file)}.");
+    }
 
     /// <summary>"Oppdater": match the folder's files to movies, then show what happened.</summary>
     private async Task ScanAsync(ScanMode mode)
@@ -251,6 +271,7 @@ public partial class LocalMoviesForm : AsyncForm
     private async Task LoadFolderAsync(CancellationToken ct)
     {
         var result = await _controller.LoadAsync(_folder!, SelectedFilter, ct);
+        _shown = result;
         Text = $"Local movies – {result.Folder}";
         details.Clear();
 
@@ -332,6 +353,7 @@ public partial class LocalMoviesForm : AsyncForm
         toolbar.Enabled = !busy;
         progress.Visible = busy;
         btnCancel.Visible = busy && _scanning;
+        btnExcel.Enabled = !busy && _shown is not null;
         if (!busy) progress.Style = ProgressBarStyle.Marquee;
     }
 

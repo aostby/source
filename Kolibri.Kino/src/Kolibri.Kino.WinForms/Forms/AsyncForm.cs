@@ -31,6 +31,13 @@ public class AsyncForm : Form
         hevent.Handled = true;
     }
 
+    /// <summary>Every window with a grid gets "Write to Excel…" on the right of its status bar (Ctrl+S does the same).</summary>
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        ExcelExport.AddButton(this);
+    }
+
     /// <summary>Closed and disposed (or being disposed): its controls must not be touched any more.</summary>
     protected bool IsGone => IsDisposed || Disposing;
 

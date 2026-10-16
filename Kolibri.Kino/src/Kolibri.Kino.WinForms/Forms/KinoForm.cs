@@ -11,7 +11,7 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// Kino's search window (opened in <see cref="MainForm"/> at start): search the library or OMDb. The other windows are in the main window's menus.
 /// Thin UI: collects input, awaits the controller, shows the result. No data access here.
 /// </summary>
-public partial class KinoForm : AsyncForm
+public partial class KinoForm : AsyncForm, IWritesToExcel
 {
     public override string HelpTopic => "search";
 
@@ -41,6 +41,7 @@ public partial class KinoForm : AsyncForm
             (btnImport, "Adds the selected OMDb result to your library, with all its details."),
             (btnAddToWatchlist, "Puts the selected title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
             (lnkSetKeys, "Opens Settings to enter your own OMDb and TMDb keys (also File → Settings). See Help, Prerequisites."));
+        btnExcel.ToolTipText = "Saves the rows shown, in the order shown, as a file that opens in Excel, named after the type filter (All, Movies, Series …), and opens it.";
         lblDefaultKeys.Text = SettingsController.DefaultKeysMessage;
         UpdateDefaultKeysBanner();
         // Columns come from the row type; set here because the WinForms designer writes AutoGenerateColumns = false.
@@ -401,6 +402,35 @@ public partial class KinoForm : AsyncForm
 
     #endregion
 
+    /// <summary>
+    /// Saves the rows shown (type filter and sort applied) as CSV, named after the type filter and where they came from,
+    /// e.g. "Movies - Library - 2026-10-14.csv" or "All - OMDb matrix - 2026-10-14.csv", and opens it in Excel.
+    /// </summary>
+    private void btnExcel_Click(object sender, EventArgs e) => WriteToExcel();
+
+    public void WriteToExcel()
+    {
+        if (!btnExcel.Enabled) return;
+        var rows = bindingSource.List.Cast<object>().ToList();
+        if (rows.Count == 0)
+        {
+            ShowStatus("Nothing to write; the list is empty.");
+            return;
+        }
+
+        var properties = TypeDescriptor.GetProperties(rows[0].GetType());
+        var columns = VisibleColumns.Select(name => properties[name]).OfType<PropertyDescriptor>().ToList();
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine(Csv.Line(columns.Select(c => c.Name == nameof(Item.ImdbRating) ? "IMDb rating" : c.Name == nameof(Item.ImdbId) ? "IMDb id" : c.Name).ToArray()));
+        foreach (var row in rows)
+            csv.AppendLine(Csv.Line(columns.Select(c => c.GetValue(row)?.ToString()).ToArray()));
+
+        var filter = _selectedType is null ? "All" : TypeLabel(_selectedType);
+        var source = _showingOnlineResults ? $"OMDb {txtSearch.Text.Trim()}" : "Library";
+        if (ExcelExport.Save(this, csv.ToString(), filter, source) is { } file)
+            ShowStatus($"Saved {Path.GetFileName(file)}.");
+    }
+
     /// <summary>Shows the rows sortable by clicking a column header, keeping the current sort.</summary>
     private void Bind<T>(IEnumerable<T> items)
     {
@@ -414,6 +444,7 @@ public partial class KinoForm : AsyncForm
         base.OnBusyChanged(busy);
         txtSearch.Enabled = btnSearchLocal.Enabled = btnSearchOnline.Enabled = typeFilter.Enabled = !busy;
         btnImport.Enabled = !busy && _showingOnlineResults;
+        btnExcel.Enabled = !busy;
     }
 
     protected override void DisplayStatus(string text) => lblStatus.Text = text;
