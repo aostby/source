@@ -56,6 +56,7 @@ partial class KinoForm
         menuOpenTmdb = new ToolStripMenuItem();
         menuRemove = new ToolStripMenuItem();
         menuSetRating = new ToolStripMenuItem();
+        menuMarkWatched = new ToolStripMenuItem();
         bindingSource = new BindingSource(components);
         statusStrip = new StatusStrip();
         lblStatus = new ToolStripStatusLabel();
@@ -265,7 +266,7 @@ partial class KinoForm
         //
         // itemMenu
         //
-        itemMenu.Items.AddRange(new ToolStripItem[] { menuDetails, menuSeparator1, menuOpenOnDisk, menuOpenImdb, menuOpenTmdb, menuSetRating, menuSeparator2, menuRemove });
+        itemMenu.Items.AddRange(new ToolStripItem[] { menuDetails, menuSeparator1, menuOpenOnDisk, menuOpenImdb, menuOpenTmdb, menuSetRating, menuMarkWatched, menuSeparator2, menuRemove });
         itemMenu.Name = "itemMenu";
         itemMenu.Size = new Size(192, 92);
         itemMenu.Opening += itemMenu_Opening;
@@ -315,6 +316,13 @@ partial class KinoForm
         menuSetRating.Size = new Size(191, 22);
         menuSetRating.Text = "Set IMDb rating…";
         menuSetRating.Click += menuSetRating_Click;
+        //
+        // menuMarkWatched
+        //
+        menuMarkWatched.Name = "menuMarkWatched";
+        menuMarkWatched.Size = new Size(191, 22);
+        menuMarkWatched.Text = "Mark as watched";
+        menuMarkWatched.Click += menuMarkWatched_Click;
         // 
         // menuRemove
         // 
@@ -397,6 +405,7 @@ partial class KinoForm
     private ContextMenuStrip itemMenu;
     private ToolStripMenuItem menuRemove;
     private ToolStripMenuItem menuSetRating;
+    private ToolStripMenuItem menuMarkWatched;
     private ToolStripMenuItem menuOpenImdb;
     private ToolStripMenuItem menuOpenTmdb;
     private ToolStripMenuItem menuOpenOnDisk;

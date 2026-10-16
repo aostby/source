@@ -35,6 +35,7 @@ partial class MovieDetailsForm
         ratingRow = new FlowLayoutPanel();
         lblRating = new Label();
         lblVotes = new Label();
+        lblWatched = new Label();
         lblHeadline = new Label();
         lblGenre = new Label();
         lblPlot = new Label();
@@ -46,6 +47,7 @@ partial class MovieDetailsForm
         btnTmdb = new Button();
         btnSubtitles = new Button();
         btnWatchlist = new Button();
+        btnMarkWatched = new Button();
         btnClose = new Button();
         statusStrip = new StatusStrip();
         lblStatus = new ToolStripStatusLabel();
@@ -104,6 +106,7 @@ partial class MovieDetailsForm
         //
         ratingRow.AutoSize = true;
         ratingRow.Controls.Add(lblRating);
+        ratingRow.Controls.Add(lblWatched);
         ratingRow.Controls.Add(lblVotes);
         ratingRow.Margin = new Padding(0, 0, 0, 8);
         ratingRow.Name = "ratingRow";
@@ -126,6 +129,19 @@ partial class MovieDetailsForm
         lblVotes.ForeColor = SystemColors.GrayText;
         lblVotes.Margin = new Padding(0, 10, 0, 0);
         lblVotes.Name = "lblVotes";
+        //
+        // lblWatched (shown when the title is marked watched, as the web page's "Watched" tag)
+        //
+        lblWatched.AutoSize = true;
+        lblWatched.BackColor = Color.Honeydew;
+        lblWatched.BorderStyle = BorderStyle.FixedSingle;
+        lblWatched.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+        lblWatched.ForeColor = Color.DarkGreen;
+        lblWatched.Margin = new Padding(0, 4, 10, 0);
+        lblWatched.Name = "lblWatched";
+        lblWatched.Padding = new Padding(4, 1, 4, 1);
+        lblWatched.Text = "✓ Watched";
+        lblWatched.Visible = false;
         //
         // lblHeadline
         //
@@ -166,6 +182,7 @@ partial class MovieDetailsForm
         buttons.Controls.Add(btnTmdb);
         buttons.Controls.Add(btnSubtitles);
         buttons.Controls.Add(btnWatchlist);
+        buttons.Controls.Add(btnMarkWatched);
         buttons.Controls.Add(btnClose);
         buttons.Dock = DockStyle.Bottom;
         buttons.Name = "buttons";
@@ -226,12 +243,21 @@ partial class MovieDetailsForm
         btnWatchlist.Text = "Add to watchlist…";
         btnWatchlist.Click += btnWatchlist_Click;
         //
+        // btnMarkWatched
+        //
+        btnMarkWatched.AutoSize = true;
+        btnMarkWatched.Enabled = false;
+        btnMarkWatched.Name = "btnMarkWatched";
+        btnMarkWatched.TabIndex = 6;
+        btnMarkWatched.Text = "Mark as watched";
+        btnMarkWatched.Click += btnMarkWatched_Click;
+        //
         // btnClose
         //
         btnClose.AutoSize = true;
         btnClose.Margin = new Padding(24, 3, 3, 3);
         btnClose.Name = "btnClose";
-        btnClose.TabIndex = 6;
+        btnClose.TabIndex = 7;
         btnClose.Text = "Close";
         btnClose.Click += btnClose_Click;
         //
@@ -286,6 +312,7 @@ partial class MovieDetailsForm
     private FlowLayoutPanel ratingRow;
     private Label lblRating;
     private Label lblVotes;
+    private Label lblWatched;
     private Label lblHeadline;
     private Label lblGenre;
     private Label lblPlot;
@@ -297,6 +324,7 @@ partial class MovieDetailsForm
     private Button btnTmdb;
     private Button btnSubtitles;
     private Button btnWatchlist;
+    private Button btnMarkWatched;
     private Button btnClose;
     private StatusStrip statusStrip;
     private ToolStripStatusLabel lblStatus;

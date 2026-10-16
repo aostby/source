@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Kolibri.Kino.Controllers;
 using Kolibri.Kino.Controllers.Settings;
+using Kolibri.Kino.Controllers.Watchlists;
 using Microsoft.Extensions.DependencyInjection;
 using OMDbApiNet.Model;
 using Kolibri.Kino.WinForms.Controls;
@@ -275,6 +276,15 @@ public partial class KinoForm : AsyncForm, IWritesToExcel
             ApplyTypeFilter();
             ShowStatus(rating is null ? $"Cleared the IMDb rating of \"{item.Title}\"." : $"Set the IMDb rating of \"{item.Title}\" to {updated.ImdbRating}.");
         });
+    }
+
+    /// <summary>Onto the Watched list (moved there from another watchlist), marked watched, and on Plex when Plex has it.</summary>
+    private async void menuMarkWatched_Click(object sender, EventArgs e)
+    {
+        var (imdbId, title) = SelectedIdAndTitle();
+        if (imdbId is null) return;
+        var watchlists = ActivatorUtilities.CreateInstance<WatchlistController>(_services);
+        await RunAsync($"Marking {title ?? imdbId} as watched…", async ct => ShowStatus(await watchlists.MarkWatchedAsync(imdbId, ct)));
     }
 
     private void menuOpenImdb_Click(object sender, EventArgs e)
