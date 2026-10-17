@@ -12,9 +12,23 @@ public partial class ItemDetailsControl : UserControl
 {
     private string? _filePath;
 
+    /// <summary>A coloured tag after the title (e.g. a series' "Missing 13 of 73 episodes"); hidden when not set.</summary>
+    private readonly Label lblTag = new()
+    {
+        AutoSize = true, Visible = false, BorderStyle = BorderStyle.FixedSingle, Padding = new Padding(4, 1, 4, 1),
+        Margin = new Padding(6, 7, 3, 6), Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Help,
+    };
+    private readonly ToolTip _tagTip = new();
+
     public ItemDetailsControl()
     {
         InitializeComponent();
+        // The title and its tag side by side, in the title's cell.
+        var titleRow = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, Margin = new Padding(0), WrapContents = true };
+        tableInfo.Controls.Remove(lblTitle);
+        lblTitle.Dock = DockStyle.None;
+        titleRow.Controls.AddRange([lblTitle, lblTag]);
+        tableInfo.Controls.Add(titleRow, 0, 0);
         CopyOnDoubleClick.Enable(lblTitle, "Title");
         CopyOnDoubleClick.Enable(lblFacts);
         CopyOnDoubleClick.Enable(lblPeople);
@@ -129,6 +143,7 @@ public partial class ItemDetailsControl : UserControl
     {
         _filePath = filePath;
         lblTitle.Text = title;
+        SetTag(null);
         lblFacts.Text = facts;
         lblPeople.Text = people;
         txtPlot.Text = plot;
@@ -137,6 +152,18 @@ public partial class ItemDetailsControl : UserControl
         btnOpenFolder.Enabled = filePath is not null;
         // A series passes its folder: Open folder works, Play only for a video file.
         btnPlay.Enabled = filePath is not null && fileExists && Kolibri.Kino.Core.MovieFileRules.IsVideoFile(filePath);
+    }
+
+    /// <summary>
+    /// Shows <paramref name="text"/> as a coloured tag after the title, with <paramref name="toolTip"/>; null hides it.
+    /// Showing another item hides it too.
+    /// </summary>
+    public void SetTag(string? text, Color color = default, string? toolTip = null)
+    {
+        lblTag.Text = text ?? "";
+        lblTag.ForeColor = color.IsEmpty ? SystemColors.GrayText : color;
+        lblTag.Visible = !string.IsNullOrEmpty(text);
+        _tagTip.SetToolTip(lblTag, toolTip);
     }
 
     /// <summary>A window's own button next to Open folder and Play (e.g. Watchlists' Mark watched).</summary>
