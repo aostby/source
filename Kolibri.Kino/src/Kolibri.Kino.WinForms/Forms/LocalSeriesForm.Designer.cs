@@ -230,6 +230,9 @@ partial class LocalSeriesForm
         // tabSeasons (one page per season, added in code)
         //
         tabSeasons.Dock = DockStyle.Fill;
+        tabSeasons.DrawMode = TabDrawMode.OwnerDrawFixed;
+        tabSeasons.ShowToolTips = true;
+        tabSeasons.DrawItem += tabSeasons_DrawItem;
         tabSeasons.Name = "tabSeasons";
         tabSeasons.SelectedIndex = 0;
         tabSeasons.TabIndex = 0;

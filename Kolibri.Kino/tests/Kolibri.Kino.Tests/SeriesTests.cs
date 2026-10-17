@@ -392,6 +392,28 @@ public sealed class LocalSeriesControllerTests : IDisposable
         Assert.Null(await _controller.GetCompletenessAsync("tt0133093", []));
     }
 
+    [Fact]
+    public async Task Completeness_of_loaded_seasons_marks_each_season()
+    {
+        Touch("Season 1", "Buffy.S01E01.mkv");
+        Touch("Season 1", "Buffy.S01E09.mkv");   // not in the list: doesn't count
+        var future = DateTime.Today.AddDays(10);
+        _online.Seasons =
+        [
+            Season(1, 2, "TMDb"),
+            new SeriesSeason(2, "Season 2", [new(2, 1, "Soon", future, null, null, null, null, null)], "TMDb"),
+        ];
+        var details = await _controller.GetDetailsAsync(Local(), refresh: false);
+
+        var series = LocalSeriesController.CompletenessOf(Local(), details);
+        var season1 = LocalSeriesController.CompletenessOf(Local(), details, details.Seasons[0]);
+        var season2 = LocalSeriesController.CompletenessOf(Local(), details, details.Seasons[1]);
+
+        Assert.Equal((CompletenessState.Incomplete, 2, "S01E02"), (series.State, series.Aired, LocalSeriesController.Describe(series.Missing)));
+        Assert.Equal(CompletenessState.Incomplete, season1.State);
+        Assert.Equal((CompletenessState.UpToDate, 0, 1), (season2.State, season2.Aired, season2.Next?.EpisodeNumber));
+    }
+
     private LocalSeries Local() => new(Series(SeriesId, "Buffy", "8.3"), _folder, FolderExists: true);
 
     private static Item Series(string id, string title, string rating, string? tomatoUrl = null, string? year = null) =>

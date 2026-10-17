@@ -205,6 +205,7 @@ public partial class LocalSeriesForm : AsyncForm
         seriesDetails.ShowItem(series.Item, series.FolderPath, series.FolderExists);
         LoadImage(seriesDetails, ref _posterCts, ct => _controller.GetPosterAsync(series.Item, ct));
         ClearSeasons();
+        seriesDetails.SetTag(null);
 
         await RunAsync(refresh ? $"Fetching episodes of {series.Item.Title}…" : $"Loading episodes of {series.Item.Title}…", async ct =>
         {
@@ -212,6 +213,7 @@ public partial class LocalSeriesForm : AsyncForm
             if (!ReferenceEquals(_current, series)) return;
             _details = details;
             BuildSeasonTabs(details);
+            ShowCompleteness(series, details);
             ShowStatus(Describe(series, details));
         });
     }
@@ -233,6 +235,73 @@ public partial class LocalSeriesForm : AsyncForm
         if (d.Note is not null) text += $" ({d.Note})";
         return text;
     }
+
+    #region Completeness (as the web app's series page)
+
+    /// <summary>Green complete, yellow up to date (more coming), orange running with episodes missing, red ended with episodes missing.</summary>
+    internal static Color CompletenessColor(CompletenessState state) => state switch
+    {
+        CompletenessState.Complete => Color.SeaGreen,
+        CompletenessState.UpToDate => Color.Goldenrod,
+        CompletenessState.Behind => Color.DarkOrange,
+        CompletenessState.Incomplete => Color.Firebrick,
+        _ => SystemColors.GrayText,
+    };
+
+    /// <summary>The tag after the series' title: complete, up to date, or how many are missing (which, in the tooltip).</summary>
+    private void ShowCompleteness(LocalSeries series, SeriesDetails details)
+    {
+        // Without the folder every episode would look missing.
+        if (!series.FolderExists || series.FolderTooBroad)
+        {
+            seriesDetails.SetTag(null);
+            return;
+        }
+        var c = LocalSeriesController.CompletenessOf(series, details);
+        var tip = c.Missing.Count > 0 ? $"{c.Explanation}{Environment.NewLine}Missing: {LocalSeriesController.Describe(c.Missing)}" : c.Explanation;
+        seriesDetails.SetTag(c.Label, CompletenessColor(c.State), tip);
+    }
+
+    /// <summary>A season tab's dot: red/orange when it misses aired episodes, yellow when more are coming; none when complete.</summary>
+    private static (Color Color, string Tip)? SeasonMark(SeriesCompleteness c) => c.State switch
+    {
+        CompletenessState.Behind or CompletenessState.Incomplete =>
+            (CompletenessColor(c.State), $"Missing {c.Missing.Count} of {c.Aired}: {LocalSeriesController.Describe(c.Missing)}"),
+        CompletenessState.UpToDate when c.Next is { } n =>
+            (CompletenessColor(c.State), $"All aired episodes are here; next S{n.SeasonNumber:00}E{n.EpisodeNumber:00}" +
+                                         (n.AirDate is { } d ? $" on {d:yyyy-MM-dd}." : ".")),
+        _ => null,
+    };
+
+    /// <summary>Season tabs are drawn here: the label, then the season's dot (see <see cref="SeasonMark"/>).</summary>
+    private void tabSeasons_DrawItem(object? sender, DrawItemEventArgs e)
+    {
+        if (e.Index < 0 || e.Index >= tabSeasons.TabPages.Count) return;
+        var page = tabSeasons.TabPages[e.Index];
+        var selected = e.Index == tabSeasons.SelectedIndex;
+        using (var back = new SolidBrush(selected ? SystemColors.Window : SystemColors.Control))
+            e.Graphics.FillRectangle(back, e.Bounds);
+
+        var mark = (page.Tag as SeasonTab)?.Mark;
+        var text = page.Text.TrimEnd();
+        var textBounds = new Rectangle(e.Bounds.X + 4, e.Bounds.Y, e.Bounds.Width - (mark is null ? 8 : 20), e.Bounds.Height);
+        TextRenderer.DrawText(e.Graphics, text, tabSeasons.Font, textBounds, SystemColors.ControlText,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
+        if (mark is { } dot)
+        {
+            const int size = 9;
+            var x = e.Bounds.Right - size - 6;
+            var y = e.Bounds.Y + (e.Bounds.Height - size) / 2;
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            using var brush = new SolidBrush(dot.Color);
+            e.Graphics.FillEllipse(brush, x, y, size, size);
+        }
+    }
+
+    /// <summary>A season tab's season and its dot.</summary>
+    private sealed record SeasonTab(SeasonView Season, (Color Color, string Tip)? Mark);
+
+    #endregion
 
     #region Season tabs
 
@@ -260,10 +329,19 @@ public partial class LocalSeriesForm : AsyncForm
             return;
         }
 
+        var checkFiles = _current is { FolderExists: true, FolderTooBroad: false };
         foreach (var season in details.Seasons)
         {
             var label = season.SeasonNumber == 0 ? "Specials" : $"S{season.SeasonNumber:00}";
-            var page = new TabPage($"{label} ({season.OnDiskCount}/{season.Episodes.Count})") { Tag = season };
+            var mark = checkFiles && season.SeasonNumber > 0 && _current is { } series
+                ? SeasonMark(LocalSeriesController.CompletenessOf(series, details, season))
+                : null;
+            // Trailing spaces leave room for the dot, which tabSeasons_DrawItem draws after the label.
+            var page = new TabPage($"{label} ({season.OnDiskCount}/{season.Episodes.Count}){(mark is null ? "" : "    ")}")
+            {
+                Tag = new SeasonTab(season, mark),
+                ToolTipText = mark?.Tip ?? "",
+            };
             var grid = NewEpisodeGrid();
             page.Controls.Add(grid);
             tabSeasons.TabPages.Add(page);
@@ -290,8 +368,12 @@ public partial class LocalSeriesForm : AsyncForm
         grid.SelectionChanged += (_, _) => ShowSelectedEpisode();
         grid.CellFormatting += (_, e) =>
         {
-            if (e.CellStyle is not null && grid.ItemAt(e.RowIndex) is EpisodeRow { View.OnDisk: true })
-                e.CellStyle.BackColor = Color.Honeydew;
+            if (e.CellStyle is null || grid.ItemAt(e.RowIndex) is not EpisodeRow { View: var view }) return;
+            if (view.OnDisk) e.CellStyle.BackColor = Color.Honeydew;
+            // Aired (or no date), listed, and no file: missing.
+            else if (view.Listed && view.Episode.SeasonNumber > 0 && _current is { FolderExists: true, FolderTooBroad: false }
+                     && (view.Episode.AirDate is null || view.Episode.AirDate.Value.Date <= DateTime.Today))
+                e.CellStyle.BackColor = Color.MistyRose;
         };
         grid.CellDoubleClick += (_, e) =>
         {
