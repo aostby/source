@@ -18,6 +18,7 @@ internal static partial class KinoEndpoints
         app.MapGet("/stream/{imdbId}", StreamAsync);
         app.MapGet("/subtitle/{imdbId}", SubtitleAsync);
         app.MapGet("/export/watchlist", ExportWatchlistAsync);
+        app.MapGet("/export/wishlist", ExportWishlistAsync);
     }
 
     /// <summary>
@@ -55,13 +56,48 @@ internal static partial class KinoEndpoints
         return Results.File(bytes, ImageType(bytes));
     }
 
-    private static async Task<IResult> ExportWatchlistAsync(string list, WatchlistController watchlists, CancellationToken ct)
+    /// <summary>The wishlist as CSV for Excel, with "In SilverScreen" as true/false.</summary>
+    private static async Task<IResult> ExportWishlistAsync(
+        Kolibri.Kino.Controllers.Wishlist.WishlistController wishlist, ILoggerFactory logs, CancellationToken ct)
     {
-        var items = await watchlists.GetItemsAsync(list, ct);
-        var csv = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetPreamble()
-            .Concat(Encoding.UTF8.GetBytes(WatchlistController.ToCsv(items)))
-            .ToArray();
-        return Results.File(csv, "text/csv; charset=utf-8", $"{list}.csv");
+        try
+        {
+            var rows = await wishlist.GetAsync(ct);
+            return CsvFile(Kolibri.Kino.Controllers.Wishlist.WishlistController.ToCsv(rows), $"Wishlist - {DateTime.Now:yyyy-MM-dd}.csv");
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            return ExportFailed(logs, ex, "the wishlist");
+        }
+    }
+
+    private static async Task<IResult> ExportWatchlistAsync(string list, WatchlistController watchlists, ILoggerFactory logs, CancellationToken ct)
+    {
+        try
+        {
+            var items = await watchlists.GetItemsAsync(list, ct);
+            return CsvFile(WatchlistController.ToCsv(items), $"{list}.csv");
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            return ExportFailed(logs, ex, $"the watchlist \"{list}\"");
+        }
+    }
+
+    /// <summary>CSV as a download, with a BOM so Excel reads it as UTF-8.</summary>
+    private static IResult CsvFile(string csv, string fileName) =>
+        Results.File(new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray(),
+            "text/csv; charset=utf-8", fileName);
+
+    /// <summary>
+    /// A failed export (e.g. the database is busy and the wait for it timed out) is logged, and the browser gets a short
+    /// plain-text page saying why, instead of a broken download.
+    /// </summary>
+    private static IResult ExportFailed(ILoggerFactory logs, Exception ex, string what)
+    {
+        logs.CreateLogger("Kolibri.Kino.Blazor.Export").LogError(ex, "Writing {What} as CSV failed", what);
+        return Results.Text($"Couldn't write {what} as CSV: {ex.Message}\nGo back and try again in a moment.",
+            "text/plain; charset=utf-8", statusCode: StatusCodes.Status503ServiceUnavailable);
     }
 
     /// <summary>The cache stores the bytes as downloaded: almost always JPEG, sometimes PNG.</summary>

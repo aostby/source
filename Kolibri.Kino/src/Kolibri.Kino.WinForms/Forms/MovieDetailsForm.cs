@@ -23,6 +23,14 @@ public partial class MovieDetailsForm : AsyncForm
     private readonly SubtitleController _subtitles;
     private readonly WatchlistController _watchlists;
     private readonly ToolTip _toolTip = new();
+
+    /// <summary>Similar movies (TMDb's recommendations), under the facts; shown when there are some.</summary>
+    private readonly Label lblSimilar = new()
+    {
+        AutoSize = true, Visible = false, Text = "Similar movies",
+        Font = new Font("Segoe UI", 11F, FontStyle.Bold), Margin = new Padding(0, 16, 0, 2),
+    };
+    private readonly FlowLayoutPanel similarRow = new() { AutoSize = true, Visible = false, Margin = new Padding(0) };
     private readonly IServiceProvider _services;
     private readonly string _imdbId;
     private Item? _item;
@@ -58,6 +66,8 @@ public partial class MovieDetailsForm : AsyncForm
             (btnWatchlist, "Puts this title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
             (btnMarkWatched, "Puts this title on the Watched list (moving it from another watchlist), marked watched, and marks it watched on Plex too when Plex has it."));
         Text = imdbId;
+        layout.Controls.AddRange([lblSimilar, similarRow]);
+        _toolTip.SetToolTip(lblSimilar, "TMDb's suggestions. One you'd like to see or get: + Wishlist searches for it in the Wishlist window.");
     }
 
     private async void MovieDetailsForm_Load(object sender, EventArgs e) =>
@@ -83,7 +93,55 @@ public partial class MovieDetailsForm : AsyncForm
                 using var image = Image.FromStream(stream);
                 picPoster.Image = new Bitmap(image);
             }
+            _ = ShowSimilarAsync();
         });
+
+    /// <summary>After the details: movies like this one (not for a series), each one a small card.</summary>
+    private async Task ShowSimilarAsync()
+    {
+        if (string.Equals(_item?.Type, "series", StringComparison.OrdinalIgnoreCase)) return;
+        var similar = await _movies.GetSimilarAsync(_imdbId);
+        if (IsGone || similar.Count == 0) return;
+
+        similarRow.SuspendLayout();
+        foreach (var s in similar) similarRow.Controls.Add(SimilarCard(s));
+        similarRow.ResumeLayout();
+        lblSimilar.Visible = similarRow.Visible = true;
+    }
+
+    /// <summary>Poster and title (both open its details), year, "In SilverScreen" when it is, and + Wishlist.</summary>
+    private Control SimilarCard(SimilarMovie s)
+    {
+        const int width = 116;
+        var card = new FlowLayoutPanel
+        {
+            FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true, Margin = new Padding(0, 0, 12, 12),
+        };
+        var poster = new PictureBox
+        {
+            Size = new Size(width, 172), SizeMode = PictureBoxSizeMode.Zoom, BackColor = SystemColors.ControlLight,
+            Cursor = Cursors.Hand, Margin = new Padding(0),
+        };
+        if (s.Movie.Poster is { } url) poster.LoadAsync(url); // TMDb's small poster, straight from TMDb
+        var title = new LinkLabel { Text = s.Movie.Title, AutoSize = true, MaximumSize = new Size(width, 0), Margin = new Padding(0, 4, 0, 0) };
+        var meta = new Label
+        {
+            AutoSize = true, MaximumSize = new Size(width, 0), Margin = new Padding(0, 2, 0, 4),
+            Text = s.InLibrary ? $"{s.YearAndRating} · In SilverScreen" : s.YearAndRating,
+            ForeColor = s.InLibrary ? Color.SeaGreen : SystemColors.GrayText,
+        };
+        var add = new Button { Text = "+ Wishlist", AutoSize = true, Margin = new Padding(0), UseVisualStyleBackColor = true };
+
+        void OpenDetails() => ActivatorUtilities.CreateInstance<MovieDetailsForm>(_services, s.Movie.ImdbId).ShowFrom(this);
+        poster.Click += (_, _) => OpenDetails();
+        title.LinkClicked += (_, _) => OpenDetails();
+        add.Click += (_, _) => this.ShowSingle<WishlistForm>(_services).SearchFor(s.WishlistQuery);
+        _toolTip.SetToolTip(poster, $"{s.Movie.Title} ({s.Movie.Year}): details");
+        _toolTip.SetToolTip(add, $"Searches for \"{s.WishlistQuery}\" in the Wishlist window, to check it and add it.");
+
+        card.Controls.AddRange([poster, title, meta, add]);
+        return card;
+    }
 
     private void ShowItem(Item item)
     {
@@ -355,6 +413,7 @@ public partial class MovieDetailsForm : AsyncForm
         foreach (var label in new[] { lblTitle, lblHeadline, lblGenre, lblPlot })
             label.MaximumSize = new Size(width, 0);
         facts.MaximumSize = new Size(width, 0);
+        similarRow.MaximumSize = new Size(width, 0);
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)

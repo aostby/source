@@ -1,0 +1,180 @@
+@page "/wishlist"
+@inherits KinoPage
+@using Kolibri.Kino.Controllers.Wishlist
+@inject WishlistController Wishlist
+
+@* Port of WishlistForm: titles wanted, perhaps not owned. Search looks in SilverScreen.db first, then OMDb, and says
+   which titles are in SilverScreen and which are to get; titles from OMDb aren't put in the library (no file).
+   The list says the same (looked up each time) and is downloaded as CSV with "In SilverScreen" true/false. *@
+
+<PageTitle>Wishlist · Kolibri Kino</PageTitle>
+
+<h1>Wishlist</h1>
+
+<form class="searchbar" @onsubmit="SearchAsync">
+    <input type="search" @bind="_query" @bind:event="oninput" placeholder="Title, title and year (Kabul, 2025), or IMDb id…" aria-label="Title, title and year, or IMDb id" />
+    @* Not disabled while the box is empty: typing then Enter at once would find it still disabled, and the browser would not submit. *@
+    <button type="submit" class="primary" disabled="@Busy">Search</button>
+</form>
+<p class="hint">Searches your library (SilverScreen) first, then OMDb and TMDb. Add a year after a comma ("Operation Kabul, 2025") to keep to that year.</p>
+
+<StatusLine Busy="Busy" Text="@Status" Error="@Error" />
+
+@if (_hits is { Count: > 0 })
+{
+    <h2>Search results</h2>
+    <div class="table-wrap">
+        <table class="list">
+            <thead>
+                <tr><th></th><th>Title</th><th>Year</th><th class="wide">Type</th><th>Where</th><th>IMDb</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var hit in _hits)
+                {
+                    <tr>
+                        <td><PosterImage Src="@($"poster/{hit.ImdbId}")" Class="thumb" /></td>
+                        <td><a href="@MovieDetails.DetailsUrl(hit.ImdbId, hit.Type)">@hit.Title</a></td>
+                        <td>@hit.Year</td>
+                        <td class="wide">@hit.Type</td>
+                        <td>
+                            @if (hit.InSilverScreen)
+                            {
+                                <span class="tag good">In SilverScreen</span>
+                            }
+                            else
+                            {
+                                <span class="tag">To get</span>
+                            }
+                        </td>
+                        <td><a href="https://www.imdb.com/title/@hit.ImdbId/" target="_blank" rel="noopener" title="Check it on IMDb (new window)">IMDb</a></td>
+                        <td class="row-actions">
+                            @if (_onList.Contains(hit.ImdbId))
+                            {
+                                <span class="muted small">On wishlist</span>
+                            }
+                            else
+                            {
+                                <button disabled="@Busy" @onclick="() => AddAsync(hit)">+ Wishlist</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="toolbar">
+    <h2>On the wishlist</h2>
+    @if (_rows.Count > 0)
+    {
+        <a class="button" href="export/wishlist" download>Download CSV</a>
+    }
+</div>
+
+@if (_rows.Count == 0 && !Busy)
+{
+    <p class="muted">Nothing yet. Search above and add titles you want.</p>
+}
+else
+{
+    <div class="table-wrap">
+        <table class="list">
+            <thead>
+                <tr>
+                    <th></th><th>Title</th><th>Year</th><th class="wide">Type</th><th>Rating</th><th class="wide">Genre</th><th>In SilverScreen</th>
+                    <th class="wide">Added</th><th>IMDb</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in _rows)
+                {
+                    var item = row.Item;
+                    <tr>
+                        <td><PosterImage Src="@($"poster/{item.TitleImdbId}")" Class="thumb" /></td>
+                        <td><a href="@MovieDetails.DetailsUrl(item.TitleImdbId, item.IsEpisode ? "series" : item.Type)">@item.Title</a></td>
+                        <td>@item.Year</td>
+                        <td class="wide">@item.Type</td>
+                        <td><Rating Value="@item.ImdbRating" /></td>
+                        <td class="wide">@item.Genre</td>
+                        <td>
+                            @if (row.InSilverScreen)
+                            {
+                                <span class="tag good" title="@row.FilePath">Yes</span>
+                            }
+                            else
+                            {
+                                <span class="tag">To get</span>
+                            }
+                        </td>
+                        <td class="wide">@item.Added.ToString("yyyy-MM-dd")</td>
+                        <td><a href="https://www.imdb.com/title/@item.TitleImdbId/" target="_blank" rel="noopener" title="Open on IMDb (new window)">IMDb</a></td>
+                        <td class="row-actions">
+                            @if (_removing == item.ImdbId)
+                            {
+                                <button class="danger" disabled="@Busy" @onclick="() => RemoveAsync(row)">Remove</button>
+                                <button @onclick="() => _removing = null">Cancel</button>
+                            }
+                            else
+                            {
+                                <button class="quiet" title="Remove from the wishlist" @onclick="() => _removing = item.ImdbId">✕</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    /// <summary>/wishlist?q=Title, Year (e.g. from Similar movies on a details page): put in the search box and searched.</summary>
+    [SupplyParameterFromQuery(Name = "q")] public string? Q { get; set; }
+
+    private string? _query;
+    private IReadOnlyList<WishlistHit>? _hits;
+    private IReadOnlyList<WishlistRow> _rows = [];
+    private HashSet<string> _onList = new(StringComparer.OrdinalIgnoreCase);
+    private string? _removing;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RunAsync("Loading the wishlist…", LoadAsync);
+        if (!string.IsNullOrWhiteSpace(Q))
+        {
+            _query = Q.Trim();
+            await SearchAsync();
+        }
+    }
+
+    private async Task LoadAsync(CancellationToken ct)
+    {
+        _rows = await Wishlist.GetAsync(ct);
+        _onList = _rows.Select(r => r.Item.ImdbId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private Task SearchAsync() => RunAsync($"Searching for \"{_query?.Trim()}\"…", async ct =>
+    {
+        if (string.IsNullOrWhiteSpace(_query)) return;
+        var result = await Wishlist.SearchAsync(_query, ct);
+        _hits = result.Hits;
+        var have = result.Hits.Count(h => h.InSilverScreen);
+        Status = $"{result.Hits.Count} hit(s): {have} in SilverScreen, {result.Hits.Count - have} to get." +
+                 (result.OnlineError is null ? "" : $" OMDb couldn't be searched: {result.OnlineError}");
+    });
+
+    private Task AddAsync(WishlistHit hit) => RunAsync($"Adding {hit.Title}…", async ct =>
+    {
+        var item = await Wishlist.AddAsync(hit.ImdbId, ct);
+        await LoadAsync(ct);
+        Status = $"Added {item.Title} to the wishlist ({(hit.InSilverScreen ? "in SilverScreen already" : "to get")}).";
+    });
+
+    private Task RemoveAsync(WishlistRow row) => RunAsync($"Removing {row.Item.Title}…", async ct =>
+    {
+        await Wishlist.RemoveAsync(row.Item.ImdbId, ct);
+        _removing = null;
+        await LoadAsync(ct);
+        Status = $"Removed {row.Item.Title} from the wishlist.";
+    });
+}

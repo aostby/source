@@ -344,7 +344,9 @@ partial class KinoForm
         // 
         lblStatus.Name = "lblStatus";
         lblStatus.Size = new Size(39, 17);
+        lblStatus.Spring = true;
         lblStatus.Text = "Ready";
+        lblStatus.TextAlign = ContentAlignment.MiddleLeft;
         //
         // btnExcel
         //

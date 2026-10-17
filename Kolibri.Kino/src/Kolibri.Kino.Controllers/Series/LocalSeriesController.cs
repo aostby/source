@@ -44,6 +44,61 @@ public sealed record MissingEpisodesRow(
     LocalSeries Series, bool Ongoing, int StartYear, int Aired, int OnDisk, IReadOnlyList<SeriesEpisode> Missing, string? Source, string? Note,
     bool FetchedOnline = false);
 
+/// <summary>How complete a series on disk is; see <see cref="SeriesCompleteness.State"/>.</summary>
+public enum CompletenessState
+{
+    /// <summary>No episode list (TMDb and OMDb don't know it, or can't be asked), so it can't be told.</summary>
+    Unknown,
+    /// <summary>Ended, and every episode is on disk.</summary>
+    Complete,
+    /// <summary>Still running, and every episode aired so far is on disk; more are coming.</summary>
+    UpToDate,
+    /// <summary>Still running, and episodes aired so far are missing.</summary>
+    Behind,
+    /// <summary>Ended, and episodes are missing.</summary>
+    Incomplete,
+}
+
+/// <summary>
+/// Whether a series has all its episodes: those aired so far (season 1 and up) by TMDb's or OMDb's list, and which of
+/// them have no file.
+/// </summary>
+/// <param name="Ongoing">The years are open ("2018–"), so more may come.</param>
+/// <param name="Next">The next episode to air, when the list has one.</param>
+/// <param name="Source">Where the episode list came from ("TMDb", "OMDb").</param>
+/// <param name="Note">Why there is no list, or why it couldn't be brought up to date.</param>
+public sealed record SeriesCompleteness(
+    bool Ongoing, int Aired, int OnDisk, IReadOnlyList<SeriesEpisode> Missing, SeriesEpisode? Next, string? Source, string? Note)
+{
+    public CompletenessState State =>
+        Aired == 0 ? CompletenessState.Unknown
+        : Missing.Count == 0 ? (Ongoing ? CompletenessState.UpToDate : CompletenessState.Complete)
+        : Ongoing ? CompletenessState.Behind : CompletenessState.Incomplete;
+
+    /// <summary>"Complete", "Up to date, more coming", "Missing 3 of 40 episodes" …</summary>
+    public string Label => State switch
+    {
+        CompletenessState.Complete => "Complete",
+        CompletenessState.UpToDate => "Up to date, more coming",
+        CompletenessState.Behind or CompletenessState.Incomplete => $"Missing {Missing.Count} of {Aired} episodes",
+        _ => "Completeness unknown",
+    };
+
+    /// <summary>A sentence on how it was decided, for a tooltip.</summary>
+    public string Explanation => State switch
+    {
+        CompletenessState.Complete => $"Ended; all {Aired} episodes are here ({Source}'s episode list).",
+        CompletenessState.UpToDate => $"Still running; all {Aired} episodes aired so far are here ({Source}'s episode list).{NextText}",
+        CompletenessState.Behind => $"Still running; {OnDisk} of the {Aired} episodes aired so far are here ({Source}'s episode list).{NextText}",
+        CompletenessState.Incomplete => $"Ended; {OnDisk} of its {Aired} episodes are here ({Source}'s episode list).",
+        _ => Note ?? "No episode list from TMDb or OMDb.",
+    };
+
+    private string NextText => Next is { } n
+        ? $" Next: S{n.SeasonNumber:00}E{n.EpisodeNumber:00}{(n.AirDate is { } d ? $" on {d:yyyy-MM-dd}" : "")}."
+        : "";
+}
+
 /// <summary>
 /// The local series window (port of SilverScreen's ShowLocalSeriesForm + DetailsFormSeries).
 /// </summary>
@@ -253,13 +308,7 @@ public sealed class LocalSeriesController(
             var (known, fetched, note) = await ReportSeasonsAsync(series, ongoing, refreshOngoing, ct).ConfigureAwait(false);
             var (found, _) = await episodeFiles.FindAsync(series.FolderPath!, ct).ConfigureAwait(false);
             var onDisk = found.SelectMany(f => f.EpisodeNumbers.Select(n => (f.SeasonNumber, n))).ToHashSet();
-
-            var aired = known.Where(s => s.SeasonNumber > 0)
-                .SelectMany(s => s.Episodes)
-                .Where(e => e.AirDate is null || e.AirDate.Value.Date <= today)
-                .OrderBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber)
-                .ToList();
-            var missing = aired.Where(e => !onDisk.Contains((e.SeasonNumber, e.EpisodeNumber))).ToList();
+            var (aired, missing) = Compare(known, onDisk, today);
 
             rows.Add(new MissingEpisodesRow(series, ongoing, StartYear(series.Item.Year), aired.Count, aired.Count - missing.Count,
                 missing, known.FirstOrDefault()?.Source, known.Count == 0 ? note ?? "No episode list" : note, fetched));
@@ -271,6 +320,44 @@ public sealed class LocalSeriesController(
             .ThenByDescending(r => r.StartYear)
             .ThenBy(r => r.Series.Item.Title, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
+    }
+
+    /// <summary>
+    /// Whether the series has all its episodes, given the (season, episode) numbers on disk (the caller has read the
+    /// folder, e.g. through its own path mapping). The episode list comes from the database, fetched online when there
+    /// is none, or when a running series' list is old and has nothing still to air (see <see cref="ReportSeasonsAsync"/>).
+    /// Null when the id isn't a series in the library.
+    /// </summary>
+    public async Task<SeriesCompleteness?> GetCompletenessAsync(
+        string imdbId, IEnumerable<(int Season, int Episode)> onDisk, CancellationToken ct = default)
+    {
+        if (await movies.GetByImdbIdAsync(imdbId, ct).ConfigureAwait(false) is not { } item
+            || !string.Equals(item.Type, "series", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        var ongoing = IsOngoing(item.Year);
+        var (known, _, note) = await ReportSeasonsAsync(new LocalSeries(item, null, false), ongoing, refreshOngoing: true, ct)
+            .ConfigureAwait(false);
+        var today = DateTime.Today;
+        var (aired, missing) = Compare(known, onDisk.ToHashSet(), today);
+        var next = known.Where(s => s.SeasonNumber > 0).SelectMany(s => s.Episodes)
+            .Where(e => e.AirDate?.Date > today)
+            .OrderBy(e => e.AirDate).ThenBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber)
+            .FirstOrDefault();
+        return new SeriesCompleteness(ongoing, aired.Count, aired.Count - missing.Count, missing, next,
+            known.FirstOrDefault()?.Source, known.Count == 0 ? note ?? "No episode list from TMDb or OMDb" : note);
+    }
+
+    /// <summary>Episodes aired by <paramref name="today"/> (season 1 and up; no air date counts as aired), and those without a file.</summary>
+    private static (List<SeriesEpisode> Aired, List<SeriesEpisode> Missing) Compare(
+        IReadOnlyList<SeriesSeason> known, IReadOnlySet<(int, int)> onDisk, DateTime today)
+    {
+        var aired = known.Where(s => s.SeasonNumber > 0)
+            .SelectMany(s => s.Episodes)
+            .Where(e => e.AirDate is null || e.AirDate.Value.Date <= today)
+            .OrderBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber)
+            .ToList();
+        return (aired, aired.Where(e => !onDisk.Contains((e.SeasonNumber, e.EpisodeNumber))).ToList());
     }
 
     /// <summary>OMDb writes an ongoing series' years as "2010–" (open end); "2010–2015" or "2010" has ended.</summary>

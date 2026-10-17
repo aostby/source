@@ -251,7 +251,7 @@ public sealed class WatchlistControllerTests : IDisposable
         Assert.DoesNotContain("Empty", await _watchlists.GetListNamesAsync());
         Assert.Equal((1, 1, 3), (result.Added, result.ToWatched, result.Skipped));
 
-        Assert.Empty((await _watchlists.ImportPlexPlaylistsAsync()).Lists.Where(l => l.Added + l.ToWatched > 0)); // nothing new the second time
+        Assert.DoesNotContain((await _watchlists.ImportPlexPlaylistsAsync()).Lists, l => l.Added + l.ToWatched > 0); // nothing new the second time
     }
 
     [Fact]
@@ -265,6 +265,19 @@ public sealed class WatchlistControllerTests : IDisposable
         Assert.Equal("Y", Assert.Single(await _watchlists.GetItemsAsync("Watched")).Watched);
         Assert.Null(await _watchlists.MarkWatchedAndMoveAsync("tt1")); // on Watched already
         Assert.Null(await _watchlists.MarkWatchedAndMoveAsync("tt9")); // on no watchlist
+    }
+
+    [Theory]
+    [InlineData(true, false, false, "Added X to the Kino watchlist Jul and to the Plex playlist Jul (new).")]
+    [InlineData(false, true, false, "Added X to the Kino watchlist Jul; X isn't on Plex, so it wasn't added to the Plex playlist Jul.")]
+    [InlineData(false, false, true, "Added X to the Kino watchlist Jul; X was already in the Plex playlist Jul.")]
+    public void The_result_sentence_says_what_happened_where(bool created, bool notOnPlex, bool alreadyThere, string expected)
+    {
+        var plex = new PlaylistSyncResult(notOnPlex || alreadyThere ? 0 : 1, alreadyThere ? 1 : 0, notOnPlex ? ["tt1"] : [], created);
+        var result = new AddToListsResult("X", new AddToWatchlistResult("X", null), plex, null);
+
+        Assert.Equal(expected, result.Describe("Jul"));
+        Assert.Equal(notOnPlex, result.PlexProblem);
     }
 
     [Fact]

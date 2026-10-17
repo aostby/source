@@ -354,6 +354,44 @@ public sealed class LocalSeriesControllerTests : IDisposable
             LocalSeriesController.Describe([E(2, 7), E(1, 3), E(2, 1), E(2, 2), E(2, 3), E(2, 4), E(2, 5), E(10, 1)]));
     }
 
+    [Theory]
+    [InlineData("2018–2023", new[] { 1, 2, 3 }, CompletenessState.Complete, "Complete")]
+    [InlineData("2018–2023", new[] { 1 }, CompletenessState.Incomplete, "Missing 2 of 3 episodes")]
+    [InlineData("2018–", new[] { 1, 2, 3 }, CompletenessState.UpToDate, "Up to date, more coming")]
+    [InlineData("2018–", new[] { 2, 3 }, CompletenessState.Behind, "Missing 1 of 3 episodes")]
+    public async Task Completeness_says_whether_every_aired_episode_is_here(string year, int[] onDisk, CompletenessState state, string label)
+    {
+        await _movies.UpsertAsync(Series(SeriesId, "Jack Ryan", "8.0", year: year));
+        var past = new DateTime(2020, 1, 1);
+        await _seasons.SaveSeasonsAsync(SeriesId, [new SeriesSeason(1, "Season 1",
+        [
+            new(1, 1, "One", past, null, null, null, null, null),
+            new(1, 2, "Two", past, null, null, null, null, null),
+            new(1, 3, "Three", null, null, null, null, null, null),                         // no date: counts as aired
+            new(1, 4, "Four", DateTime.Today.AddDays(7), null, null, null, null, null),     // not aired yet
+        ], "TMDb"), Season(0, 2, "TMDb")]);                                                    // specials don't count
+
+        var complete = await _controller.GetCompletenessAsync(SeriesId, onDisk.Select(e => (1, e)));
+
+        Assert.NotNull(complete);
+        Assert.Equal((state, label, 3), (complete.State, complete.Label, complete.Aired));
+        Assert.Equal(4, complete.Next?.EpisodeNumber);
+        Assert.Equal(0, _online.Calls);   // the stored list has an episode still to come: not fetched again
+    }
+
+    [Fact]
+    public async Task Completeness_is_unknown_without_an_episode_list_and_null_for_a_movie()
+    {
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3", year: "1997–2003"));
+        await _movies.UpsertAsync(new Item { ImdbId = "tt0133093", Title = "The Matrix", Type = "movie" });
+
+        var unknown = await _controller.GetCompletenessAsync(SeriesId, [(1, 1)]);
+
+        Assert.Equal(CompletenessState.Unknown, unknown?.State);
+        Assert.Equal(1, _online.Calls);   // asked once, found nothing
+        Assert.Null(await _controller.GetCompletenessAsync("tt0133093", []));
+    }
+
     private LocalSeries Local() => new(Series(SeriesId, "Buffy", "8.3"), _folder, FolderExists: true);
 
     private static Item Series(string id, string title, string rating, string? tomatoUrl = null, string? year = null) =>

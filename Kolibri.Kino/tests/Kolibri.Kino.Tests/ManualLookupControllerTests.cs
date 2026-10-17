@@ -96,7 +96,7 @@ public sealed class ManualLookupControllerTests : IDisposable
     /// <summary>FakeOmdb plus a title search (OMDb's s= list).</summary>
     private sealed class SearchableOmdb(FakeOmdb inner) : IMovieInfoProvider
     {
-        public Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, CancellationToken ct = default) =>
+        public Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, int? year = null, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<SearchItem>>(inner.ById.Values
                 .Where(i => i.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
                 .Select(i => new SearchItem { ImdbId = i.ImdbId, Title = i.Title, Year = i.Year, Type = i.Type })

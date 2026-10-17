@@ -1,3 +1,4 @@
+using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Controllers;
 using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.Data;
@@ -276,6 +277,32 @@ public sealed class MovieControllerTests : IDisposable
 
         public Task<string?> FindPageAsync(string imdbId, CancellationToken ct = default) =>
             Throws is not null ? Task.FromException<string?>(Throws) : Task.FromResult(Pages.GetValueOrDefault(imdbId));
+
+        public Task<string?> FindTitleAsync(string imdbId, CancellationToken ct = default) => Task.FromResult<string?>(null);
+
+        public List<TmdbMovieHit> Similar { get; } = [];
+
+        public Task<IReadOnlyList<TmdbMovieHit>> FindSimilarAsync(string imdbId, int max = 12, CancellationToken ct = default) =>
+            Throws is not null ? Task.FromException<IReadOnlyList<TmdbMovieHit>>(Throws) : Task.FromResult<IReadOnlyList<TmdbMovieHit>>(Similar);
+    }
+
+    [Fact]
+    public async Task Similar_movies_say_which_are_in_the_library_and_give_a_wishlist_search()
+    {
+        var tmdb = new FakeTmdbLinks();
+        tmdb.Similar.AddRange([new("tt0133093", "The Matrix", "1999", "https://image.tmdb.org/t/p/w185/m.jpg"), new("tt34375721", "Operation Kabul", "2025")]);
+        var matrix = LiteDbMovieRepositoryTests.Movie("tt0133093", "The Matrix");
+        matrix.ImdbRating = "8.7";
+        await _repo.UpsertAsync(matrix);
+        _omdb.Add(new Item { ImdbId = "tt34375721", Title = "Sárkányok Kabul felett", Year = "2025", ImdbRating = "6.9" });
+        var movies = new MovieController(_repo, _omdb, _files, tmdb, new NoPosters(), new FakePlex(), NullLogger<MovieController>.Instance);
+
+        var similar = await movies.GetSimilarAsync("tt0068767");
+
+        Assert.Equal([(true, "The Matrix, 1999"), (false, "Operation Kabul, 2025")], similar.Select(s => (s.InLibrary, s.WishlistQuery)));
+        Assert.Equal(["1999 (8.7)", "2025 (6.9)"], similar.Select(s => s.YearAndRating));
+        tmdb.Throws = new HttpRequestException("TMDb is down");
+        Assert.Empty(await movies.GetSimilarAsync("tt0068767"));
     }
 
     [Fact]

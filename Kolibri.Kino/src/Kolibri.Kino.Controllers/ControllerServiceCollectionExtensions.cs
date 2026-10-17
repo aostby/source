@@ -10,6 +10,7 @@ using Kolibri.Kino.Controllers.Settings;
 using Kolibri.Kino.Controllers.Subtitles;
 using Kolibri.Kino.Controllers.Usage;
 using Kolibri.Kino.Controllers.Watchlists;
+using Kolibri.Kino.Controllers.Wishlist;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kolibri.Kino.Controllers;
@@ -28,6 +29,7 @@ public static class ControllerServiceCollectionExtensions
         services.AddTransient<ManualLookupController>();
         services.AddTransient<SettingsController>();
         services.AddTransient<WatchlistController>();
+        services.AddTransient<WishlistController>();
         services.AddTransient<LocalSeriesController>();
         services.AddTransient<NewSeriesController>();
         services.AddTransient<RecentSeriesController>();

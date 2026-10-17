@@ -11,7 +11,7 @@ namespace Kolibri.Kino.WinForms.Forms;
 /// Watchlists (port of SilverScreen's WatchlistForm): one list at a time, filter, mark watched, remove,
 /// details with poster, copy/export, and copy to a Plex playlist of the same name.
 /// </summary>
-public partial class WatchlistsForm : AsyncForm
+public partial class WatchlistsForm : AsyncForm, IWritesToExcel
 {
     public override string HelpTopic => "watchlists";
 
@@ -34,7 +34,6 @@ public partial class WatchlistsForm : AsyncForm
             (btnRemove, "Removes the selected movie from this watchlist, and if you want from the Plex playlist of the same name. Asks first."),
             (btnImdb, "Opens the selected movie's page on IMDb."),
             (btnCopy, "Copies the movies shown (title, year, IMDb rating, genre, watched) to the clipboard as a table, ready to paste into Excel, a document or an e-mail."),
-            (btnExport, "Saves the movies shown as a CSV file, which opens in Excel."),
             (btnPlex, "Adds every movie on this watchlist to the Plex playlist of the same name (made if missing). Movies already there, or not on Plex, are skipped."),
             (btnSyncFromPlex, "The other way: adds the titles in the Plex playlist of the same name that aren't on this watchlist, " +
                               "and marks titles watched on Plex as watched here. Titles only on this watchlist are kept. " +
@@ -321,16 +320,17 @@ public partial class WatchlistsForm : AsyncForm
         ShowStatus($"Copied {rows.Count} movie(s) to the clipboard.");
     }
 
-    private void btnExport_Click(object sender, EventArgs e)
+    /// <summary>"Write to Excel…" (bottom right) and Ctrl+S: the movies shown, named after the list.</summary>
+    public void WriteToExcel()
     {
         var rows = bindingSource.List.OfType<WatchRow>().Select(r => r.Item).ToList();
-        if (rows.Count == 0) return;
-
-        using var dialog = new SaveFileDialog { Filter = "CSV (Excel)|*.csv", FileName = $"{CurrentList}.csv" };
-        if (dialog.ShowDialog(this) != DialogResult.OK) return;
-        File.WriteAllText(dialog.FileName, WatchlistController.ToCsv(rows), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-        ShowStatus($"Exported {rows.Count} movie(s) to {dialog.FileName}.");
-        Explorer.Show(dialog.FileName); // the folder, with the new file selected
+        if (rows.Count == 0)
+        {
+            ShowStatus("Nothing to write; the list is empty.");
+            return;
+        }
+        if (ExcelExport.Save(this, WatchlistController.ToCsv(rows), CurrentList) is { } file)
+            ShowStatus($"Wrote {rows.Count} movie(s) to {Path.GetFileName(file)}.");
     }
 
     protected override void OnBusyChanged(bool busy)

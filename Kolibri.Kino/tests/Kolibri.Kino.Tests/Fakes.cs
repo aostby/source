@@ -20,8 +20,19 @@ internal sealed class FakeOmdb : IMovieInfoProvider
         return this;
     }
 
-    public Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<SearchItem>>([]);
+    /// <summary>What a search finds: these items whose title contains the query.</summary>
+    public List<Item> Searchable { get; } = [];
+
+    public Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, int? year = null, CancellationToken ct = default)
+    {
+        Calls++;
+        if (UnavailableMessage is not null) throw new MovieInfoUnavailableException(UnavailableMessage);
+        return Task.FromResult<IReadOnlyList<SearchItem>>(Searchable
+            .Where(i => i.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .Where(i => year is null || i.Year == year.ToString())
+            .Select(i => new SearchItem { ImdbId = i.ImdbId, Title = i.Title, Year = i.Year, Type = i.Type })
+            .ToList());
+    }
 
     public Task<Item?> GetByImdbIdAsync(string imdbId, CancellationToken ct = default) =>
         Answer(ById.GetValueOrDefault(imdbId));
@@ -48,6 +59,14 @@ internal sealed class FakeOmdb : IMovieInfoProvider
 
 internal sealed class FakeTmdb : IImdbIdResolver
 {
+    /// <summary>What a movie search finds: these whose title contains the query (and the year, when given).</summary>
+    public List<TmdbMovieHit> Movies { get; } = [];
+
+    public Task<IReadOnlyList<TmdbMovieHit>> SearchMoviesAsync(string title, int? year, int max = 8, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<TmdbMovieHit>>(Movies
+            .Where(m => m.Title.Contains(title, StringComparison.OrdinalIgnoreCase) && (year is null || m.Year == year.ToString()))
+            .Take(max).ToList());
+
     public Dictionary<string, string> Ids { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Series ids by "title|year".</summary>

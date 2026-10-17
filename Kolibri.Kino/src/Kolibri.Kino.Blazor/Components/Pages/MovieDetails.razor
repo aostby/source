@@ -2,16 +2,20 @@
 @page "/series/{ImdbId}"
 @using Kolibri.Kino.Controllers.Library
 @using Kolibri.Kino.Controllers.Playback
+@using Kolibri.Kino.Controllers.Series
+@using Kolibri.Kino.Controllers.Wishlist
 @inherits KinoPage
 @inject MovieController Movies
 @inject LastSearch LastSearch
 @inject PlaybackController Playback
 @inject WatchlistController Watchlists
+@inject LocalSeriesController LocalSeries
+@inject WishlistController Wishlist
 @inject NavigationManager Nav
 
-@* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links, and Mark as
-   watched (onto the Watched watchlist, and on Plex). Removing and adding to other watchlists are left to the Windows
-   app. Note: deploying the library to the NAS again (-WithDatabases) replaces the NAS copy, watched marks included.
+@* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links, Mark as
+   watched (onto the Watched watchlist, and on Plex) and Add to watchlist (a Kino watchlist and/or a Plex playlist,
+   as the Windows app's dialog). Removing from watchlists is left to the Windows app. Note: deploying the library to the NAS again (-WithDatabases) replaces the NAS copy, watched marks included.
    A series lives at /series/{id} (a /movie/ link is turned into that) and lists its episodes by season, each
    with Play (the own file) and Plex. *@
 
@@ -52,6 +56,10 @@ else
                 <Rating Value="@_item.ImdbRating" />
             </p>
             <p class="where">
+                @if (_completeness is { } complete)
+                {
+                    <span class="tag @CompletenessClass(complete.State)" title="@complete.Explanation">@complete.Label</span>
+                }
                 @if (_inLibrary)
                 {
                     <span class="tag good">In library</span>
@@ -69,12 +77,29 @@ else
                     <span class="path" title="Linked file or folder">@_linkedPath</span>
                 }
             </p>
-
-            @if (!IsSeries && (_canPlay || _plexPage is not null))
+            @if (_completeness is { Missing.Count: > 0 } incomplete)
             {
-                <p class="actions">
-                    <a class="button primary play" href="play/@ImdbId">▶ Play</a>
+                <p class="missing-episodes">
+                    <a href="@($"series/{ImdbId}#episodes")">Missing (@incomplete.Source knows them): @LocalSeriesController.Describe(incomplete.Missing)</a>
+                    @{ var notWished = incomplete.Missing.Where(e => !_wishedEpisodes.Contains((e.SeasonNumber, e.EpisodeNumber))).ToList(); }
+                    @if (notWished.Count > 1)
+                    {
+                        <button class="small" disabled="@Busy" @onclick="() => WishEpisodesAsync(notWished)">+ All @notWished.Count to wishlist</button>
+                    }
                 </p>
+            }
+
+            <p class="actions">
+                @if (!IsSeries && (_canPlay || _plexPage is not null))
+                {
+                    <a class="button primary play" href="play/@ImdbId">▶ Play</a>
+                }
+                <button class="play" disabled="@Busy" @onclick="() => _addingToList = true">+ Add to watchlist</button>
+            </p>
+
+            @if (_addingToList)
+            {
+                <AddToWatchlistDialog ImdbId="@ImdbId" Title="@_item.Title" OnClose="ListDialogClosed" />
             }
 
             @if (Clean(_item.Plot) is { } plot)
@@ -140,18 +165,78 @@ else
         </div>
     </div>
 
+    @if (_similar.Count > 0)
+    {
+        <section class="similar">
+            <h2>Similar movies</h2>
+            <p class="hint">TMDb's suggestions. One you'd like to see or get: <b>+ Wishlist</b> searches for it there.</p>
+            <div class="similar-row">
+                @foreach (var s in _similar)
+                {
+                    <div class="similar-card">
+                        <a href="movie/@s.Movie.ImdbId" title="@s.Movie.Title">
+                            @if (s.Movie.Poster is { } poster)
+                            {
+                                <img src="@poster" alt="" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span class="poster placeholder"></span>
+                            }
+                            <span class="similar-title">@s.Movie.Title</span>
+                        </a>
+                        <span class="muted small" title="Year (IMDb rating)">@s.YearAndRating</span>
+                        @if (s.InLibrary)
+                        {
+                            <span class="tag good">In SilverScreen</span>
+                        }
+                        <a class="button small" href="@($"wishlist?q={Uri.EscapeDataString(s.WishlistQuery)}")">+ Wishlist</a>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+    <div>
+    </div>
+
     @if (IsSeries && _episodes.Count > 0)
     {
-        <section class="episodes-section">
-            <h2>Episodes <span class="muted">@_episodes.Count</span></h2>
-            @* Newest season first (like Plex's season list read from the top); "Other files" last. *@
-    @foreach (var season in _episodes.GroupBy(e => e.Season).OrderByDescending(g => g.Key == 0 ? -1 : g.Key))
+        var missingCount = _completeness?.Missing.Count ?? 0;
+        <section class="episodes-section" id="episodes">
+            <h2>Episodes <span class="muted">@_episodes.Count@(missingCount > 0 ? $" · {missingCount} missing" : "")</span></h2>
+            @* Newest season first (like Plex's season list read from the top); "Other files" last. Missing episodes
+               (the episode list has them, the folder doesn't) in their place, with + Wishlist. *@
+    @foreach (var season in EpisodeRows().GroupBy(r => r.Season).OrderByDescending(g => g.Key == 0 ? -1 : g.Key))
             {
+                var missingHere = season.Count(r => r.Missing is not null);
                 <section class="season">
-                    <h3 class="period-title">@(season.Key == 0 ? "Other files" : $"Season {season.Key}") <span class="muted">@season.Count()</span></h3>
+                    <h3 class="period-title">@(season.Key == 0 ? "Other files" : $"Season {season.Key}")
+                        <span class="muted">@season.Count(r => r.File is not null)@(missingHere > 0 ? $" · {missingHere} missing" : "")</span></h3>
                     <ol class="episodes">
-                        @foreach (var episode in season)
+                        @foreach (var row in season)
                         {
+                            @if (row.Missing is { } gone)
+                            {
+                                <li class="missing">
+                                    <div class="episode-row">
+                                        <span class="ep-label">S@(gone.SeasonNumber.ToString("00"))E@(gone.EpisodeNumber.ToString("00"))</span>
+                                        <span class="path">@gone.Title@(gone.AirDate is { } aired ? $" · {aired:yyyy-MM-dd}" : "")</span>
+                                        <span class="episode-actions">
+                                            <span class="tag bad" title="@(_completeness?.Source)'s episode list has it; the series folder doesn't">Missing</span>
+                                            @if (_wishedEpisodes.Contains((gone.SeasonNumber, gone.EpisodeNumber)))
+                                            {
+                                                <a class="button" href="wishlist" title="It's on the wishlist">On wishlist</a>
+                                            }
+                                            else
+                                            {
+                                                <button disabled="@Busy" title="Put this episode on the wishlist" @onclick="() => WishEpisodesAsync([gone])">+ Add to wishlist</button>
+                                            }
+                                        </span>
+                                    </div>
+                                </li>
+                                continue;
+                            }
+                            var episode = row.File!;
                             <li>
                                 <div class="episode-row">
                                     <span class="ep-label">@episode.Label</span>
@@ -185,11 +270,67 @@ else
     private string? _plexPage;
     private IReadOnlyList<PlayableEpisode> _episodes = [];
     private IReadOnlyDictionary<(int Season, int Episode), string> _plexEpisodes = new Dictionary<(int, int), string>();
+    private bool _addingToList;
+    private IReadOnlyList<SimilarMovie> _similar = [];
+    private SeriesCompleteness? _completeness;
+
+    /// <summary>An Episodes row: a file in the series folder, or an episode the list has and the folder doesn't.</summary>
+    private sealed record EpisodeRow(int Season, int Number, PlayableEpisode? File, SeriesEpisode? Missing);
+
+    /// <summary>The files, with the missing episodes (from the completeness check) put in their place by number.</summary>
+    private IEnumerable<EpisodeRow> EpisodeRows() =>
+        _episodes.Select((e, i) => new EpisodeRow(e.Season, e.Episodes.Count > 0 ? e.Episodes[0] : int.MaxValue - _episodes.Count + i, e, null))
+            .Concat((_completeness?.Missing ?? []).Select(m => new EpisodeRow(m.SeasonNumber, m.EpisodeNumber, null, m)))
+            .OrderBy(r => r.Season).ThenBy(r => r.Number);
+    private IReadOnlySet<(int Season, int Episode)> _wishedEpisodes = new HashSet<(int, int)>();
+
+    private Task WishEpisodesAsync(IReadOnlyList<SeriesEpisode> episodes) => RunAsync("Adding to the wishlist…", async ct =>
+    {
+        var added = await Wishlist.AddEpisodesAsync(ImdbId, episodes, ct);
+        _wishedEpisodes = await Wishlist.GetEpisodesAsync(ImdbId, ct);
+        Status = added == 1 ? $"Put {LocalSeriesController.Describe(episodes)} on the wishlist."
+            : $"Put {added} episodes on the wishlist ({LocalSeriesController.Describe(episodes)}).";
+    });
+
+    /// <summary>Green complete, yellow up to date (more coming), orange behind or unknown, red ended with episodes missing.</summary>
+    private static string CompletenessClass(CompletenessState state) => state switch
+    {
+        CompletenessState.Complete => "good",
+        CompletenessState.UpToDate => "coming",
+        CompletenessState.Incomplete => "bad",
+        _ => "medium",
+    };
+
+    /// <summary>The series' completeness, from the episodes found in its folder; failures leave it out.</summary>
+    private async Task LoadCompletenessAsync()
+    {
+        try
+        {
+            var onDisk = _episodes.Where(e => e.Season > 0).SelectMany(e => e.Episodes.Select(n => (e.Season, n))).ToList();
+            _completeness = await LocalSeries.GetCompletenessAsync(ImdbId, onDisk);
+            // Wished-for episodes that have arrived come off the wishlist.
+            var arrived = await Wishlist.RemoveEpisodesOnDiskAsync(ImdbId, onDisk);
+            if (arrived.Count > 0) Status = $"Here now, so taken off the wishlist: {string.Join(", ", arrived)}.";
+            _wishedEpisodes = await Wishlist.GetEpisodesAsync(ImdbId);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _completeness = null;
+        }
+    }
+
+    /// <summary>The dialog closed: its sentence (null when cancelled) goes in the status line.</summary>
+    private void ListDialogClosed(string? message)
+    {
+        _addingToList = false;
+        if (message is not null) (Status, Error) = (message, null);
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         (_item, _inLibrary, _linkedPath, _tmdbPage, _canPlay, _plexPage, _watched) = (null, false, null, null, false, null, false);
-        (_episodes, _plexEpisodes) = ([], new Dictionary<(int, int), string>());
+        (_completeness, _wishedEpisodes) = (null, new HashSet<(int, int)>());
+        (_episodes, _plexEpisodes, _similar) = ([], new Dictionary<(int, int), string>(), []);
         await RunAsync("Loading…", async ct =>
         {
             var local = await Movies.GetFromLibraryAsync(ImdbId, ct);
@@ -211,9 +352,17 @@ else
             if (IsSeries) _episodes = _inLibrary ? await Playback.GetEpisodesAsync(ImdbId) : [];
             else _canPlay = _inLibrary && await Playback.HasLocalVideoAsync(ImdbId);
             StateHasChanged();
+            // Only with episodes found: without the folder everything would look missing.
+            if (IsSeries && _episodes.Any(e => e.Season > 0))
+            {
+                await LoadCompletenessAsync();
+                StateHasChanged();
+            }
             _tmdbPage = await Movies.GetTmdbPageAsync(ImdbId, item.Title);
             StateHasChanged();
             _plexPage = await Playback.GetPlexPageAsync(ImdbId);
+            StateHasChanged();
+            if (!IsSeries) _similar = await Movies.GetSimilarAsync(ImdbId);
             if (IsSeries && _episodes.Count > 0) _plexEpisodes = await Playback.GetPlexEpisodePagesAsync(ImdbId);
             StateHasChanged();
         }

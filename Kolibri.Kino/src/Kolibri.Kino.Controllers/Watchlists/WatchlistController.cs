@@ -64,7 +64,32 @@ public sealed record MoveWatchedResult(
 /// <param name="Kino">What adding to the Kino watchlist did, if asked.</param>
 /// <param name="Plex">What adding to the Plex playlist did, if asked.</param>
 /// <param name="PlexError">Why adding to Plex failed, if it did (the Kino part is kept).</param>
-public sealed record AddToListsResult(string Title, AddToWatchlistResult? Kino, PlaylistSyncResult? Plex, string? PlexError);
+public sealed record AddToListsResult(string Title, AddToWatchlistResult? Kino, PlaylistSyncResult? Plex, string? PlexError)
+{
+    /// <summary>Plex couldn't take it (an error, or the title isn't on Plex): worth showing, not just a status line.</summary>
+    public bool PlexProblem => PlexError is not null || Plex is { NotOnServer.Count: > 0 };
+
+    /// <summary>What happened, as one sentence: "Added X to the Kino watchlist L and to the Plex playlist L (new)."</summary>
+    public string Describe(string list)
+    {
+        var parts = new List<string>();
+        if (Kino is { } kino)
+            parts.Add(kino.MovedFrom is null
+                ? $"Added {Title} to the Kino watchlist {list}"
+                : $"Moved {Title} from {kino.MovedFrom} to the Kino watchlist {list} (a title is on one watchlist at a time)");
+        if (PlexError is not null)
+            parts.Add($"Plex: {PlexError}");
+        else if (Plex is { } plex)
+        {
+            var playlist = $"the Plex playlist {list}" + (plex.Created ? " (new)" : "");
+            if (plex.NotOnServer.Count > 0) parts.Add($"{Title} isn't on Plex, so it wasn't added to {playlist}");
+            else if (plex.AlreadyThere > 0) parts.Add($"{Title} was already in {playlist}");
+            else if (parts.Count > 0) parts[^1] += $" and to {playlist}";
+            else parts.Add($"Added {Title} to {playlist}");
+        }
+        return string.Join("; ", parts) + ".";
+    }
+}
 
 /// <summary>
 /// Watchlists (port of SilverScreen's WatchListController and WatchlistForm): movies to watch, per named list,

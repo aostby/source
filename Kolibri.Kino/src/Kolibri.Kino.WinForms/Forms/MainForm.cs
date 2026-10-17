@@ -120,6 +120,8 @@ public partial class MainForm : Form, IStatusDisplay
 
     private void menuWatchlists_Click(object sender, EventArgs e) => this.ShowSingle<WatchlistsForm>(_services);
 
+    private void menuWishlist_Click(object sender, EventArgs e) => this.ShowSingle<WishlistForm>(_services);
+
     #endregion
 
     #region Window (as in SilverScreen; the open windows are listed below)

@@ -80,32 +80,12 @@ public partial class AddToWatchlistDialog : AsyncForm
         await RunAsync("Adding…", async ct =>
         {
             var result = await _watchlists.AddToListsAsync(_imdbId, list, toKino, toPlex, ct);
-            ResultMessage = Describe(result, list);
-            if (result.PlexError is not null || result.Plex is { NotOnServer.Count: > 0 })
+            ResultMessage = result.Describe(list);
+            if (result.PlexProblem)
                 MessageBox.Show(this, ResultMessage, Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
             DialogResult = DialogResult.OK;
             Close();
         });
-    }
-
-    private static string Describe(AddToListsResult r, string list)
-    {
-        var parts = new List<string>();
-        if (r.Kino is { } kino)
-            parts.Add(kino.MovedFrom is null
-                ? $"Added {r.Title} to the Kino watchlist {list}"
-                : $"Moved {r.Title} from {kino.MovedFrom} to the Kino watchlist {list} (a movie is on one watchlist at a time)");
-        if (r.PlexError is not null)
-            parts.Add($"Plex: {r.PlexError}");
-        else if (r.Plex is { } plex)
-        {
-            var playlist = $"the Plex playlist {list}" + (plex.Created ? " (new)" : "");
-            if (plex.NotOnServer.Count > 0) parts.Add($"{r.Title} isn't on Plex, so it wasn't added to {playlist}");
-            else if (plex.AlreadyThere > 0) parts.Add($"{r.Title} was already in {playlist}");
-            else if (parts.Count > 0) parts[^1] += $" and to {playlist}";
-            else parts.Add($"Added {r.Title} to {playlist}");
-        }
-        return string.Join("; ", parts) + ".";
     }
 
     protected override void OnBusyChanged(bool busy)

@@ -9,7 +9,7 @@ namespace Kolibri.Kino.Core.Abstractions;
 /// </summary>
 public interface IMovieInfoProvider
 {
-    Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, CancellationToken ct = default);
+    Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, int? year = null, CancellationToken ct = default);
 
     Task<Item?> GetByImdbIdAsync(string imdbId, CancellationToken ct = default);
 
