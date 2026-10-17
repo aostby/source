@@ -61,14 +61,19 @@ internal static partial class ExcelExport
 
     /// <summary>
     /// Adds "Write to Excel…" on the right of <paramref name="form"/>'s status bar, when it has a grid and a status bar
-    /// and no such button yet (windows with their own export put it in the designer).
+    /// and no such button yet (windows with their own export put it in the designer). Either way the button ends up
+    /// bottom right: last on the bar, after a status label that takes the free space (a status bar ignores
+    /// right alignment unless some label springs).
     /// </summary>
     public static void AddButton(Form form)
     {
-        if (form.Controls.OfType<StatusStrip>().FirstOrDefault() is not { } strip
-            || strip.Items.ContainsKey(ButtonName)
-            || !Grids(form).Any())
+        if (form.Controls.OfType<StatusStrip>().FirstOrDefault() is not { } strip) return;
+        if (strip.Items[ButtonName] is { } existing)
+        {
+            PlaceBottomRight(strip, existing);
             return;
+        }
+        if (!Grids(form).Any()) return;
 
         var button = new ToolStripButton("Write to Excel…")
         {
@@ -79,6 +84,22 @@ internal static partial class ExcelExport
         };
         button.Click += (_, _) => Write(form);
         strip.Items.Add(button);
+        PlaceBottomRight(strip, button);
+    }
+
+    private static void PlaceBottomRight(StatusStrip strip, ToolStripItem button)
+    {
+        if (strip.Items.IndexOf(button) != strip.Items.Count - 1)
+        {
+            strip.Items.Remove(button);
+            strip.Items.Add(button);
+        }
+        if (!strip.Items.OfType<ToolStripStatusLabel>().Any(l => l.Spring)
+            && strip.Items.OfType<ToolStripStatusLabel>().FirstOrDefault() is { } label)
+        {
+            label.Spring = true;
+            label.TextAlign = ContentAlignment.MiddleLeft;
+        }
     }
 
     /// <summary>

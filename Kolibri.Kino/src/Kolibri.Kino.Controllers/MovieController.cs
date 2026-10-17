@@ -1,9 +1,23 @@
+using System.Collections.Concurrent;
 using Kolibri.Kino.Core;
 using Kolibri.Kino.Core.Abstractions;
 using Microsoft.Extensions.Logging;
 using OMDbApiNet.Model;
 
 namespace Kolibri.Kino.Controllers;
+
+/// <summary>
+/// A movie TMDb suggests for another, whether it's in the library (SilverScreen.db), and its IMDb rating (null when
+/// unknown).
+/// </summary>
+public sealed record SimilarMovie(TmdbMovieHit Movie, bool InLibrary, string? ImdbRating = null)
+{
+    /// <summary>"2008 (6.5)": the year, and the IMDb rating in brackets when known.</summary>
+    public string YearAndRating => ImdbRating is null ? Movie.Year ?? "" : $"{Movie.Year} ({ImdbRating})".TrimStart();
+
+    /// <summary>What to put in the wishlist's search box for it: "Title, Year" (or the title alone).</summary>
+    public string WishlistQuery => Movie.Year is { Length: > 0 } year ? $"{Movie.Title}, {year}" : Movie.Title;
+}
 
 /// <summary>
 /// Movie use cases for the UI: browse the local library, search OMDb, and import into the library.
@@ -140,6 +154,52 @@ public sealed partial class MovieController(
     /// <summary>
     /// The TMDb page for the IMDb id; if TMDb doesn't know it (or can't be asked), a TMDb search for the title.
     /// </summary>
+    /// <summary>
+    /// Movies like this one (TMDb's recommendations), each saying whether it's in the library, so one you'd like to
+    /// see or get can go on the wishlist. Empty when TMDb has none, isn't set up, or doesn't answer.
+    /// </summary>
+    public async Task<IReadOnlyList<SimilarMovie>> GetSimilarAsync(string imdbId, CancellationToken ct = default)
+    {
+        IReadOnlyList<TmdbMovieHit> similar;
+        try
+        {
+            similar = await tmdb.FindSimilarAsync(imdbId, ct: ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "TMDb's similar movies for {ImdbId} failed", imdbId);
+            return [];
+        }
+        var inLibrary = await repository.GetByImdbIdsAsync(similar.Select(s => s.ImdbId), ct).ConfigureAwait(false);
+        var ratings = await Task.WhenAll(similar.Select(s =>
+            inLibrary.TryGetValue(s.ImdbId, out var item) ? Task.FromResult(Rating(item.ImdbRating)) : OnlineRatingAsync(s.ImdbId, ct)))
+            .ConfigureAwait(false);
+        return similar.Select((s, i) => new SimilarMovie(s, inLibrary.ContainsKey(s.ImdbId), ratings[i])).ToList();
+    }
+
+    /// <summary>IMDb ratings looked up on OMDb for similar movies, kept while the app runs (one OMDb call per title).</summary>
+    private static readonly ConcurrentDictionary<string, string?> SimilarRatings = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>OMDb's IMDb rating for a title not in the library; null when OMDb doesn't know it or can't be asked.</summary>
+    private async Task<string?> OnlineRatingAsync(string imdbId, CancellationToken ct)
+    {
+        if (SimilarRatings.TryGetValue(imdbId, out var known)) return known;
+        try
+        {
+            var rating = Rating((await infoProvider.GetByImdbIdAsync(imdbId, ct).ConfigureAwait(false))?.ImdbRating);
+            SimilarRatings[imdbId] = rating;
+            return rating;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogDebug(ex, "No IMDb rating for similar movie {ImdbId}", imdbId);
+            return null;
+        }
+    }
+
+    private static string? Rating(string? rating) =>
+        string.IsNullOrWhiteSpace(rating) || rating.Equals("N/A", StringComparison.OrdinalIgnoreCase) ? null : rating.Trim();
+
     public async Task<string> GetTmdbPageAsync(string imdbId, string? title, CancellationToken ct = default)
     {
         try

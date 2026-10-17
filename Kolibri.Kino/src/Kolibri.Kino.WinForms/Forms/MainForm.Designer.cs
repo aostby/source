@@ -38,6 +38,7 @@ partial class MainForm
         menuLocalMovies = new ToolStripMenuItem();
         menuLocalSeries = new ToolStripMenuItem();
         menuWatchlists = new ToolStripMenuItem();
+        menuWishlist = new ToolStripMenuItem();
         menuWindow = new ToolStripMenuItem();
         menuCascade = new ToolStripMenuItem();
         menuTileHorizontal = new ToolStripMenuItem();
@@ -95,7 +96,7 @@ partial class MainForm
         //
         // menuLibrary
         //
-        menuLibrary.DropDownItems.AddRange(new ToolStripItem[] { menuSearch, menuLocalMovies, menuLocalSeries, menuWatchlists });
+        menuLibrary.DropDownItems.AddRange(new ToolStripItem[] { menuSearch, menuLocalMovies, menuLocalSeries, menuWatchlists, menuWishlist });
         menuLibrary.Name = "menuLibrary";
         menuLibrary.Size = new Size(68, 20);
         menuLibrary.Text = "&Library";
@@ -127,6 +128,13 @@ partial class MainForm
         menuWatchlists.Size = new Size(220, 22);
         menuWatchlists.Text = "&Watchlists";
         menuWatchlists.Click += menuWatchlists_Click;
+        //
+        // menuWishlist
+        //
+        menuWishlist.Name = "menuWishlist";
+        menuWishlist.Size = new Size(220, 22);
+        menuWishlist.Text = "W&ishlist";
+        menuWishlist.Click += menuWishlist_Click;
         //
         // menuWindow
         //
@@ -266,6 +274,7 @@ partial class MainForm
     private ToolStripMenuItem menuLocalMovies;
     private ToolStripMenuItem menuLocalSeries;
     private ToolStripMenuItem menuWatchlists;
+    private ToolStripMenuItem menuWishlist;
     private ToolStripMenuItem menuWindow;
     private ToolStripMenuItem menuCascade;
     private ToolStripMenuItem menuTileHorizontal;

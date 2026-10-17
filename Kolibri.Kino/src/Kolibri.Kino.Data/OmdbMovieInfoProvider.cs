@@ -18,9 +18,9 @@ public sealed class OmdbMovieInfoProvider(ISettingsStore settings) : IMovieInfoP
 {
     private (string Key, IAsyncOmdbClient Client)? _client;
 
-    public async Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, CancellationToken ct = default)
+    public async Task<IReadOnlyList<SearchItem>> SearchAsync(string query, int page = 1, int? year = null, CancellationToken ct = default)
     {
-        var result = await Call(c => c.GetSearchListAsync(query, page), ct).ConfigureAwait(false);
+        var result = await Call(c => year is { } y ? c.GetSearchListAsync(y, query, page) : c.GetSearchListAsync(query, page), ct).ConfigureAwait(false);
         return result?.SearchResults ?? [];
     }
 

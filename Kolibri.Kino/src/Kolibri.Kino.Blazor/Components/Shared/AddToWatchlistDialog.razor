@@ -1,0 +1,151 @@
+@inject WatchlistController Watchlists
+
+@* Add one title to a list: a Kino watchlist, the Plex playlist of that name, or both, as the Windows app's
+   AddToWatchlistDialog. The lists are Kino's and Plex's, each saying where it is; the boxes start ticked where the
+   chosen list is, and a box ticked where it isn't makes the list there. OnClose gets the result sentence, or null. *@
+
+<div class="dialog-backdrop" @onclick="Cancel">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="add-to-list-title"
+         @onclick:stopPropagation="true" @onkeydown="OnKey">
+        <h2 id="add-to-list-title">Add @Title to a watchlist</h2>
+
+        @if (_choices is null)
+        {
+            <p class="status busy" role="status">Loading lists…</p>
+        }
+        else
+        {
+            <label class="field">
+                <span>List</span>
+                <select value="@_selected" @onchange="e => Choose(e.Value as string)" disabled="@_busy">
+                    @foreach (var choice in _choices)
+                    {
+                        <option value="@choice.Name">@choice.Name — @Where(choice)</option>
+                    }
+                    <option value="@NewList">New list…</option>
+                </select>
+            </label>
+            @if (_selected == NewList)
+            {
+                <label class="field">
+                    <span>Name</span>
+                    <input @bind="_newName" @bind:event="oninput" placeholder="New list name" disabled="@_busy" autofocus />
+                </label>
+            }
+
+            <p class="hint">@WhereText</p>
+
+            <div class="targets">
+                <label><input type="checkbox" @bind="_toKino" disabled="@_busy" /> Kino watchlist@(Chosen is { InKino: false } ? " (new)" : "")</label>
+                @if (Watchlists.PlexConfigured)
+                {
+                    <label><input type="checkbox" @bind="_toPlex" disabled="@_busy" /> Plex playlist@(Chosen is { OnPlex: true } ? "" : " (new)")</label>
+                }
+            </div>
+
+            @if (_plexError is not null)
+            {
+                <p class="hint">Plex's playlists couldn't be read: @_plexError</p>
+            }
+            @if (_error is not null)
+            {
+                <p class="status error" role="alert">@_error</p>
+            }
+        }
+
+        <div class="actions dialog-buttons">
+            <button class="primary" disabled="@(!CanAdd)" @onclick="AddAsync">@(_busy ? "Adding…" : "Add")</button>
+            <button disabled="@_busy" @onclick="Cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string ImdbId { get; set; } = "";
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>The result sentence when added, null when cancelled.</summary>
+    [Parameter] public EventCallback<string?> OnClose { get; set; }
+
+    /// <summary>The "New list…" option's value (no list name starts with "::").</summary>
+    private const string NewList = "::new";
+
+    private IReadOnlyList<WatchlistChoice>? _choices;
+    private string? _plexError;
+    private string _selected = "";
+    private string _newName = "";
+    private bool _toKino = true;
+    private bool _toPlex;
+    private bool _busy;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var lists = await Watchlists.GetListChoicesAsync();
+            (_choices, _plexError) = (lists.Choices, lists.PlexError);
+            Choose(_choices.FirstOrDefault(c => string.Equals(c.Name, Watchlists.FavoriteList, StringComparison.OrdinalIgnoreCase))?.Name
+                   ?? _choices.FirstOrDefault()?.Name ?? NewList);
+        }
+        catch (Exception ex)
+        {
+            (_choices, _error) = ([], ex.Message);
+            Choose(NewList);
+        }
+    }
+
+    private string Name => (_selected == NewList ? _newName : _selected).Trim();
+
+    private WatchlistChoice? Chosen =>
+        _choices?.FirstOrDefault(c => string.Equals(c.Name, Name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>A list picked (or "New list…"): the boxes ticked where it is; a new list goes to Kino.</summary>
+    private void Choose(string? value)
+    {
+        _selected = value ?? NewList;
+        var chosen = _selected == NewList ? null : Chosen;
+        _toKino = chosen is null || chosen.InKino;
+        _toPlex = Watchlists.PlexConfigured && chosen is { OnPlex: true };
+        _error = null;
+    }
+
+    private static string Where(WatchlistChoice c) =>
+        c is { InKino: true, OnPlex: true } ? "Kino and Plex" : c.InKino ? "Kino" : "Plex";
+
+    private string WhereText => Name.Length == 0 ? "Choose a list, or type a name for a new one."
+        : Chosen is not { } c ? $"\"{Name}\" is a new list." + (Watchlists.PlexConfigured ? " Tick where to make it." : "")
+        : c is { InKino: true, OnPlex: true } ? $"\"{c.Name}\" is a Kino watchlist and a Plex playlist."
+        : c.InKino ? $"\"{c.Name}\" is a Kino watchlist only." + (Watchlists.PlexConfigured ? " Tick Plex playlist to make it on Plex too." : "")
+        : $"\"{c.Name}\" is a Plex playlist only. Tick Kino watchlist to make it in Kino too.";
+
+    private bool CanAdd => !_busy && _choices is not null && Name.Length > 0 && (_toKino || (_toPlex && Watchlists.PlexConfigured));
+
+    private async Task AddAsync()
+    {
+        if (!CanAdd) return;
+        (_busy, _error) = (true, null);
+        try
+        {
+            var list = Chosen?.Name ?? Name;
+            var result = await Watchlists.AddToListsAsync(ImdbId, list, _toKino, _toPlex && Watchlists.PlexConfigured);
+            await OnClose.InvokeAsync(result.Describe(list));
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task Cancel() => _busy ? Task.CompletedTask : OnClose.InvokeAsync(null);
+
+    private async Task OnKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") await Cancel();
+        else if (e.Key == "Enter" && _selected != NewList) await AddAsync();
+    }
+}

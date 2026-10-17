@@ -41,6 +41,7 @@ Kino uses the same database as SilverScreen. Press <kbd>F1</kbd> in any window t
   <li><a href="#local-movies">Local movies</a></li>
   <li><a href="#local-series">Local series</a></li>
   <li><a href="#watchlists">Watchlists</a></li>
+  <li><a href="#wishlist">Wishlist</a></li>
   <li><a href="#usage">API usage report</a></li>
   <li><a href="#log">Log</a></li>
   <li><a href="#windows">Windows and keys</a></li>
@@ -155,6 +156,12 @@ The change takes effect after a restart; Kino offers to restart at once. <b>Help
   <li><b>Write to Excel…</b> (right in the status bar) saves the rows shown, with the type filter and sort you chose, as a CSV file and opens it in Excel.
       The name starts with the filter, e.g. <code>Movies - Library - 2026-10-14.csv</code> or <code>All - OMDb matrix - 2026-10-14.csv</code>.</li>
 </ul>
+<h3 id="similar">Similar movies (in the details window)</h3>
+<p>Under a movie's details, <b>Similar movies</b> shows TMDb's suggestions, each with its poster and year, and
+<b>In SilverScreen</b> when you have it. Click the poster or title for its details. <b>+ Wishlist</b> opens the
+<a href="#wishlist">Wishlist</a> window with "Title, Year" in its search box and searches, so you can check it (IMDb link)
+and add it. Needs a TMDb key (the shared default works).</p>
+
 <h3 id="subtitles">Subtitles (in the details window)</h3>
 <p>The <b>Subtitles</b> button shows whether the movie file has subtitles, as in SilverScreen:</p>
 <table>
@@ -237,7 +244,7 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
   <li><b>Mark watched</b> / <b>Mark not watched</b>, and filter with All / Not watched / Watched. <b>Mark watched</b> moves the movie to the
       <b>Watched</b> list, where watched movies are kept, and with Plex set up asks whether to mark it watched (played) on Plex too, for
       the Plex user of your token. <b>Mark not watched</b> only takes the mark away, in Kino.</li>
-  <li><b>Copy to clipboard</b> copies the movies shown as a table (pastes into Excel or an e-mail), <b>Export CSV…</b> saves it as a file.</li>
+  <li><b>Copy to clipboard</b> copies the movies shown as a table (pastes into Excel or an e-mail), <b>Write to Excel…</b> (bottom right) saves it as a file and opens it in Excel.</li>
   <li><b>Copy to Plex playlist</b> adds the movies to the Plex playlist of the same name (made if missing). Needs the <a href="#plex">Plex token</a>.</li>
   <li><b>Plex playlists in Kino:</b> when Kino starts with the Plex server and token set, Plex playlists that aren't Kino watchlists
       yet become watchlists of the same name (as SilverScreen kept them in step). Lists already in Kino, and Plex itself, are left alone.
@@ -251,6 +258,31 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
       Titles only on the watchlist are kept. If Plex has no playlist of that name, it's made from the watchlist (the movies Plex has).
       A title that was on another watchlist is moved, since a title is on one list
       at a time. Shown when the Plex server and token are set in Settings.</li>
+</ul>
+
+<h2 id="wishlist">Wishlist</h2>
+<p><b>Library → Wishlist</b> keeps titles you want, movies and series, perhaps without having them yet.</p>
+<ul>
+  <li><b>Search</b> (or <kbd>Enter</kbd>) looks in your library (SilverScreen.db) first, then on OMDb and TMDb (TMDb finds English titles OMDb has in another language). Each hit says
+      <b>In SilverScreen</b> (green) or <b>To get</b> (light orange). Add the year after a comma, or in brackets, to keep to that year:
+      <code>Operation Kabul, 2025</code> or <code>Operation Kabul (2025)</code> (for a series, the year it started). An IMDb id or IMDb link finds that one title.
+      Titles from OMDb are shown with TMDb's English title, as OMDb sometimes has another language's.</li>
+  <li>Each hit (and each title on the list) has an <b>IMDb</b> link that opens its IMDb page in a window of its own, to check it's
+      the title you're after.</li>
+  <li><b>Add to wishlist</b> puts the selected hit on the list. A title found on OMDb isn't added to your library,
+      so it has no file; its details are kept on the wishlist itself.</li>
+  <li>The wishlist shows those to get first. Whether each title is in SilverScreen is looked up each time, so a title
+      you get later shows as in SilverScreen, with its file. Double-click a title for its details.</li>
+  <li><b>Write to Excel…</b> (bottom right) saves the whole list as a file that opens in Excel, with an <b>In SilverScreen</b> column of
+      true/false to sort or filter on, and the file where there is one.</li>
+  <li>A series' missing episodes can be put on the wishlist from the web app's series page (<b>+ Wishlist</b> under
+      <b>Missing</b>). They show as "Series S06E03: Title"; the IMDb link and double-click go to the series. Once the
+      episode is in the series folder, opening the series page on the web takes it off the wishlist.</li>
+  <li><b>Import CSV…</b> reads a wishlist file, such as <b>Download CSV</b> on the web app's Wishlist page, so a list
+      made on the web gets here without copying the whole database. Entries are taken as they are; one whose
+      <b>IMDb id</b> is on the wishlist already is skipped.</li>
+  <li>The wishlist is its own list (KinoWishlist in the database), apart from the watchlists, so a title can be on both.
+      It is shared with the web app's Wishlist page.</li>
 </ul>
 
 <h2 id="usage">API usage report</h2>
@@ -288,7 +320,7 @@ errors with their details, and what Kino's controllers reported (e.g. "Settings 
   <tr><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td>Next window</td></tr>
   <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Write the window's list to Excel (as <b>Write to Excel…</b>)</td></tr>
 </table>
-<p id="excel"><b>Write to Excel…</b>, on the right of the status bar in every window with a list, saves the rows shown as a CSV file and opens it in Excel
+<p id="excel"><b>Write to Excel…</b>, at the bottom right (the right of the status bar) in every window with a list, saves the rows shown as a CSV file and opens it in Excel
 (Office isn't needed to save). The list is saved as you see it: the columns, the order and the filter. The file name starts with the filter
 (e.g. <code>Not watched - Watchlists - 2026-10-14.csv</code>). In a window with more than one list, the one you clicked last is saved.</p>
 <p>All windows open inside the main window. The <b>Window</b> menu arranges them (Cascade, Tile, Arrange Icons), closes them all, and lists the open windows.

@@ -6,7 +6,10 @@
 
 param(
     [string]$Platform = 'linux/arm64',
-    [string]$Tag = 'kolibri-kino:latest'
+    [string]$Tag = 'kolibri-kino:latest',
+    # Its own BuildKit container. Docker Desktop's built-in builder (desktop-linux) has skipped the RUN steps
+    # (restore/publish "done" in 2 s with no output, then COPY --from=build fails: "/app": not found).
+    [string]$Builder = 'kino-nas'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,7 +18,13 @@ $out = Join-Path $PSScriptRoot 'out'
 New-Item -ItemType Directory -Force $out | Out-Null
 $tar = Join-Path $out 'kolibri-kino.tar'
 
-docker buildx build --platform $Platform -f "$root\src\Kolibri.Kino.Blazor\Dockerfile" -t $Tag -o "type=docker,dest=$tar" $root
+docker buildx inspect $Builder *> $null
+if ($LASTEXITCODE -ne 0) {
+    docker buildx create --name $Builder --driver docker-container | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "docker buildx create $Builder failed ($LASTEXITCODE)" }
+}
+
+docker buildx build --builder $Builder --platform $Platform -f "$root\src\Kolibri.Kino.Blazor\Dockerfile" -t $Tag -o "type=docker,dest=$tar" $root
 if ($LASTEXITCODE -ne 0) { throw "docker buildx failed ($LASTEXITCODE)" }
 
 Write-Host ""

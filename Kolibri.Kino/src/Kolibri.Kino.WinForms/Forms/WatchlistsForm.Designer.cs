@@ -41,7 +41,6 @@ partial class WatchlistsForm
         btnRemove = new Button();
         btnImdb = new Button();
         btnCopy = new Button();
-        btnExport = new Button();
         btnPlex = new Button();
         btnSyncFromPlex = new Button();
         btnOpenOnPlex = new Button();
@@ -76,7 +75,6 @@ partial class WatchlistsForm
         toolbar.Controls.Add(btnRemove);
         toolbar.Controls.Add(btnImdb);
         toolbar.Controls.Add(btnCopy);
-        toolbar.Controls.Add(btnExport);
         toolbar.Controls.Add(btnPlex);
         toolbar.Controls.Add(btnSyncFromPlex);
         toolbar.Controls.Add(btnOpenOnPlex);
@@ -189,16 +187,6 @@ partial class WatchlistsForm
         btnCopy.TabIndex = 10;
         btnCopy.Text = "Copy to clipboard";
         btnCopy.Click += btnCopy_Click;
-        //
-        // btnExport
-        //
-        btnExport.AutoSize = true;
-        btnExport.Margin = new Padding(3, 6, 3, 3);
-        btnExport.Name = "btnExport";
-        btnExport.Size = new Size(90, 25);
-        btnExport.TabIndex = 11;
-        btnExport.Text = "Export CSV…";
-        btnExport.Click += btnExport_Click;
         //
         // btnPlex
         //
@@ -330,7 +318,6 @@ partial class WatchlistsForm
     private Button btnRemove;
     private Button btnImdb;
     private Button btnCopy;
-    private Button btnExport;
     private Button btnPlex;
     private Button btnSyncFromPlex;
     private Button btnOpenOnPlex;

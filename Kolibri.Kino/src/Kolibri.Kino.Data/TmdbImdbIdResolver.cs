@@ -26,6 +26,22 @@ public sealed class TmdbImdbIdResolver(ISettingsStore settings) : IImdbIdResolve
         return string.IsNullOrWhiteSpace(movie?.ImdbId) ? null : movie.ImdbId;
     }
 
+    public async Task<IReadOnlyList<TmdbMovieHit>> SearchMoviesAsync(string title, int? year, int max = 8, CancellationToken ct = default)
+    {
+        if (Client() is not { } client || string.IsNullOrWhiteSpace(title)) return [];
+
+        var search = await client.SearchMovieAsync(title.Trim(), page: 0, includeAdult: false, year: year ?? 0, cancellationToken: ct)
+            .ConfigureAwait(false);
+        // The search has no IMDb ids: one request per movie for it, at the same time.
+        var hits = await Task.WhenAll((search?.Results ?? []).Take(max).Select(async m =>
+        {
+            var ids = await client.GetMovieExternalIdsAsync(m.Id, ct).ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(ids?.ImdbId) ? null
+                : new TmdbMovieHit(ids.ImdbId, m.Title ?? m.OriginalTitle ?? ids.ImdbId, m.ReleaseDate?.Year.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        })).ConfigureAwait(false);
+        return hits.OfType<TmdbMovieHit>().ToList();
+    }
+
     public async Task<string?> FindSeriesImdbIdAsync(string title, int year, CancellationToken ct = default)
     {
         if (Client() is not { } client) return null;

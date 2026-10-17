@@ -38,6 +38,41 @@ public sealed class TmdbLinks(ISettingsStore settings) : ITmdbLinks, IDisposable
         return string.IsNullOrEmpty(path) ? null : $"{PosterBase}{path}";
     }
 
+    /// <summary>A small poster (TMDb's w185) for lists of suggestions.</summary>
+    private const string SmallPosterBase = "https://image.tmdb.org/t/p/w185";
+
+    public async Task<IReadOnlyList<TmdbMovieHit>> FindSimilarAsync(string imdbId, int max = 12, CancellationToken ct = default)
+    {
+        if (Client() is not { } client) return [];
+
+        var found = await client.FindAsync(FindExternalSource.Imdb, imdbId, ct).ConfigureAwait(false);
+        if (found?.MovieResults?.FirstOrDefault() is not { } movie) return [];
+
+        var suggested = (await client.GetMovieRecommendationsAsync(movie.Id, page: 0, ct).ConfigureAwait(false))?.Results;
+        if (suggested is not { Count: > 0 })
+            suggested = (await client.GetMovieSimilarAsync(movie.Id, page: 0, ct).ConfigureAwait(false))?.Results;
+
+        // The lists have no IMDb ids: one request per movie for it, at the same time.
+        var hits = await Task.WhenAll((suggested ?? []).Take(max).Select(async m =>
+        {
+            var ids = await client.GetMovieExternalIdsAsync(m.Id, ct).ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(ids?.ImdbId) ? null
+                : new TmdbMovieHit(ids.ImdbId, m.Title ?? m.OriginalTitle ?? ids.ImdbId,
+                    m.ReleaseDate?.Year.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    string.IsNullOrEmpty(m.PosterPath) ? null : $"{SmallPosterBase}{m.PosterPath}");
+        })).ConfigureAwait(false);
+        return hits.OfType<TmdbMovieHit>().ToList();
+    }
+
+    public async Task<string?> FindTitleAsync(string imdbId, CancellationToken ct = default)
+    {
+        if (Client() is not { } client) return null;
+
+        var found = await client.FindAsync(FindExternalSource.Imdb, imdbId, ct).ConfigureAwait(false);
+        var title = found?.MovieResults?.FirstOrDefault()?.Title ?? found?.TvResults?.FirstOrDefault()?.Name;
+        return string.IsNullOrWhiteSpace(title) ? null : title.Trim();
+    }
+
     public async Task<(double Rating, int Votes)?> FindRatingAsync(string imdbId, CancellationToken ct = default)
     {
         if (Client() is not { } client) return null;
