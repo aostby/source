@@ -35,30 +35,28 @@ public sealed record SyncFromPlexResult(
 
 /// <summary>One Plex playlist brought into Kino at startup.</summary>
 /// <param name="Added">Movies put on the new watchlist of the playlist's name.</param>
-/// <param name="ToWatched">Movies watched on Plex, put on Watched (marked watched) instead.</param>
+/// <param name="MarkedWatched">Of those, movies watched on Plex: marked watched, so they show on Watched too.</param>
 /// <param name="Skipped">Titles left out: already on another Kino watchlist, no IMDb id (episodes), or no details.</param>
-public sealed record ImportedPlaylist(string Name, int Added, int ToWatched, IReadOnlyList<string> Skipped);
+public sealed record ImportedPlaylist(string Name, int Added, int MarkedWatched, IReadOnlyList<string> Skipped);
 
 /// <summary>What bringing Plex's playlists into Kino did; lists that would be empty aren't made.</summary>
 public sealed record PlaylistImportResult(IReadOnlyList<ImportedPlaylist> Lists, string? PlexError)
 {
     public int Added => Lists.Sum(l => l.Added);
-    public int ToWatched => Lists.Sum(l => l.ToWatched);
+    public int MarkedWatched => Lists.Sum(l => l.MarkedWatched);
     public int Skipped => Lists.Sum(l => l.Skipped.Count);
 }
 
-/// <summary>What "move watched movies to one list" did.</summary>
-/// <param name="Moved">"Title (from List)" for each watched movie moved to the list.</param>
-/// <param name="AlreadyThere">Watched movies that were on the list already.</param>
-/// <param name="AddedFromPlex">Movies watched on Plex that weren't on any watchlist, now on the list.</param>
+/// <summary>What bringing the watched marks up to date did (see <see cref="WatchlistController.UpdateWatchedAsync"/>).</summary>
+/// <param name="AddedFromPlex">Movies watched on Plex that weren't on any watchlist, now on Watched.</param>
 /// <param name="MarkedFromPlex">Movies on a watchlist marked watched here because they're watched on Plex.</param>
 /// <param name="Failed">Movies watched on Plex that couldn't be added, with why.</param>
 /// <param name="PlexMarked">Movies marked watched on Plex now.</param>
 /// <param name="PlexAlreadyWatched">Movies Plex had as watched already.</param>
 /// <param name="NotOnPlex">Movies Plex doesn't have (or Plex isn't set up: then all of them).</param>
 /// <param name="PlexError">Why Plex stopped, if it did (the Kino part is done).</param>
-public sealed record MoveWatchedResult(
-    string ListName, IReadOnlyList<string> Moved, int AlreadyThere, IReadOnlyList<string> AddedFromPlex, int MarkedFromPlex,
+public sealed record WatchedUpdateResult(
+    IReadOnlyList<string> AddedFromPlex, int MarkedFromPlex,
     IReadOnlyList<string> Failed, int PlexMarked, int PlexAlreadyWatched, IReadOnlyList<string> NotOnPlex, string? PlexError);
 
 /// <param name="Kino">What adding to the Kino watchlist did, if asked.</param>
@@ -183,8 +181,27 @@ public sealed class WatchlistController(
         return new AddToListsResult(title, kino, onPlex, plexError);
     }
 
-    public Task<IReadOnlyList<WatchListItem>> GetItemsAsync(string listName, CancellationToken ct = default) =>
-        watchlists.GetItemsAsync(listName, ct);
+    /// <summary>
+    /// The movies on the list. <see cref="WatchedList"/> shows every watched movie: the ones on it, and the ones marked
+    /// watched on other lists, which stay there (each keeps its own <see cref="WatchListItem.WatchListName"/>).
+    /// </summary>
+    public async Task<IReadOnlyList<WatchListItem>> GetItemsAsync(string listName, CancellationToken ct = default)
+    {
+        if (!IsWatchedList(listName)) return await watchlists.GetItemsAsync(listName, ct).ConfigureAwait(false);
+
+        var items = new List<WatchListItem>();
+        foreach (var name in await watchlists.GetListNamesAsync(ct).ConfigureAwait(false))
+        {
+            var onList = await watchlists.GetItemsAsync(name, ct).ConfigureAwait(false);
+            items.AddRange(IsWatchedList(name) ? onList : onList.Where(i => i.Watched == "Y"));
+        }
+        return items.DistinctBy(i => i.ImdbId, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(i => i.Title, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+    }
+
+    /// <summary>Whether <paramref name="listName"/> is <see cref="WatchedList"/>.</summary>
+    public static bool IsWatchedList(string? listName) => string.Equals(listName?.Trim(), WatchedList, StringComparison.OrdinalIgnoreCase);
 
     public async Task SetFavoriteAsync(string listName, CancellationToken ct = default)
     {
@@ -201,24 +218,30 @@ public sealed class WatchlistController(
     }
 
     /// <summary>
-    /// Puts the movie on <paramref name="listName"/> (details from the library, Plex or OMDb), unwatched.
-    /// A movie already on another list is moved, as in SilverScreen.
+    /// Puts the movie on <paramref name="listName"/> (details from the library, Plex or OMDb), keeping whether it's
+    /// watched. A movie already on another list is moved, as in SilverScreen (a movie is on one list at a time), except
+    /// to <see cref="WatchedList"/>: a movie on another list stays there and is marked watched, which shows it on Watched.
     /// </summary>
     public async Task<AddToWatchlistResult> AddAsync(string imdbId, string listName, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(imdbId);
         ArgumentException.ThrowIfNullOrWhiteSpace(listName);
 
+        var previous = await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false);
+        if (IsWatchedList(listName) && previous is not null && !IsWatchedList(previous.WatchListName))
+        {
+            await watchlists.SetWatchedAsync(imdbId, true, ct).ConfigureAwait(false);
+            logger.LogInformation("Marked {ImdbId} watched; it stays on {List} and shows on {Watched}", imdbId, previous.WatchListName, WatchedList);
+            return new AddToWatchlistResult(previous.Title ?? imdbId, null);
+        }
+
         var item = await linker.FindByImdbIdAsync(imdbId, usePlex: true, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"No details found for {imdbId}.");
-        var previous = await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false);
         var file = await files.GetByImdbIdAsync(imdbId, ct).ConfigureAwait(false);
 
         var entry = CopyOf(item);
         entry.WatchListName = listName.Trim();
-        entry.Watched = previous is not null && string.Equals(previous.WatchListName, entry.WatchListName, StringComparison.OrdinalIgnoreCase)
-            ? previous.Watched
-            : "N";
+        entry.Watched = previous?.Watched == "Y" ? "Y" : "N";
         entry.Trailer = $"https://www.imdb.com/title/{item.ImdbId}";
         entry.FilePath = file is null ? null : Path.GetDirectoryName(file.FullName);
 
@@ -237,25 +260,6 @@ public sealed class WatchlistController(
     public Task<bool> SetWatchedAsync(string imdbId, bool watched, CancellationToken ct = default) =>
         watchlists.SetWatchedAsync(imdbId, watched, ct);
 
-    /// <summary>
-    /// Mark watched: the movie is marked watched and moved to <see cref="WatchedList"/> (made if missing), keeping its
-    /// other fields, where watched movies are kept. Returns the list it came from, or null if it was on Watched already
-    /// (or isn't on a watchlist).
-    /// </summary>
-    public async Task<string?> MarkWatchedAndMoveAsync(string imdbId, CancellationToken ct = default)
-    {
-        if (await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false) is not { } item) return null;
-        await watchlists.SetWatchedAsync(imdbId, true, ct).ConfigureAwait(false);
-        if (string.Equals(item.WatchListName, WatchedList, StringComparison.OrdinalIgnoreCase)) return null;
-
-        var from = item.WatchListName;
-        item.Watched = "Y";
-        item.WatchListName = WatchedList;
-        await watchlists.UpsertAsync(item, ct).ConfigureAwait(false);
-        logger.LogInformation("Marked {ImdbId} watched and moved it from {From} to {List}", imdbId, from, WatchedList);
-        return from;
-    }
-
     public const string WatchedList = "Watched";
 
     /// <summary>Whether the title is marked watched on a Kino watchlist (normally <see cref="WatchedList"/>).</summary>
@@ -263,9 +267,9 @@ public sealed class WatchlistController(
         (await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false))?.Watched == "Y";
 
     /// <summary>
-    /// "Mark as watched" for any title: it goes on <see cref="WatchedList"/>, marked watched (moved there from another
-    /// watchlist, or added with its details from the library, Plex or OMDb), and is marked watched on Plex too when Plex
-    /// has it. Returns a sentence for the status line.
+    /// "Mark as watched" for any title: marked watched where it is (it stays on its watchlist and shows on
+    /// <see cref="WatchedList"/> too), or, on no watchlist, added to Watched with its details from the library, Plex or
+    /// OMDb. It's marked watched on Plex too when Plex has it. Returns a sentence for the status line.
     /// </summary>
     public async Task<string> MarkWatchedAsync(string imdbId, CancellationToken ct = default)
     {
@@ -274,8 +278,10 @@ public sealed class WatchlistController(
         if (await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false) is { } existing)
         {
             title = existing.Title ?? imdbId;
-            var from = await MarkWatchedAndMoveAsync(imdbId, ct).ConfigureAwait(false);
-            kino = from is null ? $"{title} is on {WatchedList}, marked watched." : $"Moved {title} from {from} to {WatchedList}, marked watched.";
+            await watchlists.SetWatchedAsync(imdbId, true, ct).ConfigureAwait(false);
+            kino = IsWatchedList(existing.WatchListName)
+                ? $"{title} is on {WatchedList}, marked watched."
+                : $"{title} marked watched; it stays on {existing.WatchListName} and shows on {WatchedList} too.";
         }
         else
         {
@@ -289,8 +295,8 @@ public sealed class WatchlistController(
     /// <summary>
     /// At startup (Plex set up): Plex playlists with no Kino watchlist of that name become watchlists, as SilverScreen kept
     /// them in step. Lists already in Kino are left alone, and so is Plex. A title already on another Kino watchlist is
-    /// left out (a title is on one Kino list at a time), as are titles without an IMDb id. A title watched on Plex goes on
-    /// <see cref="WatchedList"/>, marked watched. A list that would be empty isn't made.
+    /// left out (a title is on one Kino list at a time), as are titles without an IMDb id. A title watched on Plex is
+    /// marked watched on its new list (so it shows on <see cref="WatchedList"/> too). A list that would be empty isn't made.
     /// </summary>
     public async Task<PlaylistImportResult> ImportPlexPlaylistsAsync(CancellationToken ct = default)
     {
@@ -334,7 +340,7 @@ public sealed class WatchlistController(
                 continue;
             }
 
-            int added = 0, toWatched = 0;
+            int added = 0, markedWatched = 0;
             var skipped = new List<string>();
             foreach (var entry in entries ?? [])
             {
@@ -350,44 +356,41 @@ public sealed class WatchlistController(
                     continue;
                 }
 
-                var target = entry.Watched ? WatchedList : listName;
                 try
                 {
-                    await AddAsync(imdbId, target, ct).ConfigureAwait(false);
+                    await AddAsync(imdbId, listName, ct).ConfigureAwait(false);
                 }
                 catch (InvalidOperationException ex)
                 {
                     skipped.Add($"{entry.Title} ({ex.Message})");
                     continue;
                 }
-                onAList[imdbId] = target;
+                onAList[imdbId] = listName;
+                added++;
                 if (entry.Watched)
                 {
                     await watchlists.SetWatchedAsync(imdbId, true, ct).ConfigureAwait(false);
-                    toWatched++;
+                    markedWatched++;
                 }
-                else added++;
             }
 
-            if (added + toWatched == 0 && skipped.Count == 0) continue; // an empty playlist: nothing to report
-            imported.Add(new ImportedPlaylist(listName, added, toWatched, skipped));
-            logger.LogInformation("Plex playlist {List} brought into Kino: {Added} added, {ToWatched} to {Watched}, {Skipped} left out ({Why})",
-                listName, added, toWatched, WatchedList, skipped.Count, string.Join("; ", skipped));
+            if (added == 0 && skipped.Count == 0) continue; // an empty playlist: nothing to report
+            imported.Add(new ImportedPlaylist(listName, added, markedWatched, skipped));
+            logger.LogInformation("Plex playlist {List} brought into Kino: {Added} added ({Watched} marked watched), {Skipped} left out ({Why})",
+                listName, added, markedWatched, skipped.Count, string.Join("; ", skipped));
         }
         return new PlaylistImportResult(imported, plexError);
     }
 
     /// <summary>
-    /// Every movie watched anywhere ends up on <paramref name="listName"/> (made if missing), marked watched in Kino and
-    /// on Plex: movies marked watched on a Kino watchlist, and movies watched on Plex (marked here; added to the list if
-    /// on no watchlist yet). A movie on a watchlist is moved, keeping all its fields, since a movie is on one Kino list
-    /// at a time. Plex playlists are left as they are (they can hold a movie that's on others), so only the watched mark
-    /// is set there, where Plex has the movie and hasn't got it as watched.
+    /// Brings the watched marks in step with Plex, so <see cref="WatchedList"/> shows every movie watched anywhere: movies
+    /// on a watchlist that are watched on Plex are marked watched (they stay on their list); movies watched on Plex that
+    /// are on no watchlist are added to Watched; and movies marked watched in Kino are marked watched on Plex too, where
+    /// Plex has them. Nothing is moved between lists, so lists like a Christmas list stay whole.
     /// </summary>
-    public async Task<MoveWatchedResult> MoveWatchedToListAsync(string listName = WatchedList, CancellationToken ct = default)
+    public async Task<WatchedUpdateResult> UpdateWatchedAsync(CancellationToken ct = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(listName);
-        listName = listName.Trim();
+        const string listName = WatchedList;
         await watchlists.CreateListAsync(listName, ct).ConfigureAwait(false);
 
         var all = new List<WatchListItem>();
@@ -406,22 +409,6 @@ public sealed class WatchlistController(
             markedFromPlex++;
         }
         var watched = all.Where(i => i.Watched == "Y").ToList();
-
-        var moved = new List<string>();
-        var alreadyThere = 0;
-        foreach (var item in watched)
-        {
-            ct.ThrowIfCancellationRequested();
-            if (string.Equals(item.WatchListName, listName, StringComparison.OrdinalIgnoreCase))
-            {
-                alreadyThere++;
-                continue;
-            }
-            moved.Add($"{item.Title} (from {item.WatchListName})");
-            item.WatchListName = listName;
-            await watchlists.UpsertAsync(item, ct).ConfigureAwait(false); // the stored document keeps every other field
-        }
-        logger.LogInformation("Moved {Count} watched movie(s) to watchlist {List}: {Movies}", moved.Count, listName, string.Join("; ", moved));
 
         // Watched on Plex, on no watchlist: added to the list (details from the library or Plex), watched.
         var onAList = all.Select(i => i.ImdbId).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -470,7 +457,7 @@ public sealed class WatchlistController(
             }
             logger.LogInformation("Plex: {Marked} marked watched, {Already} already watched, {Missing} not on Plex", marked, alreadyWatched, notOnPlex.Count);
         }
-        return new MoveWatchedResult(listName, moved, alreadyThere, addedFromPlex, markedFromPlex, failed, marked, alreadyWatched, notOnPlex, plexError);
+        return new WatchedUpdateResult(addedFromPlex, markedFromPlex, failed, marked, alreadyWatched, notOnPlex, plexError);
     }
 
     /// <summary>
@@ -498,10 +485,17 @@ public sealed class WatchlistController(
         }
     }
 
-    /// <summary>Removes the movie from its list and, if asked, from the Plex playlist of that name. Returns whether Plex had it.</summary>
+    /// <summary>
+    /// Removes the movie from its list and, if asked, from the Plex playlist of that name. Returns whether Plex had it.
+    /// Removed from <see cref="WatchedList"/> while it belongs to another list, it's only marked not watched: it stays on
+    /// that list.
+    /// </summary>
     public async Task<bool> RemoveAsync(string imdbId, string listName, bool alsoFromPlex, CancellationToken ct = default)
     {
-        await watchlists.RemoveAsync(imdbId, ct).ConfigureAwait(false);
+        if (IsWatchedList(listName) && await watchlists.GetAsync(imdbId, ct).ConfigureAwait(false) is { } item && !IsWatchedList(item.WatchListName))
+            await watchlists.SetWatchedAsync(imdbId, false, ct).ConfigureAwait(false);
+        else
+            await watchlists.RemoveAsync(imdbId, ct).ConfigureAwait(false);
         return alsoFromPlex && plex.IsConfigured && await plex.RemoveFromPlaylistAsync(listName, imdbId, ct).ConfigureAwait(false);
     }
 
@@ -522,7 +516,7 @@ public sealed class WatchlistController(
             return new SyncFromPlexResult(false, [], [], 0, [], [], created);
         }
 
-        var onList = (await watchlists.GetItemsAsync(listName, ct).ConfigureAwait(false))
+        var onList = (await GetItemsAsync(listName, ct).ConfigureAwait(false))
             .Where(i => !string.IsNullOrEmpty(i.ImdbId))
             .ToDictionary(i => i.ImdbId, StringComparer.OrdinalIgnoreCase);
         List<string> added = [], moved = [], skipped = [], failed = [];
@@ -574,7 +568,7 @@ public sealed class WatchlistController(
     /// <summary>Copies every movie on the list to the Plex playlist of the same name (created if missing).</summary>
     public async Task<PlaylistSyncResult> CopyToPlexAsync(string listName, CancellationToken ct = default)
     {
-        var items = await watchlists.GetItemsAsync(listName, ct).ConfigureAwait(false);
+        var items = await GetItemsAsync(listName, ct).ConfigureAwait(false);
         return await plex.AddToPlaylistAsync(listName, items.Select(i => i.ImdbId).ToList(), ct).ConfigureAwait(false);
     }
 

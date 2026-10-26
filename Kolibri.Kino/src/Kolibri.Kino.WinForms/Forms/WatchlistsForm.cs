@@ -51,7 +51,7 @@ public partial class WatchlistsForm : AsyncForm, IWritesToExcel
     }
 
     private const string WatchedTip =
-        "Mark watched: marks the selected movie watched and moves it to the Watched list; with Plex set up, you're asked whether to " +
+        "Mark watched: marks the selected movie watched; it stays on this list and shows on the Watched list too. With Plex set up, you're asked whether to " +
         "mark it watched on Plex too. Mark not watched: only takes the mark away (in Kino).";
 
     private string? CurrentList => cboLists.SelectedItem as string;
@@ -170,8 +170,8 @@ public partial class WatchlistsForm : AsyncForm, IWritesToExcel
     private async void btnWatched_Click(object sender, EventArgs e) => await ToggleWatchedAsync();
 
     /// <summary>
-    /// Both Mark watched buttons. Watched: marked, moved to the Watched list (where watched movies are kept), and, if you
-    /// say yes, marked watched on Plex. Not watched: only the mark goes, in Kino.
+    /// Both Mark watched buttons. Watched: marked where it is (it stays on its list and shows on the Watched list too),
+    /// and, if you say yes, marked watched on Plex. Not watched: only the mark goes, in Kino.
     /// </summary>
     private async Task ToggleWatchedAsync()
     {
@@ -191,17 +191,18 @@ public partial class WatchlistsForm : AsyncForm, IWritesToExcel
             return;
         }
 
-        string? movedFrom = null;
         var saved = false;
         await RunAsync("Saving…", async ct =>
         {
-            movedFrom = await _watchlists.MarkWatchedAndMoveAsync(imdbId, ct);
-            _items = await _watchlists.GetItemsAsync(list, ct);
+            if (!await _watchlists.SetWatchedAsync(imdbId, true, ct)) return;
+            row.Item.Watched = "Y";
             ApplyFilter();
             saved = true;
         });
         if (!saved || IsGone) return;
-        var status = movedFrom is null ? $"{title} marked watched." : $"{title} marked watched and moved from {movedFrom} to {WatchlistController.WatchedList}.";
+        var status = WatchlistController.IsWatchedList(list)
+            ? $"{title} marked watched."
+            : $"{title} marked watched; it stays on {list} and shows on {WatchlistController.WatchedList} too.";
         ShowStatus(status);
 
         if (!_watchlists.PlexConfigured

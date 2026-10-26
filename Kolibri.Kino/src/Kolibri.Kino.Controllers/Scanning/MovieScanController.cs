@@ -182,7 +182,7 @@ public sealed class MovieScanController(
             if (run.PlexOff is not null) break;
             Item? fromPlex = null;
             await TryOptionalAsync(run, isPlex: true, async () => fromPlex = await plex.FindMovieByTitleAsync(title, parsed.Year, ct).ConfigureAwait(false)).ConfigureAwait(false);
-            if (fromPlex is not null) return (fromPlex, "Plex");
+            if (fromPlex is not null) return (await linker.CheckPlexRatingAsync(fromPlex, ct).ConfigureAwait(false), "Plex");
         }
 
         foreach (var title in parsed.Titles)

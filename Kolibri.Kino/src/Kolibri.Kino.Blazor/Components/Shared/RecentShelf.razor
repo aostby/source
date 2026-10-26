@@ -1,6 +1,7 @@
 @using Kolibri.Kino.Controllers.Library
 @implements IDisposable
 @inject RecentlyAddedController Recent
+@inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 
 @* The newest few movies and series as scrolling rows, like "Recently Added Movies" and "Recently Added TV" on
    Plex's home page, with the Library's Watched filter (by default all). Loads on its own, so
@@ -16,7 +17,7 @@
         <div class="shelf-row">
             @foreach (var entry in items)
             {
-                <RecentCard Entry="entry" Now="_now" />
+                <RecentCard Entry="entry" Now="_now" Mine="_myRatings.GetValueOrDefault(entry.Item.ImdbId)" />
             }
         </div>
     </section>
@@ -36,6 +37,7 @@
     private readonly CancellationTokenSource _cts = new();
     private RecentlyAddedReport? _report;
     private DateTime _now = DateTime.UtcNow;
+    private IReadOnlyDictionary<string, MovieRating> _myRatings = new Dictionary<string, MovieRating>();
 
     /// <summary>Filtered before the newest <see cref="Count"/> are taken, so a row is full of titles you haven't seen.</summary>
     private IEnumerable<(string Title, string Type, List<RecentlyAddedItem> Items)> Rows =>
@@ -53,6 +55,7 @@
         {
             _report = await Recent.GetAsync(_cts.Token);
             _now = DateTime.UtcNow;
+            _myRatings = (await Ratings.GetAllAsync(_cts.Token)).ToDictionary(r => r.ImdbId, StringComparer.OrdinalIgnoreCase);
         }
         catch (Exception ex) when (ex is OperationCanceledException or IOException or UnauthorizedAccessException)
         {

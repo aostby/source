@@ -19,6 +19,7 @@ internal static partial class KinoEndpoints
         app.MapGet("/subtitle/{imdbId}", SubtitleAsync);
         app.MapGet("/export/watchlist", ExportWatchlistAsync);
         app.MapGet("/export/wishlist", ExportWishlistAsync);
+        app.MapGet("/export/ratings", ExportRatingsAsync);
     }
 
     /// <summary>
@@ -71,6 +72,21 @@ internal static partial class KinoEndpoints
         }
     }
 
+    /// <summary>Your ratings as a JSON file, for Settings → Importer vurderinger fra fil in the Windows app.</summary>
+    private static async Task<IResult> ExportRatingsAsync(
+        Kolibri.Kino.Controllers.Ratings.RatingController ratings, ILoggerFactory logs, CancellationToken ct)
+    {
+        try
+        {
+            var json = await ratings.ExportAsync(ct);
+            return Results.File(Encoding.UTF8.GetBytes(json), "application/json; charset=utf-8", $"Kino ratings - {DateTime.Now:yyyy-MM-dd}.json");
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            return ExportFailed(logs, ex, "your ratings");
+        }
+    }
+
     private static async Task<IResult> ExportWatchlistAsync(string list, WatchlistController watchlists, ILoggerFactory logs, CancellationToken ct)
     {
         try
@@ -95,8 +111,8 @@ internal static partial class KinoEndpoints
     /// </summary>
     private static IResult ExportFailed(ILoggerFactory logs, Exception ex, string what)
     {
-        logs.CreateLogger("Kolibri.Kino.Blazor.Export").LogError(ex, "Writing {What} as CSV failed", what);
-        return Results.Text($"Couldn't write {what} as CSV: {ex.Message}\nGo back and try again in a moment.",
+        logs.CreateLogger("Kolibri.Kino.Blazor.Export").LogError(ex, "Exporting {What} failed", what);
+        return Results.Text($"Couldn't export {what}: {ex.Message}\nGo back and try again in a moment.",
             "text/plain; charset=utf-8", statusCode: StatusCodes.Status503ServiceUnavailable);
     }
 

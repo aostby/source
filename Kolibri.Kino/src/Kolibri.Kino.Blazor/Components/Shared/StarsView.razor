@@ -1,0 +1,12 @@
+@* Your rating as five stars in halves (1–10), to look at; MyRating is where it's set. *@
+<span class="stars-view" role="img" aria-label="@Kolibri.Kino.Controllers.Ratings.RatingController.StarsText(Value / 2.0)">
+    @for (var star = 1; star <= 5; star++)
+    {
+        <span class="star small @(Value >= star * 2 ? "full" : Value == star * 2 - 1 ? "halfway" : "")"><span class="fill"></span></span>
+    }
+</span>
+
+@code {
+    /// <summary>1–10: half a star each.</summary>
+    [Parameter, EditorRequired] public int Value { get; set; }
+}

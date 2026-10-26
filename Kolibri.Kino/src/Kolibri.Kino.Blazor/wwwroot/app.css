@@ -298,3 +298,32 @@ table.list td a:hover { color: var(--accent); }
 .checks li { padding: 4px 0; }
 .checks .ok strong { color: var(--good); }
 .checks .bad strong { color: var(--bad); }
+
+/* My rating: five stars in halves, as Plex has them */
+.my-rating { margin: 18px 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); max-width: 560px; }
+.my-rating h2 { font-size: 1.1rem; margin: 0 0 8px; }
+.stars { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.star { position: relative; display: inline-block; width: 36px; height: 36px; font-size: 36px; line-height: 36px; color: var(--line); }
+.star::before, .star .fill::before { content: "\2605"; position: absolute; left: 0; top: 0; }
+.star .fill { position: absolute; inset: 0; width: 0; overflow: hidden; color: var(--accent); pointer-events: none; }
+.star.halfway .fill { width: 50%; }
+.star.full .fill { width: 100%; }
+.star button.half { position: absolute; top: 0; bottom: 0; width: 50%; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; cursor: pointer; z-index: 1; }
+.star button.half:hover:not(:disabled) { background: transparent; }
+.star button.half.left { left: 0; }
+.star button.half.right { right: 0; }
+.stars-text { margin-left: 10px; color: var(--muted); }
+.my-rating .review { display: grid; gap: 4px; margin: 10px 0; color: var(--muted); }
+.my-rating textarea { font: inherit; color: var(--text); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; resize: vertical; width: 100%; }
+.my-rating .actions { margin-bottom: 4px; }
+
+/* My rating on the library cards: small stars under the card, a link to the rating on the details page */
+.stars-view { display: inline-flex; gap: 2px; vertical-align: middle; }
+.star.small { width: 16px; height: 16px; font-size: 16px; line-height: 16px; }
+.card-stars { display: block; padding: 0 10px 8px; text-decoration: none; }
+.card-stars:hover .star.small { filter: brightness(1.15); }
+#my-rating:focus { outline: none; }
+
+/* A label that opens a file picker, looking like a button */
+label.button { cursor: pointer; }
+.button.disabled { opacity: 0.5; pointer-events: none; }

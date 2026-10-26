@@ -54,7 +54,7 @@ public sealed class NewSeriesControllerTests : IDisposable
         _files = new LiteDbFileItemRepository(_db);
         var plex = new FakePlex { IsConfigured = false };
         var scanner = new FileSystemMediaScanner();
-        var linker = new MovieLinker(_files, _movies, plex, _omdb);
+        var linker = new MovieLinker(_files, _movies, plex, _omdb, NullLogger<MovieLinker>.Instance);
         var settings = new InMemorySettingsStore();
         settings.Current.UserFilePaths.SeriesSourcePath = _root;
         var lookup = new ManualLookupController(new MovieFileNameParser(), _movies, plex, _omdb, _files, scanner, new NoPosters(), linker,

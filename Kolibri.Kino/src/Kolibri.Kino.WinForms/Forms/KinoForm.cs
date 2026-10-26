@@ -278,7 +278,7 @@ public partial class KinoForm : AsyncForm, IWritesToExcel
         });
     }
 
-    /// <summary>Onto the Watched list (moved there from another watchlist), marked watched, and on Plex when Plex has it.</summary>
+    /// <summary>Marked watched where it is (on no watchlist: added to Watched), and on Plex when Plex has it.</summary>
     private async void menuMarkWatched_Click(object sender, EventArgs e)
     {
         var (imdbId, title) = SelectedIdAndTitle();

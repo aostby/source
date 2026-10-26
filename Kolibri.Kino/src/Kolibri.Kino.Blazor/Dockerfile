@@ -4,7 +4,10 @@
 
 # The SDK runs on the build machine's own CPU and cross-compiles for the target (arm64 for the UGREEN NAS),
 # so there's no slow emulation.
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Pinned to 10.0.402: in the buildx builder, sdk:10.0 (10.0.403, 2026-10-22) unpacks with empty files (dotnet is 0 bytes),
+# so restore/publish "succeed" in a second without doing anything and COPY --from=build /app fails. Go back to sdk:10.0
+# when a newer image builds again (the runtime image below is fine).
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0.402 AS build
 ARG TARGETARCH
 WORKDIR /src
 

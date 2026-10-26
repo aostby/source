@@ -1,6 +1,7 @@
 @page "/settings"
 @inherits KinoPage
 @inject SettingsController Settings
+@inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 
 @* Port of SettingsForm. The settings are the database's UserSettings document, shared with SilverScreen and the
    WinForms app; which user's document is Kino:SettingsUser (in a container, set it to your Windows user name). *@
@@ -60,6 +61,23 @@
         </div>
     </EditForm>
 
+    <fieldset class="settings">
+        <legend>My ratings</legend>
+        <p class="hint">
+            @(_ratingCount switch { null => "", 0 => "No ratings yet.", 1 => "1 title rated.", var n => $"{n} titles rated." })
+            The databases here and on the PC aren't kept in step: export your ratings to a file here, and import it on the
+            PC (Settings → Importer vurderinger fra fil), or the other way. The newer rating of a title wins.
+        </p>
+        <div class="actions">
+            <a class="button" href="export/ratings" download>Export ratings</a>
+            @* A label styled as a button opens the file picker; the input itself is hidden. *@
+            <label class="button @(Busy ? "disabled" : "")">
+                Import ratings…
+                <InputFile OnChange="ImportRatingsAsync" accept=".json,application/json" disabled="@Busy" style="display: none" />
+            </label>
+        </div>
+    </fieldset>
+
     @if (_checks.Count > 0)
     {
         <ul class="checks">
@@ -76,8 +94,30 @@
 @code {
     private UserSettings? _edited;
     private IReadOnlyList<ConnectionCheck> _checks = [];
+    private int? _ratingCount;
 
-    protected override void OnInitialized() => Reload();
+    /// <summary>A ratings file is small (about 200 bytes a title); this is far above any real one.</summary>
+    private const long MaxRatingsFile = 10 * 1024 * 1024;
+
+    /// <summary>A file exported here or on the PC: the newer rating of a title wins, and changes are set on Plex too.</summary>
+    private Task ImportRatingsAsync(InputFileChangeEventArgs e) => RunAsync("Importing ratings…", async ct =>
+    {
+        string json;
+        using (var reader = new StreamReader(e.File.OpenReadStream(MaxRatingsFile, ct)))
+            json = await reader.ReadToEndAsync(ct);
+
+        var r = await Ratings.ImportAsync(json, ct);
+        _ratingCount = (await Ratings.GetAllAsync(ct)).Count;
+        Status = $"Ratings from {e.File.Name}: {r.Added} new, {r.Updated} updated, {r.KeptNewer} kept (newer here)"
+                 + (r.Invalid > 0 ? $", {r.Invalid} invalid left out" : "") + "."
+                 + (Ratings.PlexConfigured ? $" Plex: {r.SentToPlex} set." + (r.PlexNote is { } note ? $" {note}" : "") : "");
+    });
+
+    protected override async Task OnInitializedAsync()
+    {
+        Reload();
+        _ratingCount = (await Ratings.GetAllAsync()).Count;
+    }
 
     private void Reload()
     {

@@ -1,3 +1,4 @@
+using Kolibri.Kino.Controllers.Ratings;
 using Kolibri.Kino.Controllers.Settings;
 using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.WinForms.Controls;
@@ -13,18 +14,22 @@ public partial class SettingsForm : AsyncForm
     public override string HelpTopic => "keys";
 
     private readonly SettingsController _controller;
+    private readonly RatingController _ratings;
     private readonly UserSettings _edited;
     private readonly string? _current;
 
-    public SettingsForm(SettingsController controller)
+    public SettingsForm(SettingsController controller, RatingController ratings)
     {
         _controller = controller;
+        _ratings = ratings;
         _edited = controller.GetEditableCopy();
         _current = _edited.LiteDBFilePath;
         InitializeComponent();
         this.Describe(
             (btnTest, "Tries the OMDb, TMDb and SubDL keys and the Plex token as entered, without saving."),
-            (btnSave, "Saves the settings. New keys apply at once; a new database after a restart."));
+            (btnSave, "Saves the settings. New keys apply at once; a new database after a restart."),
+            (btnImportRatings, "Takes your ratings from a file exported in Kino on the web (Settings → Export ratings). " +
+                               "The newer rating of a title wins; the new ones are set on Plex too."));
         grid.SelectedObject = _edited;
         txtResults.Text = _edited.UsesDefaultKeys()
             ? SettingsController.DefaultKeysMessage
@@ -49,6 +54,27 @@ public partial class SettingsForm : AsyncForm
             var checks = await _controller.TestAsync(_edited, ct);
             txtResults.Text = string.Join(Environment.NewLine, checks.Select(c => $"{(c.Ok ? "OK  " : "FAIL")}  {c.Service}: {c.Message}"));
         });
+
+    /// <summary>Ratings exported from Kino on the web (the NAS's database), into this database.</summary>
+    private async void btnImportRatings_Click(object sender, EventArgs e)
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Importer vurderinger fra fil",
+            Filter = "Kino ratings (*.json)|*.json|All files (*.*)|*.*",
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        await RunAsync("Importing ratings…", async ct =>
+        {
+            var r = await _ratings.ImportAsync(await File.ReadAllTextAsync(dialog.FileName, ct), ct);
+            var text = $"Ratings from {Path.GetFileName(dialog.FileName)}: {r.Added} new, {r.Updated} updated, " +
+                       $"{r.KeptNewer} kept (newer here)" + (r.Invalid > 0 ? $", {r.Invalid} invalid left out" : "") + "." +
+                       (_ratings.PlexConfigured ? $" Plex: {r.SentToPlex} set." + (r.PlexNote is { } note ? $" {note}" : "") : "");
+            txtResults.Text = text;
+            MessageBox.Show(this, text, "Importer vurderinger fra fil", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        });
+    }
 
     private async void btnSave_Click(object sender, EventArgs e)
     {
@@ -118,7 +144,7 @@ public partial class SettingsForm : AsyncForm
     protected override void OnBusyChanged(bool busy)
     {
         base.OnBusyChanged(busy);
-        grid.Enabled = btnTest.Enabled = btnSave.Enabled = !busy;
+        grid.Enabled = btnTest.Enabled = btnSave.Enabled = btnImportRatings.Enabled = !busy;
     }
 
     protected override void DisplayStatus(string text)

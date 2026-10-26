@@ -1,0 +1,87 @@
+@using Kolibri.Kino.Controllers.Ratings
+@inherits KinoPage
+@inject RatingController Ratings
+
+@* "My rating", as Plex has it: five stars in halves (1–10) and a review. Saved in Kino and sent to Plex as your
+   private rating there; the review stays in Kino (Plex keeps reviews online, not on the server). *@
+
+<section class="my-rating" aria-labelledby="my-rating-title">
+    <h2 id="my-rating-title">My rating</h2>
+
+    <div class="stars" role="group" aria-label="My rating, in half stars" @onmouseleave="() => _hover = null">
+        @for (var star = 1; star <= 5; star++)
+        {
+            var s = star;
+            <span class="star @StarClass(s)">
+                <span class="fill" aria-hidden="true"></span>
+                <button type="button" class="half left" disabled="@Busy" title="@RatingController.StarsText(s - 0.5)"
+                        aria-label="@RatingController.StarsText(s - 0.5)" aria-pressed="@(_pick == s * 2 - 1 ? "true" : "false")"
+                        @onmouseenter="() => _hover = s * 2 - 1" @onclick="() => _pick = s * 2 - 1"></button>
+                <button type="button" class="half right" disabled="@Busy" title="@RatingController.StarsText(s)"
+                        aria-label="@RatingController.StarsText(s)" aria-pressed="@(_pick == s * 2 ? "true" : "false")"
+                        @onmouseenter="() => _hover = s * 2" @onclick="() => _pick = s * 2"></button>
+            </span>
+        }
+        <span class="stars-text">@(Shown is { } shown ? RatingController.StarsText(shown / 2.0) : "Not rated")</span>
+    </div>
+
+    <label class="review">
+        My review
+        <textarea rows="3" @bind="_review" placeholder="Add your review" disabled="@Busy"></textarea>
+    </label>
+
+    <div class="actions">
+        <button class="primary" disabled="@(Busy || _pick is null || !Changed)" @onclick="SaveAsync">Save</button>
+        @if (_saved is not null)
+        {
+            <button disabled="@Busy" @onclick="ClearAsync">Remove rating</button>
+        }
+    </div>
+    <p class="hint">
+        @(Ratings.PlexConfigured ? "Saved in Kino and set on Plex too, where only you see it. The review stays in Kino." : "Saved in Kino.")
+        @(_saved is { } r ? $" Rated {r.UpdatedUtc.ToLocalTime():yyyy-MM-dd}." : "")
+    </p>
+
+    <StatusLine Busy="Busy" Text="@Status" Error="@Error" />
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string ImdbId { get; set; } = string.Empty;
+    [Parameter] public string? Title { get; set; }
+
+    private MovieRating? _saved;
+    private int? _pick;
+    private int? _hover;
+    private string? _review;
+
+    /// <summary>The stars shown: where the mouse is, else the pick.</summary>
+    private int? Shown => _hover ?? _pick;
+
+    private bool Changed => _pick != _saved?.Rating || (_review?.Trim() ?? "") != (_saved?.Review ?? "");
+
+    protected override async Task OnParametersSetAsync()
+    {
+        (_saved, _pick, _hover, _review) = (null, null, null, null);
+        await RunAsync("Loading your rating…", async ct =>
+        {
+            _saved = await Ratings.GetAsync(ImdbId, ct);
+            (_pick, _review) = (_saved?.Rating, _saved?.Review);
+        });
+    }
+
+    private string StarClass(int star) =>
+        Shown is not { } value ? "" : value >= star * 2 ? "full" : value == star * 2 - 1 ? "halfway" : "";
+
+    private Task SaveAsync() => RunAsync("Saving your rating…", async ct =>
+    {
+        var result = await Ratings.SaveAsync(ImdbId, _pick!.Value, _review, Title, ct);
+        (_saved, Status) = (result.Rating, result.Message);
+        _review = _saved?.Review;
+    });
+
+    private Task ClearAsync() => RunAsync("Removing your rating…", async ct =>
+    {
+        var result = await Ratings.ClearAsync(ImdbId, ct);
+        (_saved, _pick, _review, Status) = (null, null, null, result.Message);
+    });
+}

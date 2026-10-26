@@ -30,10 +30,13 @@ partial class SettingsForm
     {
         grid = new PropertyGrid();
         txtResults = new TextBox();
+        bottom = new TableLayoutPanel();
+        btnImportRatings = new Button();
         buttons = new FlowLayoutPanel();
         btnCancel = new Button();
         btnSave = new Button();
         btnTest = new Button();
+        bottom.SuspendLayout();
         buttons.SuspendLayout();
         SuspendLayout();
         //
@@ -56,17 +59,43 @@ partial class SettingsForm
         txtResults.TabIndex = 1;
         txtResults.TabStop = false;
         //
+        // bottom
+        //
+        bottom.AutoSize = true;
+        bottom.ColumnCount = 2;
+        bottom.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        bottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        bottom.Controls.Add(btnImportRatings, 0, 0);
+        bottom.Controls.Add(buttons, 1, 0);
+        bottom.Dock = DockStyle.Bottom;
+        bottom.Name = "bottom";
+        bottom.RowCount = 1;
+        bottom.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        bottom.TabIndex = 2;
+        //
+        // btnImportRatings
+        //
+        btnImportRatings.Anchor = AnchorStyles.Left;
+        btnImportRatings.AutoSize = true;
+        btnImportRatings.Margin = new Padding(9, 3, 3, 3);
+        btnImportRatings.Name = "btnImportRatings";
+        btnImportRatings.Size = new Size(150, 25);
+        btnImportRatings.TabIndex = 0;
+        btnImportRatings.Text = "Importer vurderinger fra fil…";
+        btnImportRatings.Click += btnImportRatings_Click;
+        //
         // buttons
         //
         buttons.AutoSize = true;
         buttons.Controls.Add(btnCancel);
         buttons.Controls.Add(btnSave);
         buttons.Controls.Add(btnTest);
-        buttons.Dock = DockStyle.Bottom;
+        buttons.Dock = DockStyle.Fill;
         buttons.FlowDirection = FlowDirection.RightToLeft;
+        buttons.Margin = new Padding(0);
         buttons.Name = "buttons";
         buttons.Padding = new Padding(6);
-        buttons.TabIndex = 2;
+        buttons.TabIndex = 1;
         //
         // btnCancel
         //
@@ -103,7 +132,7 @@ partial class SettingsForm
         ClientSize = new Size(584, 560);
         Controls.Add(grid);
         Controls.Add(txtResults);
-        Controls.Add(buttons);
+        Controls.Add(bottom);
         MinimizeBox = false;
         Name = "SettingsForm";
         ShowInTaskbar = false;
@@ -111,6 +140,8 @@ partial class SettingsForm
         Text = "Settings";
         buttons.ResumeLayout(false);
         buttons.PerformLayout();
+        bottom.ResumeLayout(false);
+        bottom.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -119,6 +150,8 @@ partial class SettingsForm
 
     private PropertyGrid grid;
     private TextBox txtResults;
+    private TableLayoutPanel bottom;
+    private Button btnImportRatings;
     private FlowLayoutPanel buttons;
     private Button btnCancel;
     private Button btnSave;

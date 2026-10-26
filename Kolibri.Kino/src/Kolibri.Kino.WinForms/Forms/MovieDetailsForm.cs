@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Kolibri.Kino.Controllers;
+using Kolibri.Kino.Controllers.Ratings;
 using Kolibri.Kino.Controllers.Subtitles;
 using Kolibri.Kino.Controllers.Watchlists;
 using Kolibri.Kino.Core.Models;
@@ -22,7 +23,14 @@ public partial class MovieDetailsForm : AsyncForm
     private readonly MovieController _movies;
     private readonly SubtitleController _subtitles;
     private readonly WatchlistController _watchlists;
+    private readonly RatingController _ratings;
     private readonly ToolTip _toolTip = new();
+
+    /// <summary>"My rating": stars in halves after the IMDb badge and Watched, as on the web page; a click saves.</summary>
+    private readonly StarRating myRating = new() { Margin = new Padding(0, 4, 6, 0), Enabled = false };
+    private readonly Label lblMyRating = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(0, 9, 8, 0), Text = "My rating" };
+    private readonly LinkLabel lnkReview = new() { AutoSize = true, Margin = new Padding(0, 9, 10, 0), Text = "Review…", Enabled = false };
+    private MovieRating? _myRating;
 
     /// <summary>Similar movies (TMDb's recommendations), under the facts; shown when there are some.</summary>
     private readonly Label lblSimilar = new()
@@ -37,11 +45,13 @@ public partial class MovieDetailsForm : AsyncForm
     private string? _path;
     private bool _watched;
 
-    public MovieDetailsForm(MovieController movies, SubtitleController subtitles, WatchlistController watchlists, IServiceProvider services, string imdbId)
+    public MovieDetailsForm(MovieController movies, SubtitleController subtitles, WatchlistController watchlists, RatingController ratings,
+        IServiceProvider services, string imdbId)
     {
         _movies = movies;
         _subtitles = subtitles;
         _watchlists = watchlists;
+        _ratings = ratings;
         _services = services;
         _imdbId = imdbId;
         InitializeComponent();
@@ -64,9 +74,10 @@ public partial class MovieDetailsForm : AsyncForm
             (btnImdb, "Opens the title's page on IMDb."),
             (btnTmdb, "Opens the title's page on TMDb (found by its IMDb id)."),
             (btnWatchlist, "Puts this title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
-            (btnMarkWatched, "Puts this title on the Watched list (moving it from another watchlist), marked watched, and marks it watched on Plex too when Plex has it."));
+            (btnMarkWatched, "Marks this title watched: it stays on its watchlist and shows on the Watched list (on no watchlist, it's added to Watched). Marked watched on Plex too when Plex has it."));
         Text = imdbId;
         layout.Controls.AddRange([lblSimilar, similarRow]);
+        SetUpMyRating();
         _toolTip.SetToolTip(lblSimilar, "TMDb's suggestions. One you'd like to see or get: + Wishlist searches for it in the Wishlist window.");
     }
 
@@ -83,7 +94,9 @@ public partial class MovieDetailsForm : AsyncForm
 
             _path = await _movies.GetLinkedPathAsync(_imdbId, ct);
             _watched = await _watchlists.IsWatchedAsync(_imdbId, ct);
+            _myRating = await _ratings.GetAsync(_imdbId, ct);
             ShowItem(_item);
+            ShowMyRating();
             ShowStatus(_path is null ? "Not linked to a file." : File.Exists(_path) || Directory.Exists(_path) ? _path : $"{_path} (not found)");
 
             var poster = await _movies.GetPosterAsync(_item, ct);
@@ -232,6 +245,82 @@ public partial class MovieDetailsForm : AsyncForm
         ShowWatched();
         ShowSubtitleStatus();
     }
+
+    #region My rating
+
+    /// <summary>The stars, their text and the review link go in the rating row, after the IMDb badge and Watched.</summary>
+    private void SetUpMyRating()
+    {
+        // After the votes, so the IMDb part stays together.
+        ratingRow.Controls.AddRange([myRating, lblMyRating, lnkReview]);
+        myRating.Chosen += async (_, rating) => await SaveMyRatingAsync(rating, _myRating?.Review);
+        myRating.PreviewChanged += (_, preview) => lblMyRating.Text = preview is { } p ? RatingController.StarsText(p / 2.0) : MyRatingText();
+        lnkReview.LinkClicked += async (_, _) => await EditReviewAsync();
+
+        var menu = new ContextMenuStrip();
+        menu.Items.Add("Remove my rating", null, async (_, _) => await RemoveMyRatingAsync());
+        menu.Opening += (_, e) => e.Cancel = _myRating is null;
+        myRating.ContextMenuStrip = menu;
+
+        _toolTip.SetToolTip(myRating, _ratings.PlexConfigured
+            ? "My rating: click a star (the left half is half a star). Saved in Kino and set on Plex, where only you see it. Right-click to remove it."
+            : "My rating: click a star (the left half is half a star). Right-click to remove it.");
+        _toolTip.SetToolTip(lnkReview, "Your own words about it. Kept in Kino only (Plex keeps reviews online, not on the server).");
+    }
+
+    private string MyRatingText() => _myRating is { } r ? $"My rating: {RatingController.StarsText(r.Stars)}" : "Rate it";
+
+    private void ShowMyRating()
+    {
+        myRating.Enabled = _item is not null;
+        myRating.Value = _myRating?.Rating;
+        lblMyRating.Text = MyRatingText();
+        lnkReview.Enabled = _myRating is not null;
+        lnkReview.Text = _myRating?.Review is null ? "Review…" : "Edit review…";
+        if (_myRating?.Review is { } review) _toolTip.SetToolTip(lnkReview, review);
+    }
+
+    private Task SaveMyRatingAsync(int rating, string? review) =>
+        RunAsync("Saving your rating…", async ct =>
+        {
+            var result = await _ratings.SaveAsync(_imdbId, rating, review, _item?.Title, ct);
+            _myRating = result.Rating;
+            ShowMyRating();
+            ShowStatus(result.Message);
+        });
+
+    private async Task RemoveMyRatingAsync() =>
+        await RunAsync("Removing your rating…", async ct =>
+        {
+            var result = await _ratings.ClearAsync(_imdbId, ct);
+            _myRating = null;
+            ShowMyRating();
+            ShowStatus(result.Message);
+        });
+
+    /// <summary>The review, in a small window; it's saved with the rating (a title needs a rating first).</summary>
+    private async Task EditReviewAsync()
+    {
+        if (_myRating is not { } rating) return;
+        using var dialog = new Form
+        {
+            Text = $"My review of {_item?.Title ?? _imdbId}", FormBorderStyle = FormBorderStyle.SizableToolWindow,
+            StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(480, 220), MinimizeBox = false, MaximizeBox = false,
+            ShowInTaskbar = false,
+        };
+        var text = new TextBox { Multiline = true, ScrollBars = ScrollBars.Vertical, Dock = DockStyle.Fill, AcceptsReturn = true, Text = rating.Review ?? "" };
+        var ok = new Button { Text = "Save", DialogResult = DialogResult.OK, AutoSize = true };
+        var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, AutoSize = true };
+        var row = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(6) };
+        row.Controls.AddRange([cancel, ok]);
+        dialog.Controls.AddRange([text, row]);
+        dialog.AcceptButton = null; // Enter makes a new line
+        dialog.CancelButton = cancel;
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        await SaveMyRatingAsync(rating.Rating, text.Text);
+    }
+
+    #endregion
 
     /// <summary>The "✓ Watched" badge next to the rating, as the web page's tag; Mark as watched only while it isn't.</summary>
     private void ShowWatched()

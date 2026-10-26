@@ -96,9 +96,11 @@ public sealed partial class ManualLookupController(
         return new LookupResult(candidates, note);
     }
 
-    /// <summary>Full details for a candidate (one OMDb call for OMDb search hits).</summary>
+    /// <summary>Full details for a candidate (one OMDb call for OMDb search hits; Plex's high ratings checked against IMDb's via OMDb).</summary>
     public async Task<Item?> GetDetailsAsync(LookupCandidate candidate, CancellationToken ct = default) =>
-        candidate.Details ?? await omdb.GetByImdbIdAsync(candidate.ImdbId, ct).ConfigureAwait(false);
+        candidate.Details is not { } details ? await omdb.GetByImdbIdAsync(candidate.ImdbId, ct).ConfigureAwait(false)
+        : candidate.Source == "Plex" ? await linker.CheckPlexRatingAsync(details, ct).ConfigureAwait(false)
+        : details;
 
     public Task<byte[]?> GetPosterAsync(Item item, CancellationToken ct = default) => posters.GetPosterAsync(item, ct);
 
