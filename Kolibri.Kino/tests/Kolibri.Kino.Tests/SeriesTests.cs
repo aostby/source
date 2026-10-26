@@ -58,7 +58,7 @@ public sealed class LocalSeriesControllerTests : IDisposable
         _files = new LiteDbFileItemRepository(_db);
         _seasons = new LiteDbSeriesRepository(_db);
         var scanner = new FileSystemMediaScanner();
-        var linker = new Kolibri.Kino.Controllers.Library.MovieLinker(_files, _movies, new FakePlex { IsConfigured = false }, _omdb);
+        var linker = new Kolibri.Kino.Controllers.Library.MovieLinker(_files, _movies, new FakePlex { IsConfigured = false }, _omdb, NullLogger<Kolibri.Kino.Controllers.Library.MovieLinker>.Instance);
         _controller = new LocalSeriesController(_movies, _files, scanner, _seasons, _online, new EpisodeFileFinder(scanner),
             new NoPosters(), new InMemorySettingsStore(), linker, NullLogger<LocalSeriesController>.Instance);
     }

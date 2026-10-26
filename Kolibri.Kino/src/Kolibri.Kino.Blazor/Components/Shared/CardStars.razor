@@ -1,0 +1,20 @@
+@using Kolibri.Kino.Controllers.Ratings
+@* Your rating at the bottom of a card (Library, Recently added), when you've rated it: its own link, under the card's,
+   to the rating on the details page. *@
+@if (Mine is { } mine)
+{
+    <a class="card-stars" href="@($"{MovieDetails.DetailsUrl(ImdbId, Type)}#my-rating")" title="@Tip(mine)">
+        <StarsView Value="mine.Rating" />
+    </a>
+}
+
+@code {
+    [Parameter, EditorRequired] public string ImdbId { get; set; } = string.Empty;
+    [Parameter] public string? Type { get; set; }
+
+    /// <summary>Your rating of the title, or null (then nothing is shown).</summary>
+    [Parameter] public MovieRating? Mine { get; set; }
+
+    private static string Tip(MovieRating r) =>
+        $"My rating: {RatingController.StarsText(r.Stars)}" + (r.Review is { } review ? $" – {review}" : "");
+}

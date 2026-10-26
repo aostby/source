@@ -26,7 +26,7 @@ public sealed class ManualLookupControllerTests : IDisposable
         _movies = new LiteDbMovieRepository(_db);
         _files = new LiteDbFileItemRepository(_db);
         _lookup = new ManualLookupController(new MovieFileNameParser(), _movies, _plex, new SearchableOmdb(_omdb), _files,
-            new FileSystemMediaScanner(), new NoPosters(), new MovieLinker(_files, _movies, _plex, _omdb),
+            new FileSystemMediaScanner(), new NoPosters(), new MovieLinker(_files, _movies, _plex, _omdb, NullLogger<MovieLinker>.Instance),
             NullLogger<ManualLookupController>.Instance);
     }
 

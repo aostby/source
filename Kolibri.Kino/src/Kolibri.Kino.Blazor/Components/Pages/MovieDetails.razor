@@ -11,6 +11,7 @@
 @inject WatchlistController Watchlists
 @inject LocalSeriesController LocalSeries
 @inject WishlistController Wishlist
+@inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 @inject NavigationManager Nav
 
 @* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links, Mark as
@@ -146,7 +147,19 @@ else
                 {
                     <button disabled="@Busy" @onclick="MarkWatchedAsync">Mark as watched</button>
                 }
+                @if (!_hasRating && !_ratingOpen)
+                {
+                    <button disabled="@Busy" title="Rate it with stars, as on Plex" @onclick="() => _ratingOpen = true">★ My rating</button>
+                }
             </div>
+
+            @* Shown once you've rated it; until then, the My rating button opens it. *@
+            @if (_hasRating || _ratingOpen)
+            {
+                <div id="my-rating" tabindex="-1" @ref="_ratingAnchor">
+                    <MyRating ImdbId="@ImdbId" Title="@_item.Title" />
+                </div>
+            }
 
 
             <p class="links">
@@ -264,6 +277,19 @@ else
     private Item? _item;
     private bool _inLibrary;
     private bool _watched;
+    private bool _hasRating;
+    private bool _ratingOpen;
+
+    /// <summary>Opened from a card's stars (…#my-rating): scrolled there once the panel is shown.</summary>
+    private bool _scrollToRating;
+    private ElementReference _ratingAnchor;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_scrollToRating || !_hasRating) return;
+        _scrollToRating = false;
+        await _ratingAnchor.FocusAsync(preventScroll: false); // focusing scrolls it into view
+    }
     private string? _linkedPath;
     private string? _tmdbPage;
     private bool _canPlay;
@@ -338,6 +364,8 @@ else
             _item = local ?? await Movies.GetDetailsAsync(ImdbId, ct);
             _linkedPath = _inLibrary ? await Movies.GetLinkedPathAsync(ImdbId, ct) : null;
             _watched = await Watchlists.IsWatchedAsync(ImdbId, ct);
+            (_hasRating, _ratingOpen) = (await Ratings.GetAsync(ImdbId, ct) is not null, false);
+            _scrollToRating = Nav.Uri.EndsWith("#my-rating", StringComparison.OrdinalIgnoreCase);
         });
 
         // TMDb pages use TMDb's own ids: one TMDb request, after the page is shown. A search link if TMDb doesn't know it.

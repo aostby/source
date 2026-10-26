@@ -85,18 +85,32 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
         return MarkWatchedOutcome.Marked;
     }
 
-    /// <summary>{server}:32400/web/index.html#!/server/{machineIdentifier}/details?key=/library/metadata/{ratingKey}.</summary>
+    /// <summary>Plex's "rate" (/:/rate, rating 0–10, -1 clears), for the user the token belongs to: private to that user.</summary>
+    public async Task<bool> RateAsync(string imdbId, int? rating, CancellationToken ct = default)
+    {
+        if (rating is < 1 or > 10) throw new ArgumentOutOfRangeException(nameof(rating), rating, "A rating is from 1 to 10.");
+        var connection = CurrentConnection() ?? throw new InvalidOperationException("Plex is not configured.");
+        if (await RatingKeyAsync(connection, imdbId, ct).ConfigureAwait(false) is not { } ratingKey) return false;
+        await SendAsync(connection, HttpMethod.Put,
+            $"/:/rate?key={Uri.EscapeDataString(ratingKey)}&identifier=com.plexapp.plugins.library&rating={rating ?? -1}", ct).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>The movie's ratingKey, else the show's (series), from the TV sections' show lists; null when Plex hasn't got it.</summary>
+    private async Task<string?> RatingKeyAsync(Connection connection, string imdbId, CancellationToken ct) =>
+        (await MoviesAsync(ct).ConfigureAwait(false))?.GetValueOrDefault(imdbId)?.RatingKey is { Length: > 0 } movieKey
+            ? movieKey
+            : (await ShowsAsync(connection, ct).ConfigureAwait(false)).GetValueOrDefault(imdbId) is { Length: > 0 } showKey ? showKey : null;
+
+    /// <summary>The title's page in Plex Web on app.plex.tv (see <see cref="WebPage"/>).</summary>
     /// <remarks>A movie first; else a show (series), from the TV sections' show lists, loaded once per server.</remarks>
     public async Task<string?> GetWebPageAsync(string imdbId, CancellationToken ct = default)
     {
         if (CurrentConnection() is not { } connection) return null;
-        var ratingKey = (await MoviesAsync(ct).ConfigureAwait(false))?.GetValueOrDefault(imdbId)?.RatingKey is { Length: > 0 } movieKey
-            ? movieKey
-            : (await ShowsAsync(connection, ct).ConfigureAwait(false)).GetValueOrDefault(imdbId);
-        if (string.IsNullOrEmpty(ratingKey)) return null;
+        if (await RatingKeyAsync(connection, imdbId, ct).ConfigureAwait(false) is not { } ratingKey) return null;
 
         var machine = await MachineIdentifierAsync(connection, ct).ConfigureAwait(false);
-        return WebPage(connection.BaseUrl, machine, ratingKey);
+        return WebPage(machine, ratingKey);
     }
 
     /// <summary>/library/metadata/{showKey}/allLeaves: every episode with its season (parentIndex) and number (index).</summary>
@@ -107,7 +121,7 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
 
         var leaves = await SendAsync(connection, HttpMethod.Get, $"/library/metadata/{Uri.EscapeDataString(showKey)}/allLeaves", ct).ConfigureAwait(false);
         var machine = await MachineIdentifierAsync(connection, ct).ConfigureAwait(false);
-        return EpisodeKeysFrom(leaves).ToDictionary(e => e.Key, e => WebPage(connection.BaseUrl, machine, e.Value));
+        return EpisodeKeysFrom(leaves).ToDictionary(e => e.Key, e => WebPage(machine, e.Value));
     }
 
     internal static IReadOnlyDictionary<(int Season, int Episode), string> EpisodeKeysFrom(XDocument? allLeaves)
@@ -143,8 +157,16 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
             .Where(s => !string.IsNullOrEmpty(s.ImdbId) && !string.IsNullOrEmpty(s.RatingKey))
             .Select(s => (s.ImdbId!, s.RatingKey!));
 
-    internal static string WebPage(string baseUrl, string machineIdentifier, string ratingKey) =>
-        $"{baseUrl}/web/index.html#!/server/{machineIdentifier}/details?key={Uri.EscapeDataString($"/library/metadata/{ratingKey}")}";
+    /// <summary>
+    /// app.plex.tv/desktop/#!/server/{machineIdentifier}/details?key=/library/metadata/{ratingKey}. Plex Web on plex.tv, where
+    /// the browser is usually signed in already; the server's own {server}:32400/web sends a browser that isn't through
+    /// plex.tv's sign-in, which drops the page and lands on Plex's home page.
+    /// </summary>
+    internal static string WebPage(string machineIdentifier, string ratingKey) =>
+        $"{PlexWeb}#!/server/{machineIdentifier}/details?key={Uri.EscapeDataString($"/library/metadata/{ratingKey}")}";
+
+    /// <summary>Plex Web on plex.tv.</summary>
+    private const string PlexWeb = "https://app.plex.tv/desktop/";
 
     public async Task<IReadOnlyList<Item>> SearchAsync(string text, CancellationToken ct = default)
     {
@@ -273,8 +295,8 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
     }
 
     /// <summary>
-    /// The playlist in Plex Web on the server itself: {server}:32400/web/index.html#!/server/{machineIdentifier}/playlist?key=/playlists/{key}.
-    /// Plex Web may ask to sign in the first time; the web window remembers it.
+    /// The playlist in Plex Web on plex.tv: app.plex.tv/desktop/#!/server/{machineIdentifier}/playlist?key=/playlists/{key}
+    /// (as <see cref="WebPage"/>). Plex Web may ask to sign in the first time; the web window remembers it.
     /// </summary>
     public async Task<string?> GetPlaylistWebPageAsync(string playlistName, CancellationToken ct = default)
     {
@@ -283,7 +305,7 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
         var identity = await SendAsync(connection, HttpMethod.Get, "/identity", ct).ConfigureAwait(false);
         var machine = (string?)identity?.Root?.Attribute("machineIdentifier")
             ?? throw new InvalidOperationException("Plex did not report its machine identifier.");
-        return $"{connection.BaseUrl}/web/index.html#!/server/{machine}/playlist?key={Uri.EscapeDataString($"/playlists/{playlistKey}")}";
+        return $"{PlexWeb}#!/server/{machine}/playlist?key={Uri.EscapeDataString($"/playlists/{playlistKey}")}";
     }
 
     /// <summary>
@@ -422,11 +444,12 @@ public sealed class PlexLibrary(HttpClient http, ISettingsStore settings) : IMed
         var thumb = (string?)video.Attribute("thumb");
         var minutes = long.TryParse((string?)video.Attribute("duration"), out var ms) ? ms / 60000 : 0;
         var year = int.TryParse((string?)video.Attribute("year"), out var y) ? y : (int?)null;
+        var title = (string?)video.Attribute("title") ?? imdbId;
 
         var item = new Item
         {
             ImdbId = imdbId,
-            Title = (string?)video.Attribute("title") ?? imdbId,
+            Title = title,
             Year = year?.ToString() ?? "N/A",
             Released = (string?)video.Attribute("originallyAvailableAt") ?? "N/A",
             Plot = (string?)video.Attribute("summary") ?? "N/A",

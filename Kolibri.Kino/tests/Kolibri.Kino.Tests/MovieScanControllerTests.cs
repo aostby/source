@@ -24,7 +24,7 @@ public sealed class MovieScanControllerTests : IDisposable
         _db = new KinoDatabase(_temp.Path);
         _movies = new LiteDbMovieRepository(_db);
         _files = new LiteDbFileItemRepository(_db);
-        var linker = new MovieLinker(_files, _movies, _plex, _omdb);
+        var linker = new MovieLinker(_files, _movies, _plex, _omdb, NullLogger<MovieLinker>.Instance);
         _scan = new MovieScanController(new FileSystemMediaScanner(), _files, _movies, new MovieFileNameParser(),
             _plex, _omdb, _tmdb, linker, NullLogger<MovieScanController>.Instance);
     }
@@ -184,6 +184,18 @@ public sealed class MovieScanControllerTests : IDisposable
 
         Assert.Equal((ScanOutcome.Linked, "Plex"), (entry.Outcome, entry.Source));
         Assert.Equal((0, 0), (_tmdb.Calls, _omdb.Calls));
+    }
+
+    [Fact]
+    public async Task A_high_Plex_rating_found_by_title_is_stored_as_OMDbs_IMDb_rating()
+    {
+        Touch(@"Spies In Disguise (2019)\Spies.In.Disguise.2019.mkv");
+        _plex.Add(Movie("tt5814534", "Spies In Disguise", rating: "9.2", year: "2019"));
+        _omdb.Add(Movie("tt5814534", "Spies In Disguise", rating: "6.8", year: "2019"));
+
+        await _scan.ScanAsync(_folder, ScanMode.NewFiles);
+
+        Assert.Equal("6.8", (await _movies.GetByImdbIdAsync("tt5814534"))!.ImdbRating);
     }
 
     [Fact]

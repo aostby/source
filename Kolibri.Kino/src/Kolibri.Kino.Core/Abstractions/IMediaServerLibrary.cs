@@ -39,6 +39,12 @@ public interface IMediaServerLibrary
     /// <summary>Marks the movie watched on the server, for its user, unless it is already.</summary>
     Task<MarkWatchedOutcome> MarkWatchedAsync(string imdbId, CancellationToken ct = default);
 
+    /// <summary>
+    /// Sets the user's own rating of the movie or series on the server (1–10, half a star each; null clears it). It's
+    /// the token's user's private rating. False when the server doesn't have the title.
+    /// </summary>
+    Task<bool> RateAsync(string imdbId, int? rating, CancellationToken ct = default);
+
     /// <summary>Movies whose title contains <paramref name="text"/>, for manual lookup.</summary>
     Task<IReadOnlyList<Item>> SearchAsync(string text, CancellationToken ct = default);
 

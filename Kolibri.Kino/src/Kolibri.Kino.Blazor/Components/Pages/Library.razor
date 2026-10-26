@@ -5,6 +5,7 @@
 @inject MovieController Movies
 @inject WatchlistController Watchlists
 @inject LastSearch LastSearch
+@inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 @inject NavigationManager Nav
 
 @* Port of KinoForm: search the library or OMDb, filter by type, genre, year, rating, watched and person, sort, import.
@@ -221,7 +222,11 @@ else
             {
                 <button class="card-action" disabled="@Busy" @onclick="() => ImportAsync(hit)">Import</button>
             }
+            <CardStars ImdbId="@hit.ImdbId" Type="@hit.Type" Mine="_myRatings.GetValueOrDefault(hit.ImdbId)" />
         </article>;
+
+    /// <summary>Your ratings (Kino's KinoRating), by IMDb id, for the stars on the cards.</summary>
+    private IReadOnlyDictionary<string, MovieRating> _myRatings = new Dictionary<string, MovieRating>();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -236,6 +241,16 @@ else
                 else
                     LastSearch.Remember(key, await Movies.SearchLocalAsync(Query ?? string.Empty, ct), []);
             });
+        }
+
+        // Your own ratings: a small collection, read each time so a rating set on a movie shows when you come back.
+        try
+        {
+            _myRatings = (await Ratings.GetAllAsync()).ToDictionary(r => r.ImdbId, StringComparer.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _myRatings = new Dictionary<string, MovieRating>(); // the cards just show no stars
         }
 
         // What's watched, only when the filter asks for it (it asks Plex), and again after a while (watched since).
@@ -260,15 +275,15 @@ else
     }
 
     /// <summary>
-    /// In the background, after the list is shown: movies watched on Plex, and watched ones on other watchlists, go on
-    /// the Watched list (the first time that can be hundreds). It doesn't change what's watched, so the filter doesn't
-    /// wait for it; a failure is only noted below the filters.
+    /// In the background, after the list is shown: the watched marks are brought in step with Plex (movies stay on
+    /// their lists; the Watched list shows every watched one). It doesn't change what the filter uses, so the filter
+    /// doesn't wait for it; a failure is only noted below the filters.
     /// </summary>
     private async Task UpdateWatchedListAsync()
     {
         try
         {
-            await Watchlists.MoveWatchedToListAsync();
+            await Watchlists.UpdateWatchedAsync();
         }
         catch (Exception ex)
         {

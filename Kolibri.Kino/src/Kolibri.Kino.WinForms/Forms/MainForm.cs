@@ -66,9 +66,9 @@ public partial class MainForm : Form, IStatusDisplay
             var r = await watchlists.ImportPlexPlaylistsAsync();
             if (r.PlexError is not null) Report($"Error: Plex playlists couldn't be read: {r.PlexError}");
             var made = r.Lists.Where(l => l.Added > 0).Select(l => $"{l.Name} ({l.Added})").ToList();
-            if (made.Count > 0 || r.ToWatched > 0)
-                Report($"From Plex: {made.Count} new watchlist(s){(made.Count > 0 ? ": " + string.Join(", ", made) : "")}" +
-                       (r.ToWatched > 0 ? $"; {r.ToWatched} watched movie(s) to {WatchlistController.WatchedList}" : "") +
+            if (made.Count > 0)
+                Report($"From Plex: {made.Count} new watchlist(s): {string.Join(", ", made)}" +
+                       (r.MarkedWatched > 0 ? $"; {r.MarkedWatched} watched on Plex, marked watched" : "") +
                        (r.Skipped > 0 ? $"; {r.Skipped} left out (already on a list, or no IMDb id; see Help → Log)." : "."));
         }
         catch (Exception ex)
@@ -76,12 +76,13 @@ public partial class MainForm : Form, IStatusDisplay
             Report($"Error: bringing in Plex's playlists failed: {ex.Message}");
         }
 
-        // Then the Watched list: movies watched on Plex, and watched ones on other lists, go on it (see MoveWatchedToListAsync).
+        // Then the watched marks, in step with Plex; nothing moves between lists (see UpdateWatchedAsync).
         try
         {
-            var w = await watchlists.MoveWatchedToListAsync();
-            if (w.AddedFromPlex.Count + w.Moved.Count + w.PlexMarked > 0)
-                Report($"{WatchlistController.WatchedList} list: {w.AddedFromPlex.Count} watched on Plex added, {w.Moved.Count} moved from other lists" +
+            var w = await watchlists.UpdateWatchedAsync();
+            if (w.AddedFromPlex.Count + w.MarkedFromPlex + w.PlexMarked > 0)
+                Report($"Watched: {w.AddedFromPlex.Count} watched on Plex added to {WatchlistController.WatchedList}, " +
+                       $"{w.MarkedFromPlex} on other lists marked watched" +
                        (w.PlexMarked > 0 ? $", {w.PlexMarked} marked watched on Plex." : "."));
             if (w.PlexError is not null) Report($"Error: marking watched movies on Plex stopped: {w.PlexError}");
         }

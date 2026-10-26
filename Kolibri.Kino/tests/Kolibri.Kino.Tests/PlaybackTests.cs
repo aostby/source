@@ -106,11 +106,11 @@ public sealed class PlaybackTests
     }
 
     [Fact]
-    public void The_plex_web_address_opens_the_movie_details()
+    public void The_plex_web_address_opens_the_movie_details_on_app_plex_tv()
     {
         Assert.Equal(
-            "http://HTPC:32400/web/index.html#!/server/abc123/details?key=%2Flibrary%2Fmetadata%2F45454",
-            PlexLibrary.WebPage("http://HTPC:32400", "abc123", "45454"));
+            "https://app.plex.tv/desktop/#!/server/abc123/details?key=%2Flibrary%2Fmetadata%2F45454",
+            PlexLibrary.WebPage("abc123", "45454"));
     }
 
     [Fact]

@@ -29,7 +29,7 @@ public sealed class WatchlistControllerTests : IDisposable
         _files = new LiteDbFileItemRepository(_db);
         _repo = new LiteDbWatchListRepository(_db);
         _watchlists = new WatchlistController(_repo, _files, _settings, _plex, _plex, new NoPosters(),
-            new MovieLinker(_files, _movies, _plex, _omdb), NullLogger<WatchlistController>.Instance);
+            new MovieLinker(_files, _movies, _plex, _omdb, NullLogger<MovieLinker>.Instance), NullLogger<WatchlistController>.Instance);
     }
 
     public void Dispose()
@@ -67,16 +67,16 @@ public sealed class WatchlistControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task Mark_as_watched_moves_a_title_from_another_list()
+    public async Task Mark_as_watched_leaves_a_title_on_its_list()
     {
         await _movies.UpsertAsync(Movie("tt0133093", "The Matrix"));
         await _watchlists.AddAsync("tt0133093", "Jul");
 
         var status = await _watchlists.MarkWatchedAsync("tt0133093");
 
-        Assert.Empty(await _watchlists.GetItemsAsync("Jul"));
-        Assert.Equal("Y", Assert.Single(await _watchlists.GetItemsAsync(WatchlistController.WatchedList)).Watched);
-        Assert.StartsWith("Moved The Matrix from Jul to Watched, marked watched. The Matrix isn't on Plex", status);
+        Assert.Equal("Y", Assert.Single(await _watchlists.GetItemsAsync("Jul")).Watched);
+        Assert.Equal("Jul", Assert.Single(await _watchlists.GetItemsAsync(WatchlistController.WatchedList)).WatchListName);
+        Assert.StartsWith("The Matrix marked watched; it stays on Jul and shows on Watched too. The Matrix isn't on Plex", status);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public sealed class WatchlistControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task Watched_movies_move_to_Watched_and_are_marked_on_Plex_without_a_playlist()
+    public async Task Watched_movies_stay_on_their_lists_show_on_Watched_and_are_marked_on_Plex_without_a_playlist()
     {
         foreach (var (id, title) in new[] { ("tt1", "Seen, on Plex"), ("tt2", "Seen, not on Plex"), ("tt3", "Not seen"), ("tt4", "Seen, Plex knows") })
             _omdb.Add(Movie(id, title));
@@ -209,20 +209,22 @@ public sealed class WatchlistControllerTests : IDisposable
         await _watchlists.AddAsync("tt4", "Jul");
         foreach (var id in new[] { "tt1", "tt2", "tt4" }) await _watchlists.SetWatchedAsync(id, true);
 
-        var result = await _watchlists.MoveWatchedToListAsync();
+        var result = await _watchlists.UpdateWatchedAsync();
 
         Assert.Equal(["Seen on Plex only", "Seen on Plex, on a list", "Seen, Plex knows", "Seen, not on Plex", "Seen, on Plex"],
             (await _watchlists.GetItemsAsync("Watched")).Select(i => i.Title).Order(StringComparer.Ordinal));
         Assert.All(await _watchlists.GetItemsAsync("Watched"), i => Assert.Equal("Y", i.Watched));
-        Assert.Equal(["Not seen"], (await _watchlists.GetItemsAsync("Jul")).Select(i => i.Title));
-        Assert.Equal((4, 0, 1, 1), (result.Moved.Count, result.AlreadyThere, result.AddedFromPlex.Count, result.MarkedFromPlex));
+        // Nothing moved: Jul is whole, and the Watched list shows the watched ones from their own lists.
+        Assert.Equal(["Not seen", "Seen, Plex knows", "Seen, on Plex"], (await _watchlists.GetItemsAsync("Jul")).Select(i => i.Title).Order(StringComparer.Ordinal));
+        Assert.Equal("Western", (await _watchlists.GetItemsAsync("Watched")).Single(i => i.ImdbId == "tt5").WatchListName);
+        Assert.Equal((1, 1), (result.AddedFromPlex.Count, result.MarkedFromPlex));
         Assert.Equal((1, 2), (result.PlexMarked, result.PlexAlreadyWatched)); // tt1 marked; tt4 and tt5 watched on Plex already
         Assert.Equal(["Seen, not on Plex"], result.NotOnPlex);
         Assert.Equal(["tt1", "tt4"], _plex.Playlists["Jul"]); // Plex playlists stay as they are
         Assert.DoesNotContain("Watched", _plex.Playlists.Keys);
 
-        var again = await _watchlists.MoveWatchedToListAsync();
-        Assert.Equal((0, 5, 0), (again.Moved.Count, again.AlreadyThere, again.AddedFromPlex.Count));
+        var again = await _watchlists.UpdateWatchedAsync();
+        Assert.Equal((0, 0), (again.AddedFromPlex.Count, again.MarkedFromPlex));
     }
 
     [Fact]
@@ -243,28 +245,49 @@ public sealed class WatchlistControllerTests : IDisposable
 
         var result = await _watchlists.ImportPlexPlaylistsAsync();
 
-        Assert.Equal(["New"], (await _watchlists.GetItemsAsync("Tom Hanks")).Select(i => i.Title));
+        // Watched on Plex: on the new list, marked watched, so it shows on Watched too.
+        Assert.Equal(["New", "Watched on Plex"], (await _watchlists.GetItemsAsync("Tom Hanks")).Select(i => i.Title).Order(StringComparer.Ordinal));
         Assert.Equal(["On Watched", "Watched on Plex"], (await _watchlists.GetItemsAsync("Watched")).Select(i => i.Title).Order(StringComparer.Ordinal));
-        Assert.Equal("Y", (await _watchlists.GetItemsAsync("Watched")).Single(i => i.ImdbId == "tt3").Watched);
+        Assert.Equal(("Y", "Tom Hanks"), (await _watchlists.GetItemsAsync("Watched")).Where(i => i.ImdbId == "tt3").Select(i => (i.Watched, i.WatchListName)).Single());
         Assert.Equal(["On Jul"], (await _watchlists.GetItemsAsync("Jul")).Select(i => i.Title));
         Assert.DoesNotContain("Only taken", await _watchlists.GetListNamesAsync());
         Assert.DoesNotContain("Empty", await _watchlists.GetListNamesAsync());
-        Assert.Equal((1, 1, 3), (result.Added, result.ToWatched, result.Skipped));
+        Assert.Equal((2, 1, 3), (result.Added, result.MarkedWatched, result.Skipped));
 
-        Assert.DoesNotContain((await _watchlists.ImportPlexPlaylistsAsync()).Lists, l => l.Added + l.ToWatched > 0); // nothing new the second time
+        Assert.DoesNotContain((await _watchlists.ImportPlexPlaylistsAsync()).Lists, l => l.Added > 0); // nothing new the second time
     }
 
     [Fact]
-    public async Task Mark_watched_moves_the_movie_to_Watched_keeping_it_once()
+    public async Task Mark_watched_keeps_the_movie_on_its_list_and_shows_it_on_Watched()
     {
         _omdb.Add(Movie("tt1", "The Expendables 2"));
-        await _watchlists.AddAsync("tt1", "Jason Statham");
+        await _watchlists.AddAsync("tt1", "Julelista");
 
-        Assert.Equal("Jason Statham", await _watchlists.MarkWatchedAndMoveAsync("tt1"));
-        Assert.Empty(await _watchlists.GetItemsAsync("Jason Statham"));
-        Assert.Equal("Y", Assert.Single(await _watchlists.GetItemsAsync("Watched")).Watched);
-        Assert.Null(await _watchlists.MarkWatchedAndMoveAsync("tt1")); // on Watched already
-        Assert.Null(await _watchlists.MarkWatchedAndMoveAsync("tt9")); // on no watchlist
+        Assert.StartsWith("The Expendables 2 marked watched; it stays on Julelista", await _watchlists.MarkWatchedAsync("tt1"));
+        Assert.Equal("Y", Assert.Single(await _watchlists.GetItemsAsync("Julelista")).Watched);
+        Assert.Equal("Julelista", Assert.Single(await _watchlists.GetItemsAsync("Watched")).WatchListName);
+
+        // Putting it on Watched by hand doesn't move it either.
+        await _watchlists.AddAsync("tt1", "Watched");
+        Assert.Single(await _watchlists.GetItemsAsync("Julelista"));
+
+        // Removed from the Watched list, it's only marked not watched: it stays on Julelista.
+        await _watchlists.RemoveAsync("tt1", "Watched", alsoFromPlex: false);
+        Assert.Equal("N", Assert.Single(await _watchlists.GetItemsAsync("Julelista")).Watched);
+        Assert.Empty(await _watchlists.GetItemsAsync("Watched"));
+    }
+
+    [Fact]
+    public async Task A_watched_movie_moved_to_another_list_stays_watched()
+    {
+        _omdb.Add(Movie("tt1", "Love Actually"));
+        await _watchlists.AddAsync("tt1", "Watched");
+        await _watchlists.SetWatchedAsync("tt1", true);
+
+        await _watchlists.AddAsync("tt1", "Julelista");
+
+        Assert.Equal("Y", Assert.Single(await _watchlists.GetItemsAsync("Julelista")).Watched);
+        Assert.Single(await _watchlists.GetItemsAsync("Watched"));
     }
 
     [Theory]

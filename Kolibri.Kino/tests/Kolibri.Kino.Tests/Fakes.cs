@@ -124,6 +124,17 @@ internal sealed class FakePlex : IMediaServerLibrary, IMediaServerPlaylists
     public Task<IReadOnlyList<string>> GetWatchedImdbIdsAsync(CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<string>>(Movies.Where(m => Watched.Contains(m.ImdbId)).Select(m => m.ImdbId).ToList());
 
+    /// <summary>Ratings set on the fake Plex, by IMDb id (null: cleared).</summary>
+    public Dictionary<string, int?> Ratings { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<bool> RateAsync(string imdbId, int? rating, CancellationToken ct = default)
+    {
+        if (Throws is not null) return Task.FromException<bool>(Throws);
+        if (!Movies.Any(m => m.ImdbId == imdbId)) return Task.FromResult(false);
+        Ratings[imdbId] = rating;
+        return Task.FromResult(true);
+    }
+
     public Task<MarkWatchedOutcome> MarkWatchedAsync(string imdbId, CancellationToken ct = default) =>
         Task.FromResult(!Movies.Any(m => m.ImdbId == imdbId) ? MarkWatchedOutcome.NotOnServer
             : Watched.Add(imdbId) ? MarkWatchedOutcome.Marked

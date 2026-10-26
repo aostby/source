@@ -127,6 +127,24 @@ public sealed class PlexLibraryTests
     }
 
     [Fact]
+    public async Task Rates_the_movie_for_the_tokens_user_and_clears_with_minus_one()
+    {
+        _handler.Get["/library/sections/2/all"] = "<MediaContainer />"; // no shows
+        var library = Library();
+
+        Assert.True(await library.RateAsync("tt0133093", 7));
+        Assert.True(await library.RateAsync("tt0133093", null));
+        Assert.False(await library.RateAsync("tt9999999", 5)); // not on the server
+
+        var puts = _handler.Requests.Where(r => r.Method == HttpMethod.Put).ToList();
+        Assert.Equal(2, puts.Count);
+        Assert.All(puts, p => Assert.Equal("/:/rate", p.Path));
+        Assert.StartsWith("?key=10&identifier=com.plexapp.plugins.library&rating=7|", puts[0].Query);
+        Assert.StartsWith("?key=10&identifier=com.plexapp.plugins.library&rating=-1|", puts[1].Query);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => library.RateAsync("tt0133093", 11));
+    }
+
+    [Fact]
     public async Task Removes_the_movie_by_its_playlist_item_id()
     {
         _handler.Get["/playlists"] = """<MediaContainer><Playlist title="Jul" ratingKey="500" playlistType="video" /></MediaContainer>""";

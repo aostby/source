@@ -3,6 +3,7 @@
 @inherits KinoPage
 @inject RecentlyAddedController Recent
 @inject MovieController Movies
+@inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 @inject NavigationManager Nav
 
 @* Plex's "Recently added": the library newest first, by when the files arrived on the NAS, under Today,
@@ -37,7 +38,7 @@
         <div class="cards">
             @foreach (var entry in period)
             {
-                <RecentCard Entry="entry" Now="_now" />
+                <RecentCard Entry="entry" Now="_now" Mine="_myRatings.GetValueOrDefault(entry.Item.ImdbId)" />
             }
         </div>
     </section>
@@ -61,6 +62,7 @@
 
     private RecentlyAddedReport? _report;
     private DateTime _now = DateTime.UtcNow;
+    private IReadOnlyDictionary<string, MovieRating> _myRatings = new Dictionary<string, MovieRating>();
     private IReadOnlySet<string>? _watched;
     private string? _watchedNote;
 
@@ -81,6 +83,7 @@
         {
             _report = await Recent.GetAsync(ct);
             _now = DateTime.UtcNow;
+            _myRatings = (await Ratings.GetAllAsync(ct)).ToDictionary(r => r.ImdbId, StringComparer.OrdinalIgnoreCase);
         });
 
     /// <summary>What's watched (Plex and the watchlists), asked once per visit, and only when Not watched or Watched is chosen.</summary>

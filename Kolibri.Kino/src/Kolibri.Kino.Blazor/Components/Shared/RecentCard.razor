@@ -19,10 +19,14 @@
             </div>
         </div>
     </a>
+    <CardStars ImdbId="@Entry.Item.ImdbId" Type="@Entry.Item.Type" Mine="Mine" />
 </article>
 
 @code {
     [Parameter, EditorRequired] public RecentlyAddedItem Entry { get; set; } = default!;
+
+    /// <summary>Your rating of it, shown as stars under the card; null when you haven't rated it.</summary>
+    [Parameter] public MovieRating? Mine { get; set; }
 
     /// <summary>The same "now" for every card on the page (UTC).</summary>
     [Parameter] public DateTime Now { get; set; } = DateTime.UtcNow;
