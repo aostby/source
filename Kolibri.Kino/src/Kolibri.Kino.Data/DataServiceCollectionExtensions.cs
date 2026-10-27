@@ -32,6 +32,8 @@ public static class DataServiceCollectionExtensions
         services.AddSingleton<IWatchListRepository, LiteDbWatchListRepository>();
         services.AddSingleton<IWishlistRepository, LiteDbWishlistRepository>();
         services.AddSingleton<IRatingRepository, LiteDbRatingRepository>();
+        services.AddSingleton<ITrendingCache, LiteDbTrendingCache>();
+        services.AddSingleton<ITrendingSource, TmdbTrending>();
         services.AddSingleton<IMediaFileScanner, FileSystemMediaScanner>();
         services.AddSingleton<LiteDbFileDateStore>();
         services.AddSingleton<IFileDates, FileSystemFileDates>();

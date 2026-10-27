@@ -125,6 +125,13 @@ public partial class MainForm : Form, IStatusDisplay
 
     #endregion
 
+    #region What's Up (outside the library)
+
+    /// <summary>One Trending window: Movies when it opens; already open, it's brought forward as it is.</summary>
+    private void menuTrending_Click(object sender, EventArgs e) => this.ShowSingle<TrendingForm>(_services);
+
+    #endregion
+
     #region Window (as in SilverScreen; the open windows are listed below)
 
     private void menuCascade_Click(object sender, EventArgs e) => LayoutMdi(MdiLayout.Cascade);

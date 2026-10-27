@@ -61,22 +61,27 @@
         </div>
     </EditForm>
 
-    <fieldset class="settings">
-        <legend>My ratings</legend>
-        <p class="hint">
-            @(_ratingCount switch { null => "", 0 => "No ratings yet.", 1 => "1 title rated.", var n => $"{n} titles rated." })
-            The databases here and on the PC aren't kept in step: export your ratings to a file here, and import it on the
-            PC (Settings → Importer vurderinger fra fil), or the other way. The newer rating of a title wins.
-        </p>
-        <div class="actions">
-            <a class="button" href="export/ratings" download>Export ratings</a>
-            @* A label styled as a button opens the file picker; the input itself is hidden. *@
-            <label class="button @(Busy ? "disabled" : "")">
-                Import ratings…
-                <InputFile OnChange="ImportRatingsAsync" accept=".json,application/json" disabled="@Busy" style="display: none" />
-            </label>
-        </div>
-    </fieldset>
+    @* Same frame as the boxes above (they're inside the form's .settings). *@
+    <div class="settings">
+        <fieldset>
+            <legend>Export</legend>
+            <p class="hint">
+                @(_ratingCount switch { null => "", 0 => "No ratings yet.", 1 => "1 title rated.", var n => $"{n} titles rated." })
+                The databases here and on the PC aren't kept in step: export your ratings to a file here, and import it on the
+                PC (Settings → Importer vurderinger fra fil), or the other way. The newer rating of a title wins.
+                The wishlist is exported as a CSV file for Excel, which the PC's Wishlist can import.
+            </p>
+            <div class="actions export-buttons">
+                <a class="button" href="export/ratings" download>Export ratings</a>
+                @* A label styled as a button opens the file picker; the input itself is hidden. *@
+                <label class="button @(Busy ? "disabled" : "")">
+                    Import ratings…
+                    <InputFile OnChange="ImportRatingsAsync" accept=".json,application/json" disabled="@Busy" style="display: none" />
+                </label>
+                <a class="button" href="export/wishlist" download>Export wishlist</a>
+            </div>
+        </fieldset>
+    </div>
 
     @if (_checks.Count > 0)
     {

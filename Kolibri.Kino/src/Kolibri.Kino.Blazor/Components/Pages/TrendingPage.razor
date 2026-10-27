@@ -1,0 +1,121 @@
+@page "/trending"
+@using Kolibri.Kino.Controllers.Trending
+@inherits KinoPage
+@inject TrendingController Trending
+@inject NavigationManager Nav
+
+@* What's trending on TMDb this week: movies, TV shows or people (the list is in the address, so Back returns here).
+   Titles open their details; a person opens the Library filtered by them, as an actor's name on a details page
+   does. Lists are kept in the database for a few hours; images go in the image cache like posters. *@
+
+<PageTitle>Trending · Kolibri Kino</PageTitle>
+
+<h1>Trending</h1>
+
+<div class="toolbar">
+    <div class="chips" role="group" aria-label="List">
+        @foreach (var (key, kind, label) in Lists)
+        {
+            <button class="chip @(kind == Kind ? "on" : "")" @onclick="() => Nav.NavigateTo(Nav.GetUriWithQueryParameter(KindParameter, key))">@label</button>
+        }
+    </div>
+    <button class="sort" disabled="@Busy" title="Ask TMDb again now" @onclick="() => LoadAsync(refresh: true)">Refresh</button>
+</div>
+
+<StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
+
+@if (_result is { } result)
+{
+    <div class="cards">
+        @foreach (var entry in result.Entries)
+        {
+            var item = entry.Item;
+            var image = $"trending/image/{result.Kind}/{item.TmdbId}";
+            <article class="card trending-card">
+                @if (result.Kind == TrendingKind.People)
+                {
+                    <a href="@PersonLink(item.Title)" class="card-link" title="@item.Title in the library">
+                        <PosterImage Src="@(item.ImageUrl is null ? null : image)" />
+                        <div class="card-body">
+                            <h2 class="card-title">@item.Title</h2>
+                            @if (entry.LibraryTitles > 0)
+                            {
+                                <span class="tag good">@entry.LibraryTitles in SilverScreen</span>
+                            }
+                            @if (item.KnownFor.Count > 0)
+                            {
+                                <p class="card-overview">Known for @string.Join(", ", item.KnownFor)</p>
+                            }
+                        </div>
+                    </a>
+                }
+                else
+                {
+                    var external = item.ImdbId is null;
+                    <a href="@TitleLink(result.Kind, item)" class="card-link" target="@(external ? "_blank" : null)" rel="@(external ? "noopener" : null)">
+                        <PosterImage Src="@(item.ImageUrl is null && !entry.InLibrary ? null : image)" />
+                        <div class="card-body">
+                            <h2 class="card-title">@item.Title</h2>
+                            <div class="card-meta">
+                                <span>@item.Year</span>
+                                @if (entry.ImdbRating is { } imdb)
+                                {
+                                    <Rating Value="@imdb" />
+                                }
+                                else if (item.TmdbRating is { } score)
+                                {
+                                    <span title="TMDb's users' average">TMDb @score.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)</span>
+                                }
+                            </div>
+                            @if (entry.HasFile)
+                            {
+                                <span class="tag good">In SilverScreen</span>
+                            }
+                            else if (entry.InLibrary)
+                            {
+                                <span class="tag nofile" title="In the library, but not linked to a file that's there">In SilverScreen, no file</span>
+                            }
+                            @if (item.Overview is { } overview)
+                            {
+                                <p class="card-overview" title="@overview">@overview</p>
+                            }
+                        </div>
+                    </a>
+                }
+            </article>
+        }
+    </div>
+}
+
+@code {
+    private const string KindParameter = "list";
+
+    private static readonly (string Key, TrendingKind Kind, string Label)[] Lists =
+        [("movies", TrendingKind.Movies, "Movies"), ("tv", TrendingKind.Series, "TV shows"), ("people", TrendingKind.People, "People")];
+
+    [SupplyParameterFromQuery(Name = KindParameter)] public string? List { get; set; }
+
+    private TrendingResult? _result;
+
+    private TrendingKind Kind => Lists.FirstOrDefault(l => l.Key == List).Kind; // Movies when not set
+
+    private string? Summary => _result is not { } r ? null
+        : r.Note ?? $"{TrendingController.Label(r.Kind)} on TMDb this week: {r.Entries.Count}"
+          + (r.Kind == TrendingKind.People ? "" : $", {r.Entries.Count(e => e.HasFile)} in SilverScreen")
+          + (r.FetchedUtc is { } at ? $". Updated {at.ToLocalTime():g}." : ".");
+
+    protected override Task OnParametersSetAsync() => LoadAsync(refresh: false);
+
+    private Task LoadAsync(bool refresh) => RunAsync("Asking TMDb what's trending…", async ct =>
+    {
+        _result = null;
+        _result = await Trending.GetAsync(Kind, refresh, ct);
+    });
+
+    /// <summary>The details page (as the library's), or TMDb's page when TMDb has no IMDb id for it.</summary>
+    private static string TitleLink(TrendingKind kind, TrendingItem item) =>
+        item.ImdbId is { } id ? MovieDetails.DetailsUrl(id, kind == TrendingKind.Series ? "series" : "movie") : TrendingController.TmdbPage(kind, item.TmdbId);
+
+    /// <summary>The Library filtered by the person, best rated first: what an actor's name on a details page opens.</summary>
+    private static string PersonLink(string name) => $"./?person={Uri.EscapeDataString(name)}&sort=rating";
+}

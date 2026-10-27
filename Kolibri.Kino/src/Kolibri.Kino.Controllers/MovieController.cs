@@ -10,7 +10,7 @@ namespace Kolibri.Kino.Controllers;
 /// A movie TMDb suggests for another, whether it's in the library (SilverScreen.db), and its IMDb rating (null when
 /// unknown).
 /// </summary>
-public sealed record SimilarMovie(TmdbMovieHit Movie, bool InLibrary, string? ImdbRating = null)
+public sealed record SimilarMovie(TmdbMovieHit Movie, bool InLibrary, string? ImdbRating = null, bool HasFile = false)
 {
     /// <summary>"2008 (6.5)": the year, and the IMDb rating in brackets when known.</summary>
     public string YearAndRating => ImdbRating is null ? Movie.Year ?? "" : $"{Movie.Year} ({ImdbRating})".TrimStart();
@@ -31,7 +31,8 @@ public sealed partial class MovieController(
     IPosterProvider posters,
     IMediaServerLibrary plex,
     ILogger<MovieController> logger,
-    IWatchListRepository? watchlists = null)
+    IWatchListRepository? watchlists = null,
+    Library.LibraryFiles? libraryFiles = null)
 {
     /// <summary>
     /// The titles you have watched: played to the end on Plex (for the token's user; reloaded from Plex first when
@@ -174,7 +175,10 @@ public sealed partial class MovieController(
         var ratings = await Task.WhenAll(similar.Select(s =>
             inLibrary.TryGetValue(s.ImdbId, out var item) ? Task.FromResult(Rating(item.ImdbRating)) : OnlineRatingAsync(s.ImdbId, ct)))
             .ConfigureAwait(false);
-        return similar.Select((s, i) => new SimilarMovie(s, inLibrary.ContainsKey(s.ImdbId), ratings[i])).ToList();
+        // In SilverScreen in green only with a file that's there (see LibraryFiles); without a way to check, in the library is enough.
+        var withFile = libraryFiles is null ? inLibrary.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase)
+            : await libraryFiles.WithFileAsync(inLibrary.Keys, ct).ConfigureAwait(false);
+        return similar.Select((s, i) => new SimilarMovie(s, inLibrary.ContainsKey(s.ImdbId), ratings[i], withFile.Contains(s.ImdbId))).ToList();
     }
 
     /// <summary>IMDb ratings looked up on OMDb for similar movies, kept while the app runs (one OMDb call per title).</summary>

@@ -12,6 +12,7 @@
 @inject LocalSeriesController LocalSeries
 @inject WishlistController Wishlist
 @inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
+@inject LibraryFiles LibraryFiles
 @inject NavigationManager Nav
 
 @* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links, Mark as
@@ -96,6 +97,18 @@ else
                     <a class="button primary play" href="play/@ImdbId">▶ Play</a>
                 }
                 <button class="play" disabled="@Busy" @onclick="() => _addingToList = true">+ Add to watchlist</button>
+                @* Without a file (not in the library, or in it without one): to get. *@
+                @if (!_hasFile)
+                {
+                    @if (_onWishlist)
+                    {
+                        <a class="button play" href="wishlist" title="It's on the wishlist">On wishlist ›</a>
+                    }
+                    else
+                    {
+                        <button class="play" disabled="@Busy" title="Put it on the wishlist, the titles you want to get" @onclick="AddToWishlistAsync">+ Add to wishlist</button>
+                    }
+                }
             </p>
 
             @if (_addingToList)
@@ -199,9 +212,13 @@ else
                             <span class="similar-title">@s.Movie.Title</span>
                         </a>
                         <span class="muted small" title="Year (IMDb rating)">@s.YearAndRating</span>
-                        @if (s.InLibrary)
+                        @if (s.HasFile)
                         {
                             <span class="tag good">In SilverScreen</span>
+                        }
+                        else if (s.InLibrary)
+                        {
+                            <span class="tag nofile" title="In the library, but not linked to a file that's there">In SilverScreen, no file</span>
                         }
                         <a class="button small" href="@($"wishlist?q={Uri.EscapeDataString(s.WishlistQuery)}")">+ Wishlist</a>
                     </div>
@@ -293,6 +310,17 @@ else
     private string? _linkedPath;
     private string? _tmdbPage;
     private bool _canPlay;
+
+    /// <summary>In the library and linked to a file (a series: its folder) that's there.</summary>
+    private bool _hasFile;
+    private bool _onWishlist;
+
+    private Task AddToWishlistAsync() => RunAsync("Adding to the wishlist…", async ct =>
+    {
+        var added = await Wishlist.AddAsync(ImdbId, ct);
+        _onWishlist = true;
+        Status = $"Put {added.Title} on the wishlist.";
+    });
     private string? _plexPage;
     private IReadOnlyList<PlayableEpisode> _episodes = [];
     private IReadOnlyDictionary<(int Season, int Episode), string> _plexEpisodes = new Dictionary<(int, int), string>();
@@ -363,6 +391,8 @@ else
             _inLibrary = local is not null;
             _item = local ?? await Movies.GetDetailsAsync(ImdbId, ct);
             _linkedPath = _inLibrary ? await Movies.GetLinkedPathAsync(ImdbId, ct) : null;
+            _hasFile = _inLibrary && (await LibraryFiles.WithFileAsync([ImdbId], ct)).Count > 0;
+            _onWishlist = !_hasFile && await Wishlist.IsOnWishlistAsync(ImdbId, ct);
             _watched = await Watchlists.IsWatchedAsync(ImdbId, ct);
             (_hasRating, _ratingOpen) = (await Ratings.GetAsync(ImdbId, ct) is not null, false);
             _scrollToRating = Nav.Uri.EndsWith("#my-rating", StringComparison.OrdinalIgnoreCase);

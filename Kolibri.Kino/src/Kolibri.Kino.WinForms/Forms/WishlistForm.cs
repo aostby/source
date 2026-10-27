@@ -228,18 +228,25 @@ public partial class WishlistForm : AsyncForm, IWritesToExcel
         if (imdbId is not null) ActivatorUtilities.CreateInstance<MovieDetailsForm>(_services, imdbId).ShowFrom(this);
     }
 
-    /// <summary>In SilverScreen: green. To get: light orange.</summary>
+    /// <summary>
+    /// In SilverScreen (with a file that's there): green. In the library without one (e.g. imported from OMDb): light
+    /// salmon. To get: light orange.
+    /// </summary>
     private void Grid_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
     {
         if (e.CellStyle is null || sender is not DataGridView grid) return;
-        bool? have = grid.ItemAt(e.RowIndex) switch
+        (bool Have, bool InLibrary)? state = grid.ItemAt(e.RowIndex) switch
         {
-            HitRow h => h.InSilverScreen,
-            WishRow w => w.InSilverScreen,
+            HitRow h => (h.InSilverScreen, h.Hit.InLibrary),
+            WishRow w => (w.InSilverScreen, w.Row.InLibrary),
             _ => null,
         };
-        if (have is { } h2) e.CellStyle.BackColor = h2 ? Color.Honeydew : Color.PapayaWhip;
+        if (state is { } s)
+            e.CellStyle.BackColor = s.Have ? Color.Honeydew : s.InLibrary ? LightSalmon : Color.PapayaWhip;
     }
+
+    /// <summary>A light salmon for row backgrounds: in the library, but no file.</summary>
+    private static readonly Color LightSalmon = Color.FromArgb(255, 218, 208);
 
     private static void Widen(DataGridView grid, string column)
     {
@@ -262,7 +269,7 @@ public partial class WishlistForm : AsyncForm, IWritesToExcel
         public string? Year => Hit.Year;
         public string? Type => Hit.Type;
         [DisplayName("In SilverScreen")] public bool InSilverScreen => Hit.InSilverScreen;
-        public string Where => Hit.InSilverScreen ? "In SilverScreen" : "To get";
+        public string Where => Hit.InSilverScreen ? "In SilverScreen" : Hit.InLibrary ? "In SilverScreen, no file" : "To get";
         [DisplayName("On wishlist")] public bool OnWishlist { get; set; }
 
         public static HitRow From(WishlistHit hit) => new() { Hit = hit, OnWishlist = hit.OnWishlist };

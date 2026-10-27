@@ -41,6 +41,10 @@
                             {
                                 <span class="tag good">In SilverScreen</span>
                             }
+                            else if (hit.InLibrary)
+                            {
+                                <span class="tag nofile" title="In the library, but not linked to a file that's there">In SilverScreen, no file</span>
+                            }
                             else
                             {
                                 <span class="tag">To get</span>
@@ -101,6 +105,10 @@ else
                             @if (row.InSilverScreen)
                             {
                                 <span class="tag good" title="@row.FilePath">Yes</span>
+                            }
+                            else if (row.InLibrary)
+                            {
+                                <span class="tag nofile" title="@NoFileTip(row.FilePath)">No file</span>
                             }
                             else
                             {
@@ -177,4 +185,9 @@ else
         await LoadAsync(ct);
         Status = $"Removed {row.Item.Title} from the wishlist.";
     });
+
+    /// <summary>The tooltip for a title in the library without a file that's there: the link, if it has one.</summary>
+    private static string NoFileTip(string? path) =>
+        "In the library, but not linked to a file that's there" + (path is null ? "." : $" (linked to {path}).");
 }
+

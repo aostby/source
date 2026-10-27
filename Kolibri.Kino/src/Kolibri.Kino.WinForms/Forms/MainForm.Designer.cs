@@ -39,6 +39,8 @@ partial class MainForm
         menuLocalSeries = new ToolStripMenuItem();
         menuWatchlists = new ToolStripMenuItem();
         menuWishlist = new ToolStripMenuItem();
+        menuWhatsUp = new ToolStripMenuItem();
+        menuTrending = new ToolStripMenuItem();
         menuWindow = new ToolStripMenuItem();
         menuCascade = new ToolStripMenuItem();
         menuTileHorizontal = new ToolStripMenuItem();
@@ -60,7 +62,7 @@ partial class MainForm
         //
         // menuStrip
         //
-        menuStrip.Items.AddRange(new ToolStripItem[] { menuFile, menuLibrary, menuWindow, menuHelp });
+        menuStrip.Items.AddRange(new ToolStripItem[] { menuFile, menuLibrary, menuWhatsUp, menuWindow, menuHelp });
         menuStrip.Location = new Point(0, 0);
         menuStrip.MdiWindowListItem = menuWindow;
         menuStrip.Name = "menuStrip";
@@ -135,6 +137,20 @@ partial class MainForm
         menuWishlist.Size = new Size(220, 22);
         menuWishlist.Text = "W&ishlist";
         menuWishlist.Click += menuWishlist_Click;
+        //
+        // menuWhatsUp (what's happening outside the library; more lists may come)
+        //
+        menuWhatsUp.DropDownItems.AddRange(new ToolStripItem[] { menuTrending });
+        menuWhatsUp.Name = "menuWhatsUp";
+        menuWhatsUp.Size = new Size(76, 20);
+        menuWhatsUp.Text = "W&hat's Up";
+        //
+        // menuTrending
+        //
+        menuTrending.Name = "menuTrending";
+        menuTrending.Size = new Size(180, 22);
+        menuTrending.Text = "&Trending";
+        menuTrending.Click += menuTrending_Click;
         //
         // menuWindow
         //
@@ -275,6 +291,8 @@ partial class MainForm
     private ToolStripMenuItem menuLocalSeries;
     private ToolStripMenuItem menuWatchlists;
     private ToolStripMenuItem menuWishlist;
+    private ToolStripMenuItem menuWhatsUp;
+    private ToolStripMenuItem menuTrending;
     private ToolStripMenuItem menuWindow;
     private ToolStripMenuItem menuCascade;
     private ToolStripMenuItem menuTileHorizontal;

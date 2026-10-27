@@ -327,3 +327,14 @@ table.list td a:hover { color: var(--accent); }
 /* A label that opens a file picker, looking like a button */
 label.button { cursor: pointer; }
 .button.disabled { opacity: 0.5; pointer-events: none; }
+
+/* Trending: a short plot under the title (three lines), and the "In SilverScreen" tag on its own line */
+.trending-card .tag.good { display: inline-block; margin-top: 4px; }
+.card-overview { margin: 6px 0 0; font-size: 0.8rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+/* In the library but not linked to a file that's there (e.g. imported from OMDb): salmon */
+.tag.nofile { color: #f08a6c; border-color: #f08a6c; }
+
+/* Settings → Export: links and the file-picker label as buttons of one height, on one line
+   (.settings label would otherwise make the label a grey block of its own with space above). */
+.settings .export-buttons { align-items: stretch; }
+.settings .export-buttons .button { display: inline-flex; align-items: center; margin: 0; color: var(--text); line-height: 1.45; }
