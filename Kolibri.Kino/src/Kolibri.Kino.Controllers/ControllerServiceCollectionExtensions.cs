@@ -20,6 +20,7 @@ public static class ControllerServiceCollectionExtensions
     public static IServiceCollection AddKinoControllers(this IServiceCollection services)
     {
         services.AddTransient<MovieLinker>();
+        services.AddTransient<LibraryFiles>();
         services.AddTransient<MovieController>();
         services.AddTransient<RecentlyAddedController>();
         services.AddTransient<PlaybackController>();
@@ -31,6 +32,7 @@ public static class ControllerServiceCollectionExtensions
         services.AddTransient<WatchlistController>();
         services.AddTransient<WishlistController>();
         services.AddTransient<Ratings.RatingController>();
+        services.AddTransient<Trending.TrendingController>();
         services.AddTransient<LocalSeriesController>();
         services.AddTransient<NewSeriesController>();
         services.AddTransient<RecentSeriesController>();

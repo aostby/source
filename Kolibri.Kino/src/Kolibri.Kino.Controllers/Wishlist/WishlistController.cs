@@ -10,7 +10,9 @@ using OMDbApiNet.Model;
 namespace Kolibri.Kino.Controllers.Wishlist;
 
 /// <summary>A search hit (a movie or a series): in the library (SilverScreen.db) already, or found online and to be got.</summary>
-public sealed record WishlistHit(string ImdbId, string Title, string? Year, string? Type, bool InSilverScreen, bool OnWishlist);
+/// <param name="InSilverScreen">In the library with a file that's there (see <see cref="Library.LibraryFiles"/>): you have it.</param>
+/// <param name="InLibrary">In the library, with or without a file; without one (e.g. imported from OMDb) it's still to get.</param>
+public sealed record WishlistHit(string ImdbId, string Title, string? Year, string? Type, bool InSilverScreen, bool OnWishlist, bool InLibrary = false);
 
 /// <param name="Hits">The library's hits first, then OMDb's that aren't in the library.</param>
 /// <param name="OnlineError">Why OMDb couldn't be searched (no key, daily limit …); the library's hits are still there.</param>
@@ -22,8 +24,9 @@ public sealed record WishlistSearch(IReadOnlyList<WishlistHit> Hits, string? Onl
 /// <param name="Invalid">Rows without a usable IMDb id.</param>
 public sealed record WishlistImport(int Added, int AlreadyThere, int Invalid);
 
-/// <summary>A wishlist entry, with whether SilverScreen.db has the title now and the file it is linked to, if any.</summary>
-public sealed record WishlistRow(WishlistItem Item, bool InSilverScreen, string? FilePath);
+/// <summary>A wishlist entry, with whether you have the title now (in SilverScreen.db with a file that's there) and the file it is linked to, if any.</summary>
+/// <param name="InLibrary">In the library, with or without a file; without one it's still to get.</param>
+public sealed record WishlistRow(WishlistItem Item, bool InSilverScreen, string? FilePath, bool InLibrary = false);
 
 /// <summary>
 /// The wishlist: titles wanted (movies and series), perhaps not owned. A search looks in the library (SilverScreen.db) first, then OMDb,
@@ -37,7 +40,8 @@ public sealed partial class WishlistController(
     IMovieInfoProvider omdb,
     ITmdbLinks tmdb,
     IImdbIdResolver tmdbSearch,
-    ILogger<WishlistController> logger)
+    ILogger<WishlistController> logger,
+    Library.LibraryFiles? libraryFiles = null)
 {
     /// <summary>
     /// "Operation Kabul, 2025" or "Operation Kabul (2025)": the title and the year. Without a comma or brackets the
@@ -112,11 +116,12 @@ public sealed partial class WishlistController(
         var inLibrary = await library.GetByImdbIdsAsync(onlineOnly.Select(s => s.ImdbId), ct).ConfigureAwait(false);
 
         var titles = await EnglishTitlesAsync(onlineOnly.Select(s => s.ImdbId), ct).ConfigureAwait(false);
+        var withFile = await WithFileAsync(localIds.Concat(inLibrary.Keys), ct).ConfigureAwait(false);
 
         var hits = local
-            .Select(i => new WishlistHit(i.ImdbId, i.Title, Clean(i.Year), Clean(i.Type), true, wanted.Contains(i.ImdbId)))
+            .Select(i => new WishlistHit(i.ImdbId, i.Title, Clean(i.Year), Clean(i.Type), withFile.Contains(i.ImdbId), wanted.Contains(i.ImdbId), InLibrary: true))
             .Concat(onlineOnly.Select(s => new WishlistHit(s.ImdbId, titles.GetValueOrDefault(s.ImdbId) ?? s.Title, Clean(s.Year), Clean(s.Type),
-                inLibrary.ContainsKey(s.ImdbId), wanted.Contains(s.ImdbId))))
+                withFile.Contains(s.ImdbId), wanted.Contains(s.ImdbId), inLibrary.ContainsKey(s.ImdbId))))
             .ToList();
         return new WishlistSearch(hits, onlineError);
     }
@@ -210,6 +215,10 @@ public sealed partial class WishlistController(
     [GeneratedRegex(@"_S(\d+)E(\d+)$", RegexOptions.IgnoreCase)]
     private static partial Regex EpisodeNumbers();
 
+    /// <summary>Whether the title is on the wishlist.</summary>
+    public async Task<bool> IsOnWishlistAsync(string imdbId, CancellationToken ct = default) =>
+        await wishlist.GetAsync(imdbId, ct).ConfigureAwait(false) is not null;
+
     public async Task<bool> RemoveAsync(string imdbId, CancellationToken ct = default)
     {
         var removed = await wishlist.RemoveAsync(imdbId, ct).ConfigureAwait(false);
@@ -217,20 +226,29 @@ public sealed partial class WishlistController(
         return removed;
     }
 
-    /// <summary>The wishlist, those to get first, then by title; whether the library has each title is looked up now.</summary>
+    /// <summary>
+    /// The wishlist, those to get first, then by title. Whether you have each title (in the library with a file that's
+    /// there) is looked up now; one in the library without a file is still to get.
+    /// </summary>
     public async Task<IReadOnlyList<WishlistRow>> GetAsync(CancellationToken ct = default)
     {
         var items = await wishlist.GetAllAsync(ct).ConfigureAwait(false);
         var inLibrary = await library.GetByImdbIdsAsync(items.Select(i => i.ImdbId), ct).ConfigureAwait(false);
+        var withFile = await WithFileAsync(inLibrary.Keys, ct).ConfigureAwait(false);
         var rows = new List<WishlistRow>();
         foreach (var item in items)
         {
-            var have = inLibrary.ContainsKey(item.ImdbId);
-            var file = have ? (await files.GetByImdbIdAsync(item.ImdbId, ct).ConfigureAwait(false))?.FullName : null;
-            rows.Add(new WishlistRow(item, have, file));
+            var isInLibrary = inLibrary.ContainsKey(item.ImdbId);
+            var file = isInLibrary ? (await files.GetByImdbIdAsync(item.ImdbId, ct).ConfigureAwait(false))?.FullName : null;
+            rows.Add(new WishlistRow(item, withFile.Contains(item.ImdbId), file, isInLibrary));
         }
         return rows.OrderBy(r => r.InSilverScreen).ThenBy(r => r.Item.Title, StringComparer.CurrentCultureIgnoreCase).ToList();
     }
+
+    /// <summary>Those with a file that's there; without a way to check, every library title counts (as before).</summary>
+    private async Task<IReadOnlySet<string>> WithFileAsync(IEnumerable<string> libraryIds, CancellationToken ct) =>
+        libraryFiles is null ? libraryIds.ToHashSet(StringComparer.OrdinalIgnoreCase)
+            : await libraryFiles.WithFileAsync(libraryIds, ct).ConfigureAwait(false);
 
     /// <summary>
     /// The list as CSV for Excel (see <see cref="Csv"/>), with "In SilverScreen" as true/false to sort or filter on.

@@ -140,8 +140,9 @@ public partial class MovieDetailsForm : AsyncForm
         var meta = new Label
         {
             AutoSize = true, MaximumSize = new Size(width, 0), Margin = new Padding(0, 2, 0, 4),
-            Text = s.InLibrary ? $"{s.YearAndRating} · In SilverScreen" : s.YearAndRating,
-            ForeColor = s.InLibrary ? Color.SeaGreen : SystemColors.GrayText,
+            // Green with a file that's there; salmon in the library without one (e.g. imported from OMDb).
+            Text = s.HasFile ? $"{s.YearAndRating} · In SilverScreen" : s.InLibrary ? $"{s.YearAndRating} · In SilverScreen, no file" : s.YearAndRating,
+            ForeColor = s.HasFile ? Color.SeaGreen : s.InLibrary ? TrendingForm.NoFile : SystemColors.GrayText,
         };
         var add = new Button { Text = "+ Wishlist", AutoSize = true, Margin = new Padding(0), UseVisualStyleBackColor = true };
 

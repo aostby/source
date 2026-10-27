@@ -306,6 +306,34 @@ public sealed class MovieControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task A_similar_movie_is_In_SilverScreen_only_with_a_file_that_is_there()
+    {
+        var folder = Directory.CreateTempSubdirectory("kino-similar-").FullName;
+        try
+        {
+            var file = Path.Combine(folder, "The Matrix.mkv");
+            File.WriteAllText(file, "");
+            var tmdb = new FakeTmdbLinks();
+            tmdb.Similar.AddRange([new("tt0133093", "The Matrix", "1999"), new("tt34890576", "Clayface", "2026")]);
+            await _repo.UpsertAsync(LiteDbMovieRepositoryTests.Movie("tt0133093", "The Matrix"));
+            await _repo.UpsertAsync(LiteDbMovieRepositoryTests.Movie("tt34890576", "Clayface")); // imported, no file
+            await _files.UpsertAsync(new Kolibri.Kino.Core.Models.FileItem { ImdbId = "tt0133093", FullName = file });
+            var libraryFiles = new Kolibri.Kino.Controllers.Library.LibraryFiles(_files, new FileSystemMediaScanner(),
+                Microsoft.Extensions.Options.Options.Create(new Kolibri.Kino.Core.KinoOptions()));
+            var movies = new MovieController(_repo, _omdb, _files, tmdb, new NoPosters(), new FakePlex(), NullLogger<MovieController>.Instance,
+                libraryFiles: libraryFiles);
+
+            var similar = await movies.GetSimilarAsync("tt0068767");
+
+            Assert.Equal([(true, true), (true, false)], similar.Select(s => (s.InLibrary, s.HasFile)));
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Import_stores_item_from_provider()
     {
         _omdb.Add(LiteDbMovieRepositoryTests.Movie("tt0133093", "The Matrix"));

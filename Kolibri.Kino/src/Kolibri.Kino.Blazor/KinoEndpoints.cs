@@ -20,6 +20,7 @@ internal static partial class KinoEndpoints
         app.MapGet("/export/watchlist", ExportWatchlistAsync);
         app.MapGet("/export/wishlist", ExportWishlistAsync);
         app.MapGet("/export/ratings", ExportRatingsAsync);
+        app.MapGet("/trending/image/{kind}/{tmdbId:int}", TrendingImageAsync);
     }
 
     /// <summary>
@@ -70,6 +71,19 @@ internal static partial class KinoEndpoints
         {
             return ExportFailed(logs, ex, "the wishlist");
         }
+    }
+
+    /// <summary>A trending title's poster or person's photo, from the image cache (fetched from TMDb the first time).</summary>
+    private static async Task<IResult> TrendingImageAsync(string kind, int tmdbId,
+        Kolibri.Kino.Controllers.Trending.TrendingController trending, HttpContext http, CancellationToken ct)
+    {
+        if (!Enum.TryParse<Kolibri.Kino.Core.Models.TrendingKind>(kind, ignoreCase: true, out var list)) return Results.NotFound();
+
+        var bytes = await trending.GetImageAsync(list, tmdbId, ct);
+        if (bytes is null) return Results.NotFound();
+
+        http.Response.Headers.CacheControl = "public, max-age=604800";
+        return Results.File(bytes, ImageType(bytes));
     }
 
     /// <summary>Your ratings as a JSON file, for Settings → Importer vurderinger fra fil in the Windows app.</summary>

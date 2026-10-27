@@ -42,6 +42,7 @@ Kino uses the same database as SilverScreen. Press <kbd>F1</kbd> in any window t
   <li><a href="#local-series">Local series</a></li>
   <li><a href="#watchlists">Watchlists</a></li>
   <li><a href="#wishlist">Wishlist</a></li>
+  <li><a href="#trending">What's Up: Trending</a></li>
   <li><a href="#usage">API usage report</a></li>
   <li><a href="#log">Log</a></li>
   <li><a href="#windows">Windows and keys</a></li>
@@ -283,6 +284,20 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
       <b>IMDb id</b> is on the wishlist already is skipped.</li>
   <li>The wishlist is its own list (KinoWishlist in the database), apart from the watchlists, so a title can be on both.
       It is shared with the web app's Wishlist page.</li>
+</ul>
+
+<h2 id="trending">What's Up: Trending</h2>
+<p><b>What's Up → Trending</b> shows what's trending on TMDb this week, outside your library: <b>Movies</b>,
+<b>TV shows</b> or <b>People</b> (the buttons at the top switch between them). TMDb lists 20 of each.</p>
+<ul>
+  <li>Each card has the poster (or photo), the title, the year and the IMDb rating when the title is in your library,
+      else TMDb's own score, and the start of the plot. <b>In SilverScreen</b> (green) means it's in your library.</li>
+  <li>Click a movie or TV show for its details, as elsewhere. A person shows the titles in your library they're in, as
+      actor or director, best rated first (on the web, the Library filtered by them); with none, it offers their TMDb page.</li>
+  <li>The lists are kept in the database (KinoTrending) for a few hours, so opening the window again doesn't ask TMDb.
+      <b>Refresh</b> asks TMDb now. If TMDb can't be reached, the last list is shown and the status bar says from when.
+      Posters and photos go in the image cache like other posters. It needs a TMDb key (see <a href="#keys">API keys</a>).</li>
+  <li>The web app has the same lists on its <b>Trending</b> page.</li>
 </ul>
 
 <h2 id="usage">API usage report</h2>

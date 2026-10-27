@@ -31,6 +31,37 @@ public sealed class WishlistTests : IDisposable
         _temp.Dispose();
     }
 
+    [Fact]
+    public async Task A_title_in_the_library_without_a_file_is_still_to_get()
+    {
+        var folder = Directory.CreateTempSubdirectory("kino-wishlist-").FullName;
+        try
+        {
+            var file = Path.Combine(folder, "Have.mkv");
+            File.WriteAllText(file, "");
+            await _movies.UpsertAsync(LiteDbMovieRepositoryTests.Movie("tt0000001", "Have"));
+            await _movies.UpsertAsync(LiteDbMovieRepositoryTests.Movie("tt0000002", "Imported, no file"));
+            await _files.UpsertAsync(new Kolibri.Kino.Core.Models.FileItem { ImdbId = "tt0000001", FullName = file });
+            _omdb.Add(LiteDbMovieRepositoryTests.Movie("tt0000003", "To get"));
+            var libraryFiles = new Kolibri.Kino.Controllers.Library.LibraryFiles(_files, new FileSystemMediaScanner(),
+                Microsoft.Extensions.Options.Options.Create(new Kolibri.Kino.Core.KinoOptions()));
+            var wishlist = new WishlistController(new LiteDbWishlistRepository(_db), _movies, _files, _omdb, _tmdb, _tmdbSearch,
+                NullLogger<WishlistController>.Instance, libraryFiles);
+            foreach (var id in new[] { "tt0000001", "tt0000002", "tt0000003" }) await wishlist.AddAsync(id);
+
+            var rows = await wishlist.GetAsync();
+
+            // To get first: the one not in the library and the one without a file, then the one you have.
+            Assert.Equal([("Imported, no file", false, true), ("To get", false, false), ("Have", true, true)],
+                rows.Select(r => (r.Item.Title, r.InSilverScreen, r.InLibrary)));
+            Assert.Contains(";false;", WishlistController.ToCsv(rows).Split('\n').Single(l => l.StartsWith("Imported")));
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData("Operation Kabul, 2025", "Operation Kabul", 2025)]
     [InlineData("Operation Kabul (2025)", "Operation Kabul", 2025)]
