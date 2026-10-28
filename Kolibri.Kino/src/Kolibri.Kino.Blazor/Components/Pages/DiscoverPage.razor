@@ -1,0 +1,171 @@
+@page "/discover"
+@using Kolibri.Kino.Controllers.Discover
+@using Kolibri.Kino.Controllers.Trending
+@inherits KinoPage
+@inject DiscoverController Discover
+@inject NavigationManager Nav
+
+@* TMDb's movies or TV shows for a season (any of its keywords), with genre, years, rating and sort, 20 at a time with
+   Show more. Opens on the season we're in. The choices are in the address, so Back from a title returns here; Show
+   more is not (Back gives the first 20 again). Pages are kept in the database for a few hours. *@
+
+<PageTitle>Discover · Kolibri Kino</PageTitle>
+
+<h1>Discover</h1>
+
+<div class="toolbar">
+    <div class="chips" role="group" aria-label="Season">
+        @foreach (var season in DiscoverSeasons.All)
+        {
+            var key = DiscoverChoices.Key(season.Season);
+            <button class="chip @(season.Season == Filter.Season ? "on" : "")" @onclick="() => Go(SeasonParameter, key)">@season.Label</button>
+        }
+    </div>
+</div>
+
+<div class="filters">
+    <div class="chips" role="group" aria-label="Movies or TV shows">
+        <button class="chip @(Filter.Series ? "" : "on")" @onclick="() => Go(ListParameter, null, (GenreParameter, null))">Movies</button>
+        <button class="chip @(Filter.Series ? "on" : "")" @onclick="() => Go(ListParameter, TvKey, (GenreParameter, null))">TV shows</button>
+    </div>
+    <select aria-label="Genre" value="@(Filter.GenreId?.ToString() ?? "")" @onchange="e => Go(GenreParameter, e.Value as string)">
+        <option value="">All genres</option>
+        @foreach (var genre in _genres)
+        {
+            <option value="@genre.Id">@genre.Name</option>
+        }
+    </select>
+    <select aria-label="Years" value="@(Years ?? "")" @onchange="e => Go(YearsParameter, e.Value as string)">
+        @foreach (var (key, label, _, _) in DiscoverChoices.Years)
+        {
+            <option value="@key">@label</option>
+        }
+    </select>
+    <select aria-label="Rating" title="TMDb's users' average" value="@(Rating ?? "")" @onchange="e => Go(RatingParameter, e.Value as string)">
+        @foreach (var (key, label, _) in DiscoverChoices.Ratings)
+        {
+            <option value="@key">@label</option>
+        }
+    </select>
+    <select aria-label="Sort" value="@(Sort ?? "")" @onchange="e => Go(SortParameter, e.Value as string)">
+        @foreach (var (key, label, _) in DiscoverChoices.Sorts)
+        {
+            <option value="@key">@label</option>
+        }
+    </select>
+    <label class="check" title="Leave out the titles you have (In SilverScreen, with a file)">
+        <input type="checkbox" checked="@Hide" @onchange="HideChanged" /> Hide what I have
+    </label>
+    <button class="sort" disabled="@Busy" title="Ask TMDb again now" @onclick="() => SearchAsync(refresh: true)">Refresh</button>
+</div>
+
+<StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
+
+<div class="cards">
+    @foreach (var entry in Shown)
+    {
+        <TitleCard Entry="entry" Series="@Filter.Series" Image="@($"discover/image/{(Filter.Series ? TvKey : "movie")}/{entry.Item.TmdbId}")" />
+    }
+</div>
+
+@if (_last is { HasMore: true })
+{
+    <nav class="pager">
+        <button disabled="@Busy" @onclick="ShowMoreAsync">Show more</button>
+    </nav>
+}
+
+@code {
+    private const string SeasonParameter = "season";
+    private const string ListParameter = "list";
+    private const string GenreParameter = "genre";
+    private const string YearsParameter = "years";
+    private const string RatingParameter = "rating";
+    private const string SortParameter = "sort";
+    private const string HideParameter = "hide";
+    private const string TvKey = "tv";
+
+    [SupplyParameterFromQuery(Name = SeasonParameter)] public string? Season { get; set; }
+    [SupplyParameterFromQuery(Name = ListParameter)] public string? List { get; set; }
+    [SupplyParameterFromQuery(Name = GenreParameter)] public int? Genre { get; set; }
+    [SupplyParameterFromQuery(Name = YearsParameter)] public string? Years { get; set; }
+    [SupplyParameterFromQuery(Name = RatingParameter)] public string? Rating { get; set; }
+    [SupplyParameterFromQuery(Name = SortParameter)] public string? Sort { get; set; }
+    [SupplyParameterFromQuery(Name = HideParameter)] public bool Hide { get; set; }
+
+    private IReadOnlyList<Kolibri.Kino.Core.Models.DiscoverGenre> _genres = [];
+    private bool? _genresForSeries;
+    private readonly List<TrendingEntry> _entries = [];
+    private DiscoverResult? _last;
+
+    /// <summary>The choices in the address; the season we're in when none is chosen.</summary>
+    private DiscoverFilter Filter
+    {
+        get
+        {
+            var years = DiscoverChoices.Years.FirstOrDefault(y => y.Key == (Years ?? ""));
+            return new DiscoverFilter(
+                DiscoverChoices.SeasonOf(Season) ?? DiscoverController.CurrentSeason(),
+                List == TvKey,
+                Genre,
+                years.From,
+                years.To,
+                DiscoverChoices.Ratings.FirstOrDefault(r => r.Key == (Rating ?? "")).Min,
+                DiscoverChoices.Sorts.FirstOrDefault(s => s.Key == (Sort ?? "")).Sort);
+        }
+    }
+
+    private IEnumerable<TrendingEntry> Shown => _entries.Where(e => !Hide || !e.HasFile);
+
+    private string? Summary
+    {
+        get
+        {
+            if (_last is not { } r) return null;
+            if (r.Note is { } note) return note;
+            var hidden = _entries.Count - Shown.Count();
+            return $"{DiscoverSeasons.Of(r.Filter.Season).Label} {(r.Filter.Series ? "TV shows" : "movies")} on TMDb: {_entries.Count} of {r.TotalResults:N0}, "
+                + $"{_entries.Count(e => e.HasFile)} in SilverScreen" + (hidden > 0 ? $" ({hidden} hidden)" : "")
+                + (r.FetchedUtc is { } at ? $". Updated {at.ToLocalTime():g}." : ".");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var filter = Filter;
+        if (_genresForSeries != filter.Series)
+        {
+            await RunAsync("Fetching TMDb's genres…", async ct => _genres = await Discover.GetGenresAsync(filter.Series, ct));
+            _genresForSeries = filter.Series;
+        }
+        // Hide only filters what's shown; anything else is a new search.
+        if (_last?.Filter != filter) await SearchAsync(refresh: false);
+    }
+
+    private Task SearchAsync(bool refresh) => RunAsync($"Discovering {DiscoverSeasons.Of(Filter.Season).Label}…", async ct =>
+    {
+        var result = await Discover.GetAsync(Filter, 1, refresh, ct);
+        _entries.Clear();
+        _entries.AddRange(result.Entries);
+        _last = result;
+    });
+
+    /// <summary>The next 20, under the ones shown.</summary>
+    private Task ShowMoreAsync() => _last is not { HasMore: true } last ? Task.CompletedTask : RunAsync("Fetching 20 more…", async ct =>
+    {
+        var result = await Discover.GetAsync(last.Filter, last.Page + 1, ct: ct);
+        var known = _entries.Select(e => e.Item.TmdbId).ToHashSet();
+        _entries.AddRange(result.Entries.Where(e => known.Add(e.Item.TmdbId))); // TMDb's pages can overlap when the order shifts
+        _last = result;
+    });
+
+    private void HideChanged(ChangeEventArgs e) => Go(HideParameter, e.Value is true ? "true" : null);
+
+    /// <summary>A choice into the address (null or empty removes it); OnParametersSetAsync does the rest.</summary>
+    private void Go(string parameter, string? value, params (string Name, string? Value)[] also)
+    {
+        var changes = new Dictionary<string, object?> { [parameter] = string.IsNullOrEmpty(value) ? null : value };
+        foreach (var (name, v) in also) changes[name] = v;
+        Nav.NavigateTo(Nav.GetUriWithQueryParameters(changes));
+    }
+}

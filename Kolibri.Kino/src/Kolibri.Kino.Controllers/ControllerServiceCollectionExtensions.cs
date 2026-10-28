@@ -33,6 +33,7 @@ public static class ControllerServiceCollectionExtensions
         services.AddTransient<WishlistController>();
         services.AddTransient<Ratings.RatingController>();
         services.AddTransient<Trending.TrendingController>();
+        services.AddTransient<Discover.DiscoverController>();
         services.AddTransient<LocalSeriesController>();
         services.AddTransient<NewSeriesController>();
         services.AddTransient<RecentSeriesController>();

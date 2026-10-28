@@ -31,9 +31,9 @@
         {
             var item = entry.Item;
             var image = $"trending/image/{result.Kind}/{item.TmdbId}";
-            <article class="card trending-card">
-                @if (result.Kind == TrendingKind.People)
-                {
+            @if (result.Kind == TrendingKind.People)
+            {
+                <article class="card trending-card">
                     <a href="@PersonLink(item.Title)" class="card-link" title="@item.Title in the library">
                         <PosterImage Src="@(item.ImageUrl is null ? null : image)" />
                         <div class="card-body">
@@ -48,41 +48,12 @@
                             }
                         </div>
                     </a>
-                }
-                else
-                {
-                    var external = item.ImdbId is null;
-                    <a href="@TitleLink(result.Kind, item)" class="card-link" target="@(external ? "_blank" : null)" rel="@(external ? "noopener" : null)">
-                        <PosterImage Src="@(item.ImageUrl is null && !entry.InLibrary ? null : image)" />
-                        <div class="card-body">
-                            <h2 class="card-title">@item.Title</h2>
-                            <div class="card-meta">
-                                <span>@item.Year</span>
-                                @if (entry.ImdbRating is { } imdb)
-                                {
-                                    <Rating Value="@imdb" />
-                                }
-                                else if (item.TmdbRating is { } score)
-                                {
-                                    <span title="TMDb's users' average">TMDb @score.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)</span>
-                                }
-                            </div>
-                            @if (entry.HasFile)
-                            {
-                                <span class="tag good">In SilverScreen</span>
-                            }
-                            else if (entry.InLibrary)
-                            {
-                                <span class="tag nofile" title="In the library, but not linked to a file that's there">In SilverScreen, no file</span>
-                            }
-                            @if (item.Overview is { } overview)
-                            {
-                                <p class="card-overview" title="@overview">@overview</p>
-                            }
-                        </div>
-                    </a>
-                }
-            </article>
+                </article>
+            }
+            else
+            {
+                <TitleCard Entry="entry" Series="@(result.Kind == TrendingKind.Series)" Image="@image" />
+            }
         }
     </div>
 }
@@ -111,10 +82,6 @@
         _result = null;
         _result = await Trending.GetAsync(Kind, refresh, ct);
     });
-
-    /// <summary>The details page (as the library's), or TMDb's page when TMDb has no IMDb id for it.</summary>
-    private static string TitleLink(TrendingKind kind, TrendingItem item) =>
-        item.ImdbId is { } id ? MovieDetails.DetailsUrl(id, kind == TrendingKind.Series ? "series" : "movie") : TrendingController.TmdbPage(kind, item.TmdbId);
 
     /// <summary>The Library filtered by the person, best rated first: what an actor's name on a details page opens.</summary>
     private static string PersonLink(string name) => $"./?person={Uri.EscapeDataString(name)}&sort=rating";

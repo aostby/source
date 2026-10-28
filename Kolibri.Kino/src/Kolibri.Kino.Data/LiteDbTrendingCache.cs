@@ -16,7 +16,7 @@ public sealed class LiteDbTrendingCache(KinoDatabase db) : ITrendingCache
         Task.Run<(IReadOnlyList<TrendingItem>, DateTime)?>(() =>
         {
             if (_docs.FindById(kind.ToString()) is not { } doc || !doc["Fetched"].IsDateTime) return null;
-            var items = doc["Items"].IsArray ? doc["Items"].AsArray.Where(v => v.IsDocument).Select(v => FromDocument(v.AsDocument)).ToList() : [];
+            var items = FromArray(doc["Items"]);
             return (items, DateTime.SpecifyKind(doc["Fetched"].AsDateTime.ToUniversalTime(), DateTimeKind.Utc));
         }, ct);
 
@@ -25,18 +25,25 @@ public sealed class LiteDbTrendingCache(KinoDatabase db) : ITrendingCache
         {
             ["_id"] = kind.ToString(),
             ["Fetched"] = fetchedUtc.ToUniversalTime(),
-            ["Items"] = new BsonArray(items.Select(i => (BsonValue)new BsonDocument
-            {
-                ["TmdbId"] = i.TmdbId,
-                ["Title"] = i.Title,
-                ["Year"] = i.Year,
-                ["ImdbId"] = i.ImdbId,
-                ["Image"] = i.ImageUrl,
-                ["TmdbRating"] = i.TmdbRating is { } r ? new BsonValue(r) : BsonValue.Null,
-                ["Overview"] = i.Overview,
-                ["KnownFor"] = new BsonArray(i.KnownFor.Select(k => new BsonValue(k))),
-            })),
+            ["Items"] = ToArray(items),
         }), ct);
+
+    /// <summary>The items as stored here and in KinoDiscover.</summary>
+    internal static BsonArray ToArray(IEnumerable<TrendingItem> items) =>
+        new(items.Select(i => (BsonValue)new BsonDocument
+        {
+            ["TmdbId"] = i.TmdbId,
+            ["Title"] = i.Title,
+            ["Year"] = i.Year,
+            ["ImdbId"] = i.ImdbId,
+            ["Image"] = i.ImageUrl,
+            ["TmdbRating"] = i.TmdbRating is { } r ? new BsonValue(r) : BsonValue.Null,
+            ["Overview"] = i.Overview,
+            ["KnownFor"] = new BsonArray(i.KnownFor.Select(k => new BsonValue(k))),
+        }));
+
+    internal static List<TrendingItem> FromArray(BsonValue value) =>
+        value.IsArray ? value.AsArray.Where(v => v.IsDocument).Select(v => FromDocument(v.AsDocument)).ToList() : [];
 
     private static TrendingItem FromDocument(BsonDocument d) => new(
         d["TmdbId"].IsNumber ? d["TmdbId"].AsInt32 : 0,

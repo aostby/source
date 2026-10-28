@@ -21,6 +21,7 @@ internal static partial class KinoEndpoints
         app.MapGet("/export/wishlist", ExportWishlistAsync);
         app.MapGet("/export/ratings", ExportRatingsAsync);
         app.MapGet("/trending/image/{kind}/{tmdbId:int}", TrendingImageAsync);
+        app.MapGet("/discover/image/{list}/{tmdbId:int}", DiscoverImageAsync);
     }
 
     /// <summary>
@@ -80,6 +81,19 @@ internal static partial class KinoEndpoints
         if (!Enum.TryParse<Kolibri.Kino.Core.Models.TrendingKind>(kind, ignoreCase: true, out var list)) return Results.NotFound();
 
         var bytes = await trending.GetImageAsync(list, tmdbId, ct);
+        if (bytes is null) return Results.NotFound();
+
+        http.Response.Headers.CacheControl = "public, max-age=604800";
+        return Results.File(bytes, ImageType(bytes));
+    }
+
+    /// <summary>A Discover title's poster (list = movie or tv), from the image cache (fetched from TMDb the first time).</summary>
+    private static async Task<IResult> DiscoverImageAsync(string list, int tmdbId,
+        Kolibri.Kino.Controllers.Discover.DiscoverController discover, HttpContext http, CancellationToken ct)
+    {
+        if (list is not ("movie" or "tv")) return Results.NotFound();
+
+        var bytes = await discover.GetImageAsync(list == "tv", tmdbId, ct);
         if (bytes is null) return Results.NotFound();
 
         http.Response.Headers.CacheControl = "public, max-age=604800";

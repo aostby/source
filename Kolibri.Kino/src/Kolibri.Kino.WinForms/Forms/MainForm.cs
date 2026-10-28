@@ -130,6 +130,9 @@ public partial class MainForm : Form, IStatusDisplay
     /// <summary>One Trending window: Movies when it opens; already open, it's brought forward as it is.</summary>
     private void menuTrending_Click(object sender, EventArgs e) => this.ShowSingle<TrendingForm>(_services);
 
+    /// <summary>One Discover window: the season we're in when it opens; already open, it's brought forward as it is.</summary>
+    private void menuDiscover_Click(object sender, EventArgs e) => this.ShowSingle<DiscoverForm>(_services);
+
     #endregion
 
     #region Window (as in SilverScreen; the open windows are listed below)
