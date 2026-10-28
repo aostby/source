@@ -338,3 +338,6 @@ label.button { cursor: pointer; }
    (.settings label would otherwise make the label a grey block of its own with space above). */
 .settings .export-buttons { align-items: stretch; }
 .settings .export-buttons .button { display: inline-flex; align-items: center; margin: 0; color: var(--text); line-height: 1.45; }
+
+/* Discover: the "Hide what I have" box among the filters */
+.filters .check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); white-space: nowrap; }

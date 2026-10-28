@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using Kolibri.Kino.Controllers.Trending;
 using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.WinForms.Controls;
@@ -16,10 +15,6 @@ public sealed class TrendingForm : AsyncForm
 {
     public override string HelpTopic => "trending";
 
-    private const int CardWidth = 150;
-
-    /// <summary>Salmon, a little darker than Color.Salmon so it reads on white: in the library without a file.</summary>
-    internal static readonly Color NoFile = Color.FromArgb(226, 104, 86);
 
     private readonly TrendingController _trending;
     private readonly IServiceProvider _services;
@@ -124,71 +119,20 @@ public sealed class TrendingForm : AsyncForm
         }
     }
 
-    /// <summary>Poster and title (both open it), year and rating, In SilverScreen in green, and the plot or known-for line.</summary>
+    /// <summary>A title's card (TitleCards), or a person's: photo, name, how many library titles, and known-for.</summary>
     private (Control Card, PictureBox Poster) Card(TrendingKind kind, TrendingEntry entry)
     {
         var item = entry.Item;
-        var card = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true, Margin = new Padding(0, 0, 14, 16) };
-        var poster = new PictureBox
-        {
-            Size = new Size(CardWidth, 225), SizeMode = PictureBoxSizeMode.Zoom, BackColor = SystemColors.ControlLight,
-            Cursor = Cursors.Hand, Margin = new Padding(0),
-        };
-        var title = new LinkLabel
-        {
-            Text = item.Title, AutoSize = true, MaximumSize = new Size(CardWidth, 0), Margin = new Padding(0, 4, 0, 0),
-            Font = new Font(Font, FontStyle.Bold),
-        };
-        card.Controls.AddRange([poster, title]);
+        if (kind != TrendingKind.People) return TitleCards.ForTitle(entry, Font, _toolTip, () => Open(kind, item));
 
-        if (kind == TrendingKind.People)
-        {
-            if (entry.LibraryTitles > 0) card.Controls.Add(Green($"{entry.LibraryTitles} in SilverScreen"));
-            if (item.KnownFor.Count > 0) card.Controls.Add(Small($"Known for {string.Join(", ", item.KnownFor)}"));
-            _toolTip.SetToolTip(poster, $"{item.Title}: the library's titles with them");
-        }
-        else
-        {
-            var rating = entry.ImdbRating is { } imdb ? $"IMDb {imdb}"
-                : item.TmdbRating is { } tmdb ? $"TMDb {tmdb.ToString("0.0", CultureInfo.InvariantCulture)}" : null;
-            card.Controls.Add(new Label
-            {
-                AutoSize = true, MaximumSize = new Size(CardWidth, 0), Margin = new Padding(0, 2, 0, 0), ForeColor = SystemColors.GrayText,
-                Text = string.Join(" · ", new[] { item.Year, rating }.OfType<string>()),
-            });
-            if (entry.HasFile) card.Controls.Add(Green("In SilverScreen"));
-            else if (entry.InLibrary)
-            {
-                var noFile = Green("In SilverScreen, no file");
-                noFile.ForeColor = NoFile;
-                _toolTip.SetToolTip(noFile, "In the library, but not linked to a file that's there.");
-                card.Controls.Add(noFile);
-            }
-            if (item.Overview is { } overview)
-            {
-                var plot = Small(overview);
-                _toolTip.SetToolTip(plot, overview);
-                card.Controls.Add(plot);
-            }
-            _toolTip.SetToolTip(poster, item.ImdbId is null ? $"{item.Title}: TMDb's page" : $"{item.Title} ({item.Year}): details");
-        }
-
+        var (card, poster, title) = TitleCards.Frame(item.Title, Font);
+        if (entry.LibraryTitles > 0) card.Controls.Add(TitleCards.Green($"{entry.LibraryTitles} in SilverScreen"));
+        if (item.KnownFor.Count > 0) card.Controls.Add(TitleCards.Small($"Known for {string.Join(", ", item.KnownFor)}", Font));
+        _toolTip.SetToolTip(poster, $"{item.Title}: the library's titles with them");
         poster.Click += (_, _) => Open(kind, item);
         title.LinkClicked += (_, _) => Open(kind, item);
         return (card, poster);
     }
-
-    private static Label Green(string text) => new()
-    {
-        AutoSize = true, Text = text, ForeColor = Color.SeaGreen, Margin = new Padding(0, 2, 0, 0),
-    };
-
-    /// <summary>A three-line, small grey text that ends in "…" when longer.</summary>
-    private Label Small(string text) => new()
-    {
-        AutoSize = false, Size = new Size(CardWidth, 46), AutoEllipsis = true, Text = text, ForeColor = SystemColors.GrayText,
-        Font = new Font(Font.FontFamily, Font.Size - 1), Margin = new Padding(0, 4, 0, 0),
-    };
 
     private void Open(TrendingKind kind, TrendingItem item)
     {

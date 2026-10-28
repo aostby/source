@@ -1,0 +1,53 @@
+@using Kolibri.Kino.Controllers.Trending
+@* A movie's or TV show's card on Trending and Discover: poster, title, year and rating (IMDb's from the library, else
+   TMDb's), In SilverScreen in green (salmon without a file), and the start of the plot. It opens the details, or
+   TMDb's page when TMDb has no IMDb id for it. *@
+@{
+    var item = Entry.Item;
+    var external = item.ImdbId is null;
+}
+<article class="card trending-card">
+    <a href="@Link" class="card-link" target="@(external ? "_blank" : null)" rel="@(external ? "noopener" : null)">
+        <PosterImage Src="@(item.ImageUrl is null && !Entry.InLibrary ? null : Image)" />
+        <div class="card-body">
+            <h2 class="card-title">@item.Title</h2>
+            <div class="card-meta">
+                <span>@item.Year</span>
+                @if (Entry.ImdbRating is { } imdb)
+                {
+                    <Rating Value="@imdb" />
+                }
+                else if (item.TmdbRating is { } score)
+                {
+                    <span title="TMDb's users' average">TMDb @score.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)</span>
+                }
+            </div>
+            @if (Entry.HasFile)
+            {
+                <span class="tag good">In SilverScreen</span>
+            }
+            else if (Entry.InLibrary)
+            {
+                <span class="tag nofile" title="In the library, but not linked to a file that's there">In SilverScreen, no file</span>
+            }
+            @if (item.Overview is { } overview)
+            {
+                <p class="card-overview" title="@overview">@overview</p>
+            }
+        </div>
+    </a>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public TrendingEntry Entry { get; set; } = default!;
+
+    /// <summary>A TV show (its details are a series page; TMDb's page is under tv/).</summary>
+    [Parameter] public bool Series { get; set; }
+
+    /// <summary>The poster's address on this site (from the image cache).</summary>
+    [Parameter, EditorRequired] public string Image { get; set; } = string.Empty;
+
+    private string Link => Entry.Item.ImdbId is { } id
+        ? MovieDetails.DetailsUrl(id, Series ? "series" : "movie")
+        : TrendingController.TmdbPage(Series ? Kolibri.Kino.Core.Models.TrendingKind.Series : Kolibri.Kino.Core.Models.TrendingKind.Movies, Entry.Item.TmdbId);
+}

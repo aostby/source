@@ -43,6 +43,7 @@ Kino uses the same database as SilverScreen. Press <kbd>F1</kbd> in any window t
   <li><a href="#watchlists">Watchlists</a></li>
   <li><a href="#wishlist">Wishlist</a></li>
   <li><a href="#trending">What's Up: Trending</a></li>
+  <li><a href="#discover">What's Up: Discover</a></li>
   <li><a href="#usage">API usage report</a></li>
   <li><a href="#log">Log</a></li>
   <li><a href="#windows">Windows and keys</a></li>
@@ -298,6 +299,21 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
       <b>Refresh</b> asks TMDb now. If TMDb can't be reached, the last list is shown and the status bar says from when.
       Posters and photos go in the image cache like other posters. It needs a TMDb key (see <a href="#keys">API keys</a>).</li>
   <li>The web app has the same lists on its <b>Trending</b> page.</li>
+</ul>
+
+<h2 id="discover">What's Up: Discover</h2>
+<p><b>What's Up → Discover</b> finds movies or TV shows on TMDb for a season: <b>Winter</b>, <b>Spring and Easter</b>,
+<b>Summer</b>, <b>Autumn and Thanksgiving</b>, <b>Halloween</b> or <b>Christmas and New Year</b>. It opens on the season we're in.</p>
+<ul>
+  <li>Each season is a set of TMDb keywords (Christmas: christmas, christmas eve, santa claus, nativity, reindeer …);
+      a title with any of them is in the season.</li>
+  <li>Narrow it down with <b>genre</b>, <b>years</b> and <b>rating</b> (TMDb's users' average), and sort by <b>Most popular</b>,
+      <b>Best rated</b> (only titles with enough votes) or <b>Newest</b> (released up to today).</li>
+  <li>20 titles at a time; <b>Show more</b> at the end fetches the next 20.</li>
+  <li>The cards are as on Trending: <b>In SilverScreen</b> (green) when the title is in your library with a file, salmon
+      when it's there without one. <b>Hide what I have</b> leaves out those you have.</li>
+  <li>Each page is kept in the database (KinoDiscover) for a few hours; <b>Refresh</b> asks TMDb now. Posters go in the
+      image cache, and each title's IMDb id is looked up once and kept. It needs a TMDb key.</li>
 </ul>
 
 <h2 id="usage">API usage report</h2>
