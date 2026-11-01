@@ -2,6 +2,7 @@
 @inherits KinoPage
 @inject SettingsController Settings
 @inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
+@inject WebSync WebSync
 
 @* Port of SettingsForm. The settings are the database's UserSettings document, shared with SilverScreen and the
    WinForms app; which user's document is Kino:SettingsUser (in a container, set it to your Windows user name). *@
@@ -112,6 +113,7 @@
             json = await reader.ReadToEndAsync(ct);
 
         var r = await Ratings.ImportAsync(json, ct);
+        if (r.Added + r.Updated > 0) WebSync.Changed(WebSyncFile.Ratings);
         _ratingCount = (await Ratings.GetAllAsync(ct)).Count;
         Status = $"Ratings from {e.File.Name}: {r.Added} new, {r.Updated} updated, {r.KeptNewer} kept (newer here)"
                  + (r.Invalid > 0 ? $", {r.Invalid} invalid left out" : "") + "."

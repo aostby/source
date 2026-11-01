@@ -66,6 +66,12 @@ public sealed class KinoOptions
     public List<HostMapping> BrowserHosts { get; set; } = [];
 
     /// <summary>
+    /// The web service on problembar.net that keeps a copy of the wishlist and your ratings. Without a URL and a key,
+    /// nothing is sent.
+    /// </summary>
+    public WebSyncOptions WebSync { get; set; } = new();
+
+    /// <summary>
     /// <paramref name="url"/> with its host replaced by the first matching <see cref="BrowserHosts"/> entry
     /// (case doesn't matter); port, path and fragment are kept. Anything else is returned unchanged.
     /// </summary>
@@ -118,6 +124,24 @@ public sealed class HostMapping
 
     /// <summary>What browsers on the network can look up, e.g. htpc.local or 192.168.5.16.</summary>
     public string To { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// <see cref="KinoOptions.WebSync"/>: post.php in uranus/apps/KolibriKino, which stores each file it gets (named as the
+/// downloads are, "Wishlist - 2026-11-01.csv") for get.php to hand out.
+/// </summary>
+public sealed class WebSyncOptions
+{
+    /// <summary>post.php's address, e.g. https://problembar.net/uranus/apps/KolibriKino/post.php. Empty turns it off.</summary>
+    public string Url { get; set; } = string.Empty;
+
+    /// <summary>The key in kino_config.php on the server, sent as X-Api-Key. Empty turns it off.</summary>
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>How long to wait after a change before sending, so a run of changes goes as one file.</summary>
+    public int DelaySeconds { get; set; } = 10;
+
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(Url) && !string.IsNullOrWhiteSpace(ApiKey);
 }
 
 public enum CleanupAfterScan

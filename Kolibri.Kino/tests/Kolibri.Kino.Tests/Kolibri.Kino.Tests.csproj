@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\src\Kolibri.Kino.Core\Kolibri.Kino.Core.csproj" />
     <ProjectReference Include="..\..\src\Kolibri.Kino.Data\Kolibri.Kino.Data.csproj" />
     <ProjectReference Include="..\..\src\Kolibri.Kino.Controllers\Kolibri.Kino.Controllers.csproj" />
+    <ProjectReference Include="..\..\src\Kolibri.Kino.Blazor\Kolibri.Kino.Blazor.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 @using Kolibri.Kino.Controllers.Ratings
 @inherits KinoPage
 @inject RatingController Ratings
+@inject WebSync WebSync
 
 @* "My rating", as Plex has it: five stars in halves (1–10) and a review. Saved in Kino and sent to Plex as your
    private rating there; the review stays in Kino (Plex keeps reviews online, not on the server). *@
@@ -76,6 +77,7 @@
     {
         var result = await Ratings.SaveAsync(ImdbId, _pick!.Value, _review, Title, ct);
         (_saved, Status) = (result.Rating, result.Message);
+        WebSync.Changed(WebSyncFile.Ratings);
         _review = _saved?.Review;
     });
 
@@ -83,5 +85,6 @@
     {
         var result = await Ratings.ClearAsync(ImdbId, ct);
         (_saved, _pick, _review, Status) = (null, null, null, result.Message);
+        WebSync.Changed(WebSyncFile.Ratings);
     });
 }

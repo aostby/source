@@ -62,6 +62,10 @@ if (Test-Path $envFile) {
         Add-Content $envFile "`n# Plex links in the browser use this name; phones can't look up HTPC but find htpc.local.`nPLEX_BROWSER_HOST=htpc.local"
         Write-Host 'Added PLEX_BROWSER_HOST=htpc.local to .env.'
     }
+    if ($current -notmatch '(?m)^KINO_WEB_API_KEY=') {
+        Add-Content $envFile "`n# The key in kino_config.php on problembar.net; the wishlist and ratings are sent there. Empty turns it off.`nKINO_WEB_API_KEY="
+        Write-Warning 'Added an empty KINO_WEB_API_KEY to .env: fill it in to send the wishlist and ratings to problembar.net.'
+    }
 } else {
     Write-Warning "$envFile is missing: copy deploy\.env.example there and fill it in before starting."
 }

@@ -2,6 +2,7 @@
 @inherits KinoPage
 @using Kolibri.Kino.Controllers.Wishlist
 @inject WishlistController Wishlist
+@inject WebSync WebSync
 
 @* Port of WishlistForm: titles wanted, perhaps not owned. Search looks in SilverScreen.db first, then OMDb, and says
    which titles are in SilverScreen and which are to get; titles from OMDb aren't put in the library (no file).
@@ -174,6 +175,7 @@ else
     private Task AddAsync(WishlistHit hit) => RunAsync($"Adding {hit.Title}…", async ct =>
     {
         var item = await Wishlist.AddAsync(hit.ImdbId, ct);
+        WebSync.Changed(WebSyncFile.Wishlist);
         await LoadAsync(ct);
         Status = $"Added {item.Title} to the wishlist ({(hit.InSilverScreen ? "in SilverScreen already" : "to get")}).";
     });
@@ -181,6 +183,7 @@ else
     private Task RemoveAsync(WishlistRow row) => RunAsync($"Removing {row.Item.Title}…", async ct =>
     {
         await Wishlist.RemoveAsync(row.Item.ImdbId, ct);
+        WebSync.Changed(WebSyncFile.Wishlist);
         _removing = null;
         await LoadAsync(ct);
         Status = $"Removed {row.Item.Title} from the wishlist.";

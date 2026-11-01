@@ -25,6 +25,8 @@ services:
       # names like HTPC, but find htpc.local (or use the IP address).
       Kino__BrowserHosts__0__From: ${PLEX_HOST_NAME:-HTPC}
       Kino__BrowserHosts__0__To: ${PLEX_BROWSER_HOST:-}
+      # The wishlist and ratings are also sent to the web service on problembar.net after each change. Empty key: off.
+      Kino__WebSync__ApiKey: ${KINO_WEB_API_KEY:-}
     # Library posters often point at the Plex server by its Windows name (http://HTPC:32400/...), which the
     # container can't resolve; this gives it the address.
     extra_hosts:
