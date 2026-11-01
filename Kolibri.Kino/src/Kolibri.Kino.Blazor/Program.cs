@@ -15,6 +15,11 @@ builder.Services
     .AddHostedService<RecentlyAddedWarmUp>()
     .AddHostedService<WatchedWarmUp>();
 
+// The wishlist and ratings are also sent to the web service on problembar.net (Kino:WebSync), in the background.
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<WebSync>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<WebSync>());
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 

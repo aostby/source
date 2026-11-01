@@ -129,9 +129,11 @@ internal static partial class KinoEndpoints
     }
 
     /// <summary>CSV as a download, with a BOM so Excel reads it as UTF-8.</summary>
-    private static IResult CsvFile(string csv, string fileName) =>
-        Results.File(new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray(),
-            "text/csv; charset=utf-8", fileName);
+    private static IResult CsvFile(string csv, string fileName) => Results.File(CsvBytes(csv), "text/csv; charset=utf-8", fileName);
+
+    /// <summary>CSV as UTF-8 with a BOM, as the downloads (and <see cref="WebSync"/>) give it.</summary>
+    public static byte[] CsvBytes(string csv) =>
+        new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
 
     /// <summary>
     /// A failed export (e.g. the database is busy and the wait for it timed out) is logged, and the browser gets a short

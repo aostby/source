@@ -11,6 +11,7 @@
 @inject WatchlistController Watchlists
 @inject LocalSeriesController LocalSeries
 @inject WishlistController Wishlist
+@inject WebSync WebSync
 @inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 @inject LibraryFiles LibraryFiles
 @inject NavigationManager Nav
@@ -318,6 +319,7 @@ else
     private Task AddToWishlistAsync() => RunAsync("Adding to the wishlist…", async ct =>
     {
         var added = await Wishlist.AddAsync(ImdbId, ct);
+        WebSync.Changed(WebSyncFile.Wishlist);
         _onWishlist = true;
         Status = $"Put {added.Title} on the wishlist.";
     });
@@ -341,6 +343,7 @@ else
     private Task WishEpisodesAsync(IReadOnlyList<SeriesEpisode> episodes) => RunAsync("Adding to the wishlist…", async ct =>
     {
         var added = await Wishlist.AddEpisodesAsync(ImdbId, episodes, ct);
+        if (added > 0) WebSync.Changed(WebSyncFile.Wishlist);
         _wishedEpisodes = await Wishlist.GetEpisodesAsync(ImdbId, ct);
         Status = added == 1 ? $"Put {LocalSeriesController.Describe(episodes)} on the wishlist."
             : $"Put {added} episodes on the wishlist ({LocalSeriesController.Describe(episodes)}).";
@@ -364,7 +367,11 @@ else
             _completeness = await LocalSeries.GetCompletenessAsync(ImdbId, onDisk);
             // Wished-for episodes that have arrived come off the wishlist.
             var arrived = await Wishlist.RemoveEpisodesOnDiskAsync(ImdbId, onDisk);
-            if (arrived.Count > 0) Status = $"Here now, so taken off the wishlist: {string.Join(", ", arrived)}.";
+            if (arrived.Count > 0)
+            {
+                Status = $"Here now, so taken off the wishlist: {string.Join(", ", arrived)}.";
+                WebSync.Changed(WebSyncFile.Wishlist);
+            }
             _wishedEpisodes = await Wishlist.GetEpisodesAsync(ImdbId);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
