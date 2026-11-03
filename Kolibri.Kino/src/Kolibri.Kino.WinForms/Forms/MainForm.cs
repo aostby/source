@@ -133,6 +133,9 @@ public partial class MainForm : Form, IStatusDisplay
     /// <summary>One Discover window: the season we're in when it opens; already open, it's brought forward as it is.</summary>
     private void menuDiscover_Click(object sender, EventArgs e) => this.ShowSingle<DiscoverForm>(_services);
 
+    /// <summary>One Suggestions window: For you when it opens; already open, it's brought forward as it is.</summary>
+    private void menuSuggestions_Click(object sender, EventArgs e) => this.ShowSingle<SuggestionsForm>(_services);
+
     #endregion
 
     #region Window (as in SilverScreen; the open windows are listed below)

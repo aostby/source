@@ -73,6 +73,17 @@ public sealed class UserSettings
     [Category("Plex"), DisplayName("Plex server name"), Description("Host name of the Plex server on your network, e.g. HTPC. Kino connects to http://<name>:32400.")]
     public string? XPlexServerName { get; set; }
 
+    [Category("Uranus"), DisplayName("Uranus token (X-Api-Key)"),
+     Description("The key in kino_config.php on problembar.net (Kino on the web sends your ratings there). With the URL, " +
+                 "Import my ratings in What's Up → Suggestions fetches them.")]
+    [PasswordPropertyText(true)]
+    public string? UranusApiKey { get; set; }
+
+    [Category("Uranus"), DisplayName("Uranus URL"),
+     Description("Kino's web service on problembar.net, e.g. https://problembar.net/uranus/apps/KolibriKino/ " +
+                 "(the address of get.php or post.php there works too).")]
+    public string? UranusUrl { get; set; }
+
     [Category("Other"), DisplayName("SQL connection"), Description("Used by SilverScreen's IMDb data import.")]
     public string? DefaultConnection { get; set; }
 
@@ -81,6 +92,19 @@ public sealed class UserSettings
 
     /// <summary>The Plex base URL, or null when no server name is set. (A method, so it isn't stored.)</summary>
     public string? GetPlexBaseUrl() => string.IsNullOrWhiteSpace(XPlexServerName) ? null : $"http://{XPlexServerName.Trim()}:32400";
+
+    /// <summary>
+    /// get.php's address on Uranus, from <see cref="UranusUrl"/> (the folder, or a .php in it); null when it isn't an
+    /// http(s) address. (A method, so it isn't stored.)
+    /// </summary>
+    public string? GetUranusGetUrl()
+    {
+        if (string.IsNullOrWhiteSpace(UranusUrl) || !Uri.TryCreate(UranusUrl.Trim(), UriKind.Absolute, out var uri)
+            || uri.Scheme is not ("http" or "https")) return null;
+        var path = uri.AbsolutePath;
+        path = path.EndsWith(".php", StringComparison.OrdinalIgnoreCase) ? path[..(path.LastIndexOf('/') + 1)] : path.TrimEnd('/') + "/";
+        return new UriBuilder(uri) { Path = path + "get.php", Query = string.Empty, Fragment = string.Empty }.Uri.AbsoluteUri;
+    }
 
     public UserSettings Clone()
     {

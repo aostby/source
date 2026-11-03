@@ -21,7 +21,7 @@
             <button class="chip @(key == TypeKey ? "on" : "")" @onclick="() => Go(type: key, shown: 0)">@label (@Count(key).ToString("N0"))</button>
         }
     </div>
-    <select class="sort" aria-label="Watched" value="@WatchedFilter.Value(SeenKey)" @onchange="e => Go(seen: e.Value as string ?? string.Empty, shown: 0)">
+    <select class="sort" aria-label="Watched" value="@WatchedFilter.Value(SeenKey)" @onchange="e => Go(seen: WatchedFilter.ForAddress(e.Value as string), shown: 0)">
         @foreach (var (value, label) in WatchedFilter.Choices)
         {
             <option value="@value">@label</option>

@@ -1,0 +1,178 @@
+@page "/guide"
+
+@* The user guide for the web app, linked from the bottom of Settings. Plain text; keep it in step with the pages. *@
+
+<PageTitle>User guide · Kolibri Kino</PageTitle>
+
+<article class="guide">
+    <h1>User guide</h1>
+    <p class="hint">Kolibri Kino on the web: your movie and series library (SilverScreen.db), what's on TMDb, your lists and your
+        ratings, from any browser at home, phones too.</p>
+
+    <nav class="guide-toc" aria-label="Contents">
+        <a href="guide#menu">The menu</a>
+        <a href="guide#library">Library</a>
+        <a href="guide#details">A movie or series</a>
+        <a href="guide#play">Play</a>
+        <a href="guide#recent">Recently added</a>
+        <a href="guide#trending">Trending</a>
+        <a href="guide#discover">Discover</a>
+        <a href="guide#watchlists">Watchlists</a>
+        <a href="guide#wishlist">Wishlist</a>
+        <a href="guide#ratings">My rating</a>
+        <a href="guide#settings">Settings and Export</a>
+        <a href="guide#colours">Colours and tags</a>
+        <a href="guide#good-to-know">Good to know</a>
+    </nav>
+
+    <section id="menu">
+        <h2>The menu</h2>
+        <ul>
+            <li><b>Library</b>: everything in SilverScreen.db, with search, filters and rows of suggestions.</li>
+            <li><b>Recently added</b>: what arrived on the NAS lately, newest first.</li>
+            <li><b>Trending</b> and <b>Discover</b>: what's on TMDb, outside your library.</li>
+            <li><b>Watchlists</b> and <b>Wishlist</b>: your lists. <b>Settings</b>: keys, Plex, folders and Export.</li>
+        </ul>
+        <p>Most pages keep their choices in the address, so <b>Back</b> from a movie returns to the same list, and an address
+            can be bookmarked or sent to a phone.</p>
+    </section>
+
+    <section id="library">
+        <h2>Library</h2>
+        <ul>
+            <li><b>Search library</b> finds titles in SilverScreen.db; an IMDb id works too. <b>Search OMDb</b> searches online,
+                and <b>Import</b> on a hit puts it in the library (details only, no file).</li>
+            <li><b>Filters</b>: genre, years, lowest IMDb rating, status (<b>Status - All</b>, Not watched or Watched; the last
+                two ask Plex what you've seen, which takes a moment) and an actor or director.
+                <b>Clear filters</b> takes them all away. The chips below choose movies or series.</li>
+            <li>With no search, the page shows rows: <b>Recently added movies</b>, <b>Recently added series</b>,
+                <b>Suggestions for you</b> and one row per genre, best rated first. <b>See all</b> on a row opens that genre;
+                <b>Browse all</b> shows everything as one list with <b>Sort</b> and pages of 60.</li>
+            <li><b>Suggestions for you</b> are movies like the ones you rated 3½ stars or more (see <a href="guide#ratings">My rating</a>).
+                A movie like several of your favourites comes first; ones you have or have rated are left out. Movies like one you
+                rated in the last week come first in the row, tagged <span class="tag fresh">New for you</span>, so a new
+                rating shows at once (up to 8 of them); the rest of the 20 are picked from the best 40, a new pick each day. Hover a card to see which of your movies it's like. <b>See all</b> lists every suggestion, best first, with what each is like. The row is hidden for series,
+                and until three of the movies you liked have been opened since the feature came (that's when their similar movies are kept).</li>
+            <li>A card's stars at the bottom are your own rating; click them to go to it on the details page.</li>
+        </ul>
+    </section>
+
+    <section id="details">
+        <h2>A movie or series</h2>
+        <ul>
+            <li>The top shows the IMDb rating (green from 7, orange from 6, red below), <b>In library</b>, <b>Watched</b> and the
+                linked file. Genres and the names of actors and directors are links to the library filtered by them.</li>
+            <li><b>▶ Play</b> plays the file in the browser, or in Plex (see <a href="guide#play">Play</a>).</li>
+            <li><b>+ Add to watchlist</b> puts it on a Kino watchlist and/or the Plex playlist of that name.</li>
+            <li><b>+ Add to wishlist</b> is there when you don't have the title with a file; then it says <b>On wishlist</b>.</li>
+            <li><b>Update from OMDb</b> fetches the details again (<b>Import to library</b> for a title that isn't in it).
+                <b>Mark as watched</b> marks it watched in Kino, and on Plex when Plex has it.</li>
+            <li><b>★ My rating</b> opens your rating (see <a href="guide#ratings">My rating</a>).</li>
+            <li><b>IMDb</b>, <b>TMDb</b> and <b>Plex</b> open the title there (Plex in Plex Web on app.plex.tv).</li>
+            <li><b>Similar movies</b> are TMDb's suggestions, with <b>+ Wishlist</b> to search for one on the wishlist page.
+                They're kept for 30 days, so opening a movie again doesn't ask TMDb.</li>
+            <li>A series lists its episodes by season, newest season first, each with <b>▶ Play</b> and <b>Plex</b>. A tag says
+                whether it's complete; <b>Missing</b> episodes are listed in their place, with <b>+ Add to wishlist</b>
+                (or <b>+ All … to wishlist</b>). They leave the wishlist by themselves when they arrive.</li>
+        </ul>
+    </section>
+
+    <section id="play">
+        <h2>Play</h2>
+        <ul>
+            <li>Plays the movie's own file in the browser, with its subtitles (a .srt with the same name) when there are some.
+                Not every format plays in a browser; <b>▶ Play in Plex</b> plays anything Plex has.</li>
+            <li>For a series: <b>▶ First episode</b>, <b>▶ Latest episode</b>, and previous / next episode buttons.</li>
+        </ul>
+    </section>
+
+    <section id="recent">
+        <h2>Recently added</h2>
+        <p>The library newest first, by when the files arrived on the NAS, under Today, Yesterday, Last 7 days and so on.
+            The chips choose all, movies or series; the list can show only what you have or haven't watched.
+            <b>Show more</b> adds 120 at a time.</p>
+    </section>
+
+    <section id="trending">
+        <h2>Trending</h2>
+        <p>What's trending on TMDb this week: <b>Movies</b>, <b>TV shows</b> or <b>People</b>, 20 of each. A title opens its
+            details; a person opens the library filtered by them. Lists are kept a few hours; <b>Refresh</b> asks TMDb now.</p>
+    </section>
+
+    <section id="discover">
+        <h2>Discover</h2>
+        <ul>
+            <li>Movies or TV shows on TMDb for a season: <b>Winter</b>, <b>Spring and Easter</b>, <b>Summer</b>,
+                <b>Autumn and Thanksgiving</b>, <b>Halloween</b> or <b>Christmas and New Year</b>. It opens on the season we're in.</li>
+            <li>Narrow it with genre, years and rating (TMDb's users' average), and sort by <b>Most popular</b>,
+                <b>Best rated</b> or <b>Newest</b>. <b>Hide what I have</b> leaves out what you have with a file.</li>
+            <li>20 at a time; <b>Show more</b> fetches the next 20. Each page is kept a few hours; <b>Refresh</b> asks TMDb now.</li>
+        </ul>
+    </section>
+
+    <section id="watchlists">
+        <h2>Watchlists</h2>
+        <ul>
+            <li>Pick a list at the top, or make one with <b>Create</b>. Filter by title, or show what you have or haven't watched.</li>
+            <li>The watched button on a row marks it watched or not; <b>✕</b> removes it (and, if you say so, from the Plex playlist).</li>
+            <li>A movie is on one watchlist at a time. Marked watched, it stays on its list; the <b>Watched</b> list shows every
+                watched movie, from all lists.</li>
+            <li><b>Export CSV</b> gives the list for Excel; <b>Copy to Plex playlist</b> puts it on the Plex playlist of the same name.</li>
+        </ul>
+    </section>
+
+    <section id="wishlist">
+        <h2>Wishlist</h2>
+        <ul>
+            <li>Titles you want, perhaps without having them. <b>Search</b> looks in the library first, then OMDb and TMDb;
+                write the year after a comma (<i>Kabul, 2025</i>) to keep to it, or use an IMDb id. <b>+ Wishlist</b> adds a hit.</li>
+            <li>The list shows those to get first. A title counts as yours only with a file; one in the library without a file is still to get.</li>
+            <li><b>Download CSV</b> gives the list for Excel, with In SilverScreen as true/false; the PC's Wishlist can import it.</li>
+        </ul>
+    </section>
+
+    <section id="ratings">
+        <h2>My rating</h2>
+        <ul>
+            <li>On a details page: five stars in halves, as on Plex; the left half of a star is half a star. Add a review if you like,
+                then <b>Save</b>. <b>Remove rating</b> takes it away.</li>
+            <li>The rating is set on Plex too, where only you see it. The review stays in Kino.</li>
+            <li>Rated titles show your stars on the library's cards. Movies you rate 3½ stars or more feed <b>Suggestions for you</b>.</li>
+        </ul>
+    </section>
+
+    <section id="settings">
+        <h2>Settings and Export</h2>
+        <ul>
+            <li><b>Movie services</b>: your OMDb and TMDb keys (the shared default keys work, but share OMDb's daily limit with
+                everyone). <b>Plex</b>: server name and token. <b>Test connections</b> tries them before you <b>Save</b>.</li>
+            <li><b>Folders</b> are shared with SilverScreen and Kino on the PC, so they're usually Windows paths.</li>
+            <li><b>Export</b>: <b>Export ratings</b> and <b>Import ratings…</b> carry your ratings between the NAS and the PC
+                (in Kino on the PC: Settings → Importer vurderinger fra fil); the newer rating of a title wins.
+                <b>Export wishlist</b> gives the wishlist as CSV.</li>
+            <li>When it's set up, the wishlist and your ratings are also sent to problembar.net by themselves a few seconds after each change.</li>
+        </ul>
+    </section>
+
+    <section id="colours">
+        <h2>Colours and tags</h2>
+        <ul>
+            <li><span class="tag good">In SilverScreen</span> in the library, with a file that's there.</li>
+            <li><span class="tag nofile">In SilverScreen, no file</span> in the library without one, e.g. after <b>Import to library</b>.</li>
+            <li>IMDb ratings: <span class="rating high">7.0+</span>, <span class="rating medium">6.0–6.9</span>, <span class="rating low">below 6</span>.</li>
+            <li>A green <b>Watched</b> tag: played to the end on Plex, or marked watched on a watchlist.</li>
+        </ul>
+    </section>
+
+    <section id="good-to-know">
+        <h2>Good to know</h2>
+        <ul>
+            <li>The NAS has its own copy of the library. When a new copy is sent from the PC, it replaces the NAS's, watched marks
+                and ratings set here included; export your ratings first and import them on the PC.</li>
+            <li>The app has no login: use it on your home network.</li>
+            <li>TMDb and OMDb answers are kept for a while (Trending and Discover a few hours, similar movies 30 days), to save
+                calls; <b>Refresh</b> where there is one asks again.</li>
+        </ul>
+        <p><a href="settings">‹ Back to Settings</a></p>
+    </section>
+</article>

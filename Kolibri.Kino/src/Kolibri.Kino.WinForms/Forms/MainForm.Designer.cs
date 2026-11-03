@@ -42,6 +42,7 @@ partial class MainForm
         menuWhatsUp = new ToolStripMenuItem();
         menuTrending = new ToolStripMenuItem();
         menuDiscover = new ToolStripMenuItem();
+        menuSuggestions = new ToolStripMenuItem();
         menuWindow = new ToolStripMenuItem();
         menuCascade = new ToolStripMenuItem();
         menuTileHorizontal = new ToolStripMenuItem();
@@ -141,7 +142,7 @@ partial class MainForm
         //
         // menuWhatsUp (what's happening outside the library; more lists may come)
         //
-        menuWhatsUp.DropDownItems.AddRange(new ToolStripItem[] { menuTrending, menuDiscover });
+        menuWhatsUp.DropDownItems.AddRange(new ToolStripItem[] { menuTrending, menuDiscover, menuSuggestions });
         menuWhatsUp.Name = "menuWhatsUp";
         menuWhatsUp.Size = new Size(76, 20);
         menuWhatsUp.Text = "W&hat's Up";
@@ -159,6 +160,13 @@ partial class MainForm
         menuDiscover.Size = new Size(180, 22);
         menuDiscover.Text = "&Discover";
         menuDiscover.Click += menuDiscover_Click;
+        //
+        // menuSuggestions
+        //
+        menuSuggestions.Name = "menuSuggestions";
+        menuSuggestions.Size = new Size(180, 22);
+        menuSuggestions.Text = "&Suggestions";
+        menuSuggestions.Click += menuSuggestions_Click;
         //
         // menuWindow
         //
@@ -302,6 +310,7 @@ partial class MainForm
     private ToolStripMenuItem menuWhatsUp;
     private ToolStripMenuItem menuTrending;
     private ToolStripMenuItem menuDiscover;
+    private ToolStripMenuItem menuSuggestions;
     private ToolStripMenuItem menuWindow;
     private ToolStripMenuItem menuCascade;
     private ToolStripMenuItem menuTileHorizontal;

@@ -282,8 +282,13 @@ public sealed class MovieControllerTests : IDisposable
 
         public List<TmdbMovieHit> Similar { get; } = [];
 
-        public Task<IReadOnlyList<TmdbMovieHit>> FindSimilarAsync(string imdbId, int max = 12, CancellationToken ct = default) =>
-            Throws is not null ? Task.FromException<IReadOnlyList<TmdbMovieHit>>(Throws) : Task.FromResult<IReadOnlyList<TmdbMovieHit>>(Similar);
+        public int SimilarCalls { get; private set; }
+
+        public Task<IReadOnlyList<TmdbMovieHit>> FindSimilarAsync(string imdbId, int max = 12, CancellationToken ct = default)
+        {
+            SimilarCalls++;
+            return Throws is not null ? Task.FromException<IReadOnlyList<TmdbMovieHit>>(Throws) : Task.FromResult<IReadOnlyList<TmdbMovieHit>>(Similar);
+        }
     }
 
     [Fact]
@@ -331,6 +336,29 @@ public sealed class MovieControllerTests : IDisposable
         {
             Directory.Delete(folder, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task Similar_movies_are_kept_and_asked_for_again_only_when_old_or_with_TMDb_down_the_kept_ones_are_used()
+    {
+        var tmdb = new FakeTmdbLinks();
+        tmdb.Similar.Add(new("tt0133093", "The Matrix", "1999"));
+        _omdb.Add(new Item { ImdbId = "tt0133093", Title = "The Matrix", ImdbRating = "8.7" });
+        var cache = new LiteDbSimilarCache(_db);
+        var movies = new MovieController(_repo, _omdb, _files, tmdb, new NoPosters(), new FakePlex(), NullLogger<MovieController>.Instance,
+            similarCache: cache);
+
+        Assert.Equal("8.7", Assert.Single(await movies.GetSimilarAsync("tt0068767")).ImdbRating);
+        Assert.Equal("8.7", Assert.Single(await movies.GetSimilarAsync("tt0068767")).ImdbRating);
+        Assert.Equal(1, tmdb.SimilarCalls); // the second time from the database
+        Assert.Equal("8.7", Assert.Single((await cache.GetAsync("tt0068767"))!.Hits).ImdbRating);
+
+        // Older than SimilarMaxAge: asked again; TMDb down: the kept list.
+        await cache.SaveAsync(new CachedSimilar("tt0068767", [new(new("tt0133093", "The Matrix", "1999"), "8.7")],
+            DateTime.UtcNow - MovieController.SimilarMaxAge - TimeSpan.FromDays(1)));
+        tmdb.Throws = new HttpRequestException("TMDb is down");
+        Assert.Equal("The Matrix", Assert.Single(await movies.GetSimilarAsync("tt0068767")).Movie.Title);
+        Assert.Equal(2, tmdb.SimilarCalls);
     }
 
     [Fact]

@@ -1,0 +1,59 @@
+@using Kolibri.Kino.Controllers.Suggestions
+@inject SuggestionsController Suggestions
+
+@* "Suggestions for you": movies like the ones you rated 3½ stars or more (see SuggestionsController), as a scrolling
+   row under Recently added. Made from the similar movies kept when details pages were opened, so it asks TMDb
+   nothing; movies like one you rated lately come first ("New for you"), the rest are a new pick each day. Left out
+   until three liked movies have similar movies kept. *@
+
+@if (_suggestions.Count > 0)
+{
+    <section class="shelf" aria-label="Suggestions for you">
+        <div class="shelf-head">
+            <h2>Suggestions for you</h2>
+            <span class="muted small">From the movies you rated 3½ stars or more</span>
+            <a href="suggestions">See all ›</a>
+        </div>
+        <div class="shelf-row">
+            @foreach (var s in _suggestions)
+            {
+                <article class="card">
+                    <a href="movie/@s.Movie.ImdbId" class="card-link" title="@SuggestionsController.BecauseText(s)">
+                        <PosterImage Src="@s.Movie.Poster" />
+                        <div class="card-body">
+                            <h2 class="card-title">@s.Movie.Title</h2>
+                            <div class="card-meta">
+                                <span>@s.Movie.Year</span>
+                                <Rating Value="@s.ImdbRating" />
+                            </div>
+                            @if (s.Fresh)
+                            {
+                                <span class="tag fresh" title="Like a movie you rated in the last week">New for you</span>
+                            }
+                            @if (s.InLibrary)
+                            {
+                                <span class="tag nofile" title="In the library, but not linked to a file that's there">In SilverScreen, no file</span>
+                            }
+                        </div>
+                    </a>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    private IReadOnlyList<Suggestion> _suggestions = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _suggestions = await Suggestions.GetAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _suggestions = []; // a row that can't be made is just left out
+        }
+    }
+}

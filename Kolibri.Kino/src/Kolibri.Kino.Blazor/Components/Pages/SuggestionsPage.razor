@@ -1,0 +1,57 @@
+@page "/suggestions"
+@using Kolibri.Kino.Controllers.Suggestions
+@inherits KinoPage
+@inject SuggestionsController Suggestions
+
+@* "See all" from the Library's Suggestions for you row: every suggestion, best first, each with the movies you liked
+   that it's like. Made from the kept similar movies, so it asks TMDb nothing. *@
+
+<PageTitle>Suggestions for you · Kolibri Kino</PageTitle>
+
+<h1>Suggestions for you</h1>
+
+<StatusLine Busy="Busy" Text="@(Status ?? Summary)" Error="@Error" />
+
+@if (_suggestions is { Count: > 0 } suggestions)
+{
+    <div class="cards">
+        @foreach (var s in suggestions)
+        {
+            <article class="card">
+                <a href="movie/@s.Movie.ImdbId" class="card-link">
+                    <PosterImage Src="@s.Movie.Poster" />
+                    <div class="card-body">
+                        <h2 class="card-title">@s.Movie.Title</h2>
+                        <div class="card-meta">
+                            <span>@s.Movie.Year</span>
+                            <Rating Value="@s.ImdbRating" />
+                        </div>
+                        @if (s.Fresh)
+                        {
+                            <span class="tag fresh" title="Like a movie you rated in the last week">New for you</span>
+                        }
+                        @if (s.InLibrary)
+                        {
+                            <span class="tag nofile" title="In the library, but not linked to a file that's there">In SilverScreen, no file</span>
+                        }
+                        <p class="card-overview">@SuggestionsController.BecauseText(s)</p>
+                    </div>
+                </a>
+            </article>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<Suggestion>? _suggestions;
+
+    private string? Summary => _suggestions switch
+    {
+        null => null,
+        [] => "No suggestions yet: rate movies 3½ stars or more, and open their details pages so their similar movies are kept (three are needed).",
+        var all => $"{all.Count} movie(s) like the ones you rated 3½ stars or more, best first. The Library's row shows {SuggestionsController.Shown} of the best {SuggestionsController.Pool}, a new pick each day.",
+    };
+
+    protected override Task OnInitializedAsync() => RunAsync("Finding suggestions…", async ct =>
+        _suggestions = await Suggestions.GetAllAsync(ct));
+}
