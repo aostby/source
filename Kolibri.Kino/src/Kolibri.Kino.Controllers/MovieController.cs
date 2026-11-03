@@ -32,7 +32,8 @@ public sealed partial class MovieController(
     IMediaServerLibrary plex,
     ILogger<MovieController> logger,
     IWatchListRepository? watchlists = null,
-    Library.LibraryFiles? libraryFiles = null)
+    Library.LibraryFiles? libraryFiles = null,
+    ISimilarCache? similarCache = null)
 {
     /// <summary>
     /// The titles you have watched: played to the end on Plex (for the token's user; reloaded from Plex first when
@@ -152,33 +153,61 @@ public sealed partial class MovieController(
         return null;
     }
 
-    /// <summary>
-    /// The TMDb page for the IMDb id; if TMDb doesn't know it (or can't be asked), a TMDb search for the title.
-    /// </summary>
+    /// <summary>A movie's similar movies are kept this long; TMDb's suggestions don't change often.</summary>
+    public static readonly TimeSpan SimilarMaxAge = TimeSpan.FromDays(30);
+
     /// <summary>
     /// Movies like this one (TMDb's recommendations), each saying whether it's in the library, so one you'd like to
-    /// see or get can go on the wishlist. Empty when TMDb has none, isn't set up, or doesn't answer.
+    /// see or get can go on the wishlist. The list (with the IMDb ratings looked up for it) is kept in the database
+    /// for <see cref="SimilarMaxAge"/>, which Suggestions for you is made from too; when TMDb doesn't answer, an older
+    /// one is used. Empty when TMDb has none, isn't set up, or doesn't answer and nothing is kept.
     /// </summary>
     public async Task<IReadOnlyList<SimilarMovie>> GetSimilarAsync(string imdbId, CancellationToken ct = default)
     {
-        IReadOnlyList<TmdbMovieHit> similar;
-        try
+        var kept = similarCache is null ? null : await similarCache.GetAsync(imdbId, ct).ConfigureAwait(false);
+        IReadOnlyList<SimilarHit> hits;
+        if (kept is not null && DateTime.UtcNow - kept.FetchedUtc < SimilarMaxAge)
         {
-            similar = await tmdb.FindSimilarAsync(imdbId, ct: ct).ConfigureAwait(false);
+            hits = kept.Hits;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        else
         {
-            logger.LogWarning(ex, "TMDb's similar movies for {ImdbId} failed", imdbId);
-            return [];
+            IReadOnlyList<TmdbMovieHit> similar;
+            try
+            {
+                similar = await tmdb.FindSimilarAsync(imdbId, ct: ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                logger.LogWarning(ex, "TMDb's similar movies for {ImdbId} failed", imdbId);
+                if (kept is null) return [];
+                similar = [];
+            }
+
+            if (similar.Count == 0 && kept is not null)
+            {
+                hits = kept.Hits;
+            }
+            else
+            {
+                var local = await repository.GetByImdbIdsAsync(similar.Select(s => s.ImdbId), ct).ConfigureAwait(false);
+                var ratings = await Task.WhenAll(similar.Select(s =>
+                    local.TryGetValue(s.ImdbId, out var item) ? Task.FromResult(Rating(item.ImdbRating)) : OnlineRatingAsync(s.ImdbId, ct)))
+                    .ConfigureAwait(false);
+                hits = similar.Select((s, i) => new SimilarHit(s, ratings[i])).ToList();
+                if (similarCache is not null) await similarCache.SaveAsync(new CachedSimilar(imdbId, hits, DateTime.UtcNow), ct).ConfigureAwait(false);
+            }
         }
-        var inLibrary = await repository.GetByImdbIdsAsync(similar.Select(s => s.ImdbId), ct).ConfigureAwait(false);
-        var ratings = await Task.WhenAll(similar.Select(s =>
-            inLibrary.TryGetValue(s.ImdbId, out var item) ? Task.FromResult(Rating(item.ImdbRating)) : OnlineRatingAsync(s.ImdbId, ct)))
-            .ConfigureAwait(false);
+
+        // Whether each is in the library, and its rating there, are looked up now: they change more often than TMDb's list.
+        var inLibrary = await repository.GetByImdbIdsAsync(hits.Select(h => h.Movie.ImdbId), ct).ConfigureAwait(false);
         // In SilverScreen in green only with a file that's there (see LibraryFiles); without a way to check, in the library is enough.
         var withFile = libraryFiles is null ? inLibrary.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase)
             : await libraryFiles.WithFileAsync(inLibrary.Keys, ct).ConfigureAwait(false);
-        return similar.Select((s, i) => new SimilarMovie(s, inLibrary.ContainsKey(s.ImdbId), ratings[i], withFile.Contains(s.ImdbId))).ToList();
+        return hits.Select(h => new SimilarMovie(h.Movie, inLibrary.ContainsKey(h.Movie.ImdbId),
+                inLibrary.TryGetValue(h.Movie.ImdbId, out var item) ? Rating(item.ImdbRating) ?? h.ImdbRating : h.ImdbRating,
+                withFile.Contains(h.Movie.ImdbId)))
+            .ToList();
     }
 
     /// <summary>IMDb ratings looked up on OMDb for similar movies, kept while the app runs (one OMDb call per title).</summary>
@@ -204,6 +233,9 @@ public sealed partial class MovieController(
     private static string? Rating(string? rating) =>
         string.IsNullOrWhiteSpace(rating) || rating.Equals("N/A", StringComparison.OrdinalIgnoreCase) ? null : rating.Trim();
 
+    /// <summary>
+    /// The TMDb page for the IMDb id; if TMDb doesn't know it (or can't be asked), a TMDb search for the title.
+    /// </summary>
     public async Task<string> GetTmdbPageAsync(string imdbId, string? title, CancellationToken ct = default)
     {
         try

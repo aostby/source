@@ -36,6 +36,7 @@ public static class DataServiceCollectionExtensions
         services.AddSingleton<ITrendingSource, TmdbTrending>();
         services.AddSingleton<IDiscoverCache, LiteDbDiscoverCache>();
         services.AddSingleton<IDiscoverSource, TmdbDiscover>();
+        services.AddSingleton<ISimilarCache, LiteDbSimilarCache>();
         services.AddSingleton<IMediaFileScanner, FileSystemMediaScanner>();
         services.AddSingleton<LiteDbFileDateStore>();
         services.AddSingleton<IFileDates, FileSystemFileDates>();

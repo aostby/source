@@ -44,6 +44,7 @@ Kino uses the same database as SilverScreen. Press <kbd>F1</kbd> in any window t
   <li><a href="#wishlist">Wishlist</a></li>
   <li><a href="#trending">What's Up: Trending</a></li>
   <li><a href="#discover">What's Up: Discover</a></li>
+  <li><a href="#suggestions">What's Up: Suggestions</a></li>
   <li><a href="#usage">API usage report</a></li>
   <li><a href="#log">Log</a></li>
   <li><a href="#windows">Windows and keys</a></li>
@@ -314,6 +315,25 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
       when it's there without one. <b>Hide what I have</b> leaves out those you have.</li>
   <li>Each page is kept in the database (KinoDiscover) for a few hours; <b>Refresh</b> asks TMDb now. Posters go in the
       image cache, and each title's IMDb id is looked up once and kept. It needs a TMDb key.</li>
+</ul>
+
+<h2 id="suggestions">What's Up: Suggestions</h2>
+<p><b>What's Up → Suggestions</b> shows movies like the ones you rated 3½ stars or more (your ratings are set on the web
+app's details pages; <b>Settings → Importer vurderinger fra fil…</b> brings them here). It's the web Library's
+<b>Suggestions for you</b> row.</p>
+<ul>
+  <li><b>For you</b>: 20 suggestions. The ones like a movie you rated in the last week come first, marked
+      <b>New for you</b> (up to 8); the rest are picked from the best 40, a new pick each day. <b>See all</b>: every
+      suggestion, best first.</li>
+  <li>A movie like several of your favourites ranks higher. Movies you have (with a file) or have rated are left out;
+      one in the library without a file is marked <b>In SilverScreen, no file</b> (salmon).</li>
+  <li>Each card says which of your movies it's like (hover it for all of them). Click the poster or the title for its details.</li>
+  <li>It's made from the similar movies kept (KinoSimilar, 30 days) when a movie's details are opened, so it asks TMDb
+      nothing. Nothing is shown until three movies you liked have had their details opened. <b>Refresh</b> makes the list again.</li>
+  <li><b>Import my ratings</b> fetches the ratings Kino on the web sent to Uranus (problembar.net) and takes them in, as
+      <b>Importer vurderinger fra fil…</b> in Settings does with a file: the newer rating of a title wins. It needs
+      <b>Uranus URL</b> (e.g. https://problembar.net/uranus/apps/KolibriKino/) and <b>Uranus token</b> (the key in
+      kino_config.php) under <b>Uranus</b> in Settings; without them the button is greyed out.</li>
 </ul>
 
 <h2 id="usage">API usage report</h2>

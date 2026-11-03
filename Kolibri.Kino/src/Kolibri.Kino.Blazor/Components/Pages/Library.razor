@@ -52,7 +52,7 @@
                 <option value="@r.ToString(CultureInfo.InvariantCulture)">IMDb @r.ToString("0.#", CultureInfo.InvariantCulture)+</option>
             }
         </select>
-        <select aria-label="Watched" value="@WatchedFilter.Value(SeenKey)" @onchange="e => Go(seen: e.Value as string ?? string.Empty, page: 1)">
+        <select aria-label="Watched" value="@WatchedFilter.Value(SeenKey)" @onchange="e => Go(seen: WatchedFilter.ForAddress(e.Value as string), page: 1)">
             @foreach (var (value, label) in WatchedFilter.Choices)
             {
                 <option value="@value">@label</option>
@@ -70,6 +70,11 @@
 @if (ByCategory && CurrentPage == 1)
 {
     <RecentShelf Seen="@SeenKey" Watched="_watched" />
+    @* Movies only: there are no similar movies for series, so it's left out when Series is chosen. *@
+    @if (SelectedType != "series")
+    {
+        <SuggestionsShelf />
+    }
 }
 
 <div class="toolbar">
@@ -156,7 +161,7 @@ else
     [SupplyParameterFromQuery(Name = "seen")] public string? Seen { get; set; }
 
     /// <summary>
-    /// "no" (not watched, the default: no "seen" in the address), "yes" (watched), or null for all ("seen=all").
+    /// "no" (not watched), "yes" (watched), or null for all (the default: no "seen" in the address).
     /// OMDb results aren't in the library, so they aren't filtered.
     /// </summary>
     private string? SeenKey => Online ? null : WatchedFilter.Key(Seen);
@@ -328,7 +333,12 @@ else
             .ToList();
     }
 
-    private void SearchLibrary() => Go(q: _text?.Trim() ?? string.Empty, online: false, type: string.Empty, page: 1);
+    /// <summary>
+    /// Takes the Actor or director field along: clicking here right after typing a name changes that field first, and
+    /// this would otherwise overwrite its address with the old one, without the name.
+    /// </summary>
+    private void SearchLibrary() =>
+        Go(q: _text?.Trim() ?? string.Empty, online: false, type: string.Empty, page: 1, person: _person?.Trim() ?? string.Empty);
 
     private void SearchOmdb() => Go(q: _text?.Trim() ?? string.Empty, online: true, type: string.Empty, page: 1);
 

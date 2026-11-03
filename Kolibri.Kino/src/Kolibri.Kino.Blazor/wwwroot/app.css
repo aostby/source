@@ -179,7 +179,7 @@ form.inline { margin: 0; }
 .shelf { margin: 4px 0 28px; }
 .shelf-head { display: flex; align-items: baseline; gap: 16px; margin: 0 0 10px; }
 .shelf-head h2 { font-size: 1.15rem; margin: 0; }
-.shelf-head a { text-decoration: none; font-size: 0.9rem; }
+.shelf-head a { text-decoration: none; font-size: 0.9rem; white-space: nowrap; }
 .shelf-row {
     display: grid;
     grid-auto-flow: column;
@@ -333,6 +333,8 @@ label.button { cursor: pointer; }
 .card-overview { margin: 6px 0 0; font-size: 0.8rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 /* In the library but not linked to a file that's there (e.g. imported from OMDb): salmon */
 .tag.nofile { color: #f08a6c; border-color: #f08a6c; }
+/* Suggestions for you: like a movie you rated in the last week */
+.tag.fresh { color: #e6b450; border-color: #e6b450; }
 
 /* Settings → Export: links and the file-picker label as buttons of one height, on one line
    (.settings label would otherwise make the label a grey block of its own with space above). */
@@ -341,3 +343,13 @@ label.button { cursor: pointer; }
 
 /* Discover: the "Hide what I have" box among the filters */
 .filters .check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); white-space: nowrap; }
+
+/* The user guide (/guide) */
+.guide { max-width: 760px; }
+.guide section { margin: 0 0 24px; scroll-margin-top: 120px; }
+.guide h2 { font-size: 1.2rem; margin: 0 0 8px; }
+.guide ul { margin: 0; padding-left: 20px; }
+.guide li { margin: 0 0 6px; }
+.guide-toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 24px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.guide-toc a { text-decoration: none; }
+.guide-link { margin: 4px 0 24px; }
