@@ -89,6 +89,7 @@ public sealed class LiteDbSettingsStore : ISettingsStore
         if (string.IsNullOrWhiteSpace(settings.TMDBkey)) settings.TMDBkey = UserSettings.DefaultTmdbKey;
         if (string.IsNullOrWhiteSpace(settings.IMDbDataFiles)) settings.IMDbDataFiles = UserSettings.DefaultImdbDataFiles;
         if (string.IsNullOrWhiteSpace(settings.SubtitleLanguages)) settings.SubtitleLanguages = UserSettings.DefaultSubtitleLanguages;
+        if (string.IsNullOrWhiteSpace(settings.ProwlarrUrl)) settings.ProwlarrUrl = UserSettings.DefaultProwlarrUrl;
         if (!string.IsNullOrWhiteSpace(_dbPath)) settings.LiteDBFilePath = _dbPath;
         return settings;
     }

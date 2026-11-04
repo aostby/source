@@ -34,9 +34,12 @@ Kino uses the same database as SilverScreen. Press <kbd>F1</kbd> in any window t
   <li><a href="#tmdb">TMDb key</a></li>
   <li><a href="#subdl">SubDL key</a></li>
   <li><a href="#plex">Plex token</a></li>
+  <li><a href="#uranus-prowlarr">Uranus and Prowlarr</a></li>
   <li><a href="#first-start">First start</a></li>
   <li><a href="#database">The database</a></li>
   <li><a href="#settings">Settings</a></li>
+  <li><a href="#prowlarr">File: Prowlarr</a></li>
+  <li><a href="#sort-by-year">File: Tools → Sort folder by year</a></li>
   <li><a href="#search">Search library and OMDb</a></li>
   <li><a href="#local-movies">Local movies</a></li>
   <li><a href="#local-series">Local series</a></li>
@@ -63,6 +66,8 @@ can stop early with an error. The yellow bar in the search window tells you when
   <tr><td>TMDb key</td><td>Episode details, finding IMDb ids when scanning</td><td>Recommended (test key until then)</td></tr>
   <tr><td>SubDL key</td><td>Downloading <a href="#subtitles">subtitles</a></td><td>Only for subtitles</td></tr>
   <tr><td>Plex token + server name</td><td>Matching files against Plex, copying watchlists to Plex playlists</td><td>Only with Plex</td></tr>
+  <tr><td>Uranus URL + token</td><td>Fetching what Kino on the web sent: your ratings (<a href="#suggestions">Import my ratings</a>) and the wishlist (<a href="#prowlarr">Prowlarr</a>)</td><td>Only for those</td></tr>
+  <tr><td>Prowlarr URL + API key</td><td>Searching for releases of wanted titles (<a href="#prowlarr">File → Prowlarr</a>)</td><td>Only for Prowlarr</td></tr>
 </table>
 
 <h3 id="omdb">OMDb key (omdbapi.com)</h3>
@@ -105,6 +110,16 @@ in the details window, and SilverScreen uses it too.</p>
 <p>Plex's own guide: <a href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/">Finding an authentication token / X-Plex-Token</a>.
 A token found this way can stop working, e.g. when you sign out of all devices or change your Plex password; then fetch a new one the same way.</p>
 
+<h3 id="uranus-prowlarr">Uranus and Prowlarr</h3>
+<ul>
+  <li><b>Uranus</b> is Kino's web service on problembar.net, where Kino on the web keeps a copy of your wishlist and ratings.
+      Enter <b>Uranus URL</b> (e.g. <code>https://problembar.net/uranus/apps/KolibriKino/</code>) and <b>Uranus token</b>
+      (the key in kino_config.php on the server) under <b>Uranus</b> in Settings.</li>
+  <li><b>Prowlarr</b> runs on the NAS and searches torrent indexers. <b>Prowlarr URL</b> is <code>http://greenlantern:9696/</code>
+      by default. The <b>Prowlarr API key</b> is in Prowlarr under <b>Settings → General → Security</b>: copy it into
+      <b>Settings → Prowlarr API key</b>, and test.</li>
+</ul>
+
 <h2 id="first-start">First start</h2>
 <ol>
   <li>Open <b>File → Settings…</b>.</li>
@@ -133,9 +148,116 @@ The change takes effect after a restart; Kino offers to restart at once. <b>Help
   <li><b>General</b>: the database file (see <a href="#database">The database</a>) and your favorite watchlist, opened by default.</li>
   <li><b>Movie services</b>: the <a href="#keys">API keys</a>. Empty OMDb/TMDb keys mean the shared test keys.</li>
   <li><b>Plex</b>: server name and <a href="#plex">token</a>.</li>
+  <li><b>Prowlarr</b> and <b>Uranus</b>: address and key (see <a href="#uranus-prowlarr">Uranus and Prowlarr</a>).</li>
   <li><b>Folders</b>: where your movies and series are; Local movies starts in the movies folder.</li>
 </ul>
-<p><b>Test connections</b> tries the OMDb, TMDb and SubDL keys and the Plex token without saving. New keys apply at once after <b>Save</b>.</p>
+<p><b>Test connections</b> tries OMDb, TMDb, SubDL, Plex, Uranus and Prowlarr with the values as entered, without saving.
+New keys apply at once after <b>Save</b>. The box under the settings shows:</p>
+<ul>
+  <li>First, in bold: <b>Missing settings</b> (orange), naming each service and what it lacks, e.g. "Prowlarr (API key)";
+      <b>Failed</b> (red) for services that were tried and didn't answer or refused the key; or <b>All connections work</b> (green).</li>
+  <li>Then one line per service: <b>OK</b> (green), <b>FAIL</b> (red), or <b>MISSING</b> (orange: not tried, because what it
+      needs isn't filled in). The line says what's wrong: no URL, a URL that isn't http(s), no key or token, or the service's own answer.
+      Services marked optional work without it; Kino just skips them.</li>
+</ul>
+
+<h2 id="prowlarr">File: Prowlarr</h2>
+<p><b>File → Prowlarr</b> searches Prowlarr (on the NAS) for the titles on your wishlist, or for anything you type, and shows
+the releases that are them. It needs the Prowlarr URL and API key in Settings (see <a href="#uranus-prowlarr">Uranus and Prowlarr</a>).
+While either is missing, a <b>yellow bar</b> at the top says which, the search and get buttons are greyed out, and
+<b>Open Settings…</b> on the bar fixes it.</p>
+
+<h3>The titles to search for</h3>
+<ul>
+  <li>The window opens with the wishlist Kino on the web sent to Uranus (<b>From Uranus</b> fetches it again). Without the
+      Uranus URL and token in Settings, it asks for a file instead.</li>
+  <li><b>Open file…</b> reads a wishlist file: Kino's own CSV, another program's CSV (';', ',' or tab), JSON or XML. Each title
+      needs a <b>title</b> and a <b>year</b>, under names that clearly mean that (Title, Name, Tittel …; Year, Released, År …),
+      or the file is refused with a message saying which is missing. An IMDb id (tt0462322, an IMDb link, or just the number in
+      an IMDb field) and the type (movie, series, episode) are kept where the file has them; titles without a year are left out.</li>
+  <li>Titles you have (in SilverScreen with a file) are green and not ticked. Titles not released yet are light salmon:
+      the <b>Released</b> column shows the day when it is known (from your library, else OMDb), and is empty when only the year is.</li>
+  <li> Titles without an IMDb id or type are looked up
+      by title and year in your library, on OMDb and on TMDb; <b>Look up missing</b> does it again. A title not found is
+      searched as a movie.</li>
+  <li>The <b>IMDb</b> link on each row opens the title on IMDb (a search on IMDb when it has no id); double-click a row for its details.</li>
+  <li><b>Select all</b> (on at the start) ticks every title you don't have. Untick it to clear all the ticks and pick titles
+      one by one in the <b>Search</b> column.</li>
+</ul>
+
+<h3>Searching</h3>
+<ul>
+  <li><b>Search Prowlarr</b> searches for each ticked title in turn; the <b>Releases</b> column then says how many were kept of
+      how many were found ("8 of 190"). A title with none is grey.</li>
+  <li>To search for something not on the list, type it in the box at the top right and click <b>Search this</b>
+      (or <kbd>Enter</kbd>). It's put at the top of the list and searched at once:
+    <table>
+      <tr><th>You type</th><th>Searched as</th><th>Kept</th></tr>
+      <tr><td><code>Bosch.Legacy.S01E10</code> or <code>Bosch Legacy S01E10</code></td><td>an episode</td><td>only that episode</td></tr>
+      <tr><td><code>The Bear S03</code> or <code>The Bear Season 3</code></td><td>a series</td><td>the series' seasons and episodes</td></tr>
+      <tr><td><code>Grindhouse (2007)</code>, <code>Grindhouse, 2007</code> or <code>Grindhouse.2007</code></td><td>a movie of that year</td><td>title and year</td></tr>
+      <tr><td>just a title</td><td>a movie, no year</td><td>names starting with the title</td></tr>
+    </table>
+    With spaces, a year at the end is part of the title, so <code>Blade Runner 2049</code> stays a title.</li>
+  <li>Prowlarr's indexers can't search by IMDb id, so a movie is searched as "title year" (Grindhouse 2007), a series by its
+      title, and an episode as "Series S03E04". Such a search also finds other titles (Grindhouse Death Proof 2007), so a
+      release's name must start with the title and go on with the year (a series: S01, Season, Complete …; an episode: its S03E04).
+      Case, dots, brackets, accents and a leading "The" don't matter.</li>
+  <li>Releases are also left out when their IMDb id is another title's, they're camera copies (CAM, TS …), they're in another
+      quality, or they have too few seeders.</li>
+</ul>
+
+<h3>The releases</h3>
+<ul>
+  <li>Select a title to see its releases below: the best 8, sorted by <b>Seeders</b> (most first). Click a column header to
+      sort otherwise; that sort is kept for the next title.</li>
+  <li>Each release shows seeders, <b>Size</b> (in MB under 1 GB, else in GB; over 6 GB in orange), quality, indexer, its name,
+      the link type (magnet or torrent) and when it was published.</li>
+  <li><b>Show left out</b> shows every release found, the left-out ones in grey with why (another title, year, quality, too few
+      seeders …).</li>
+</ul>
+
+<h3>Getting a release</h3>
+<ul>
+  <li><b>Get release</b> (or double-click) opens the magnet link in your torrent program, or saves the .torrent file
+      in Downloads and opens it. "torrent" in the link column only means Prowlarr has a download link; some indexers answer it
+      with a magnet link.</li>
+  <li>A release bigger than 6 GB, or one Kino left out, asks first.</li>
+  <li>A magnet link without a name gets the release's name, so the torrent program shows it instead of just the hash.</li>
+  <li>When no program on this PC opens magnet links, the link is put on the clipboard and a message says so: paste it into your
+      torrent program. A .torrent file is still saved in Downloads.</li>
+</ul>
+
+<h3>Rules</h3>
+<p>The rules are in appsettings.json under <b>Kino → Prowlarr</b>:</p>
+<table>
+  <tr><th>Setting</th><th>Default</th><th>Means</th></tr>
+  <tr><td><code>Qualities</code></td><td>1080p, 720p</td><td>Qualities kept; also 2160p, SD, Unknown (no quality in the name)</td></tr>
+  <tr><td><code>MinSeeders</code></td><td>5</td><td>Fewer seeders are left out</td></tr>
+  <tr><td><code>TopResults</code></td><td>8</td><td>Releases shown per title</td></tr>
+  <tr><td><code>ConfirmAboveGb</code></td><td>6</td><td>Bigger ones ask before getting</td></tr>
+  <tr><td><code>MovieCategories</code></td><td>2000</td><td>Prowlarr's categories for movies</td></tr>
+  <tr><td><code>SeriesCategories</code></td><td>5000</td><td>Prowlarr's categories for series and episodes</td></tr>
+  <tr><td><code>ExcludedWords</code></td><td>CAM, TS, TELESYNC …</td><td>Words that leave a release out</td></tr>
+  <tr><td><code>TorrentFolder</code></td><td>(empty)</td><td>Where .torrent files are saved; empty means Downloads</td></tr>
+</table>
+<p>Nothing is put on the wishlist or in the library from this window.</p>
+
+<h2 id="sort-by-year">File: Tools → Sort folder by year</h2>
+<p>Tidies a big folder of movies into year folders, as SilverScreen's "Large movie folder" did.</p>
+<ul>
+  <li><b>Choose folder…</b> picks the folder (it starts in your movies folder from Settings). The list below then shows
+      what <b>Sort</b> will do; nothing is moved yet. Click the folder's name to open it in Explorer.</li>
+  <li><b>Sort</b> asks first, then moves each movie folder in it to <code>_byYear\&lt;year&gt;\</code> in the same folder,
+      whole: <code>Grindhouse (2007)</code> becomes <code>_byYear7\Grindhouse (2007)</code>.
+      The year is read from the folder's name (one in brackets first, else the last one), else from its biggest movie file's name.</li>
+  <li>A movie file lying loose in the chosen folder gets a folder of its own, named as the file, with its subtitles and other
+      files of the same name: <code>Heat.1995.720p.mkv</code> and <code>Heat.1995.720p.en.srt</code> go to
+      <code>_byYear995\Heat.1995.720p\</code>.</li>
+  <li>Left where they are, and listed: folders and files with no year in the name, those whose place in the year folder
+      is taken already, folders without a movie file, and year folders (<code>2010</code>) and <code>_byYear</code> itself.</li>
+  <li>The moves are renames on the same drive, so they're quick, and nothing is copied or deleted.</li>
+</ul>
 
 <h2 id="search">Search library and OMDb</h2>
 <p><b>Library → Search library and OMDb</b> opens at start and lists your library.</p>
@@ -209,7 +331,9 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
 
 <h2 id="local-series">Local series</h2>
 <ul>
-  <li>Select a series to see its seasons and episodes, one tab per season. Episodes you have on disk are green; double-click to play.</li>
+  <li>Select a series to see its seasons and episodes, one tab per season. Episodes you have on disk are green; double-click to play.
+      Aired episodes you don't have are red: right-click one and choose <b>Add to wishlist</b> to put it on the
+      <a href="#wishlist">wishlist</a> as "Series S01E02: Title" (the menu says <b>On the wishlist already</b> when it is).</li>
   <li>Episode details come from the database first: Kino's own, else what SilverScreen stored. Only a series neither has is looked up
       online, once, and remembered (also when no one knows it, then it isn't asked about again for 30 days).
       <b>Refresh episodes</b> fetches them again (TMDb gives the most, with plots and pictures; without a TMDb key, OMDb).</li>

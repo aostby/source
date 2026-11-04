@@ -160,7 +160,7 @@ public sealed class WishlistTests : IDisposable
         Assert.Equal([["a;b", "say \"hi\"", "two\nlines", "", "plain"]], Kolibri.Kino.Controllers.Csv.Parse(line + "\r\n\r\n"));
     }
 
-    private sealed class TmdbTitles : Kolibri.Kino.Core.Abstractions.ITmdbLinks
+    internal sealed class TmdbTitles : Kolibri.Kino.Core.Abstractions.ITmdbLinks
     {
         public Dictionary<string, string> Titles { get; } = [];
         public Task<string?> FindTitleAsync(string imdbId, CancellationToken ct = default) => Task.FromResult(Titles.GetValueOrDefault(imdbId));
@@ -230,5 +230,31 @@ public sealed class WishlistTests : IDisposable
         Assert.StartsWith("Heat;1999;movie;7.0;;tt1;true;;", lines[2]);
         Assert.True(await _wishlist.RemoveAsync("tt1"));
         Assert.Single(await _wishlist.GetAsync());
+    }
+
+    [Fact]
+    public async Task Release_dates_come_from_the_library_else_OMDb_and_only_with_a_day()
+    {
+        var inLibrary = Movie("tt1", "Coming", year: "2026");
+        inLibrary.Released = "18 Dec 2026";
+        await _movies.UpsertAsync(inLibrary);
+        var online = Movie("tt31378509", "Dune: Part Three", year: "2026");
+        online.Released = "18 Dec 2026";
+        _omdb.Add(online);
+        var yearOnly = Movie("tt3", "Some day", year: "2027");
+        yearOnly.Released = "N/A";
+        _omdb.Add(yearOnly);
+        var old = Movie("tt4", "Old", year: "1999");
+        old.Released = "01 Jan 1999";
+        _omdb.Add(old);
+
+        var dates = await _wishlist.ReleaseDatesAsync(
+            [("tt1", "2026"), ("tt31378509", "2026"), ("tt3", "2027"), ("tt4", "1999"), ("tt5_S01E02", "2026")], new DateTime(2026, 11, 4));
+
+        Assert.Equal(new DateTime(2026, 12, 18), dates["tt1"]);
+        Assert.Equal(new DateTime(2026, 12, 18), dates["tt31378509"]);
+        Assert.False(dates.ContainsKey("tt3")); // only a year
+        Assert.False(dates.ContainsKey("tt4")); // out long ago: OMDb isn't asked
+        Assert.Equal(2, dates.Count);
     }
 }

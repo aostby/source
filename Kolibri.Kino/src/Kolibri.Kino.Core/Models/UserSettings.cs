@@ -84,6 +84,19 @@ public sealed class UserSettings
                  "(the address of get.php or post.php there works too).")]
     public string? UranusUrl { get; set; }
 
+    /// <summary>Prowlarr on the NAS.</summary>
+    public const string DefaultProwlarrUrl = "http://greenlantern:9696/";
+
+    [Category("Prowlarr"), DisplayName("Prowlarr API key (X-Api-Key)"),
+     Description("The API key in Prowlarr (Settings → General → Security). With the URL, File → Prowlarr searches " +
+                 "Prowlarr's indexers for the titles on your wishlist.")]
+    [PasswordPropertyText(true)]
+    public string? ProwlarrApiKey { get; set; }
+
+    [Category("Prowlarr"), DisplayName("Prowlarr URL"),
+     Description("Prowlarr's address, e.g. http://greenlantern:9696/. Empty means the default.")]
+    public string? ProwlarrUrl { get; set; } = DefaultProwlarrUrl;
+
     [Category("Other"), DisplayName("SQL connection"), Description("Used by SilverScreen's IMDb data import.")]
     public string? DefaultConnection { get; set; }
 
@@ -104,6 +117,17 @@ public sealed class UserSettings
         var path = uri.AbsolutePath;
         path = path.EndsWith(".php", StringComparison.OrdinalIgnoreCase) ? path[..(path.LastIndexOf('/') + 1)] : path.TrimEnd('/') + "/";
         return new UriBuilder(uri) { Path = path + "get.php", Query = string.Empty, Fragment = string.Empty }.Uri.AbsoluteUri;
+    }
+
+    /// <summary>
+    /// Prowlarr's base address ending in "/", from <see cref="ProwlarrUrl"/>; null when it isn't an http(s) address.
+    /// (A method, so it isn't stored.)
+    /// </summary>
+    public string? GetProwlarrBaseUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ProwlarrUrl) || !Uri.TryCreate(ProwlarrUrl.Trim(), UriKind.Absolute, out var uri)
+            || uri.Scheme is not ("http" or "https")) return null;
+        return new UriBuilder(uri) { Path = uri.AbsolutePath.TrimEnd('/') + "/", Query = string.Empty, Fragment = string.Empty }.Uri.AbsoluteUri;
     }
 
     public UserSettings Clone()

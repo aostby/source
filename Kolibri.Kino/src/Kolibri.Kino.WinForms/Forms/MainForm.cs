@@ -107,6 +107,11 @@ public partial class MainForm : Form, IStatusDisplay
         foreach (var kino in MdiChildren.OfType<KinoForm>()) kino.UpdateDefaultKeysBanner();
     }
 
+    /// <summary>One Prowlarr window: the wishlist from Uranus (or a file) to search Prowlarr for; already open, it's brought forward.</summary>
+    private void menuProwlarr_Click(object sender, EventArgs e) => this.ShowSingle<ProwlarrForm>(_services);
+
+    private void menuSortByYear_Click(object sender, EventArgs e) => this.ShowSingle<SortByYearForm>(_services);
+
     private void menuExit_Click(object sender, EventArgs e) => Close();
 
     #endregion
