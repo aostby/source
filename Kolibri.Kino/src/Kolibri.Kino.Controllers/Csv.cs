@@ -11,9 +11,10 @@ public static class Csv
 
     /// <summary>
     /// Reads what <see cref="Line"/> writes (and what Excel saves): ';'-separated fields, quoted ones with "" for a quote
-    /// and line breaks inside. Empty lines are skipped; a leading BOM is ignored.
+    /// and line breaks inside. Empty lines are skipped; a leading BOM is ignored. Another <paramref name="separator"/>
+    /// (',' or tab) reads other programs' CSV.
     /// </summary>
-    public static IReadOnlyList<string[]> Parse(string text)
+    public static IReadOnlyList<string[]> Parse(string text, char separator = ';')
     {
         var rows = new List<string[]>();
         var fields = new List<string>();
@@ -43,12 +44,31 @@ public static class Csv
                 else quoted = false;
             }
             else if (c == '"') quoted = true;
-            else if (c == ';') EndField();
+            else if (c == separator) EndField();
             else if (c == '\n') EndRow();
             else if (c != '\r') field.Append(c);
         }
         if (field.Length > 0 || fields.Count > 0) EndRow();
         return rows;
+    }
+
+    /// <summary>
+    /// The separator of the first line: the one of ';', ',' and tab found most often outside quotes (';' when none is).
+    /// </summary>
+    public static char GuessSeparator(string text)
+    {
+        int semicolons = 0, commas = 0, tabs = 0;
+        var quoted = false;
+        foreach (var c in text)
+        {
+            if (c == '"') quoted = !quoted;
+            else if (quoted) continue;
+            else if (c == '\n') break;
+            else if (c == ';') semicolons++;
+            else if (c == ',') commas++;
+            else if (c == '\t') tabs++;
+        }
+        return tabs > semicolons && tabs > commas ? '\t' : commas > semicolons ? ',' : ';';
     }
 
     private static string Field(string? value)

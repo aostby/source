@@ -185,6 +185,43 @@ public sealed partial class WishlistController(
         return added;
     }
 
+    /// <summary>
+    /// The release dates known for these titles (a day, not just a year): from the library, else OMDb. OMDb is asked only
+    /// about titles not in the library whose year is this year or later (or unknown), since older ones are out anyway.
+    /// Titles with no known date are left out; episodes too.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<string, DateTime>> ReleaseDatesAsync(
+        IEnumerable<(string ImdbId, string? Year)> titles, DateTime? today = null, CancellationToken ct = default)
+    {
+        var thisYear = (today ?? DateTime.Today).Year;
+        var wanted = titles.Where(t => !string.IsNullOrEmpty(t.ImdbId) && !t.ImdbId.Contains('_'))
+            .DistinctBy(t => t.ImdbId, StringComparer.OrdinalIgnoreCase).ToList();
+        var dates = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+        var inLibrary = await library.GetByImdbIdsAsync(wanted.Select(t => t.ImdbId), ct).ConfigureAwait(false);
+        foreach (var (id, item) in inLibrary)
+            if (ParseDate(item.Released) is { } d) dates[id] = d;
+
+        foreach (var (id, year) in wanted.Where(t => !inLibrary.ContainsKey(t.ImdbId)))
+        {
+            if (year?.Trim() is { Length: >= 4 } y && int.TryParse(y[..4], NumberStyles.None, CultureInfo.InvariantCulture, out var n) && n < thisYear)
+                continue;
+            try
+            {
+                if (await omdb.GetByImdbIdAsync(id, ct).ConfigureAwait(false) is { } item && ParseDate(item.Released) is { } d) dates[id] = d;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                logger.LogWarning(ex, "OMDb release date for {ImdbId} failed", id);
+            }
+        }
+        return dates;
+    }
+
+    /// <summary>"18 Dec 2026" (OMDb) or "2026-12-18" (Plex); null for "N/A" or a year alone.</summary>
+    internal static DateTime? ParseDate(string? text) =>
+        DateTime.TryParseExact(text?.Trim(), ["d MMM yyyy", "dd MMM yyyy", "yyyy-MM-dd"], CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out var d) ? d.Date : null;
+
     /// <summary>The (season, episode) numbers of the series' episodes on the wishlist.</summary>
     public async Task<IReadOnlySet<(int Season, int Episode)>> GetEpisodesAsync(string seriesImdbId, CancellationToken ct = default)
     {

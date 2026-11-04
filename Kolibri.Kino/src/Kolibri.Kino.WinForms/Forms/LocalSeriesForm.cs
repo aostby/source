@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Kolibri.Kino.Controllers.Series;
+using Kolibri.Kino.Controllers.Wishlist;
 using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.WinForms.Controls;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,9 @@ public partial class LocalSeriesForm : AsyncForm
     private readonly LocalSeriesController _controller;
     private readonly NewSeriesController _newSeries;
     private readonly RecentSeriesController _recent;
+    private readonly WishlistController _wishlist;
+    /// <summary>The current series' episodes on the wishlist (season, episode); filled when its seasons are shown.</summary>
+    private IReadOnlySet<(int Season, int Episode)> _wished = new HashSet<(int, int)>();
     private RecentSeriesReport? _recentReport;
     private readonly ToolTip _toolTip = new();
     private readonly IServiceProvider _services;
@@ -30,11 +34,12 @@ public partial class LocalSeriesForm : AsyncForm
     private CancellationTokenSource? _stillCts;
 
     public LocalSeriesForm(LocalSeriesController controller, NewSeriesController newSeries, RecentSeriesController recent,
-        IServiceProvider services)
+        WishlistController wishlist, IServiceProvider services)
     {
         _controller = controller;
         _newSeries = newSeries;
         _recent = recent;
+        _wishlist = wishlist;
         _services = services;
         InitializeComponent();
         SiteIcons.Imdb(menuOpenImdb);
@@ -202,6 +207,7 @@ public partial class LocalSeriesForm : AsyncForm
     {
         _current = series;
         _details = null;
+        _wished = new HashSet<(int, int)>();
         seriesDetails.ShowItem(series.Item, series.FolderPath, series.FolderExists);
         LoadImage(seriesDetails, ref _posterCts, ct => _controller.GetPosterAsync(series.Item, ct));
         ClearSeasons();
@@ -210,7 +216,9 @@ public partial class LocalSeriesForm : AsyncForm
         await RunAsync(refresh ? $"Fetching episodes of {series.Item.Title}…" : $"Loading episodes of {series.Item.Title}…", async ct =>
         {
             var details = await _controller.GetDetailsAsync(series, refresh, ct);
+            var wished = await _wishlist.GetEpisodesAsync(series.Item.ImdbId, ct);
             if (!ReferenceEquals(_current, series)) return;
+            _wished = wished;
             _details = details;
             BuildSeasonTabs(details);
             ShowCompleteness(series, details);
@@ -370,10 +378,14 @@ public partial class LocalSeriesForm : AsyncForm
         {
             if (e.CellStyle is null || grid.ItemAt(e.RowIndex) is not EpisodeRow { View: var view }) return;
             if (view.OnDisk) e.CellStyle.BackColor = Color.Honeydew;
-            // Aired (or no date), listed, and no file: missing.
-            else if (view.Listed && view.Episode.SeasonNumber > 0 && _current is { FolderExists: true, FolderTooBroad: false }
-                     && (view.Episode.AirDate is null || view.Episode.AirDate.Value.Date <= DateTime.Today))
-                e.CellStyle.BackColor = Color.MistyRose;
+            else if (IsMissing(view)) e.CellStyle.BackColor = Color.MistyRose;
+        };
+        grid.ContextMenuStrip = NewEpisodeMenu(grid);
+        // Right-click selects the row first, so the menu acts on the episode under the mouse.
+        grid.CellMouseDown += (_, e) =>
+        {
+            if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+                grid.CurrentCell = grid[e.ColumnIndex, e.RowIndex];
         };
         grid.CellDoubleClick += (_, e) =>
         {
@@ -381,6 +393,50 @@ public partial class LocalSeriesForm : AsyncForm
                 Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         };
         return grid;
+    }
+
+    /// <summary>Aired (or no date), listed, and no file, while the series' folder is known: missing (the red rows).</summary>
+    private bool IsMissing(EpisodeView view) =>
+        !view.OnDisk && view.Listed && view.Episode.SeasonNumber > 0 && _current is { FolderExists: true, FolderTooBroad: false }
+        && (view.Episode.AirDate is null || view.Episode.AirDate.Value.Date <= DateTime.Today);
+
+    /// <summary>The episode grid's right-click menu: "Add to wishlist" on a missing (red) episode, nothing on the others.</summary>
+    private ContextMenuStrip NewEpisodeMenu(DataGridView grid)
+    {
+        var menu = new ContextMenuStrip();
+        var add = new ToolStripMenuItem("Add to wishlist");
+        menu.Items.Add(add);
+        menu.Opening += (_, e) =>
+        {
+            if (grid.CurrentItem() is not EpisodeRow { View: var view } || !IsMissing(view))
+            {
+                e.Cancel = true;
+                return;
+            }
+            var on = _wished.Contains((view.Episode.SeasonNumber, view.Episode.EpisodeNumber));
+            add.Text = on ? "On the wishlist already" : "Add to wishlist";
+            add.Enabled = !on;
+        };
+        add.Click += async (_, _) =>
+        {
+            if (grid.CurrentItem() is EpisodeRow { View.Episode: var episode } && _current is { } series)
+                await AddToWishlistAsync(series, episode);
+        };
+        return menu;
+    }
+
+    /// <summary>Puts a missing episode on the wishlist, as "Series S01E02: Title" (as the web app's series page does).</summary>
+    private async Task AddToWishlistAsync(LocalSeries series, SeriesEpisode episode)
+    {
+        var code = $"S{episode.SeasonNumber:00}E{episode.EpisodeNumber:00}";
+        var added = -1;
+        await RunAsync($"Adding {series.Item.Title} {code} to the wishlist…", async ct =>
+        {
+            added = await _wishlist.AddEpisodesAsync(series.Item.ImdbId, [episode], ct);
+            if (ReferenceEquals(_current, series)) _wished = await _wishlist.GetEpisodesAsync(series.Item.ImdbId, ct);
+        });
+        if (added < 0) return; // failed or cancelled; RunAsync already reported it
+        ShowStatus(added > 0 ? $"Added {series.Item.Title} {code} to the wishlist." : $"{series.Item.Title} {code} is on the wishlist already.");
     }
 
     private void tabSeasons_SelectedIndexChanged(object sender, EventArgs e) => ShowSelectedEpisode();

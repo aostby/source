@@ -72,6 +72,12 @@ public sealed class KinoOptions
     public WebSyncOptions WebSync { get; set; } = new();
 
     /// <summary>
+    /// How File → Prowlarr picks releases (size, quality, seeders). Prowlarr's address and API key are user settings
+    /// (Settings, category Prowlarr), as Plex's are.
+    /// </summary>
+    public ProwlarrOptions Prowlarr { get; set; } = new();
+
+    /// <summary>
     /// <paramref name="url"/> with its host replaced by the first matching <see cref="BrowserHosts"/> entry
     /// (case doesn't matter); port, path and fragment are kept. Anything else is returned unchanged.
     /// </summary>
@@ -142,6 +148,53 @@ public sealed class WebSyncOptions
     public int DelaySeconds { get; set; } = 10;
 
     public bool IsConfigured => !string.IsNullOrWhiteSpace(Url) && !string.IsNullOrWhiteSpace(ApiKey);
+}
+
+/// <summary>
+/// <see cref="KinoOptions.Prowlarr"/>: which of Prowlarr's search results are shown for a wanted title, and when getting
+/// one asks first. Prowlarr's indexers here can't search by IMDb id, so the search is "title year" and the results are
+/// checked against the title and year. The lists are null when not set (the configuration binder adds to a list that
+/// has items already), and the Effective… properties give the defaults then.
+/// </summary>
+public sealed class ProwlarrOptions
+{
+    /// <summary>Newznab categories searched for movies. Null means 2000 (Movies, all of them).</summary>
+    public List<int>? MovieCategories { get; set; }
+
+    /// <summary>Newznab categories searched for series and episodes. Null means 5000 (TV, all of it).</summary>
+    public List<int>? SeriesCategories { get; set; }
+
+    /// <summary>
+    /// Qualities wanted, as in release names: 2160p, 1080p, 720p, SD, or Unknown for a name without one.
+    /// Null means 1080p and 720p.
+    /// </summary>
+    public List<string>? Qualities { get; set; }
+
+    /// <summary>Releases with fewer seeders are left out.</summary>
+    public int MinSeeders { get; set; } = 5;
+
+    /// <summary>The best this many (most seeders first) are shown for each title.</summary>
+    public int TopResults { get; set; } = 8;
+
+    /// <summary>Getting a release bigger than this many GB asks first.</summary>
+    public double ConfirmAboveGb { get; set; } = 6;
+
+    /// <summary>
+    /// Words in a release name (whole words, case doesn't matter) that leave it out: camera copies and the like.
+    /// Null means <see cref="DefaultExcludedWords"/>.
+    /// </summary>
+    public List<string>? ExcludedWords { get; set; }
+
+    /// <summary>Where a .torrent file is saved before it's opened. Empty means the Downloads folder.</summary>
+    public string TorrentFolder { get; set; } = string.Empty;
+
+    public static readonly IReadOnlyList<string> DefaultExcludedWords =
+        ["CAM", "HDCAM", "TS", "HDTS", "TELESYNC", "TC", "TELECINE", "SCR", "SCREENER", "DVDSCR", "WORKPRINT"];
+
+    public IReadOnlyList<int> EffectiveMovieCategories => MovieCategories is { Count: > 0 } ? MovieCategories : [2000];
+    public IReadOnlyList<int> EffectiveSeriesCategories => SeriesCategories is { Count: > 0 } ? SeriesCategories : [5000];
+    public IReadOnlyList<string> EffectiveQualities => Qualities is { Count: > 0 } ? Qualities : ["1080p", "720p"];
+    public IReadOnlyList<string> EffectiveExcludedWords => ExcludedWords ?? DefaultExcludedWords;
 }
 
 public enum CleanupAfterScan

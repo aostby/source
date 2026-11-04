@@ -29,7 +29,7 @@ partial class SettingsForm
     private void InitializeComponent()
     {
         grid = new PropertyGrid();
-        txtResults = new TextBox();
+        txtResults = new RichTextBox();
         bottom = new TableLayoutPanel();
         btnImportRatings = new Button();
         buttons = new FlowLayoutPanel();
@@ -55,7 +55,7 @@ partial class SettingsForm
         txtResults.Multiline = true;
         txtResults.Name = "txtResults";
         txtResults.ReadOnly = true;
-        txtResults.Size = new Size(584, 64);
+        txtResults.Size = new Size(584, 150);
         txtResults.TabIndex = 1;
         txtResults.TabStop = false;
         //
@@ -129,7 +129,7 @@ partial class SettingsForm
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         CancelButton = btnCancel;
-        ClientSize = new Size(584, 560);
+        ClientSize = new Size(584, 680);
         Controls.Add(grid);
         Controls.Add(txtResults);
         Controls.Add(bottom);
@@ -149,7 +149,7 @@ partial class SettingsForm
     #endregion
 
     private PropertyGrid grid;
-    private TextBox txtResults;
+    private RichTextBox txtResults;
     private TableLayoutPanel bottom;
     private Button btnImportRatings;
     private FlowLayoutPanel buttons;

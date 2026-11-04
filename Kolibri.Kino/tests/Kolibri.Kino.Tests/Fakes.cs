@@ -53,7 +53,7 @@ internal sealed class FakeOmdb : IMovieInfoProvider
 
     private static Item Copy(Item i) => new()
     {
-        ImdbId = i.ImdbId, Title = i.Title, Year = i.Year, Type = i.Type, ImdbRating = i.ImdbRating, Response = i.Response,
+        ImdbId = i.ImdbId, Title = i.Title, Year = i.Year, Type = i.Type, ImdbRating = i.ImdbRating, Response = i.Response, Released = i.Released,
     };
 }
 

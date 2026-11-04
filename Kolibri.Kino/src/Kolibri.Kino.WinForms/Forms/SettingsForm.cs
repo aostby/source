@@ -26,7 +26,8 @@ public partial class SettingsForm : AsyncForm
         _current = _edited.LiteDBFilePath;
         InitializeComponent();
         this.Describe(
-            (btnTest, "Tries the OMDb, TMDb and SubDL keys and the Plex token as entered, without saving."),
+            (btnTest, "Tries the OMDb, TMDb and SubDL keys, the Plex token, Uranus and Prowlarr as entered, without saving. " +
+                      "Says which settings are missing."),
             (btnSave, "Saves the settings. New keys apply at once; a new database after a restart."),
             (btnImportRatings, "Takes your ratings from a file exported in Kino on the web (Settings → Export ratings). " +
                                "The newer rating of a title wins; the new ones are set on Plex too."));
@@ -50,10 +51,48 @@ public partial class SettingsForm : AsyncForm
     private async void btnTest_Click(object sender, EventArgs e) =>
         await RunAsync("Testing…", async ct =>
         {
-            txtResults.Text = "Testing OMDb, TMDb and Plex…";
-            var checks = await _controller.TestAsync(_edited, ct);
-            txtResults.Text = string.Join(Environment.NewLine, checks.Select(c => $"{(c.Ok ? "OK  " : "FAIL")}  {c.Service}: {c.Message}"));
+            txtResults.Text = "Testing OMDb, TMDb, SubDL, Plex, Uranus and Prowlarr…";
+            ShowChecks(await _controller.TestAsync(_edited, ct));
         });
+
+    /// <summary>
+    /// A line on what's missing in Settings and one on what failed, then one line per service: OK (green), FAIL (red),
+    /// or MISSING (orange; not tried, the settings it needs aren't filled in).
+    /// </summary>
+    private void ShowChecks(IReadOnlyList<Kolibri.Kino.Core.Abstractions.ConnectionCheck> checks)
+    {
+        txtResults.Clear();
+        var bold = new Font(txtResults.Font, FontStyle.Bold);
+        void Write(string text, Color color, Font? font = null)
+        {
+            txtResults.SelectionStart = txtResults.TextLength;
+            txtResults.SelectionColor = color;
+            txtResults.SelectionFont = font ?? txtResults.Font;
+            txtResults.AppendText(text);
+        }
+
+        var missing = checks.Where(c => c.Missing is not null).ToList();
+        var failed = checks.Where(c => c.Missing is null && !c.Ok).ToList();
+        if (missing.Count > 0)
+            Write($"Missing settings: {string.Join(", ", missing.Select(c => $"{c.Service} ({c.Missing})"))}.{Environment.NewLine}", Missing, bold);
+        if (failed.Count > 0)
+            Write($"Failed: {string.Join(", ", failed.Select(c => c.Service))}.{Environment.NewLine}", Color.Firebrick, bold);
+        if (missing.Count + failed.Count == 0)
+            Write($"All connections work.{Environment.NewLine}", Color.ForestGreen, bold);
+        Write(Environment.NewLine, txtResults.ForeColor);
+
+        foreach (var c in checks)
+        {
+            var (label, color) = c.Missing is not null ? ("MISSING", Missing) : c.Ok ? ("OK", Color.ForestGreen) : ("FAIL", Color.Firebrick);
+            Write($"{label,-8}", color, bold);
+            Write($"{c.Service}: {c.Message}{Environment.NewLine}", txtResults.ForeColor);
+        }
+        txtResults.SelectionStart = 0;
+        txtResults.ScrollToCaret();
+    }
+
+    /// <summary>Dark orange, readable on the box's grey: settings not filled in.</summary>
+    private static readonly Color Missing = Color.FromArgb(200, 100, 0);
 
     /// <summary>Ratings exported from Kino on the web (the NAS's database), into this database.</summary>
     private async void btnImportRatings_Click(object sender, EventArgs e)

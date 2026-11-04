@@ -31,6 +31,9 @@ partial class MainForm
         menuStrip = new MenuStrip();
         menuFile = new ToolStripMenuItem();
         menuSettings = new ToolStripMenuItem();
+        menuProwlarr = new ToolStripMenuItem();
+        menuTools = new ToolStripMenuItem();
+        menuSortByYear = new ToolStripMenuItem();
         menuFileSeparator = new ToolStripSeparator();
         menuExit = new ToolStripMenuItem();
         menuLibrary = new ToolStripMenuItem();
@@ -73,7 +76,7 @@ partial class MainForm
         //
         // menuFile
         //
-        menuFile.DropDownItems.AddRange(new ToolStripItem[] { menuSettings, menuFileSeparator, menuExit });
+        menuFile.DropDownItems.AddRange(new ToolStripItem[] { menuSettings, menuProwlarr, menuTools, menuFileSeparator, menuExit });
         menuFile.Name = "menuFile";
         menuFile.Size = new Size(34, 20);
         menuFile.Text = "&File";
@@ -84,6 +87,27 @@ partial class MainForm
         menuSettings.Size = new Size(180, 22);
         menuSettings.Text = "&Settings…";
         menuSettings.Click += menuSettings_Click;
+        //
+        // menuProwlarr
+        //
+        menuProwlarr.Name = "menuProwlarr";
+        menuProwlarr.Size = new Size(180, 22);
+        menuProwlarr.Text = "&Prowlarr";
+        menuProwlarr.Click += menuProwlarr_Click;
+        //
+        // menuTools
+        //
+        menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuSortByYear });
+        menuTools.Name = "menuTools";
+        menuTools.Size = new Size(180, 22);
+        menuTools.Text = "&Tools";
+        //
+        // menuSortByYear
+        //
+        menuSortByYear.Name = "menuSortByYear";
+        menuSortByYear.Size = new Size(190, 22);
+        menuSortByYear.Text = "Sort folder by &year…";
+        menuSortByYear.Click += menuSortByYear_Click;
         //
         // menuFileSeparator
         //
@@ -299,6 +323,9 @@ partial class MainForm
     private MenuStrip menuStrip;
     private ToolStripMenuItem menuFile;
     private ToolStripMenuItem menuSettings;
+    private ToolStripMenuItem menuProwlarr;
+    private ToolStripMenuItem menuTools;
+    private ToolStripMenuItem menuSortByYear;
     private ToolStripSeparator menuFileSeparator;
     private ToolStripMenuItem menuExit;
     private ToolStripMenuItem menuLibrary;
