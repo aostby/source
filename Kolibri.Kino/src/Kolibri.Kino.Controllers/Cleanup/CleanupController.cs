@@ -32,6 +32,26 @@ public sealed class CleanupController(IFolderCleaner cleaner, IOptions<KinoOptio
         return new CleanupPlan(list, found);
     }
 
+    /// <summary>
+    /// File → Tools → Delete empty folders: removes the empty folders anywhere below <paramref name="root"/>, deepest
+    /// first (a folder holding only empty folders goes too). The chosen folder itself is kept.
+    /// </summary>
+    public Task<CleanupResult> DeleteEmptyFoldersAsync(string root, CancellationToken ct = default) => CleanFolderAsync(root, [], ct);
+
+    /// <summary>
+    /// File → Tools → Delete empty folders and leftover files: deletes <paramref name="files"/> (a <see cref="PlanAsync"/>
+    /// the user has seen), then the folders below <paramref name="root"/> left empty; the chosen folder itself is kept.
+    /// </summary>
+    public async Task<CleanupResult> CleanFolderAsync(string root, IReadOnlyList<string> files, CancellationToken ct = default)
+    {
+        if (!Directory.Exists(root)) throw new DirectoryNotFoundException($"{root} doesn't exist.");
+        var below = Directory.GetDirectories(root);
+        var result = await cleaner.DeleteAsync(files, below, deleteEmptyFolders: true, ct).ConfigureAwait(false);
+        logger.LogInformation("Cleanup of {Root} deleted {Files} file(s) and {Folders} empty folder(s); {Failed} failed",
+            root, result.FilesDeleted, result.FoldersDeleted, result.Failed.Count);
+        return result;
+    }
+
     public async Task<CleanupResult> ExecuteAsync(CleanupPlan plan, CancellationToken ct = default)
     {
         var result = await cleaner.DeleteAsync(plan.Files, plan.Folders, Settings.DeleteEmptyFolders, ct).ConfigureAwait(false);

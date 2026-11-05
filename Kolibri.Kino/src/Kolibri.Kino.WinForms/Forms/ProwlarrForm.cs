@@ -23,6 +23,7 @@ public sealed class ProwlarrForm : AsyncForm
 
     private readonly ProwlarrController _prowlarr;
     private readonly WebWishlist _web;
+    private readonly WishlistController _wishlist;
     private readonly IServiceProvider _services;
     private readonly ToolTip _toolTip = new() { AutoPopDelay = 20000 };
     private bool _busy;
@@ -35,6 +36,7 @@ public sealed class ProwlarrForm : AsyncForm
     private readonly TextBox txtManual = new() { Width = 240, Margin = new Padding(24, 4, 3, 3), PlaceholderText = "Search for, e.g. Bosch.Legacy.S01E10" };
     private readonly Button btnManual = TopButton("Search this");
     private readonly CheckBox chkAll = new() { Text = "Select all", AutoSize = true, Checked = true, Margin = new Padding(24, 7, 3, 3) };
+    private readonly CheckBox chkFilter = new() { Text = "Filter", AutoSize = true, Margin = new Padding(16, 7, 3, 3) };
     private readonly CheckBox chkLeftOut = new() { Text = "Show left out", AutoSize = true, Margin = new Padding(16, 7, 3, 3) };
     private readonly DataGridView dgvWanted = Grid(readOnly: false);
     private readonly DataGridView dgvReleases = Grid(readOnly: true);
@@ -51,17 +53,18 @@ public sealed class ProwlarrForm : AsyncForm
     private List<WantedRow> _rows = [];
     private string _source = "";
 
-    public ProwlarrForm(ProwlarrController prowlarr, WebWishlist web, IServiceProvider services)
+    public ProwlarrForm(ProwlarrController prowlarr, WebWishlist web, WishlistController wishlist, IServiceProvider services)
     {
         _prowlarr = prowlarr;
         _web = web;
+        _wishlist = wishlist;
         _services = services;
         Text = "Prowlarr";
         ClientSize = new Size(1150, 760);
         StartPosition = FormStartPosition.CenterParent;
 
         var top = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(8, 8, 8, 4), WrapContents = true }; // wraps in a narrow window
-        top.Controls.AddRange([btnUranus, btnFile, btnLookUp, chkAll, btnSearch, btnGet, chkLeftOut, txtManual, btnManual]);
+        top.Controls.AddRange([btnUranus, btnFile, btnLookUp, chkAll, chkFilter, btnSearch, btnGet, chkLeftOut, txtManual, btnManual]);
         btnUranus.Click += async (_, _) => await LoadFromUranusAsync();
         btnFile.Click += async (_, _) => await OpenFileAsync();
         btnLookUp.Click += async (_, _) => await RunAsync("Looking up titles…", async ct =>
@@ -83,6 +86,8 @@ public sealed class ProwlarrForm : AsyncForm
                                        "Grindhouse (2007) or Grindhouse.2007 (a movie of that year), or just a title.");
         chkLeftOut.CheckedChanged += (_, _) => ShowReleases();
         chkAll.CheckedChanged += (_, _) => TickAll();
+        chkFilter.CheckedChanged += (_, _) => ShowWanted();
+        _toolTip.SetToolTip(chkFilter, "Hides the titles in SilverScreen already (the green ones), so only those to get are listed.");
         _toolTip.SetToolTip(chkAll, "Ticks every title you don't have (those in SilverScreen stay unticked); untick it to clear every tick and pick titles one by one.");
         _toolTip.SetToolTip(btnFile, "Reads a wishlist file: CSV (Kino's own, or another program's), JSON or XML. Each title needs a title " +
                                      "and a year, under names that clearly mean that (Title, Name …; Year, Released …).");
@@ -146,6 +151,8 @@ public sealed class ProwlarrForm : AsyncForm
     protected override async void OnShown(EventArgs e)
     {
         base.OnShown(e);
+        // The Cache folder next to the .exe, made if missing, without the answers too old to use.
+        await Task.Run(_prowlarr.PrepareCache);
         if (_web.IsConfigured) await LoadFromUranusAsync();
         else
         {
@@ -172,17 +179,49 @@ public sealed class ProwlarrForm : AsyncForm
 
         btnUranus.Enabled = !_busy && _web.IsConfigured;
         btnSearch.Enabled = btnGet.Enabled = btnManual.Enabled = txtManual.Enabled = !_busy && problem is null;
-        btnFile.Enabled = btnLookUp.Enabled = chkAll.Enabled = chkLeftOut.Enabled = !_busy;
+        btnFile.Enabled = btnLookUp.Enabled = chkAll.Enabled = chkFilter.Enabled = chkLeftOut.Enabled = !_busy;
         _toolTip.SetToolTip(btnUranus, _web.IsConfigured
-            ? "Fetches the newest wishlist Kino on the web sent to Uranus (problembar.net)."
+            ? "Fetches the newest wishlist Kino on the web sent to Uranus (problembar.net), together with Kino's own wishlist: each title once."
             : "Set the Uranus URL and token in Settings (category Uranus) to fetch the wishlist Kino on the web sent there.");
         _toolTip.SetToolTip(btnSearch, _prowlarr.IsConfigured
             ? "Searches Prowlarr for each ticked title by title and year (series: by title; episodes: by S01E02), and keeps the releases that are it."
             : "Set the Prowlarr URL and API key in Settings (category Prowlarr) to search Prowlarr.");
     }
 
+    /// <summary>
+    /// The wishlist on Uranus together with Kino's own (the Wishlist window's, episodes from Missing episodes too): each
+    /// title once, Uranus' first. When Uranus can't be reached, Kino's own alone, and the status bar says why.
+    /// </summary>
     private Task LoadFromUranusAsync() =>
-        RunAsync("Fetching the wishlist from Uranus…", async ct => await ShowWantedAsync(await _web.GetAsync(ct), "the wishlist on Uranus", ct));
+        RunAsync("Fetching the wishlist from Uranus…", async ct =>
+        {
+            WishlistFileRead? web = null;
+            string? webError = null;
+            try
+            {
+                web = await _web.GetAsync(ct);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or FormatException or HttpRequestException
+                                           || (ex is TaskCanceledException && !ct.IsCancellationRequested))
+            {
+                Log.LogWarning(ex, "The wishlist on Uranus couldn't be fetched");
+                webError = ex.Message;
+            }
+            var local = (await _wishlist.GetAsync(ct)).Select(r => r.Item).ToList();
+            if (web is null && local.Count == 0)
+            {
+                ShowStatus($"Error: {webError}");
+                MessageBox.Show(this, webError, "Wishlist from Uranus", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var (items, added) = WishlistFile.Merge(web?.Items ?? [], local);
+            var source = web is null ? "Kino's wishlist (Uranus couldn't be reached)"
+                : added == 0 ? "the wishlist on Uranus"
+                : $"the wishlist on Uranus + {added} from Kino's own";
+            await ShowWantedAsync(new WishlistFileRead(items, web?.Skipped ?? 0, web?.Format ?? "Kino"), source, ct);
+            if (webError is not null) ShowStatus($"{lblStatus.Text} Uranus: {webError}");
+        });
 
     private async Task OpenFileAsync()
     {
@@ -226,14 +265,13 @@ public sealed class ProwlarrForm : AsyncForm
             .DistinctBy(i => string.IsNullOrEmpty(i.ImdbId) ? $"{i.Title.ToLowerInvariant()}|{i.Year}" : i.ImdbId.ToLowerInvariant())
             .Select(i => new WantedRow { Item = i })
             .ToList();
-        var have = await _prowlarr.HaveAsync(_rows.Select(r => r.Item.TitleImdbId), ct);
+        var have = await _prowlarr.HaveAsync(_rows.Select(r => r.Item.ImdbId), ct);
         foreach (var row in _rows)
         {
-            row.Have = !row.Item.IsEpisode && have.Contains(row.Item.ImdbId);
+            row.Have = have.Contains(row.Item.ImdbId);
             row.Search = chkAll.Checked && !row.Have;
         }
-        wantedSource.SetRows(_rows);
-        ShowReleases();
+        ShowWanted();
         ShowStatus($"{_rows.Count} title(s) from {source} ({read.Format})" + (read.Skipped > 0 ? $"; {read.Skipped} without a title or year left out" : "") +
                    $"; {_rows.Count(r => r.Have)} in SilverScreen already (not ticked).");
         if (_rows.Any(NeedsLookUp)) await LookUpMissingAsync(ct);
@@ -258,6 +296,15 @@ public sealed class ProwlarrForm : AsyncForm
         {
             ShowStatus($"Release dates couldn't be fetched: {ex.Message}");
         }
+    }
+
+    /// <summary>The titles in the list: all of them, or with Filter only those not in SilverScreen; the selection is kept where it can be.</summary>
+    private void ShowWanted()
+    {
+        var selected = dgvWanted.CurrentItem() as WantedRow;
+        wantedSource.SetRows(chkFilter.Checked ? _rows.Where(r => !r.Have) : _rows);
+        if (selected is not null && wantedSource.IndexOf(selected) >= 0) Select(selected);
+        else ShowReleases();
     }
 
     /// <summary>Select all: every title you don't have ticked, or (unticked) no title, to pick them one by one.</summary>
@@ -298,7 +345,7 @@ public sealed class ProwlarrForm : AsyncForm
             }
             dgvWanted.Refresh();
         }
-        wantedSource.ResetBindings(false);
+        ShowWanted(); // one found to be in SilverScreen is hidden with Filter
         ShowStatus($"Looked up {missing.Count} title(s) without an IMDb id or type: {found} found" +
                    (failed > 0 ? $", {failed} failed (see Help → Log)" : "") +
                    (missing.Count - found - failed > 0 ? $", {missing.Count - found - failed} not found (searched as movies, by title and year)." : "."));
@@ -335,7 +382,7 @@ public sealed class ProwlarrForm : AsyncForm
         {
             row = new WantedRow { Item = wanted };
             _rows.Insert(0, row);
-            wantedSource.SetRows(_rows);
+            ShowWanted();
         }
         row.Search = true;
         await SearchRowsAsync([row]);
@@ -353,7 +400,7 @@ public sealed class ProwlarrForm : AsyncForm
                 try
                 {
                     row.Result = await _prowlarr.SearchAsync(row.Item, ct);
-                    row.Found = $"{row.Result.Best.Count} of {row.Result.All.Count}";
+                    row.Found = $"{row.Result.Best.Count} of {row.Result.All.Count}" + (row.Result.FromCache ? " (cached)" : "");
                     searched++;
                 }
                 catch (InvalidOperationException ex) when (searched > 0)
@@ -439,7 +486,12 @@ public sealed class ProwlarrForm : AsyncForm
             var link = await _prowlarr.GetLinkAsync(release, ct);
             if (link.Magnet is { } magnet)
             {
-                if (Open(magnet)) ShowStatus($"Opened the magnet link for {release.Title} ({SizeText(release.Size)}).");
+                var opened = Open(magnet);
+                // What was sent, with the release's name, quality and size as values of their own (to filter on in the log).
+                Log.LogInformation("Magnet link sent {Destination}: {Release}, quality {Quality}, size {Size} ({SizeBytes} bytes), from {Indexer}",
+                    opened ? "to the torrent program" : "to the clipboard", release.Title, check.Quality ?? "unknown",
+                    SizeText(release.Size), release.Size, release.Indexer);
+                if (opened) ShowStatus($"Opened the magnet link for {release.Title} ({SizeText(release.Size)}).");
                 else
                 {
                     Clipboard.SetText(magnet);
@@ -457,7 +509,12 @@ public sealed class ProwlarrForm : AsyncForm
             var file = Path.Combine(folder, link.FileName);
             for (var n = 2; File.Exists(file); n++) file = Path.Combine(folder, $"{Path.GetFileNameWithoutExtension(link.FileName)} ({n}).torrent");
             await File.WriteAllBytesAsync(file, link.Torrent!, ct);
-            ShowStatus(Open(file)
+            var openedFile = Open(file);
+            // As for a magnet link: the release's name, quality and size as values of their own, and where the file is.
+            Log.LogInformation(".torrent file sent {Destination}: {Release}, quality {Quality}, size {Size} ({SizeBytes} bytes), from {Indexer}, saved as {File}",
+                openedFile ? "to the torrent program" : "to the folder only", release.Title, check.Quality ?? "unknown",
+                SizeText(release.Size), release.Size, release.Indexer, file);
+            ShowStatus(openedFile
                 ? $"Saved and opened {Path.GetFileName(file)} ({SizeText(release.Size)})."
                 : $"Saved {file}; no program opens .torrent files here.");
         });

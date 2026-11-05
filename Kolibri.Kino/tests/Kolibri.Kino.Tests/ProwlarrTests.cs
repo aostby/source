@@ -26,13 +26,15 @@ public sealed class ProwlarrTests : IDisposable
         _temp.Dispose();
     }
 
-    private ProwlarrController Controller(string? key = "secret", ProwlarrOptions? options = null, string? url = UserSettings.DefaultProwlarrUrl) => new(
+    private ProwlarrController Controller(string? key = "secret", ProwlarrOptions? options = null, string? url = UserSettings.DefaultProwlarrUrl,
+        ProwlarrCache? cache = null) => new(
         new InMemorySettingsStore(new UserSettings { ProwlarrApiKey = key, ProwlarrUrl = url }),
         Options.Create(new KinoOptions { Prowlarr = options ?? new ProwlarrOptions() }),
         new WishlistController(new LiteDbWishlistRepository(_db), new LiteDbMovieRepository(_db), new LiteDbFileItemRepository(_db),
             _omdb, new WishlistTests.TmdbTitles(), _tmdb, NullLogger<WishlistController>.Instance),
         NullLogger<ProwlarrController>.Instance,
-        handler: _prowlarr);
+        handler: _prowlarr,
+        cache: cache);
 
     private static WishlistItem Movie(string title, string year, string imdbId = "") => new() { Title = title, Year = year, ImdbId = imdbId, Type = "movie" };
 
@@ -150,6 +152,51 @@ public sealed class ProwlarrTests : IDisposable
         Assert.Equal("http://greenlantern:9696/api/v1/search?query=Grindhouse%202007&type=search&categories=2000", _prowlarr.Urls.Single());
         Assert.Equal("secret", _prowlarr.Key);
         Assert.Equal([("magnet", "tt0462322"), ("torrent", null)], result.Best.Select(c => (c.Release.Links, c.Release.ImdbId)));
+    }
+
+    [Fact]
+    public async Task A_search_is_kept_ten_minutes_in_files_without_the_API_key()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "kino-prowlarr-cache-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var cache = new ProwlarrCache(folder, TimeSpan.FromMinutes(10), NullLogger<ProwlarrCache>.Instance);
+            cache.Prepare();
+            Assert.True(Directory.Exists(folder));
+            _prowlarr.Respond = _ => Json("""
+                [{"title":"Grindhouse (2007) [720p]","indexer":"TorrentDownload","size":1800000000,"seeders":373,
+                  "magnetUrl":"http://prowlarr/2/download?apikey=secret&link=m"},
+                 {"title":"Grindhouse (2007) CAM","indexer":"Knaben","size":900000000,"seeders":500,
+                  "downloadUrl":"http://prowlarr/5/download?apikey=secret&link=t"}]
+                """);
+            var grindhouse = Movie("Grindhouse", "2007", "tt0462322");
+
+            var first = await Controller(cache: cache).SearchAsync(grindhouse);
+            var file = Path.Combine(folder, "tt0462322.json");
+            Assert.False(first.FromCache);
+            Assert.True(File.Exists(file));
+            Assert.DoesNotContain("secret", File.ReadAllText(file)); // every release kept, but not the key
+            Assert.Contains("CAM", File.ReadAllText(file));
+
+            var again = await Controller(cache: cache).SearchAsync(grindhouse);
+            Assert.True(again.FromCache);
+            Assert.Single(_prowlarr.Urls); // Prowlarr asked once
+            Assert.Equal(first.Best.Select(c => c.Release), again.Best.Select(c => c.Release)); // filtered as before, with the key back
+            Assert.Equal("http://prowlarr/2/download?apikey=secret&link=m", again.Best.Single().Release.MagnetUrl);
+
+            // Without an IMDb id nothing is kept; an old file isn't used, and is deleted when the window opens.
+            await Controller(cache: cache).SearchAsync(Movie("Grindhouse", "2007"));
+            Assert.Equal(2, _prowlarr.Urls.Count);
+            File.SetLastWriteTimeUtc(file, DateTime.UtcNow.AddMinutes(-11));
+            Assert.False((await Controller(cache: cache).SearchAsync(grindhouse)).FromCache);
+            File.SetLastWriteTimeUtc(file, DateTime.UtcNow.AddMinutes(-11));
+            cache.Prepare();
+            Assert.False(File.Exists(file));
+        }
+        finally
+        {
+            if (Directory.Exists(folder)) Directory.Delete(folder, recursive: true);
+        }
     }
 
     [Fact]
