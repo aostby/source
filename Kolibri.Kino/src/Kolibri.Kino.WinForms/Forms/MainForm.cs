@@ -112,6 +112,94 @@ public partial class MainForm : Form, IStatusDisplay
 
     private void menuSortByYear_Click(object sender, EventArgs e) => this.ShowSingle<SortByYearForm>(_services);
 
+    #region Tools: delete empty folders (and leftover files)
+
+    /// <summary>File → Tools → Delete empty folders: a folder to choose, and its empty folders go (no window of its own).</summary>
+    private async void menuDeleteEmptyFolders_Click(object sender, EventArgs e)
+    {
+        if (ChooseFolder("Delete empty folders") is not { } root) return;
+        await CleanAsync(root, [], $"Deleting empty folders in {root}…");
+    }
+
+    /// <summary>
+    /// File → Tools → Delete empty folders and leftover files: the files matching Kino:Cleanup:FilePatterns (.nfo, .txt,
+    /// .jpg …) are listed first, as after a scan in Local movies; Delete removes them and the empty folders, Cancel nothing.
+    /// </summary>
+    private async void menuDeleteLeftovers_Click(object sender, EventArgs e)
+    {
+        if (ChooseFolder("Delete empty folders and leftover files") is not { } root) return;
+        var cleanup = _services.GetRequiredService<Kolibri.Kino.Controllers.Cleanup.CleanupController>();
+        Kolibri.Kino.Controllers.Cleanup.CleanupPlan plan;
+        UseWaitCursor = true;
+        SetStatus($"Looking for leftover files in {root}…");
+        try
+        {
+            plan = await cleanup.PlanAsync([root]);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Report($"Error: {root} couldn't be looked through: {ex.Message}");
+            return;
+        }
+        finally
+        {
+            UseWaitCursor = false;
+        }
+
+        if (plan.Files.Count > 0)
+        {
+            using var dialog = new CleanupConfirmForm(plan, root, deleteEmptyFolders: true);
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                Report("Cleanup skipped; nothing was deleted.");
+                return;
+            }
+        }
+        else SetStatus($"No leftover files in {root}; deleting the empty folders.");
+        await CleanAsync(root, plan.Files, $"Deleting {plan.Files.Count} leftover file(s) and the empty folders in {root}…");
+    }
+
+    /// <summary>The folder to clean up (starting in the movies folder from Settings); null on Cancel.</summary>
+    private string? ChooseFolder(string title)
+    {
+        var start = _services.GetRequiredService<Kolibri.Kino.Core.Abstractions.ISettingsStore>().Current.UserFilePaths.MoviesSourcePath;
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = title,
+            UseDescriptionForTitle = true,
+            InitialDirectory = start is not null && Directory.Exists(start) ? start : "",
+        };
+        return dialog.ShowDialog(this) == DialogResult.OK ? dialog.SelectedPath : null;
+    }
+
+    private async Task CleanAsync(string root, IReadOnlyList<string> files, string working)
+    {
+        var cleanup = _services.GetRequiredService<Kolibri.Kino.Controllers.Cleanup.CleanupController>();
+        UseWaitCursor = true;
+        SetStatus(working);
+        try
+        {
+            var result = await cleanup.CleanFolderAsync(root, files);
+            var text = (files.Count > 0 ? $"Deleted {result.FilesDeleted} leftover file(s) and " : "Deleted ") +
+                       $"{result.FoldersDeleted} empty folder(s) in {root}" +
+                       (result.Failed.Count > 0 ? $"; {result.Failed.Count} couldn't be deleted." : ".");
+            SetStatus(text);
+            MessageBox.Show(this, result.Failed.Count == 0 ? text
+                    : text + Environment.NewLine + Environment.NewLine + string.Join(Environment.NewLine, result.Failed.Take(30)),
+                "Delete empty folders", MessageBoxButtons.OK, result.Failed.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Report($"Error: cleaning up {root} failed: {ex.Message}");
+        }
+        finally
+        {
+            UseWaitCursor = false;
+        }
+    }
+
+    #endregion
+
     private void menuExit_Click(object sender, EventArgs e) => Close();
 
     #endregion

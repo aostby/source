@@ -107,6 +107,32 @@ public sealed class LocalSeriesControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task Wishlist_episodes_with_a_file_in_the_series_folder_are_on_disk()
+    {
+        await _movies.UpsertAsync(Series(SeriesId, "Buffy", "8.3"));
+        await _files.UpsertAsync(new FileItem { ImdbId = SeriesId, FullName = _folder });
+        Touch("Season 1", "Buffy.S01E01.mkv");
+        Touch("Season 2", "Buffy.S02E01E02.mkv");
+
+        var onDisk = await _controller.EpisodesOnDiskAsync(
+            [$"{SeriesId}_S01E01", $"{SeriesId}_S01E02", $"{SeriesId}_S02E02", "tt0000009_S01E01", SeriesId, "nonsense_x"]);
+
+        Assert.Equal([$"{SeriesId}_S01E01", $"{SeriesId}_S02E02"], onDisk.Order());
+    }
+
+    [Theory]
+    [InlineData("tt5875444_S06E03", "tt5875444", 6, 3)]
+    [InlineData("tt5875444_s1e12", "tt5875444", 1, 12)]
+    public void Episode_ids_are_read(string id, string series, int season, int episode) =>
+        Assert.Equal((series, season, episode), LocalSeriesController.ParseEpisodeId(id));
+
+    [Theory]
+    [InlineData("tt5875444")]
+    [InlineData("tt5875444_S06")]
+    [InlineData("_S01E01")]
+    public void Other_ids_are_not_episodes(string id) => Assert.Null(LocalSeriesController.ParseEpisodeId(id));
+
+    [Fact]
     public async Task Refresh_fetches_again_even_with_a_cache()
     {
         _online.Seasons = [Season(1, 2, "TMDb")];

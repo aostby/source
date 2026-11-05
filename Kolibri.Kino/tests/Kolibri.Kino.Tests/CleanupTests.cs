@@ -80,4 +80,32 @@ public sealed class CleanupTests : IDisposable
         File.WriteAllText(path, "x");
         return path;
     }
+
+    [Fact]
+    public async Task Tools_delete_empty_folders_and_listed_files_but_keep_the_chosen_folder()
+    {
+        Directory.CreateDirectory(Path.Combine(_folder, @"Empty\Also empty"));
+        Directory.CreateDirectory(Path.Combine(_folder, "Movie (2007)"));
+        File.WriteAllText(Path.Combine(_folder, @"Movie (2007)\movie.mkv"), "");
+        Directory.CreateDirectory(Path.Combine(_folder, "Only junk"));
+        var junk = Path.Combine(_folder, @"Only junk\RARBG.txt");
+        File.WriteAllText(junk, "");
+        var controller = new CleanupController(new FileSystemFolderCleaner(), Options.Create(new KinoOptions()), NullLogger<CleanupController>.Instance);
+
+        // Empty folders only: the folder with a .txt stays, as does the .txt.
+        var emptyOnly = await controller.DeleteEmptyFoldersAsync(_folder);
+        Assert.Equal((0, 2), (emptyOnly.FilesDeleted, emptyOnly.FoldersDeleted));
+        Assert.False(Directory.Exists(Path.Combine(_folder, "Empty")));
+        Assert.True(File.Exists(junk));
+
+        // With the leftover files (as listed): the file, then its folder, left empty.
+        var plan = await controller.PlanAsync([_folder]);
+        Assert.Equal([junk], plan.Files);
+        var withFiles = await controller.CleanFolderAsync(_folder, plan.Files);
+        Assert.Equal((1, 1), (withFiles.FilesDeleted, withFiles.FoldersDeleted));
+        Assert.False(Directory.Exists(Path.Combine(_folder, "Only junk")));
+        Assert.True(File.Exists(Path.Combine(_folder, @"Movie (2007)\movie.mkv")));
+        Assert.True(Directory.Exists(_folder)); // the chosen folder is kept, even when it ends up empty
+        Assert.Equal(0, (await controller.DeleteEmptyFoldersAsync(_folder)).FoldersDeleted);
+    }
 }

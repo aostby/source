@@ -38,6 +38,38 @@ public static partial class WishlistFile
     private static readonly string[] RatingNames = ["imdbrating"];
 
     /// <summary>
+    /// The titles of <paramref name="first"/> (Uranus' wishlist), then those of <paramref name="more"/> (Kino's own) it
+    /// doesn't have: the same IMDb id, or without one the same title and year, is there once. Returns the list and how
+    /// many were added from <paramref name="more"/>.
+    /// </summary>
+    public static (IReadOnlyList<WishlistItem> Items, int Added) Merge(IEnumerable<WishlistItem> first, IEnumerable<WishlistItem> more)
+    {
+        var items = new List<WishlistItem>();
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var titles = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
+        var titlesWithoutId = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
+        static string TitleKey(WishlistItem i) => $"{i.Title.Trim()}|{(i.Year?.Trim() is { Length: >= 4 } y ? y[..4] : "")}";
+
+        bool Add(WishlistItem item)
+        {
+            var hasId = !string.IsNullOrWhiteSpace(item.ImdbId);
+            var key = TitleKey(item);
+            // Without an id, a title is the same as one there with that title and year; with one, the same as one with
+            // that id, or one with that title and year and no id (two titles with ids are told apart by them).
+            if (hasId ? ids.Contains(item.ImdbId.Trim()) || titlesWithoutId.Contains(key) : titles.Contains(key)) return false;
+            if (hasId) ids.Add(item.ImdbId.Trim());
+            else titlesWithoutId.Add(key);
+            titles.Add(key);
+            items.Add(item);
+            return true;
+        }
+
+        foreach (var item in first) Add(item);
+        var added = more.Count(Add);
+        return (items, added);
+    }
+
+    /// <summary>
     /// The titles in <paramref name="text"/>: XML when it starts with '&lt;', JSON with '[' or '{', else CSV.
     /// </summary>
     /// <exception cref="FormatException">Empty, unreadable, or without a field that clearly is the title or the year.</exception>

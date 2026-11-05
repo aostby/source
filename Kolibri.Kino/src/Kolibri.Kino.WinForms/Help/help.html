@@ -40,6 +40,7 @@ Kino uses the same database as SilverScreen. Press <kbd>F1</kbd> in any window t
   <li><a href="#settings">Settings</a></li>
   <li><a href="#prowlarr">File: Prowlarr</a></li>
   <li><a href="#sort-by-year">File: Tools → Sort folder by year</a></li>
+  <li><a href="#delete-empty-folders">File: Tools → Delete empty folders</a></li>
   <li><a href="#search">Search library and OMDb</a></li>
   <li><a href="#local-movies">Local movies</a></li>
   <li><a href="#local-series">Local series</a></li>
@@ -169,13 +170,16 @@ While either is missing, a <b>yellow bar</b> at the top says which, the search a
 
 <h3>The titles to search for</h3>
 <ul>
-  <li>The window opens with the wishlist Kino on the web sent to Uranus (<b>From Uranus</b> fetches it again). Without the
-      Uranus URL and token in Settings, it asks for a file instead.</li>
+  <li>The window opens with the wishlist Kino on the web sent to Uranus together with Kino's own wishlist (the
+      <a href="#wishlist">Wishlist</a> window's, with the episodes put there from Local series or Missing episodes): each
+      title once, the same IMDb id (or, without one, the same title and year) only counted once. <b>From Uranus</b> fetches
+      both again. If Uranus can't be reached, Kino's own wishlist is shown and the status bar says why. Without the Uranus
+      URL and token in Settings, it asks for a file instead.</li>
   <li><b>Open file…</b> reads a wishlist file: Kino's own CSV, another program's CSV (';', ',' or tab), JSON or XML. Each title
       needs a <b>title</b> and a <b>year</b>, under names that clearly mean that (Title, Name, Tittel …; Year, Released, År …),
       or the file is refused with a message saying which is missing. An IMDb id (tt0462322, an IMDb link, or just the number in
       an IMDb field) and the type (movie, series, episode) are kept where the file has them; titles without a year are left out.</li>
-  <li>Titles you have (in SilverScreen with a file) are green and not ticked. Titles not released yet are light salmon:
+  <li>Titles you have (in SilverScreen with a file) are green and not ticked; so are episodes whose file is in the series' folder (as on the Local series page). Tick <b>Filter</b> to hide the titles in SilverScreen already. Titles not released yet are light salmon:
       the <b>Released</b> column shows the day when it is known (from your library, else OMDb), and is empty when only the year is.</li>
   <li> Titles without an IMDb id or type are looked up
       by title and year in your library, on OMDb and on TMDb; <b>Look up missing</b> does it again. A title not found is
@@ -203,6 +207,11 @@ While either is missing, a <b>yellow bar</b> at the top says which, the search a
       title, and an episode as "Series S03E04". Such a search also finds other titles (Grindhouse Death Proof 2007), so a
       release's name must start with the title and go on with the year (a series: S01, Season, Complete …; an episode: its S03E04).
       Case, dots, brackets, accents and a leading "The" don't matter.</li>
+  <li>Prowlarr asks all its indexers, which takes a while, so its answer for a title with an IMDb id is kept for 20 minutes
+      in the <b>Cache</b> folder next to Kolibri.Kino.exe (not in the database). Searching the title again within that time
+      uses it, and <b>Releases</b> says "(cached)"; the rules below are applied anew. Older files are deleted when the
+      window opens. Typed-in searches without an IMDb id always ask Prowlarr. The files hold every release found, but not
+      Prowlarr's API key.</li>
   <li>Releases are also left out when their IMDb id is another title's, they're camera copies (CAM, TS …), they're in another
       quality, or they have too few seeders.</li>
 </ul>
@@ -239,6 +248,7 @@ While either is missing, a <b>yellow bar</b> at the top says which, the search a
   <tr><td><code>MovieCategories</code></td><td>2000</td><td>Prowlarr's categories for movies</td></tr>
   <tr><td><code>SeriesCategories</code></td><td>5000</td><td>Prowlarr's categories for series and episodes</td></tr>
   <tr><td><code>ExcludedWords</code></td><td>CAM, TS, TELESYNC …</td><td>Words that leave a release out</td></tr>
+  <tr><td><code>CacheMinutes</code></td><td>20</td><td>How long Prowlarr's answers are kept in the Cache folder; 0 turns it off</td></tr>
   <tr><td><code>TorrentFolder</code></td><td>(empty)</td><td>Where .torrent files are saved; empty means Downloads</td></tr>
 </table>
 <p>Nothing is put on the wishlist or in the library from this window.</p>
@@ -257,6 +267,18 @@ While either is missing, a <b>yellow bar</b> at the top says which, the search a
   <li>Left where they are, and listed: folders and files with no year in the name, those whose place in the year folder
       is taken already, folders without a movie file, and year folders (<code>2010</code>) and <code>_byYear</code> itself.</li>
   <li>The moves are renames on the same drive, so they're quick, and nothing is copied or deleted.</li>
+</ul>
+
+<h2 id="delete-empty-folders">File: Tools → Delete empty folders</h2>
+<ul>
+  <li><b>Delete empty folders…</b> asks for a folder (titled "Delete empty folders"). <b>OK</b> removes every empty folder
+      below it, deepest first, so a folder holding only empty folders goes too. The chosen folder itself is kept.</li>
+  <li><b>Delete empty folders and leftover files…</b> does the same, and first lists the leftover files in the folder:
+      those matching the <a href="#cleanup">cleanup patterns</a> (.nfo, .txt, .jpg, .exe, subtitles in other languages …),
+      as after a scan in Local movies. <b>Delete</b> removes the listed files and then the folders left empty;
+      <b>Cancel</b> deletes nothing at all. Video files are never on the list.</li>
+  <li>Files are deleted permanently, not moved to the Recycle Bin. The result is shown when done, with anything that
+      couldn't be deleted, and logged.</li>
 </ul>
 
 <h2 id="search">Search library and OMDb</h2>
@@ -353,6 +375,10 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
   <li>Ongoing series (OMDb years like <code>2018–</code>) come first, ended ones (<code>2010–2015</code>) last; newest first within each.</li>
   <li>In an ended series the missing episodes are in <span style="color:firebrick"><b>red</b></span>: they have all aired, and nothing more is coming.</li>
   <li>Double-click a series to open it in <b>Local series</b>, filtered on its title, with its seasons and episodes.</li>
+  <li><b>Add selected to wishlist</b> (or right-click a series) puts the missing episodes of the selected series on the
+      wishlist (Ctrl- or Shift-click to select more); <b>Add all missing to wishlist</b> puts every missing episode in the
+      list there, after asking. Episodes on the wishlist already are left as they are. <a href="#prowlarr">Prowlarr</a>
+      then searches for them, as <code>Series S01E03</code>.</li>
   <li><b>Missing episodes</b> lists them short: <code>S01E03, S02E01–E05</code> is episode 3 of season 1 and episodes 1 to 5 of season 2.</li>
   <li>The episode lists come from the database: Kino's own, else what SilverScreen stored. Only a series with no list at all is
       fetched online (TMDb, else OMDb), once, and remembered. A series no one knows is asked about again only after 30 days.
