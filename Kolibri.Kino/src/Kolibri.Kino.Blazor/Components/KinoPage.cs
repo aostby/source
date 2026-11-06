@@ -57,6 +57,12 @@ public abstract class KinoPage : ComponentBase, IDisposable
     {
         _cts?.Cancel();
         _cts?.Dispose();
+        OnDispose();
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>For pages that subscribe to events: unsubscribe here.</summary>
+    protected virtual void OnDispose()
+    {
     }
 }

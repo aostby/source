@@ -1,6 +1,7 @@
 using System.Globalization;
 using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Core.Models;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
@@ -13,78 +14,75 @@ namespace Kolibri.Kino.Data;
 /// </summary>
 public sealed class LiteDbSeriesRepository(KinoDatabase db) : ISeriesRepository
 {
-    private readonly ILiteCollection<BsonDocument> _kino = db.Database.GetCollection("KinoSeason");
-    private readonly ILiteCollection<BsonDocument> _silverScreenSeasons = db.Database.GetCollection("KolibriSeason");
-    private readonly ILiteCollection<BsonDocument> _silverScreenEpisodes = db.Database.GetCollection("Episode");
-    private readonly ILiteCollection<BsonDocument> _ignored = db.Database.GetCollection("KinoIgnoredFolder");
-    private readonly ILiteCollection<BsonDocument> _fetches = db.Database.GetCollection("KinoSeriesFetch");
+    private readonly IDocumentCollection _kino = db.Collection("KinoSeason");
+    private readonly IDocumentCollection _silverScreenSeasons = db.Collection("KolibriSeason");
+    private readonly IDocumentCollection _silverScreenEpisodes = db.Collection("Episode");
+    private readonly IDocumentCollection _ignored = db.Collection("KinoIgnoredFolder");
+    private readonly IDocumentCollection _fetches = db.Collection("KinoSeriesFetch");
 
-    public Task<IReadOnlySet<string>> GetIgnoredFoldersAsync(CancellationToken ct = default) =>
-        Task.Run(() => (IReadOnlySet<string>)_ignored.FindAll().Select(d => d["_id"].AsString).ToHashSet(StringComparer.OrdinalIgnoreCase), ct);
+    public async Task<IReadOnlySet<string>> GetIgnoredFoldersAsync(CancellationToken ct = default) =>
+        (await _ignored.FindAllAsync(ct).ConfigureAwait(false)).Select(d => d["_id"].AsString).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     public Task IgnoreFolderAsync(string folder, CancellationToken ct = default) =>
-        Task.Run(() => _ignored.Upsert(new BsonDocument { ["_id"] = folder, ["Ignored"] = DateTime.UtcNow }), ct);
+        _ignored.UpsertAsync(new BsonDocument { ["_id"] = folder, ["Ignored"] = DateTime.UtcNow }, ct);
 
-    public Task<IReadOnlyList<SeriesSeason>> GetCachedSeasonsAsync(string seriesImdbId, CancellationToken ct = default) =>
-        Task.Run(() => (IReadOnlyList<SeriesSeason>)_kino.Find(Query.EQ("SeriesId", seriesImdbId))
+    public async Task<IReadOnlyList<SeriesSeason>> GetCachedSeasonsAsync(string seriesImdbId, CancellationToken ct = default) =>
+        (await _kino.FindAsync("SeriesId", seriesImdbId, ct).ConfigureAwait(false))
             .Select(FromKinoDocument)
             .OrderBy(s => s.SeasonNumber == 0 ? int.MaxValue : s.SeasonNumber)
-            .ToList(), ct);
+            .ToList();
 
-    public Task<IReadOnlyList<SeriesSeason>> GetSilverScreenSeasonsAsync(string seriesImdbId, CancellationToken ct = default) =>
-        Task.Run(() =>
+    public async Task<IReadOnlyList<SeriesSeason>> GetSilverScreenSeasonsAsync(string seriesImdbId, CancellationToken ct = default)
+    {
+        var seasonDocs = await _silverScreenSeasons.FindAsync("SeriesId", seriesImdbId, ct).ConfigureAwait(false);
+        var seasons = new List<SeriesSeason>();
+        foreach (var doc in seasonDocs)
         {
-            // ToList first: in Shared mode LiteDB closes the file after each operation, so looking up episodes while
-            // this query's cursor is still open fails with "engine instance already disposed".
-            var seasonDocs = _silverScreenSeasons.Find(Query.EQ("SeriesId", seriesImdbId)).ToList();
-            var seasons = new List<SeriesSeason>();
-            foreach (var doc in seasonDocs)
-            {
-                ct.ThrowIfCancellationRequested();
-                if (Int(doc["SeasonNumber"]) is not { } number) continue;
+            ct.ThrowIfCancellationRequested();
+            if (Int(doc["SeasonNumber"]) is not { } number) continue;
 
-                var episodes = doc["Episodes"].IsArray
-                    ? doc["Episodes"].AsArray.Where(e => e.IsDocument).Select(e => FromOmdbEpisode(e.AsDocument, number)).OfType<SeriesEpisode>().ToList()
-                    : [];
-                seasons.Add(new SeriesSeason(number, null, episodes.OrderBy(e => e.EpisodeNumber).ToList(), "OMDb"));
-            }
-            return (IReadOnlyList<SeriesSeason>)seasons.OrderBy(s => s.SeasonNumber).ToList();
-        }, ct);
+            var episodes = new List<SeriesEpisode>();
+            if (doc["Episodes"].IsArray)
+                foreach (var e in doc["Episodes"].AsArray.Where(e => e.IsDocument))
+                    if (await FromOmdbEpisodeAsync(e.AsDocument, number, ct).ConfigureAwait(false) is { } episode) episodes.Add(episode);
+            seasons.Add(new SeriesSeason(number, null, episodes.OrderBy(e => e.EpisodeNumber).ToList(), "OMDb"));
+        }
+        return seasons.OrderBy(s => s.SeasonNumber).ToList();
+    }
 
-    public Task SaveSeasonsAsync(string seriesImdbId, IReadOnlyList<SeriesSeason> seasons, CancellationToken ct = default) =>
-        Task.Run(() =>
-        {
-            _kino.DeleteMany(Query.EQ("SeriesId", seriesImdbId));
-            _kino.InsertBulk(seasons.Select(s => ToKinoDocument(seriesImdbId, s)));
-        }, ct);
+    public async Task SaveSeasonsAsync(string seriesImdbId, IReadOnlyList<SeriesSeason> seasons, CancellationToken ct = default)
+    {
+        await _kino.DeleteManyAsync("SeriesId", seriesImdbId, ct).ConfigureAwait(false);
+        await _kino.UpsertManyAsync(seasons.Select(s => ToKinoDocument(seriesImdbId, s)).ToList(), ct).ConfigureAwait(false);
+    }
 
-    public Task<SeriesFetchInfo?> GetFetchInfoAsync(string seriesImdbId, CancellationToken ct = default) =>
-        Task.Run(() =>
-        {
-            if (_fetches.FindById(seriesImdbId) is { } doc)
-                return new SeriesFetchInfo(doc["Fetched"].AsDateTime, doc["Found"].AsBoolean, doc["TmdbId"].IsNumber ? doc["TmdbId"].AsInt32 : null);
+    public async Task<SeriesFetchInfo?> GetFetchInfoAsync(string seriesImdbId, CancellationToken ct = default)
+    {
+        if (await _fetches.FindByIdAsync(seriesImdbId, ct).ConfigureAwait(false) is { } doc)
+            return new SeriesFetchInfo(doc["Fetched"].AsDateTime, doc["Found"].AsBoolean, doc["TmdbId"].IsNumber ? doc["TmdbId"].AsInt32 : null);
 
-            // Lists cached before fetches were recorded: their seasons carry the time they were fetched.
-            var fetched = _kino.Find(Query.EQ("SeriesId", seriesImdbId)).Select(d => d["Fetched"]).Where(v => v.IsDateTime).Select(v => v.AsDateTime).ToList();
-            return fetched.Count > 0 ? new SeriesFetchInfo(fetched.Min(), true, null) : (SeriesFetchInfo?)null;
-        }, ct);
+        // Lists cached before fetches were recorded: their seasons carry the time they were fetched.
+        var fetched = (await _kino.FindAsync("SeriesId", seriesImdbId, ct).ConfigureAwait(false))
+            .Select(d => d["Fetched"]).Where(v => v.IsDateTime).Select(v => v.AsDateTime).ToList();
+        return fetched.Count > 0 ? new SeriesFetchInfo(fetched.Min(), true, null) : null;
+    }
 
     public Task SaveFetchInfoAsync(string seriesImdbId, SeriesFetchInfo info, CancellationToken ct = default) =>
-        Task.Run(() => _fetches.Upsert(new BsonDocument
+        _fetches.UpsertAsync(new BsonDocument
         {
             ["_id"] = seriesImdbId,
             ["Fetched"] = info.FetchedUtc,
             ["Found"] = info.Found,
             ["TmdbId"] = info.TmdbId is { } id ? id : BsonValue.Null,
-        }), ct);
+        }, ct);
 
     /// <summary>A season-list episode enriched with the episode's own OMDb record, when SilverScreen fetched it.</summary>
-    private SeriesEpisode? FromOmdbEpisode(BsonDocument listed, int season)
+    private async Task<SeriesEpisode?> FromOmdbEpisodeAsync(BsonDocument listed, int season, CancellationToken ct)
     {
         if (Int(listed["Episode"]) is not { } number) return null;
 
         var imdbId = Str(listed["ImdbId"]);
-        var details = imdbId is null ? null : _silverScreenEpisodes.FindById(imdbId);
+        var details = imdbId is null ? null : await _silverScreenEpisodes.FindByIdAsync(imdbId, ct).ConfigureAwait(false);
         return new SeriesEpisode(
             season,
             number,

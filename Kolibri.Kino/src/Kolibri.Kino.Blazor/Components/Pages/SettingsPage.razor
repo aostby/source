@@ -3,6 +3,7 @@
 @inject SettingsController Settings
 @inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 @inject WebSync WebSync
+@inject IStorageStatus Storage
 
 @* Port of SettingsForm. The settings are the database's UserSettings document, shared with SilverScreen and the
    WinForms app; which user's document is Kino:SettingsUser (in a container, set it to your Windows user name). *@
@@ -31,8 +32,14 @@
                 TMDb key <InputText @bind-Value="s.TMDBkey" />
                 <small>Episode details and TMDb links. <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Get a free key</a>. Empty means the shared default.</small>
             </label>
-            <label>SubDL key <InputText @bind-Value="s.SUBDLkey" /></label>
-            <label>IMDb data files <InputText @bind-Value="s.IMDbDataFiles" /></label>
+            <label>
+                SubDL key <InputText @bind-Value="s.SUBDLkey" />
+                <small>Subtitles. <a href="https://subdl.com" target="_blank" rel="noopener">Get a free key</a>.</small>
+            </label>
+            <label>
+                Subtitle languages <InputText @bind-Value="s.SubtitleLanguages" />
+                <small>Codes separated by commas, e.g. NO,EN. Empty means NO,EN.</small>
+            </label>
         </fieldset>
 
         <fieldset>
@@ -42,6 +49,46 @@
                 <small>Host name or IP on your network. Kino connects to http://&lt;name&gt;:32400.</small>
             </label>
             <label>Plex token <InputText type="password" @bind-Value="s.XPlexToken" autocomplete="off" /></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Uranus and KMDb</legend>
+            <label>
+                Uranus URL <InputText @bind-Value="s.UranusUrl" />
+                <small>Kino's web service on problembar.net, e.g. https://problembar.net/uranus/apps/KolibriKino/.</small>
+            </label>
+            <label>
+                Uranus token <InputText type="password" @bind-Value="s.UranusApiKey" autocomplete="off" />
+                <small>The key in kino_config.php. KMDb uses the same key.</small>
+            </label>
+            <label>
+                KMDb URL <InputText @bind-Value="s.KmdbUrl" placeholder="http://greenlantern:8086/" />
+                <small>
+                    Kolibri.Kino.KMDb: the library in MariaDB, shared by the web app and Kino on Windows. While it answers, it is
+                    used; else the LiteDB file, which is kept up to date as the fallback. Empty: only the LiteDB file.
+                    @if (_kmdbOverride)
+                    {
+                        <br /><text>This server uses its own address for KMDb (Kino:KmdbUrl), whatever is set here.</text>
+                    }
+                </small>
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Library</legend>
+            @{ var state = Storage.Current; }
+            <p class="storage @(state.UsesKmdb ? "kmdb" : "litedb")">
+                <strong>@(state.UsesKmdb ? "MariaDB (KMDb)" : "LiteDB file")</strong> · @state.Message
+                @if (!state.UsesKmdb)
+                {
+                    <br /><text>MariaDB through KMDb is better when it is available: one library for the web app and Windows.</text>
+                }
+                @if (state.PendingChanges > 0)
+                {
+                    <br /><text>@state.PendingChanges change(s) made while KMDb didn't answer will be sent when it does.</text>
+                }
+            </p>
+            <div class="actions"><button type="button" disabled="@Busy" @onclick="CheckStorageAsync">Check KMDb now</button></div>
         </fieldset>
 
         <fieldset>
@@ -68,8 +115,9 @@
             <legend>Export</legend>
             <p class="hint">
                 @(_ratingCount switch { null => "", 0 => "No ratings yet.", 1 => "1 title rated.", var n => $"{n} titles rated." })
-                The databases here and on the PC aren't kept in step: export your ratings to a file here, and import it on the
-                PC (Settings → Importer vurderinger fra fil), or the other way. The newer rating of a title wins.
+                With KMDb in use, the web app and the PC share one library. Without it the databases here and on the PC aren't
+                kept in step: export your ratings to a file here, and import it on the PC (Settings → Importer vurderinger fra
+                fil), or the other way. The newer rating of a title wins.
                 The wishlist is exported as a CSV file for Excel, which the PC's Wishlist can import.
             </p>
             <div class="actions export-buttons">
@@ -101,6 +149,24 @@
 
 @code {
     private UserSettings? _edited;
+    [Inject] private Microsoft.Extensions.Options.IOptions<Kolibri.Kino.Core.KinoOptions> KinoOptions { get; set; } = default!;
+    private bool _kmdbOverride => !string.IsNullOrWhiteSpace(KinoOptions.Value.KmdbUrl);
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Storage.Changed += OnStorageChanged;
+    }
+
+    private void OnStorageChanged(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
+
+    private Task CheckStorageAsync() => RunAsync("Checking KMDb…", async ct =>
+    {
+        var state = await Storage.CheckAsync(ct);
+        Status = state.UsesKmdb ? "The library is in MariaDB through KMDb." : "The library is in the LiteDB file: " + state.Message;
+    });
+
+    protected override void OnDispose() => Storage.Changed -= OnStorageChanged;
     private IReadOnlyList<ConnectionCheck> _checks = [];
     private int? _ratingCount;
 

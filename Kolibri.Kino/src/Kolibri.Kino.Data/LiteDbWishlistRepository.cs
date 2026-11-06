@@ -1,27 +1,28 @@
 using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Core.Models;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
 
 /// <summary>
-/// "KinoWishlist": one document per wanted title, _id = IMDb id. Kino's own collection (SilverScreen doesn't know it),
-/// apart from WatchListItem, where a title can only be on one list.
+/// The wishlist in Kino's own "KinoWishlist" collection (_id = IMDb id, or "{series}_S01E02" for an episode).
+/// Through <see cref="KinoDatabase.Collection"/>: the LiteDB file, or MariaDB through KMDb when that is in use.
 /// </summary>
 public sealed class LiteDbWishlistRepository(KinoDatabase db) : IWishlistRepository
 {
-    private readonly ILiteCollection<BsonDocument> _docs = db.Database.GetCollection("KinoWishlist");
+    private readonly IDocumentCollection _docs = db.Collection("KinoWishlist");
 
-    public Task<IReadOnlyList<WishlistItem>> GetAllAsync(CancellationToken ct = default) =>
-        Task.Run(() => (IReadOnlyList<WishlistItem>)_docs.FindAll().Select(FromDocument).ToList(), ct);
+    public async Task<IReadOnlyList<WishlistItem>> GetAllAsync(CancellationToken ct = default) =>
+        (await _docs.FindAllAsync(ct).ConfigureAwait(false)).Select(FromDocument).ToList();
 
-    public Task<WishlistItem?> GetAsync(string imdbId, CancellationToken ct = default) =>
-        Task.Run(() => _docs.FindById(imdbId) is { } doc ? FromDocument(doc) : null, ct);
+    public async Task<WishlistItem?> GetAsync(string imdbId, CancellationToken ct = default) =>
+        await _docs.FindByIdAsync(imdbId, ct).ConfigureAwait(false) is { } doc ? FromDocument(doc) : null;
 
     public Task UpsertAsync(WishlistItem item, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(item.ImdbId);
-        return Task.Run(() => _docs.Upsert(new BsonDocument
+        return _docs.UpsertAsync(new BsonDocument
         {
             ["_id"] = item.ImdbId,
             ["Title"] = item.Title,
@@ -31,11 +32,10 @@ public sealed class LiteDbWishlistRepository(KinoDatabase db) : IWishlistReposit
             ["ImdbRating"] = item.ImdbRating,
             ["Poster"] = item.Poster,
             ["Added"] = item.Added.ToUniversalTime(),
-        }), ct);
+        }, ct);
     }
 
-    public Task<bool> RemoveAsync(string imdbId, CancellationToken ct = default) =>
-        Task.Run(() => _docs.Delete(imdbId), ct);
+    public Task<bool> RemoveAsync(string imdbId, CancellationToken ct = default) => _docs.DeleteAsync(imdbId, ct);
 
     private static WishlistItem FromDocument(BsonDocument d) => new()
     {

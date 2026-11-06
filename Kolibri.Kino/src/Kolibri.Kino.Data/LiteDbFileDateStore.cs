@@ -1,3 +1,4 @@
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
@@ -14,10 +15,10 @@ public sealed record StoredFileDate(string Path, DateTime? AddedUtc, bool IsFold
 /// </summary>
 public sealed class LiteDbFileDateStore(KinoDatabase db)
 {
-    private readonly ILiteCollection<BsonDocument> _dates = db.Database.GetCollection("KinoFileDate");
+    private readonly IDocumentCollection _dates = db.Collection("KinoFileDate");
 
-    public IReadOnlyList<StoredFileDate> LoadAll() =>
-        _dates.FindAll()
+    public async Task<IReadOnlyList<StoredFileDate>> LoadAllAsync(CancellationToken ct = default) =>
+        (await _dates.FindAllAsync(ct).ConfigureAwait(false))
             .Select(d => new StoredFileDate(
                 d["_id"].AsString,
                 d["Added"].IsDateTime ? DateTime.SpecifyKind(d["Added"].AsDateTime.ToUniversalTime(), DateTimeKind.Utc) : null,
@@ -25,7 +26,7 @@ public sealed class LiteDbFileDateStore(KinoDatabase db)
                 DateTime.SpecifyKind(d["Checked"].AsDateTime.ToUniversalTime(), DateTimeKind.Utc)))
             .ToList();
 
-    public void Save(IEnumerable<StoredFileDate> dates)
+    public async Task SaveAsync(IEnumerable<StoredFileDate> dates, CancellationToken ct = default)
     {
         var docs = dates.Select(d => new BsonDocument
         {
@@ -34,6 +35,6 @@ public sealed class LiteDbFileDateStore(KinoDatabase db)
             ["Folder"] = d.IsFolder,
             ["Checked"] = d.CheckedUtc,
         }).ToList();
-        if (docs.Count > 0) _dates.Upsert(docs);
+        if (docs.Count > 0) await _dates.UpsertManyAsync(docs, ct).ConfigureAwait(false);
     }
 }

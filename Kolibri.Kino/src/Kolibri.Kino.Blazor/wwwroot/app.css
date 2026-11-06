@@ -196,6 +196,29 @@ form.inline { margin: 0; }
 /* Details */
 .back { margin: 0 0 12px; }
 .back a { color: var(--muted); text-decoration: none; }
+/* Details on the title's own colours (from its backdrop, else its poster) and, when it has one, its backdrop, faded and
+   blurred so the text stays easy to read (kino-art.js sets --art-a, --art-b and --art-image). */
+.details-page { position: relative; isolation: isolate; margin: -8px -12px 0; padding: 18px 12px 22px; border-radius: 14px; overflow: hidden; }
+.details-page::before, .details-page::after { content: ""; position: absolute; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
+.details-page::before {
+    inset: 0;
+    background:
+        radial-gradient(120% 90% at 0% 0%, var(--art-b, transparent) 0%, transparent 60%),
+        linear-gradient(160deg, var(--art-a, transparent) 0%, transparent 75%);
+}
+.details-page::after {
+    inset: -40px;
+    background: var(--art-image) center 25% / cover no-repeat;
+    filter: blur(16px) saturate(1.15) grayscale(.15);
+}
+.details-page.has-colours::before { opacity: .38; }
+.details-page.has-backdrop::after { opacity: .2; }
+@media (prefers-color-scheme: light) {
+    .details-page.has-colours::before { opacity: .22; }
+    .details-page.has-backdrop::after { opacity: .13; }
+}
+@media (prefers-reduced-motion: reduce) { .details-page::before, .details-page::after { transition: none; } }
+
 .details { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
 .details-text { flex: 1 1 380px; min-width: 0; }
 .details-text h1 { margin-bottom: 6px; }

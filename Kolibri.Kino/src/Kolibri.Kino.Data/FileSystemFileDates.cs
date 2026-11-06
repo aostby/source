@@ -70,7 +70,7 @@ public sealed class FileSystemFileDates(IOptions<KinoOptions> options, LiteDbFil
         try
         {
             return _known ??= new ConcurrentDictionary<string, StoredFileDate>(
-                (await Task.Run(store.LoadAll, ct).ConfigureAwait(false)).Select(d => KeyValuePair.Create(d.Path, d)),
+                (await store.LoadAllAsync(ct).ConfigureAwait(false)).Select(d => KeyValuePair.Create(d.Path, d)),
                 StringComparer.OrdinalIgnoreCase);
         }
         finally
@@ -96,7 +96,7 @@ public sealed class FileSystemFileDates(IOptions<KinoOptions> options, LiteDbFil
 
         var known = _known!;
         foreach (var date in read) known[date.Path] = date;
-        await Task.Run(() => store.Save(read), CancellationToken.None).ConfigureAwait(false);
+        await store.SaveAsync(read, CancellationToken.None).ConfigureAwait(false);
     }
 
     private void RefreshInBackground(IReadOnlyList<string> paths)

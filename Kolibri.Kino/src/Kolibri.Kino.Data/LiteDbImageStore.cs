@@ -1,4 +1,5 @@
 using Kolibri.Kino.Core;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 using Microsoft.Extensions.Options;
 
@@ -12,7 +13,7 @@ namespace Kolibri.Kino.Data;
 /// This replaces the old "ImageBase" collection, keyed by key.GetHashCode(). That hash is randomized
 /// per process on .NET Core, so every run missed the cache and stored the image again as base64 BMP.
 /// </remarks>
-public sealed class LiteDbImageStore : IDisposable
+public sealed class LiteDbImageStore : IImageStore, IDisposable
 {
     public const string CollectionName = "Image";
 

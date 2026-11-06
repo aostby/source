@@ -1,0 +1,119 @@
+# Grafana alerts for Kolibri.Kino.KMDb, sent by e-mail to GRAFANA_ALERT_EMAIL (SMTP settings in .env, see compose.yaml).
+# Based on KMDb's /metrics: kmdb_health_status{check} is 1 healthy, 0.5 degraded, 0 unhealthy (checked every 30 s),
+# and up{job="kmdb"} says whether Prometheus reaches KMDb at all.
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: Kolibri e-post
+    receivers:
+      - uid: kolibri-email
+        type: email
+        settings:
+          addresses: ${GRAFANA_ALERT_EMAIL}
+          singleEmail: true
+
+policies:
+  - orgId: 1
+    receiver: Kolibri e-post
+    group_by: ["grafana_folder", "alertname"]
+    group_wait: 30s
+    group_interval: 5m
+    # A problem that lasts is mailed again every 4 hours; "resolved" is mailed when it is over.
+    repeat_interval: 4h
+
+groups:
+  - orgId: 1
+    name: Kolibri KMDb
+    folder: Kolibri
+    interval: 1m
+    rules:
+      - uid: kmdb-unreachable
+        title: KMDb svarer ikke
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, expr: 'up{job="kmdb"}', instant: true, range: false }
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: B, conditions: [{ evaluator: { type: lt, params: [1] } }] }
+        # No data at all also means KMDb (or Prometheus' view of it) is gone.
+        noDataState: Alerting
+        execErrState: Error
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: Prometheus når ikke KMDb (/metrics).
+          description: Kolibri.Kino.KMDb på NAS-en svarer ikke. Sjekk containeren kolibri-kmdb (docker compose ps / logs kmdb).
+
+      - uid: kmdb-imdb-down
+        title: IMDb-databasen er nede
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, expr: 'kmdb_health_status{check="imdb"}', instant: true, range: false }
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: B, conditions: [{ evaluator: { type: lt, params: [1] } }] }
+        # No data is covered by "KMDb svarer ikke".
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: KMDb får ikke kontakt med IMDb-databasen (MariaDB på HTPC).
+          description: OMDb-API-et i KMDb kan ikke svare. Sjekk at HTPC og MariaDB kjører (http://greenlantern:8086/health viser feilen).
+
+      - uid: kmdb-silverscreen-down
+        title: SilverScreen-biblioteket er nede
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, expr: 'kmdb_health_status{check="silverscreen"}', instant: true, range: false }
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: B, conditions: [{ evaluator: { type: lt, params: [1] } }] }
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: KMDb får ikke kontakt med silverscreen-databasen.
+          description: Kino bruker da LiteDB-fila, og OMDb-svarene mangler bibliotekets data. Se http://greenlantern:8086/health.
+
+      - uid: kmdb-plex-posters
+        title: Plex-plakatlisten er ikke lastet
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 3600, to: 0 }
+            datasourceUid: prometheus
+            model: { refId: A, expr: 'kmdb_health_status{check="plex"}', instant: true, range: false }
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model: { refId: C, type: threshold, expression: B, conditions: [{ evaluator: { type: lt, params: [1] } }] }
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        labels: { severity: warning }
+        annotations:
+          summary: KMDb har ikke fått Plex-plakatlisten på 30 minutter.
+          description: Plex på HTPC svarer trolig ikke (det har hengt før). Plakater som bare Plex har, blir ikke hentet.

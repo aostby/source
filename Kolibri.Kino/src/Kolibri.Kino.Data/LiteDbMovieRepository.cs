@@ -1,4 +1,5 @@
 using Kolibri.Kino.Core.Abstractions;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 using OMDbApiNet.Model;
 
@@ -9,57 +10,62 @@ namespace Kolibri.Kino.Data;
 /// the same layout Kolibri.net.Common.Dal's LiteDBController uses, so existing databases open as-is.
 /// </summary>
 /// <remarks>
-/// LiteDB is synchronous; calls are pushed to the thread pool so the UI thread never blocks on disk I/O.
+/// Through <see cref="KinoDatabase.Collection"/>: the LiteDB file, or MariaDB through KMDb when that is in use.
+/// Title matching is case-insensitive, as LiteDB's default collation is.
 /// </remarks>
 public sealed class LiteDbMovieRepository(KinoDatabase db) : IMovieRepository
 {
-    private readonly ILiteCollection<Item> _items = db.Database.GetCollection<Item>("Item");
+    private readonly IDocumentCollection _items = db.Collection("Item");
 
-    public Task<IReadOnlyList<Item>> GetAllAsync(string? type = null, CancellationToken ct = default) =>
-        Task.Run(() =>
+    public async Task<IReadOnlyList<Item>> GetAllAsync(string? type = null, CancellationToken ct = default)
+    {
+        var items = (await _items.FindAllAsync(ct).ConfigureAwait(false)).Select(ToItem);
+        if (!string.IsNullOrWhiteSpace(type))
+            items = items.Where(x => string.Equals(x.Type, type, StringComparison.OrdinalIgnoreCase));
+        return items.OrderBy(x => x.Title, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    public async Task<Item?> GetByImdbIdAsync(string imdbId, CancellationToken ct = default) =>
+        await _items.FindByIdAsync(imdbId, ct).ConfigureAwait(false) is { } doc ? ToItem(doc) : null;
+
+    public async Task<IReadOnlyDictionary<string, Item>> GetByImdbIdsAsync(IEnumerable<string> imdbIds, CancellationToken ct = default)
+    {
+        var found = new Dictionary<string, Item>(StringComparer.OrdinalIgnoreCase);
+        foreach (var id in imdbIds.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            var query = string.IsNullOrWhiteSpace(type)
-                ? _items.FindAll()
-                : _items.Find(x => x.Type == type.ToLowerInvariant());
-            return (IReadOnlyList<Item>)query.OrderBy(x => x.Title).ToList();
-        }, ct);
+            ct.ThrowIfCancellationRequested();
+            if (await GetByImdbIdAsync(id, ct).ConfigureAwait(false) is { } item) found[id] = item;
+        }
+        return found;
+    }
 
-    public Task<Item?> GetByImdbIdAsync(string imdbId, CancellationToken ct = default) =>
-        Task.Run(() => (Item?)_items.FindById(imdbId), ct);
+    public async Task<Item?> FindByTitleAsync(string title, int? year, CancellationToken ct = default)
+    {
+        var trimmed = title.Trim();
+        return (await _items.FindAsync("Title", trimmed, ct).ConfigureAwait(false))
+            .Select(ToItem)
+            .FirstOrDefault(x => year is null || (x.Year ?? "").StartsWith(year.Value.ToString(), StringComparison.Ordinal));
+    }
 
-    public Task<IReadOnlyDictionary<string, Item>> GetByImdbIdsAsync(IEnumerable<string> imdbIds, CancellationToken ct = default) =>
-        Task.Run(() =>
-        {
-            var found = new Dictionary<string, Item>(StringComparer.OrdinalIgnoreCase);
-            foreach (var id in imdbIds.Distinct(StringComparer.OrdinalIgnoreCase))
-            {
-                ct.ThrowIfCancellationRequested();
-                if (_items.FindById(id) is { } item) found[id] = item;
-            }
-            return (IReadOnlyDictionary<string, Item>)found;
-        }, ct);
+    public async Task<IReadOnlyList<Item>> SearchByTitleAsync(string text, CancellationToken ct = default) =>
+        (await GetAllAsync(null, ct).ConfigureAwait(false))
+            .Where(x => x.Title?.Contains(text, StringComparison.OrdinalIgnoreCase) == true)
+            .ToList();
 
-    public Task<Item?> FindByTitleAsync(string title, int? year, CancellationToken ct = default) =>
-        Task.Run(() =>
-        {
-            // LiteDB's default collation compares strings case-insensitively.
-            var trimmed = title.Trim();
-            return _items.Find(x => x.Title == trimmed)
-                .FirstOrDefault(x => year is null || (x.Year ?? "").StartsWith(year.Value.ToString(), StringComparison.Ordinal));
-        }, ct);
-
-    public Task<IReadOnlyList<Item>> SearchByTitleAsync(string text, CancellationToken ct = default) =>
-        Task.Run(() => (IReadOnlyList<Item>)_items.Find(x => x.Title.Contains(text)).OrderBy(x => x.Title).ToList(), ct);
-
-    public Task<bool> UpsertAsync(Item item, CancellationToken ct = default)
+    public async Task<bool> UpsertAsync(Item item, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(item);
         if (string.IsNullOrWhiteSpace(item.ImdbId))
             throw new ArgumentException("Item must have an ImdbId.", nameof(item));
 
-        return Task.Run(() => _items.Upsert(new BsonValue(item.ImdbId), item), ct);
+        var isNew = await _items.FindByIdAsync(item.ImdbId, ct).ConfigureAwait(false) is null;
+        var doc = BsonMapper.Global.ToDocument(item);
+        doc["_id"] = item.ImdbId;
+        await _items.UpsertAsync(doc, ct).ConfigureAwait(false);
+        return isNew;
     }
 
-    public Task<bool> DeleteAsync(string imdbId, CancellationToken ct = default) =>
-        Task.Run(() => _items.Delete(imdbId), ct);
+    public Task<bool> DeleteAsync(string imdbId, CancellationToken ct = default) => _items.DeleteAsync(imdbId, ct);
+
+    private static Item ToItem(BsonDocument doc) => BsonMapper.Global.ToObject<Item>(doc);
 }

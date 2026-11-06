@@ -13,6 +13,8 @@ public partial class MainForm : Form, IStatusDisplay
 {
     private readonly IServiceProvider _services;
     private readonly ILogger _log = KinoLog.Factory.CreateLogger<MainForm>();
+    private readonly Kolibri.Kino.Core.Abstractions.IStorageStatus _storage;
+    private readonly ToolStripStatusLabel _storageLabel = new() { BorderSides = ToolStripStatusLabelBorderSides.Left, Padding = new Padding(6, 0, 0, 0) };
 
     public MainForm(IServiceProvider services)
     {
@@ -21,6 +23,33 @@ public partial class MainForm : Form, IStatusDisplay
         AppIcon.Apply(this);
         // "Kolibri.Kino 1.0.0": <Product> and <Version> in the .csproj.
         Text = $"{Application.ProductName} {typeof(MainForm).Assembly.GetName().Version?.ToString(3)}";
+
+        // Where the library is: MariaDB through KMDb, or the LiteDB file (right in the status bar; details in the tooltip).
+        _storage = services.GetRequiredService<Kolibri.Kino.Core.Abstractions.IStorageStatus>();
+        statusStrip.ShowItemToolTips = true;
+        statusStrip.Items.Add(_storageLabel);
+        ShowStorage();
+        _storage.Changed += OnStorageChanged;
+        FormClosed += (_, _) => _storage.Changed -= OnStorageChanged;
+    }
+
+    private void OnStorageChanged(object? sender, EventArgs e)
+    {
+        if (IsDisposed || Disposing) return;
+        BeginInvoke(() =>
+        {
+            ShowStorage();
+            Report(_storage.Current.Message);
+        });
+    }
+
+    private void ShowStorage()
+    {
+        var state = _storage.Current;
+        _storageLabel.Text = state.UsesKmdb ? "Library: MariaDB (KMDb)" : "Library: LiteDB file";
+        _storageLabel.ToolTipText = state.Message
+            + (state.UsesKmdb ? "" : "\nMariaDB through KMDb is better when available (KMDb URL in Settings → Uranus).")
+            + (state.PendingChanges > 0 ? $"\n{state.PendingChanges} change(s) wait to be sent to KMDb." : "");
     }
 
     /// <summary>

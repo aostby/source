@@ -1,15 +1,18 @@
 # Builds Kolibri Kino for the UGREEN NAS and puts everything in its docker folder over the network share, ready
-# to start. The container is not touched until the last step, which runs on the NAS:
+# to start. The containers are not touched until the last step, which runs on the NAS:
 #
-#   .\deploy\deploy-to-nas.ps1                    # build the image, copy it and compose.yaml to the NAS
+#   .\deploy\deploy-to-nas.ps1                    # build both images (Kino and KMDb), copy them and compose.yaml to the NAS
+#   .\deploy\deploy-to-nas.ps1 -App kino          # only Kino (the web app); -App kmdb: only Kolibri.Kino.KMDb
 #   .\deploy\deploy-to-nas.ps1 -WithDatabases     # also stage the library from C:\TEMP\SilverScreen (replaces the NAS copy)
 #   .\deploy\deploy-to-nas.ps1 -RunOnNas          # then also run the NAS step over SSH (asks for your NAS password)
-#   .\deploy\deploy-to-nas.ps1 -SkipBuild         # copy the image built last time
+#   .\deploy\deploy-to-nas.ps1 -SkipBuild         # copy the images built last time
 #
 # The databases go to data-new\ first and are swapped in on the NAS after the container has stopped: copying
 # over a database Kino has open could damage it.
 
 param(
+    [ValidateSet('all', 'kino', 'kmdb')]
+    [string]$App = 'all',
     [string]$Nas = 'GREENLANTERN',
     [string]$NasUser = $env:USERNAME,
     [string]$Share = '\\GREENLANTERN\docker\kolibri-kino',
@@ -21,7 +24,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$tar = Join-Path $PSScriptRoot 'out\kolibri-kino.tar'
+$apps = if ($App -eq 'all') { @('kino', 'kmdb') } else { @($App) }
 
 function Step([string]$text) { Write-Host "`n== $text" -ForegroundColor Cyan }
 
@@ -43,18 +46,26 @@ if (-not $SkipBuild) {
         if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop did not start within 5 minutes.' }
     }
 
-    Step 'Building the image (linux/arm64)'
-    & (Join-Path $PSScriptRoot 'build-nas-image.ps1')
+    foreach ($a in $apps) {
+        Step "Building the $a image (linux/arm64)"
+        & (Join-Path $PSScriptRoot 'build-nas-image.ps1') -App $a
+    }
 }
-if (-not (Test-Path $tar)) { throw "No image at $tar. Run without -SkipBuild." }
 
-Step "Copying the image and compose.yaml to $Share"
-Copy-Item $tar (Join-Path $Share 'kolibri-kino.tar') -Force
+Step "Copying the images and compose.yaml to $Share"
+foreach ($a in $apps) {
+    $tar = Join-Path $PSScriptRoot "out\kolibri-$a.tar"
+    if (-not (Test-Path $tar)) { throw "No image at $tar. Run without -SkipBuild." }
+    $target = Join-Path $Share "kolibri-$a.tar"
+    Copy-Item $tar $target -Force
+    if ((Get-FileHash $tar).Hash -ne (Get-FileHash $target).Hash) { throw "The $a image on the NAS differs from the one built. Run again." }
+    Write-Host "kolibri-$a.tar copied and checked."
+}
 Copy-Item (Join-Path $PSScriptRoot 'compose.yaml') (Join-Path $Share 'compose.yaml') -Force
-if ((Get-FileHash $tar).Hash -ne (Get-FileHash (Join-Path $Share 'kolibri-kino.tar')).Hash) { throw 'The image on the NAS differs from the one built. Run again.' }
-Write-Host 'Image copied and checked.'
+# Prometheus and Grafana settings and the KMDb dashboard (used by the optional "monitoring" profile).
+Copy-Item (Join-Path $PSScriptRoot 'monitoring') $Share -Recurse -Force
 
-# Settings added since the .env was written, with their defaults from .env.example.
+# Settings added since the .env was written, with their defaults from .env.example. Values are never printed.
 $envFile = Join-Path $Share '.env'
 if (Test-Path $envFile) {
     $current = Get-Content $envFile -Raw
@@ -65,6 +76,23 @@ if (Test-Path $envFile) {
     if ($current -notmatch '(?m)^KINO_WEB_API_KEY=') {
         Add-Content $envFile "`n# The key in kino_config.php on problembar.net; the wishlist and ratings are sent there. Empty turns it off.`nKINO_WEB_API_KEY="
         Write-Warning 'Added an empty KINO_WEB_API_KEY to .env: fill it in to send the wishlist and ratings to problembar.net.'
+    }
+    if ($current -notmatch '(?m)^KMDB_PORT=') {
+        Add-Content $envFile "`n# Kolibri.Kino.KMDb (OMDb's API on the IMDb database): http://<nas>:8086/swagger`nKMDB_PORT=8086"
+        Write-Host 'Added KMDB_PORT=8086 to .env.'
+    }
+    if ($current -notmatch '(?m)^KMDB_API_KEY=') {
+        # The same key as the Uranus web service, so take it from KINO_WEB_API_KEY when that is filled in.
+        $same = [regex]::Match($current, '(?m)^KINO_WEB_API_KEY=(.*)$').Groups[1].Value.Trim()
+        Add-Content $envFile "`n# The key KMDb clients send (apikey= or X-Api-Key): the Uranus key, as KINO_WEB_API_KEY.`nKMDB_API_KEY=$same"
+        if ($same) { Write-Host 'Added KMDB_API_KEY to .env (the same key as KINO_WEB_API_KEY).' }
+        else { Write-Warning 'Added an empty KMDB_API_KEY to .env: fill in the Uranus key, or KMDb refuses every request.' }
+    }
+    if ($current -notmatch '(?m)^IMDB_CONNECTION=.') {
+        if ($current -notmatch '(?m)^IMDB_CONNECTION=') {
+            Add-Content $envFile "`n# The IMDb database KMDb reads (DefaultConnection in Kino's settings). In single quotes, so `$ in the password stays as it is.`nIMDB_CONNECTION="
+        }
+        Write-Warning 'IMDB_CONNECTION in .env is empty: KMDb starts only with the database connection filled in.'
     }
 } else {
     Write-Warning "$envFile is missing: copy deploy\.env.example there and fill it in before starting."
@@ -88,15 +116,16 @@ if ($WithDatabases) {
     $swap = ' && if [ -d data-new ]; then sudo rm -f data/*-log.db && sudo cp data-new/SilverScreen.* data/ && sudo rm -rf data-new; fi'
 }
 
-$command = "cd $NasFolder && sudo docker compose down$swap && sudo docker load -i kolibri-kino.tar && sudo docker compose up -d"
+$load = ($apps | ForEach-Object { "sudo docker load -i kolibri-$_.tar" }) -join ' && '
+$command = "cd $NasFolder && sudo docker compose down$swap && $load && sudo docker compose up -d"
 
 if ($RunOnNas) {
     Step "Starting the new version on $Nas (SSH as $NasUser)"
     ssh -t "$NasUser@$Nas" $command
     if ($LASTEXITCODE -ne 0) { throw "The NAS step failed ($LASTEXITCODE). Run it yourself over SSH: $command" }
-    Write-Host "`nDone: http://$($Nas.ToLower()).local:8085" -ForegroundColor Green
+    Write-Host "`nDone: http://$($Nas.ToLower()).local:8085 (KMDb: http://$($Nas.ToLower()).local:8086/swagger)" -ForegroundColor Green
 } else {
     Step 'Last step: paste this into PowerShell (it runs the command on the NAS over SSH)'
     Write-Host "ssh -t $NasUser@$($Nas.ToLower()) `"$command`"" -ForegroundColor Yellow
-    Write-Host "`nThen open http://$($Nas.ToLower()).local:8085"
+    Write-Host "`nThen open http://$($Nas.ToLower()).local:8085 (KMDb: http://$($Nas.ToLower()).local:8086/swagger)"
 }

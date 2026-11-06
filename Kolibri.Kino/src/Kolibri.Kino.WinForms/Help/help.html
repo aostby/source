@@ -115,6 +115,9 @@ A token found this way can stop working, e.g. when you sign out of all devices o
   <li><b>Uranus</b> is Kino's web service on problembar.net, where Kino on the web keeps a copy of your wishlist and ratings.
       Enter <b>Uranus URL</b> (e.g. <code>https://problembar.net/uranus/apps/KolibriKino/</code>) and <b>Uranus token</b>
       (the key in kino_config.php on the server) under <b>Uranus</b> in Settings.</li>
+  <li><b>KMDb URL</b> (also under <b>Uranus</b>) is Kolibri.Kino.KMDb on the NAS, e.g. <code>http://greenlantern:8086/</code>.
+      With it, the library is kept in MariaDB, shared with Kino on the web (see <a href="#database">The database</a>).
+      KMDb uses the Uranus token as its key.</li>
   <li><b>Prowlarr</b> runs on the NAS and searches torrent indexers. <b>Prowlarr URL</b> is <code>http://greenlantern:9696/</code>
       by default. The <b>Prowlarr API key</b> is in Prowlarr under <b>Settings → General → Security</b>: copy it into
       <b>Settings → Prowlarr API key</b>, and test.</li>
@@ -132,7 +135,12 @@ A token found this way can stop working, e.g. when you sign out of all devices o
 <h2 id="database">The database</h2>
 <p>Everything Kino knows (movies, file links, series, watchlists, your settings) is in one LiteDB file, normally <code>SilverScreen.db</code>.
 Posters are cached next to it in <code>SilverScreen.imgdb</code>. SilverScreen and Kino can use the same file at the same time.</p>
-<p>Kino finds the database in this order:</p>
+<p><b>MariaDB through KMDb.</b> With a <b>KMDb URL</b> and the Uranus token in Settings, Kino keeps the library in MariaDB
+whenever KMDb answers (checked at start and every minute), and Kino on the web uses the same library. The LiteDB file is kept up
+to date as the fallback: while KMDb doesn't answer, Kino works on the file and sends the changes to KMDb when it is back.
+The right end of the status bar shows which is in use (<b>Library: MariaDB (KMDb)</b> or <b>Library: LiteDB file</b>; the
+tooltip says why). Your settings and the log always stay in the LiteDB files. MariaDB is the better choice when it is available.</p>
+<p>Kino finds the database file in this order:</p>
 <ol>
   <li>The file you chose in <b>Settings → LiteDB file</b> (remembered in <code>%LOCALAPPDATA%\Kolibri.Kino\usersettings.json</code>).</li>
   <li>Otherwise <code>Kino:LiteDbPath</code> in <code>appsettings.json</code> next to the program, the default for a first start.</li>
@@ -151,7 +159,7 @@ The change takes effect after a restart; Kino offers to restart at once. <b>Help
   <li><b>Prowlarr</b> and <b>Uranus</b>: address and key (see <a href="#uranus-prowlarr">Uranus and Prowlarr</a>).</li>
   <li><b>Folders</b>: where your movies and series are; Local movies starts in the movies folder.</li>
 </ul>
-<p><b>Test connections</b> tries OMDb, TMDb, SubDL, Plex, Uranus and Prowlarr with the values as entered, without saving.
+<p><b>Test connections</b> tries the library (MariaDB through KMDb, or the LiteDB file), OMDb, TMDb, SubDL, Plex, Uranus and Prowlarr with the values as entered, without saving.
 New keys apply at once after <b>Save</b>. The box under the settings shows:</p>
 <ul>
   <li>First, in bold: <b>Missing settings</b> (orange), naming each service and what it lacks, e.g. "Prowlarr (API key)";
@@ -278,6 +286,9 @@ While either is missing, a <b>yellow bar</b> at the top says which, the search a
       The list shows Kino's watchlists and Plex's playlists, and says where the chosen one is ("a Kino watchlist only",
       "a Plex playlist only", or both); the boxes <b>Kino watchlist</b> and <b>Plex playlist</b> start ticked where it is.
       Tick a box where it isn't, and the list is made there. Plex playlists can only hold titles that are on your Plex server.</li>
+  <li><b>+ Add to wishlist</b> (in the details window, after <b>Add to watchlist…</b>) puts the title on the <a href="#wishlist">wishlist</a>.
+      It works only for a title that isn't on disk (not in the library, or linked to a file that isn't there);
+      once it is on the wishlist the button says <b>On wishlist</b>.</li>
   <li><b>Write to Excel…</b> (right in the status bar) saves the rows shown, with the type filter and sort you chose, as a CSV file and opens it in Excel.
       The name starts with the filter, e.g. <code>Movies - Library - 2026-10-14.csv</code> or <code>All - OMDb matrix - 2026-10-14.csv</code>.</li>
 </ul>
