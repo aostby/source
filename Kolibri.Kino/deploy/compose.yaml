@@ -27,10 +27,16 @@ services:
       Kino__BrowserHosts__0__To: ${PLEX_BROWSER_HOST:-}
       # The wishlist and ratings are also sent to the web service on problembar.net after each change. Empty key: off.
       Kino__WebSync__ApiKey: ${KINO_WEB_API_KEY:-}
+      # The library in MariaDB through KMDb (the kmdb service below), whatever the PC's "KMDb URL" setting says: the
+      # container can't look up greenlantern by name. KMDb's key is the Uranus token in the settings. While KMDb doesn't
+      # answer, the LiteDB file in data/ is used and kept up to date as the fallback.
+      Kino__KmdbUrl: ${KINO_KMDB_URL:-http://kmdb:8080}
     # Library posters often point at the Plex server by its Windows name (http://HTPC:32400/...), which the
     # container can't resolve; this gives it the address.
     extra_hosts:
       - "${PLEX_HOST_NAME:-HTPC}:${PLEX_HOST_IP}"
+      # The NAS itself by its Windows name, so settings with greenlantern addresses (Prowlarr, KMDb) work in here too.
+      - "${NAS_HOST_NAME:-greenlantern}:host-gateway"
     volumes:
       - ./data:/data
       # The NAS's media shares, read-only: Kino only reads file dates there. On the DH4300 Plus they're on
@@ -38,3 +44,76 @@ services:
       - ${MOVIES_DIR:-/volume2/Movies}:/media/Movies:ro
       - ${MULTIMEDIA_DIR:-/volume3/Multimedia}:/media/Multimedia:ro
       - ${SERIES_DIR:-/volume3/Series}:/media/Series:ro
+
+  # Kolibri.Kino.KMDb: OMDb's API on the IMDb database (MariaDB on HTPC). Swagger: http://<nas>.local:8086/swagger
+  # It only reads the database and needs no library files.
+  kmdb:
+    image: kolibri-kmdb:latest
+    container_name: kolibri-kmdb
+    restart: unless-stopped
+    ports:
+      - "${KMDB_PORT:-8086}:8080"
+    environment:
+      # The MariaDB database with the IMDb tables (DefaultConnection in Kino's settings); read-only access is enough.
+      ConnectionStrings__Imdb: ${IMDB_CONNECTION}
+      # The key clients send as apikey= (like OMDb) or the X-Api-Key header: the same key as the Uranus web service.
+      Kmdb__ApiKey: ${KMDB_API_KEY}
+      # Optional: the Plex token, for posters only Plex has. Sent to Plex in a header only, never handed out.
+      Kmdb__PlexToken: ${KMDB_PLEX_TOKEN:-}
+      Kmdb__PlexUrl: http://${PLEX_HOST_NAME:-HTPC}:32400
+      TZ: ${TZ:-Europe/Oslo}
+    # Library posters point at Plex by its Windows name (http://HTPC:32400/...), which the container can't resolve.
+    extra_hosts:
+      - "${PLEX_HOST_NAME:-HTPC}:${PLEX_HOST_IP}"
+    # Monitoring without the key: /ping (runs), /health (databases; 503 when IMDb is down), /metrics (Prometheus).
+
+  # Prometheus + Grafana for KMDb's metrics. Only started with the "monitoring" profile: set COMPOSE_PROFILES=monitoring
+  # in .env (then "docker compose up -d" starts them too), or run "docker compose --profile monitoring up -d".
+  # Grafana: http://<nas>.local:3000 (admin / GRAFANA_ADMIN_PASSWORD), dashboard Kolibri → Kolibri.Kino.KMDb.
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: kolibri-prometheus
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    container_name: kolibri-grafana
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    depends_on: [prometheus]
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      # Alerts by e-mail (monitoring/grafana/provisioning/alerting): an SMTP server and who gets them.
+      GF_SMTP_ENABLED: ${GRAFANA_SMTP_ENABLED:-false}
+      GF_SMTP_HOST: ${GRAFANA_SMTP_HOST:-}
+      GF_SMTP_USER: ${GRAFANA_SMTP_USER:-}
+      GF_SMTP_PASSWORD: ${GRAFANA_SMTP_PASSWORD:-}
+      GF_SMTP_FROM_ADDRESS: ${GRAFANA_SMTP_FROM:-}
+      GF_SMTP_FROM_NAME: Kolibri Grafana
+      # Without an address the alerts still load (Grafana rejects an empty one and then skips all provisioning);
+      # nothing is sent until SMTP is set up.
+      GRAFANA_ALERT_EMAIL: ${GRAFANA_ALERT_EMAIL:-varsler@kolibri.invalid}
+      TZ: ${TZ:-Europe/Oslo}
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+
+# Docker volumes (not folders on the share): Prometheus and Grafana run as their own users and need to own their data.
+volumes:
+  prometheus-data:
+  grafana-data:

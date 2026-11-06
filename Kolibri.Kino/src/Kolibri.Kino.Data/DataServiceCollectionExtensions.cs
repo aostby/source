@@ -1,5 +1,6 @@
 using Kolibri.Kino.Core;
 using Kolibri.Kino.Core.Abstractions;
+using Kolibri.Kino.Data.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +19,14 @@ public static class DataServiceCollectionExtensions
         // One LiteDatabase per file per process; LiteDB is thread-safe within a single instance.
         services.AddSingleton<KinoDatabase>();
         services.AddSingleton<LiteDbImageStore>();
+
+        // The library in MariaDB through KMDb while that answers (KMDb URL and Uranus token in Settings), else the LiteDB
+        // file, which is kept up to date as the fallback. Settings and the log always stay in the files.
+        services.AddSingleton<KmdbClient>();
+        services.AddSingleton<KmdbConnection>();
+        services.AddSingleton<IStorageStatus>(sp => sp.GetRequiredService<KmdbConnection>());
+        services.AddSingleton<IImageStore, SwitchingImageStore>();
+        services.AddSingleton<IArtProvider, KmdbArtProvider>();
 
         services.AddSingleton<ISettingsStore, LiteDbSettingsStore>();
         // Counts calls to OMDb, TMDb, SubDL and Plex; resolve it at startup (StartApiUsageCounting) so it listens from the first call.
@@ -65,6 +74,13 @@ public static class DataServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Sets up the library's storage: makes the KMDb connection (so the collections can use it) and checks KMDb every
+    /// minute until <paramref name="stopping"/> is cancelled. WinForms calls it at start; the web app hosts it.
+    /// </summary>
+    public static Task RunKinoStorageAsync(this IServiceProvider services, CancellationToken stopping) =>
+        services.GetRequiredService<KmdbConnection>().RunAsync(stopping);
 
     /// <summary>Starts counting calls to the online services (the tracker listens from when it is created).</summary>
     public static IServiceProvider StartApiUsageCounting(this IServiceProvider services)

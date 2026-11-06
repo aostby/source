@@ -1,5 +1,6 @@
 using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Core.Models;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
@@ -10,23 +11,22 @@ namespace Kolibri.Kino.Data;
 /// </summary>
 public sealed class LiteDbTrendingCache(KinoDatabase db) : ITrendingCache
 {
-    private readonly ILiteCollection<BsonDocument> _docs = db.Database.GetCollection("KinoTrending");
+    private readonly IDocumentCollection _docs = db.Collection("KinoTrending");
 
-    public Task<(IReadOnlyList<TrendingItem> Items, DateTime FetchedUtc)?> LoadAsync(TrendingKind kind, CancellationToken ct = default) =>
-        Task.Run<(IReadOnlyList<TrendingItem>, DateTime)?>(() =>
-        {
-            if (_docs.FindById(kind.ToString()) is not { } doc || !doc["Fetched"].IsDateTime) return null;
-            var items = FromArray(doc["Items"]);
-            return (items, DateTime.SpecifyKind(doc["Fetched"].AsDateTime.ToUniversalTime(), DateTimeKind.Utc));
-        }, ct);
+    public async Task<(IReadOnlyList<TrendingItem> Items, DateTime FetchedUtc)?> LoadAsync(TrendingKind kind, CancellationToken ct = default)
+    {
+        if (await _docs.FindByIdAsync(kind.ToString(), ct).ConfigureAwait(false) is not { } doc || !doc["Fetched"].IsDateTime) return null;
+        var items = FromArray(doc["Items"]);
+        return (items, DateTime.SpecifyKind(doc["Fetched"].AsDateTime.ToUniversalTime(), DateTimeKind.Utc));
+    }
 
     public Task SaveAsync(TrendingKind kind, IReadOnlyList<TrendingItem> items, DateTime fetchedUtc, CancellationToken ct = default) =>
-        Task.Run(() => _docs.Upsert(new BsonDocument
+        _docs.UpsertAsync(new BsonDocument
         {
             ["_id"] = kind.ToString(),
             ["Fetched"] = fetchedUtc.ToUniversalTime(),
             ["Items"] = ToArray(items),
-        }), ct);
+        }, ct);
 
     /// <summary>The items as stored here and in KinoDiscover.</summary>
     internal static BsonArray ToArray(IEnumerable<TrendingItem> items) =>

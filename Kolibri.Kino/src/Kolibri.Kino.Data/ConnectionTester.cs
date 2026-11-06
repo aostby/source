@@ -1,4 +1,6 @@
+using System.Text.Json;
 using System.Xml.Linq;
+using Kolibri.Kino.Core;
 using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Core.Models;
 using OMDbApiNet;
@@ -10,16 +12,60 @@ namespace Kolibri.Kino.Data;
 /// <summary>
 /// One small request per service with the given (possibly unsaved) settings.
 /// </summary>
-public sealed class ConnectionTester(HttpClient http) : IConnectionTester
+public sealed class ConnectionTester(HttpClient http, IStorageStatus? storage = null, Microsoft.Extensions.Options.IOptions<KinoOptions>? options = null) : IConnectionTester
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(15);
 
     public async Task<IReadOnlyList<ConnectionCheck>> TestAsync(UserSettings settings, CancellationToken ct = default)
     {
-        var checks = await Task.WhenAll(OmdbAsync(settings.OMDBkey, ct), TmdbAsync(settings.TMDBkey, ct), SubDlAsync(settings.SUBDLkey, ct),
+        var checks = await Task.WhenAll(LibraryAsync(settings, ct), OmdbAsync(settings.OMDBkey, ct), TmdbAsync(settings.TMDBkey, ct), SubDlAsync(settings.SUBDLkey, ct),
                 PlexAsync(settings, ct), UranusAsync(settings, ct), ProwlarrAsync(settings, ct))
             .ConfigureAwait(false);
         return checks;
+    }
+
+    /// <summary>
+    /// Where the library would be kept with these settings: MariaDB through KMDb (KMDb URL + Uranus token, /ping
+    /// answers, the key is accepted) or the LiteDB file. MariaDB is the better choice: WinForms and the web app share
+    /// it, and the LiteDB file is kept up to date as the fallback.
+    /// </summary>
+    private async Task<ConnectionCheck> LibraryAsync(UserSettings settings, CancellationToken ct)
+    {
+        const string service = "Library";
+        var now = storage?.Current is { } current ? $" Now in use: {(current.UsesKmdb ? "MariaDB through KMDb" : "the LiteDB file")}." : "";
+        var configured = options?.Value.KmdbUrl is { Length: > 0 } fixedUrl ? new UserSettings { KmdbUrl = fixedUrl }.GetKmdbBaseUrl() : settings.GetKmdbBaseUrl();
+        if (configured is null)
+            return new(service, true, "The LiteDB file. Set a KMDb URL (Uranus) to keep the library in MariaDB instead, which is better: " +
+                                      "WinForms and the web app share it, and the LiteDB file stays as the fallback." + now, "KMDb URL");
+        if (string.IsNullOrWhiteSpace(settings.UranusApiKey))
+            return new(service, false, $"KMDb URL set, but no Uranus token (KMDb's key): the LiteDB file is used.{now}", "Uranus token");
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(Timeout);
+        try
+        {
+            using (var ping = await http.GetAsync(configured + "ping", cts.Token).ConfigureAwait(false))
+                if (!ping.IsSuccessStatusCode)
+                    return new(service, false, $"KMDb ({configured}) answered /ping with {(int)ping.StatusCode}: the LiteDB file is used.{now}");
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, configured + "silverscreen");
+            request.Headers.Add("X-Api-Key", settings.UranusApiKey.Trim());
+            using var response = await http.SendAsync(request, cts.Token).ConfigureAwait(false);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                return new(service, false, $"KMDb ({configured}) did not accept the Uranus token: the LiteDB file is used.{now}");
+            if (!response.IsSuccessStatusCode)
+                return new(service, false, $"KMDb ({configured}) runs, but its library answered {(int)response.StatusCode}: the LiteDB file is used.{now}");
+
+            using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cts.Token).ConfigureAwait(false), cancellationToken: cts.Token).ConfigureAwait(false);
+            var collections = json.RootElement.GetArrayLength();
+            var rows = json.RootElement.EnumerateArray().Sum(c => c.TryGetProperty("Rows", out var r) ? r.GetInt64() : 0);
+            return new(service, true, $"MariaDB through KMDb ({configured}): {collections} collections, {rows:n0} documents. " +
+                                      $"The LiteDB file is kept up to date as the fallback.{now}");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
+        {
+            return new(service, false, $"KMDb ({configured}) does not answer ({ex.Message}): the LiteDB file is used.{now}");
+        }
     }
 
     private static async Task<ConnectionCheck> OmdbAsync(string? key, CancellationToken ct)

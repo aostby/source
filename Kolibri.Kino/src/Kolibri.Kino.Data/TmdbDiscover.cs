@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Core.Models;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
@@ -21,7 +22,7 @@ public sealed class TmdbDiscover(ISettingsStore settings, HttpClient http, KinoD
     private const int MinVotes = 20;
     private const int MinVotesBestRated = 200;
 
-    private readonly ILiteCollection<BsonDocument> _imdbIds = db.Database.GetCollection("KinoTmdbImdb");
+    private readonly IDocumentCollection _imdbIds = db.Collection("KinoTmdbImdb");
     private readonly ConcurrentDictionary<bool, IReadOnlyList<DiscoverGenre>> _genres = new();
 
     public async Task<DiscoverPage> DiscoverAsync(DiscoverRequest request, CancellationToken ct = default)
@@ -103,11 +104,11 @@ public sealed class TmdbDiscover(ISettingsStore settings, HttpClient http, KinoD
     private async Task<string?> ImdbIdAsync(string kind, int tmdbId, string key, CancellationToken ct)
     {
         var id = $"{kind}:{tmdbId}";
-        if (_imdbIds.FindById(id) is { } known) return known["ImdbId"].AsString is { Length: > 0 } imdb ? imdb : null;
+        if (await _imdbIds.FindByIdAsync(id, ct).ConfigureAwait(false) is { } known) return known["ImdbId"].AsString is { Length: > 0 } imdb ? imdb : null;
 
         using var json = await GetAsync($"{Api}{kind}/{tmdbId}/external_ids?api_key={Uri.EscapeDataString(key)}", ct).ConfigureAwait(false);
         var found = Str(json.RootElement, "imdb_id");
-        _imdbIds.Upsert(new BsonDocument { ["_id"] = id, ["ImdbId"] = found ?? "" });
+        await _imdbIds.UpsertAsync(new BsonDocument { ["_id"] = id, ["ImdbId"] = found ?? "" }, ct).ConfigureAwait(false);
         return found;
     }
 

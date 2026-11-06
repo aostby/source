@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using Kolibri.Kino.Controllers;
+using Kolibri.Kino.Controllers.Library;
 using Kolibri.Kino.Controllers.Ratings;
 using Kolibri.Kino.Controllers.Subtitles;
 using Kolibri.Kino.Controllers.Watchlists;
+using Kolibri.Kino.Controllers.Wishlist;
 using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.Core;
 using Kolibri.Kino.WinForms.Controls;
@@ -45,6 +47,14 @@ public partial class MovieDetailsForm : AsyncForm
     private string? _path;
     private bool _watched;
 
+    /// <summary>
+    /// "+ Add to wishlist", after "Add to watchlist…": for a title that isn't on disk (not in the library, or linked to
+    /// a file or folder that isn't there). Says "On wishlist" once it is on it.
+    /// </summary>
+    private readonly Button btnWishlist = new() { AutoSize = true, Enabled = false, Text = "+ Add to wishlist", UseVisualStyleBackColor = true };
+    private bool _hasFile;
+    private bool _onWishlist;
+
     public MovieDetailsForm(MovieController movies, SubtitleController subtitles, WatchlistController watchlists, RatingController ratings,
         IServiceProvider services, string imdbId)
     {
@@ -75,6 +85,11 @@ public partial class MovieDetailsForm : AsyncForm
             (btnTmdb, "Opens the title's page on TMDb (found by its IMDb id)."),
             (btnWatchlist, "Puts this title on a Kino watchlist and/or the Plex playlist of that name; the dialog says where each list is."),
             (btnMarkWatched, "Marks this title watched: it stays on its watchlist and shows on the Watched list (on no watchlist, it's added to Watched). Marked watched on Plex too when Plex has it."));
+        btnWishlist.Margin = btnWatchlist.Margin;
+        btnWishlist.Padding = btnWatchlist.Padding;
+        btnWishlist.Click += btnWishlist_Click;
+        buttons.Controls.Add(btnWishlist);
+        buttons.Controls.SetChildIndex(btnWishlist, buttons.Controls.GetChildIndex(btnWatchlist) + 1);
         Text = imdbId;
         layout.Controls.AddRange([lblSimilar, similarRow]);
         SetUpMyRating();
@@ -94,6 +109,9 @@ public partial class MovieDetailsForm : AsyncForm
 
             _path = await _movies.GetLinkedPathAsync(_imdbId, ct);
             _watched = await _watchlists.IsWatchedAsync(_imdbId, ct);
+            // On disk = in the library and linked to a file (a series: its folder) that is there, as on the web page.
+            _hasFile = (await _services.GetRequiredService<LibraryFiles>().WithFileAsync([_imdbId], ct)).Count > 0;
+            _onWishlist = !_hasFile && await _services.GetRequiredService<WishlistController>().IsOnWishlistAsync(_imdbId, ct);
             _myRating = await _ratings.GetAsync(_imdbId, ct);
             ShowItem(_item);
             ShowMyRating();
@@ -243,6 +261,7 @@ public partial class MovieDetailsForm : AsyncForm
         btnPlay.Enabled = _path is not null && MovieFileRules.IsVideoFile(_path) && File.Exists(_path);
         btnOpenOnDisk.Enabled = _path is not null;
         btnImdb.Enabled = btnTmdb.Enabled = btnWatchlist.Enabled = hasItem;
+        ShowWishlist();
         ShowWatched();
         ShowSubtitleStatus();
     }
@@ -485,6 +504,25 @@ public partial class MovieDetailsForm : AsyncForm
         using var dialog = ActivatorUtilities.CreateInstance<AddToWatchlistDialog>(_services, _item.ImdbId, _item.Title);
         if (dialog.ShowDialog(this) == DialogResult.OK) ShowStatus(dialog.ResultMessage);
     }
+
+    private void ShowWishlist()
+    {
+        btnWishlist.Text = _onWishlist ? "On wishlist" : "+ Add to wishlist";
+        btnWishlist.Enabled = _item is not null && !_hasFile && !_onWishlist;
+        _toolTip.SetToolTip(btnWishlist,
+            _hasFile ? "It's on disk already, so it can't go on the wishlist."
+            : _onWishlist ? "It's on the wishlist (File → Wishlist)."
+            : "Puts this title on the wishlist (File → Wishlist), to find and get it.");
+    }
+
+    private async void btnWishlist_Click(object sender, EventArgs e) =>
+        await RunAsync("Adding to the wishlist…", async ct =>
+        {
+            var added = await _services.GetRequiredService<WishlistController>().AddAsync(_imdbId, ct);
+            _onWishlist = true;
+            ShowWishlist();
+            ShowStatus($"Put {added.Title} on the wishlist.");
+        });
 
     private void btnClose_Click(object sender, EventArgs e) => Close();
 

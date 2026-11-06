@@ -69,6 +69,8 @@
                 <b>Mark as watched</b> marks it watched in Kino, and on Plex when Plex has it.</li>
             <li><b>★ My rating</b> opens your rating (see <a href="guide#ratings">My rating</a>).</li>
             <li><b>IMDb</b>, <b>TMDb</b> and <b>Plex</b> open the title there (Plex in Plex Web on app.plex.tv).</li>
+            <li>The top takes its colours from the title's backdrop (else its poster), and shows the backdrop itself, faded, when
+                KMDb has one.</li>
             <li><b>Similar movies</b> are TMDb's suggestions, with <b>+ Wishlist</b> to search for one on the wishlist page.
                 They're kept for 30 days, so opening a movie again doesn't ask TMDb.</li>
             <li>A series lists its episodes by season, newest season first, each with <b>▶ Play</b> and <b>Plex</b>. A tag says
@@ -146,8 +148,12 @@
         <ul>
             <li><b>Movie services</b>: your OMDb and TMDb keys (the shared default keys work, but share OMDb's daily limit with
                 everyone). <b>Plex</b>: server name and token. <b>Test connections</b> tries them before you <b>Save</b>.</li>
+            <li><b>Uranus and KMDb</b>: Uranus URL and token, and the <b>KMDb URL</b>. With KMDb the library is in MariaDB, shared
+                with Kino on the PC; the box <b>Library</b> shows whether MariaDB (KMDb) or the LiteDB file is in use, and
+                <b>Check KMDb now</b> looks again. While KMDb doesn't answer the LiteDB file is used, and the changes are sent to
+                KMDb when it is back. MariaDB is the better choice when it is available.</li>
             <li><b>Folders</b> are shared with SilverScreen and Kino on the PC, so they're usually Windows paths.</li>
-            <li><b>Export</b>: <b>Export ratings</b> and <b>Import ratings…</b> carry your ratings between the NAS and the PC
+            <li><b>Export</b> (needed only without KMDb): <b>Export ratings</b> and <b>Import ratings…</b> carry your ratings between the NAS and the PC
                 (in Kino on the PC: Settings → Importer vurderinger fra fil); the newer rating of a title wins.
                 <b>Export wishlist</b> gives the wishlist as CSV.</li>
             <li>When it's set up, the wishlist and your ratings are also sent to problembar.net by themselves a few seconds after each change.</li>

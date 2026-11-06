@@ -1,0 +1,9 @@
+# Loads the dashboards in /var/lib/grafana/dashboards (deploy/monitoring/grafana/dashboards) into the folder "Kolibri".
+apiVersion: 1
+providers:
+  - name: kolibri
+    folder: Kolibri
+    type: file
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

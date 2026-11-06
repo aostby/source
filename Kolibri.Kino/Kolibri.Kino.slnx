@@ -4,6 +4,7 @@
     <Project Path="src/Kolibri.Kino.Controllers/Kolibri.Kino.Controllers.csproj" />
     <Project Path="src/Kolibri.Kino.Core/Kolibri.Kino.Core.csproj" />
     <Project Path="src/Kolibri.Kino.Data/Kolibri.Kino.Data.csproj" />
+    <Project Path="src/Kolibri.Kino.KMDb/Kolibri.Kino.KMDb.csproj" />
     <Project Path="src/Kolibri.Kino.WinForms/Kolibri.Kino.WinForms.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -11,5 +12,6 @@
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Kolibri.Kino.ImageDbMigrator/Kolibri.Kino.ImageDbMigrator.csproj" />
+    <Project Path="tools/Kolibri.Kino.SilverScreenCopy/Kolibri.Kino.SilverScreenCopy.csproj" />
   </Folder>
 </Solution>
