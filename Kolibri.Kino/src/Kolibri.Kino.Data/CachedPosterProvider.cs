@@ -1,4 +1,5 @@
 using Kolibri.Kino.Core.Abstractions;
+using Kolibri.Kino.Data.Storage;
 using OMDbApiNet.Model;
 
 namespace Kolibri.Kino.Data;
@@ -7,7 +8,7 @@ namespace Kolibri.Kino.Data;
 /// Posters from the image cache (keyed by IMDb id, or by poster URL as SilverScreen does); downloads on a miss
 /// and stores the bytes as-is, so there is no re-encoding and no growth on repeat lookups.
 /// </summary>
-public sealed class CachedPosterProvider(LiteDbImageStore store, HttpClient http) : IPosterProvider
+public sealed class CachedPosterProvider(IImageStore store, HttpClient http) : IPosterProvider
 {
     public async Task<byte[]?> GetPosterAsync(Item item, CancellationToken ct = default)
     {

@@ -1,38 +1,38 @@
 using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Core.Models;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
 
 /// <summary>
-/// "KinoRating": your own ratings, one document per title, _id = IMDb id, Rating = 1–10, Review, Title, Updated (UTC).
-/// Kino's own collection, so SilverScreen ignores it.
+/// "My rating" per title in Kino's own "KinoRating" collection (_id = IMDb id).
+/// Through <see cref="KinoDatabase.Collection"/>: the LiteDB file, or MariaDB through KMDb when that is in use.
 /// </summary>
 public sealed class LiteDbRatingRepository(KinoDatabase db) : IRatingRepository
 {
-    private readonly ILiteCollection<BsonDocument> _docs = db.Database.GetCollection("KinoRating");
+    private readonly IDocumentCollection _docs = db.Collection("KinoRating");
 
-    public Task<MovieRating?> GetAsync(string imdbId, CancellationToken ct = default) =>
-        Task.Run(() => _docs.FindById(imdbId) is { } doc ? FromDocument(doc) : null, ct);
+    public async Task<MovieRating?> GetAsync(string imdbId, CancellationToken ct = default) =>
+        await _docs.FindByIdAsync(imdbId, ct).ConfigureAwait(false) is { } doc ? FromDocument(doc) : null;
 
-    public Task<IReadOnlyList<MovieRating>> GetAllAsync(CancellationToken ct = default) =>
-        Task.Run(() => (IReadOnlyList<MovieRating>)_docs.FindAll().Select(FromDocument).ToList(), ct);
+    public async Task<IReadOnlyList<MovieRating>> GetAllAsync(CancellationToken ct = default) =>
+        (await _docs.FindAllAsync(ct).ConfigureAwait(false)).Select(FromDocument).ToList();
 
     public Task SaveAsync(MovieRating rating, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rating.ImdbId);
-        return Task.Run(() => _docs.Upsert(new BsonDocument
+        return _docs.UpsertAsync(new BsonDocument
         {
             ["_id"] = rating.ImdbId,
             ["Rating"] = rating.Rating,
             ["Review"] = rating.Review,
             ["Title"] = rating.Title,
             ["Updated"] = rating.UpdatedUtc.ToUniversalTime(),
-        }), ct);
+        }, ct);
     }
 
-    public Task<bool> RemoveAsync(string imdbId, CancellationToken ct = default) =>
-        Task.Run(() => _docs.Delete(imdbId), ct);
+    public Task<bool> RemoveAsync(string imdbId, CancellationToken ct = default) => _docs.DeleteAsync(imdbId, ct);
 
     private static MovieRating FromDocument(BsonDocument d) => new(
         d["_id"].AsString,

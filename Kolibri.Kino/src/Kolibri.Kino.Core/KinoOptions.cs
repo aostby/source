@@ -97,6 +97,12 @@ public sealed class KinoOptions
         return url;
     }
 
+    /// <summary>
+    /// KMDb's address for this program, over the user's "KMDb URL" setting: in Docker the web app reaches KMDb by its
+    /// service name (http://kmdb:8080), not the address the PC uses. Empty: the setting decides.
+    /// </summary>
+    public string KmdbUrl { get; set; } = string.Empty;
+
     public string ResolveSettingsUser() => string.IsNullOrWhiteSpace(SettingsUser) ? Environment.UserName : SettingsUser.Trim();
 
     public string ResolveLogDbPath() =>

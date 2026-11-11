@@ -15,6 +15,7 @@ internal static partial class KinoEndpoints
     public static void MapKinoEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/poster/{imdbId}", PosterAsync);
+        app.MapGet("/backdrop/{imdbId}", BackdropAsync);
         app.MapGet("/stream/{imdbId}", StreamAsync);
         app.MapGet("/subtitle/{imdbId}", SubtitleAsync);
         app.MapGet("/export/watchlist", ExportWatchlistAsync);
@@ -55,6 +56,19 @@ internal static partial class KinoEndpoints
         if (bytes is null) return Results.NotFound();
 
         // Posters don't change; a week in the browser cache saves the NAS the work.
+        http.Response.Headers.CacheControl = "public, max-age=604800";
+        return Results.File(bytes, ImageType(bytes));
+    }
+
+    /// <summary>
+    /// The title's backdrop (else its landscape art) from KMDb, for the details page's background; 404 without one
+    /// (or while the library is in the LiteDB file, which has posters only).
+    /// </summary>
+    private static async Task<IResult> BackdropAsync(string imdbId, Kolibri.Kino.Core.Abstractions.IArtProvider art, HttpContext http, CancellationToken ct)
+    {
+        if (!ImdbId().IsMatch(imdbId)) return Results.NotFound();
+        var bytes = await art.GetArtAsync(imdbId, "backdrop", ct) ?? await art.GetArtAsync(imdbId, "landscape", ct);
+        if (bytes is null) return Results.NotFound();
         http.Response.Headers.CacheControl = "public, max-age=604800";
         return Results.File(bytes, ImageType(bytes));
     }

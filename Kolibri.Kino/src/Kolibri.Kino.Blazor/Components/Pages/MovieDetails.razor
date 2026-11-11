@@ -15,6 +15,7 @@
 @inject Kolibri.Kino.Controllers.Ratings.RatingController Ratings
 @inject LibraryFiles LibraryFiles
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @* Port of MovieDetailsForm plus KinoForm's right-click menu: details, import/update from OMDb, links, Mark as
    watched (onto the Watched watchlist, and on Plex) and Add to watchlist (a Kino watchlist and/or a Plex playlist,
@@ -32,6 +33,8 @@
 }
 else
 {
+    @* Colours from the backdrop (else the poster) behind the details, and the backdrop itself, faded (kino-art.js). *@
+    <div class="details-page" id="details-art">
     <div class="details">
         <PosterImage Src="@($"poster/{ImdbId}")" Class="large" />
 
@@ -191,6 +194,7 @@ else
             <StatusLine Busy="Busy" Text="@Status" Error="@Error" />
         </div>
     </div>
+    </div>
 
     @if (_similar.Count > 0)
     {
@@ -302,8 +306,23 @@ else
     private bool _scrollToRating;
     private ElementReference _ratingAnchor;
 
+    /// <summary>The title whose colours and backdrop are on the page (another title gets its own when opened).</summary>
+    private string? _artFor;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_item is not null && _artFor != ImdbId)
+        {
+            _artFor = ImdbId;
+            try
+            {
+                await JS.InvokeVoidAsync("kinoArt.apply", "details-art", $"backdrop/{ImdbId}", $"poster/{ImdbId}");
+            }
+            catch (JSException)
+            {
+                // Without the colours the page is as before.
+            }
+        }
         if (!_scrollToRating || !_hasRating) return;
         _scrollToRating = false;
         await _ratingAnchor.FocusAsync(preventScroll: false); // focusing scrolls it into view

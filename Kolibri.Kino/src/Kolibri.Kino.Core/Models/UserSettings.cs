@@ -84,6 +84,21 @@ public sealed class UserSettings
                  "(the address of get.php or post.php there works too).")]
     public string? UranusUrl { get; set; }
 
+    [Category("Uranus"), DisplayName("KMDb URL"),
+     Description("Kolibri.Kino.KMDb, the library in MariaDB, e.g. http://greenlantern:8086/. With it (and the Uranus token, " +
+                 "which KMDb uses as its key) Kino keeps the library in MariaDB while KMDb answers, and in the LiteDB file " +
+                 "when it doesn't; the LiteDB file is kept up to date as a fallback. Empty: only the LiteDB file. Settings " +
+                 "always stay in the LiteDB file.")]
+    public string? KmdbUrl { get; set; }
+
+    /// <summary>KMDb's base address ending in "/", from <see cref="KmdbUrl"/>; null when it isn't an http(s) address. (A method, so it isn't stored.)</summary>
+    public string? GetKmdbBaseUrl()
+    {
+        if (string.IsNullOrWhiteSpace(KmdbUrl) || !Uri.TryCreate(KmdbUrl.Trim(), UriKind.Absolute, out var uri)
+            || uri.Scheme is not ("http" or "https")) return null;
+        return new UriBuilder(uri) { Path = uri.AbsolutePath.TrimEnd('/') + "/", Query = string.Empty, Fragment = string.Empty }.Uri.AbsoluteUri;
+    }
+
     /// <summary>Prowlarr on the NAS.</summary>
     public const string DefaultProwlarrUrl = "http://greenlantern:9696/";
 

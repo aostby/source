@@ -1,6 +1,7 @@
 using System.Globalization;
 using Kolibri.Kino.Core.Abstractions;
 using Kolibri.Kino.Core.Models;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
@@ -12,39 +13,46 @@ namespace Kolibri.Kino.Data;
 public sealed class LiteDbApiUsageRepository(KinoDatabase db) : IApiUsageRepository
 {
     private const string DateFormat = "yyyy-MM-dd";
-    private readonly ILiteCollection<BsonDocument> _days = db.Database.GetCollection("KinoApiUsage");
-    private readonly Lock _lock = new();
+    private readonly IDocumentCollection _days = db.Collection("KinoApiUsage");
+    private readonly SemaphoreSlim _lock = new(1, 1);
 
-    public Task AddAsync(IReadOnlyCollection<ApiUsageEntry> entries, CancellationToken ct = default) =>
-        Task.Run(() =>
+    public async Task AddAsync(IReadOnlyCollection<ApiUsageEntry> entries, CancellationToken ct = default)
+    {
+        await _lock.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            lock (_lock)
+            foreach (var day in entries.GroupBy(e => e.Date))
             {
-                foreach (var day in entries.GroupBy(e => e.Date))
+                var id = Id(day.Key);
+                var doc = await _days.FindByIdAsync(id, ct).ConfigureAwait(false) ?? new BsonDocument { ["_id"] = id };
+                var services = doc.TryGetValue("Services", out var s) && s.IsDocument ? s.AsDocument : new BsonDocument();
+                foreach (var entry in day)
                 {
-                    var id = Id(day.Key);
-                    var doc = _days.FindById(id) ?? new BsonDocument { ["_id"] = id };
-                    var services = doc.TryGetValue("Services", out var s) && s.IsDocument ? s.AsDocument : new BsonDocument();
-                    foreach (var entry in day)
-                    {
-                        var sum = ToCount(services.TryGetValue(entry.Service, out var stored) ? stored : null) + entry.Count;
-                        services[entry.Service] = new BsonDocument { ["Calls"] = sum.Calls, ["Errors"] = sum.Errors };
-                    }
-                    doc["Services"] = services;
-                    _days.Upsert(doc);
+                    var sum = ToCount(services.TryGetValue(entry.Service, out var stored) ? stored : null) + entry.Count;
+                    services[entry.Service] = new BsonDocument { ["Calls"] = sum.Calls, ["Errors"] = sum.Errors };
                 }
+                doc["Services"] = services;
+                await _days.UpsertAsync(doc, ct).ConfigureAwait(false);
             }
-        }, ct);
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
 
-    public Task<ApiUsageDay?> GetDayAsync(DateOnly date, CancellationToken ct = default) =>
-        Task.Run(() => _days.FindById(Id(date)) is { } doc ? FromDocument(doc) : null, ct);
+    public async Task<ApiUsageDay?> GetDayAsync(DateOnly date, CancellationToken ct = default) =>
+        await _days.FindByIdAsync(Id(date), ct).ConfigureAwait(false) is { } doc ? FromDocument(doc) : null;
 
     public Task<IReadOnlyList<ApiUsageDay>> GetDaysAsync(DateOnly? from, DateOnly? to, CancellationToken ct = default) =>
         // One small document per day, so a few hundred a year: filtered in memory.
-        Task.Run(() => (IReadOnlyList<ApiUsageDay>)_days.FindAll().ToList()
+        GetDaysCoreAsync(from, to, ct);
+
+    private async Task<IReadOnlyList<ApiUsageDay>> GetDaysCoreAsync(DateOnly? from, DateOnly? to, CancellationToken ct) =>
+        (await _days.FindAllAsync(ct).ConfigureAwait(false))
             .Select(FromDocument).OfType<ApiUsageDay>()
             .Where(d => (from is null || d.Date >= from) && (to is null || d.Date <= to))
-            .OrderBy(d => d.Date).ToList(), ct);
+            .OrderBy(d => d.Date).ToList();
 
     private static string Id(DateOnly date) => date.ToString(DateFormat, CultureInfo.InvariantCulture);
 

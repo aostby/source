@@ -35,8 +35,16 @@ static class Program
 
         using var host = builder.Build();
         host.Services.StartApiUsageCounting();
+
+        // The library: MariaDB through KMDb when that answers (checked now, briefly, and every minute), else the LiteDB file.
+        using var storageStop = new CancellationTokenSource();
+        var storage = host.Services.GetRequiredService<Kolibri.Kino.Data.Storage.KmdbConnection>();
+        try { storage.CheckAsync().Wait(TimeSpan.FromSeconds(8)); } catch (AggregateException) { /* the loop below tries again */ }
+        _ = host.Services.RunKinoStorageAsync(storageStop.Token);
+
         KinoLog.Factory = host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>();
         Application.AddMessageFilter(new Controls.ExcelExport.Shortcut());
         Application.Run(host.Services.GetRequiredService<MainForm>());
+        storageStop.Cancel();
     }
 }

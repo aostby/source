@@ -1,31 +1,32 @@
 using Kolibri.Kino.Core.Abstractions;
+using Kolibri.Kino.Data.Storage;
 using LiteDB;
 
 namespace Kolibri.Kino.Data;
 
 /// <summary>
-/// "KinoSimilar": a movie's similar movies, _id = its IMDb id, Fetched (UTC) and Hits (ImdbId, Title, Year, Poster,
-/// ImdbRating). Kino's own collection, so SilverScreen ignores it.
+/// Similar movies per title in Kino's own "KinoSimilar" collection (_id = the title's IMDb id), kept 30 days.
+/// Through <see cref="KinoDatabase.Collection"/>: the LiteDB file, or MariaDB through KMDb when that is in use.
 /// </summary>
 public sealed class LiteDbSimilarCache(KinoDatabase db) : ISimilarCache
 {
-    private readonly ILiteCollection<BsonDocument> _docs = db.Database.GetCollection("KinoSimilar");
+    private readonly IDocumentCollection _docs = db.Collection("KinoSimilar");
 
-    public Task<CachedSimilar?> GetAsync(string sourceImdbId, CancellationToken ct = default) =>
-        Task.Run(() => _docs.FindById(sourceImdbId) is { } doc ? FromDocument(doc) : null, ct);
+    public async Task<CachedSimilar?> GetAsync(string sourceImdbId, CancellationToken ct = default) =>
+        await _docs.FindByIdAsync(sourceImdbId, ct).ConfigureAwait(false) is { } doc ? FromDocument(doc) : null;
 
-    public Task<IReadOnlyList<CachedSimilar>> GetManyAsync(IEnumerable<string> sourceImdbIds, CancellationToken ct = default) =>
-        Task.Run(() => (IReadOnlyList<CachedSimilar>)sourceImdbIds
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Select(id => _docs.FindById(id))
-            .OfType<BsonDocument>()
-            .Select(FromDocument)
-            .ToList(), ct);
+    public async Task<IReadOnlyList<CachedSimilar>> GetManyAsync(IEnumerable<string> sourceImdbIds, CancellationToken ct = default)
+    {
+        var found = new List<CachedSimilar>();
+        foreach (var id in sourceImdbIds.Distinct(StringComparer.OrdinalIgnoreCase))
+            if (await _docs.FindByIdAsync(id, ct).ConfigureAwait(false) is { } doc) found.Add(FromDocument(doc));
+        return found;
+    }
 
     public Task SaveAsync(CachedSimilar similar, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(similar.SourceImdbId);
-        return Task.Run(() => _docs.Upsert(new BsonDocument
+        return _docs.UpsertAsync(new BsonDocument
         {
             ["_id"] = similar.SourceImdbId,
             ["Fetched"] = similar.FetchedUtc.ToUniversalTime(),
@@ -37,7 +38,7 @@ public sealed class LiteDbSimilarCache(KinoDatabase db) : ISimilarCache
                 ["Poster"] = h.Movie.Poster,
                 ["ImdbRating"] = h.ImdbRating,
             })),
-        }), ct);
+        }, ct);
     }
 
     private static CachedSimilar FromDocument(BsonDocument d) => new(
