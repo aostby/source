@@ -194,6 +194,12 @@ public sealed class ProwlarrOptions
     /// <summary>Where a .torrent file is saved before it's opened. Empty means the Downloads folder.</summary>
     public string TorrentFolder { get; set; } = string.Empty;
 
+    /// <summary>
+    /// How long a search's answer is kept in the Cache folder next to the .exe and used instead of asking Prowlarr again
+    /// (minutes; 0 = no cache).
+    /// </summary>
+    public int CacheMinutes { get; set; } = 20;
+
     public static readonly IReadOnlyList<string> DefaultExcludedWords =
         ["CAM", "HDCAM", "TS", "HDTS", "TELESYNC", "TC", "TELECINE", "SCR", "SCREENER", "DVDSCR", "WORKPRINT"];
 

@@ -184,6 +184,54 @@ public sealed class LocalSeriesController(
     }
 
     /// <summary>
+    /// Of these wishlist episode ids ("tt5875444_S06E03"), the ones with a file in the series' folder (matched by name,
+    /// as on the series page). A series without a folder, or with one holding other series too, has none; other ids are
+    /// left out. Only the folders are looked through, nothing is fetched online.
+    /// </summary>
+    public async Task<IReadOnlySet<string>> EpisodesOnDiskAsync(IEnumerable<string> episodeIds, CancellationToken ct = default)
+    {
+        var have = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var wanted = episodeIds.Select(id => (Id: id, Parsed: ParseEpisodeId(id)))
+            .Where(e => e.Parsed is not null)
+            .GroupBy(e => e.Parsed!.Value.Series, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (wanted.Count == 0) return have;
+
+        var series = (await GetSeriesAsync(ct).ConfigureAwait(false))
+            .GroupBy(s => s.Item.ImdbId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        foreach (var group in wanted)
+        {
+            if (!series.TryGetValue(group.Key, out var s) || !s.FolderExists || s.FolderTooBroad || s.FolderPath is not { } folder) continue;
+            try
+            {
+                var (found, _) = await episodeFiles.FindAsync(folder, ct).ConfigureAwait(false);
+                var onDisk = found.SelectMany(f => f.EpisodeNumbers.Select(n => (f.SeasonNumber, n))).ToHashSet();
+                foreach (var (id, parsed) in group)
+                    if (onDisk.Contains((parsed!.Value.Season, parsed.Value.Episode))) have.Add(id);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                logger.LogWarning(ex, "Episode files of {ImdbId} couldn't be looked through", group.Key);
+            }
+        }
+        return have;
+    }
+
+    /// <summary>"tt5875444_S06E03" → (tt5875444, 6, 3); null for anything else.</summary>
+    internal static (string Series, int Season, int Episode)? ParseEpisodeId(string? id)
+    {
+        var at = id?.LastIndexOf('_') ?? -1;
+        if (at <= 0) return null;
+        var rest = id![(at + 1)..];
+        var e = rest.IndexOf('E', StringComparison.OrdinalIgnoreCase);
+        if (rest.Length < 4 || char.ToUpperInvariant(rest[0]) != 'S' || e < 2
+            || !int.TryParse(rest[1..e], NumberStyles.None, CultureInfo.InvariantCulture, out var season)
+            || !int.TryParse(rest[(e + 1)..], NumberStyles.None, CultureInfo.InvariantCulture, out var episode)) return null;
+        return (id[..at], season, episode);
+    }
+
+    /// <summary>
     /// The episode list, from the database first: Kino's cache, else what SilverScreen stored. Only when neither has it
     /// (or with <paramref name="refresh"/>) it is fetched online and stored, and a series no source knows is remembered,
     /// so it isn't asked about again for a while. When fetching fails (offline, no key, limit) the stored lists are used

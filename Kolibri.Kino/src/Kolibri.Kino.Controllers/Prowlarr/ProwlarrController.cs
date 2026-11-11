@@ -37,7 +37,9 @@ public sealed record ReleaseCheck(ProwlarrRelease Release, string? Quality, stri
 /// <summary>A search for one wanted title.</summary>
 /// <param name="Best">The wanted releases, most seeders first, at most <see cref="ProwlarrOptions.TopResults"/>.</param>
 /// <param name="All">Every release Prowlarr found: the wanted ones (most seeders first), then the rest.</param>
-public sealed record ProwlarrSearch(WishlistItem Wanted, string Query, IReadOnlyList<ReleaseCheck> Best, IReadOnlyList<ReleaseCheck> All);
+/// <param name="FromCache">Prowlarr's answer from a few minutes ago (<see cref="ProwlarrCache"/>), not asked again.</param>
+public sealed record ProwlarrSearch(WishlistItem Wanted, string Query, IReadOnlyList<ReleaseCheck> Best, IReadOnlyList<ReleaseCheck> All,
+    bool FromCache = false);
 
 /// <summary>What getting a release gave: a magnet link to open, or a .torrent file's bytes and name.</summary>
 public sealed record ReleaseLink(string? Magnet, byte[]? Torrent, string FileName);
@@ -55,8 +57,13 @@ public sealed class ProwlarrController(
     WishlistController wishlist,
     ILogger<ProwlarrController> logger,
     LibraryFiles? libraryFiles = null,
-    HttpMessageHandler? handler = null)
+    HttpMessageHandler? handler = null,
+    ProwlarrCache? cache = null,
+    Series.LocalSeriesController? series = null)
 {
+    /// <summary>Makes the cache folder if needed and deletes the files too old to use (when the Prowlarr window opens).</summary>
+    public void PrepareCache() => cache?.Prepare();
+
     /// <summary>
     /// Prowlarr asks all its indexers and answers when they have (or have timed out), which can take a while. Redirects
     /// aren't followed by themselves: a link that leads to a magnet link must be caught, not followed.
@@ -97,11 +104,20 @@ public sealed class ProwlarrController(
 
         var query = ReleaseMatch.Query(wanted);
         var categories = ReleaseMatch.KindOf(wanted) == WantedKind.Movie ? Options.EffectiveMovieCategories : Options.EffectiveSeriesCategories;
+        var apiKey = current.ProwlarrApiKey.Trim();
+        if (cache?.Get(wanted.ImdbId, categories, apiKey) is { } kept)
+        {
+            var cached = Check(wanted, query, kept, Options) with { FromCache = true };
+            logger.LogInformation("Prowlarr: \"{Query}\" from the cache: {All} release(s), {Wanted} of them wanted", query, cached.All.Count,
+                cached.All.Count(r => r.LeftOut is null));
+            return cached;
+        }
+
         var url = new StringBuilder($"{baseUrl}api/v1/search?query={Uri.EscapeDataString(query)}&type=search");
         foreach (var category in categories) url.Append("&categories=").Append(category.ToString(CultureInfo.InvariantCulture));
 
         using var request = new HttpRequestMessage(HttpMethod.Get, url.ToString());
-        request.Headers.Add("X-Api-Key", current.ProwlarrApiKey.Trim());
+        request.Headers.Add("X-Api-Key", apiKey);
         request.Headers.Accept.ParseAdd("application/json");
         HttpResponseMessage response;
         try
@@ -125,7 +141,9 @@ public sealed class ProwlarrController(
                 throw new InvalidOperationException($"Prowlarr answered {(int)response.StatusCode} {response.ReasonPhrase} for \"{query}\".");
 
             var found = await response.Content.ReadFromJsonAsync<List<ResultDto>>(Json, ct).ConfigureAwait(false) ?? [];
-            var result = Check(wanted, query, found.Select(ToRelease).ToList(), Options);
+            var releases = found.Select(ToRelease).ToList();
+            cache?.Put(wanted.ImdbId, query, categories, releases, apiKey);
+            var result = Check(wanted, query, releases, Options);
             logger.LogInformation("Prowlarr: \"{Query}\" gave {All} release(s), {Wanted} of them wanted", query, result.All.Count,
                 result.All.Count(r => r.LeftOut is null));
             return result;
@@ -214,12 +232,19 @@ public sealed class ProwlarrController(
         throw new HttpRequestException("too many redirects");
     }
 
-    /// <summary>The IMDb ids among <paramref name="imdbIds"/> you have: in the library with a file that's there.</summary>
+    /// <summary>
+    /// The IMDb ids among <paramref name="imdbIds"/> you have: a title in the library with a file that's there, an
+    /// episode ("tt5875444_S06E03") with its file in the series' folder.
+    /// </summary>
     public async Task<IReadOnlySet<string>> HaveAsync(IEnumerable<string> imdbIds, CancellationToken ct = default)
     {
         var ids = imdbIds.Where(i => !string.IsNullOrEmpty(i)).ToList();
-        if (ids.Count == 0 || libraryFiles is null) return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        return await libraryFiles.WithFileAsync(ids, ct).ConfigureAwait(false);
+        var have = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var titles = ids.Where(i => !i.Contains('_')).ToList();
+        var episodes = ids.Where(i => i.Contains('_')).ToList();
+        if (titles.Count > 0 && libraryFiles is not null) have.UnionWith(await libraryFiles.WithFileAsync(titles, ct).ConfigureAwait(false));
+        if (episodes.Count > 0 && series is not null) have.UnionWith(await series.EpisodesOnDiskAsync(episodes, ct).ConfigureAwait(false));
+        return have;
     }
 
     /// <summary>The release dates known (a day, not just a year) for these wanted titles; see <see cref="WishlistController.ReleaseDatesAsync"/>.</summary>

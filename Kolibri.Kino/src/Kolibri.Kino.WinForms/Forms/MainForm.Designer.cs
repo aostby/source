@@ -34,6 +34,8 @@ partial class MainForm
         menuProwlarr = new ToolStripMenuItem();
         menuTools = new ToolStripMenuItem();
         menuSortByYear = new ToolStripMenuItem();
+        menuDeleteEmptyFolders = new ToolStripMenuItem();
+        menuDeleteLeftovers = new ToolStripMenuItem();
         menuFileSeparator = new ToolStripSeparator();
         menuExit = new ToolStripMenuItem();
         menuLibrary = new ToolStripMenuItem();
@@ -97,7 +99,7 @@ partial class MainForm
         //
         // menuTools
         //
-        menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuSortByYear });
+        menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuSortByYear, menuDeleteEmptyFolders, menuDeleteLeftovers });
         menuTools.Name = "menuTools";
         menuTools.Size = new Size(180, 22);
         menuTools.Text = "&Tools";
@@ -108,6 +110,20 @@ partial class MainForm
         menuSortByYear.Size = new Size(190, 22);
         menuSortByYear.Text = "Sort folder by &year…";
         menuSortByYear.Click += menuSortByYear_Click;
+        //
+        // menuDeleteEmptyFolders
+        //
+        menuDeleteEmptyFolders.Name = "menuDeleteEmptyFolders";
+        menuDeleteEmptyFolders.Size = new Size(320, 22);
+        menuDeleteEmptyFolders.Text = "Delete &empty folders…";
+        menuDeleteEmptyFolders.Click += menuDeleteEmptyFolders_Click;
+        //
+        // menuDeleteLeftovers
+        //
+        menuDeleteLeftovers.Name = "menuDeleteLeftovers";
+        menuDeleteLeftovers.Size = new Size(320, 22);
+        menuDeleteLeftovers.Text = "Delete empty folders and &leftover files…";
+        menuDeleteLeftovers.Click += menuDeleteLeftovers_Click;
         //
         // menuFileSeparator
         //
@@ -326,6 +342,8 @@ partial class MainForm
     private ToolStripMenuItem menuProwlarr;
     private ToolStripMenuItem menuTools;
     private ToolStripMenuItem menuSortByYear;
+    private ToolStripMenuItem menuDeleteEmptyFolders;
+    private ToolStripMenuItem menuDeleteLeftovers;
     private ToolStripSeparator menuFileSeparator;
     private ToolStripMenuItem menuExit;
     private ToolStripMenuItem menuLibrary;

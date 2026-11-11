@@ -32,6 +32,11 @@ public static class ControllerServiceCollectionExtensions
         services.AddTransient<WatchlistController>();
         services.AddTransient<WishlistController>();
         services.AddTransient<WebWishlist>();
+        // Prowlarr's answers for a few minutes, in "Cache" next to the .exe (not in the database).
+        services.AddSingleton(sp => new Prowlarr.ProwlarrCache(
+            Path.Combine(AppContext.BaseDirectory, "Cache"),
+            TimeSpan.FromMinutes(Math.Max(0, sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Kolibri.Kino.Core.KinoOptions>>().Value.Prowlarr.CacheMinutes)),
+            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Prowlarr.ProwlarrCache>>()));
         services.AddTransient<Prowlarr.ProwlarrController>();
         services.AddTransient<Ratings.RatingController>();
         services.AddTransient<Ratings.WebRatings>();

@@ -442,13 +442,34 @@ else
                 await LoadCompletenessAsync();
                 StateHasChanged();
             }
-            _tmdbPage = await Movies.GetTmdbPageAsync(ImdbId, item.Title);
-            StateHasChanged();
-            _plexPage = await Playback.GetPlexPageAsync(ImdbId);
-            StateHasChanged();
-            if (!IsSeries) _similar = await Movies.GetSimilarAsync(ImdbId);
-            if (IsSeries && _episodes.Count > 0) _plexEpisodes = await Playback.GetPlexEpisodePagesAsync(ImdbId);
-            StateHasChanged();
+            // TMDb (the page link, similar movies) and Plex at the same time, each shown when it comes: a Plex that
+            // hangs (it can take minutes before it times out) mustn't keep similar movies from showing.
+            var id = ImdbId;
+            async Task FromTmdbAsync()
+            {
+                var page = await Movies.GetTmdbPageAsync(id, item.Title);
+                if (id != ImdbId) return; // another title was opened meanwhile
+                _tmdbPage = page;
+                StateHasChanged();
+                if (IsSeries) return;
+                var similar = await Movies.GetSimilarAsync(id);
+                if (id != ImdbId) return;
+                _similar = similar;
+                StateHasChanged();
+            }
+            async Task FromPlexAsync()
+            {
+                var page = await Playback.GetPlexPageAsync(id);
+                if (id != ImdbId) return;
+                _plexPage = page;
+                StateHasChanged();
+                if (!IsSeries || _episodes.Count == 0) return;
+                var episodes = await Playback.GetPlexEpisodePagesAsync(id);
+                if (id != ImdbId) return;
+                _plexEpisodes = episodes;
+                StateHasChanged();
+            }
+            await Task.WhenAll(FromTmdbAsync(), FromPlexAsync());
         }
     }
 

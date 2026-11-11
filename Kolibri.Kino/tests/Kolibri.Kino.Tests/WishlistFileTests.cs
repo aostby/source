@@ -6,6 +6,27 @@ namespace Kolibri.Kino.Tests;
 
 public sealed class WishlistFileTests
 {
+    [Fact]
+    public void Merging_keeps_each_title_once_the_first_list_first()
+    {
+        static WishlistItem W(string title, string year, string id = "") => new() { Title = title, Year = year, ImdbId = id };
+        var uranus = new[] { W("Grindhouse", "2007", "tt0462322"), W("Heat", "1995"), W("Bosch S01E02", "2014", "tt3502248_S01E02") };
+        var local = new[]
+        {
+            W("Grindhouse (same id)", "2007", "TT0462322"),
+            W("heat", "1995", "tt0113277"),               // Uranus has it without an id
+            W("Bosch S01E02", "2014", "tt3502248_S01E02"),
+            W("Bosch S01E03", "2014", "tt3502248_S01E03"),
+            W("Heat", "1986", "tt0093164"),               // another Heat
+            W("Dune: Part Three", "2026", "tt31378509"),
+        };
+
+        var (items, added) = WishlistFile.Merge(uranus, local);
+
+        Assert.Equal(3, added);
+        Assert.Equal(["tt0462322", "", "tt3502248_S01E02", "tt3502248_S01E03", "tt0093164", "tt31378509"], items.Select(i => i.ImdbId));
+    }
+
     private static IEnumerable<(string Title, string? Year, string ImdbId, string? Type)> Rows(WishlistFileRead read) =>
         read.Items.Select(i => (i.Title, i.Year, i.ImdbId, i.Type));
 
