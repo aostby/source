@@ -445,6 +445,11 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
   <li><b>Import CSV…</b> reads a wishlist file, such as <b>Download CSV</b> on the web app's Wishlist page, so a list
       made on the web gets here without copying the whole database. Entries are taken as they are; one whose
       <b>IMDb id</b> is on the wishlist already is skipped.</li>
+  <li><b>Import from Plex</b> (next to Import CSV) puts the titles on your Plex <b>watchlist</b> ("Huskeliste" in Norwegian
+      Plex: app.plex.tv → Watchlist, the titles you saved to remember for later) on the wishlist. It needs the Plex token in
+      Settings, since the watchlist belongs to your Plex account (not to the Plex server). Left out: titles already on the
+      wishlist, titles you have on disk, and titles Plex knows no IMDb id for; the status bar says how many of each.
+      Running it again only adds what is new on the Plex watchlist.</li>
   <li>The wishlist is its own list (KinoWishlist in the database), apart from the watchlists, so a title can be on both.
       It is shared with the web app's Wishlist page.</li>
 </ul>

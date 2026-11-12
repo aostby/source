@@ -24,6 +24,9 @@ public sealed record WishlistSearch(IReadOnlyList<WishlistHit> Hits, string? Onl
 /// <param name="Invalid">Rows without a usable IMDb id.</param>
 public sealed record WishlistImport(int Added, int AlreadyThere, int Invalid);
 
+/// <summary>What importing the Plex watchlist did: titles added, already on the wishlist, on disk already, without an IMDb id.</summary>
+public sealed record PlexWatchlistImport(int Total, int Added, int AlreadyThere, int OnDisk, int WithoutImdbId);
+
 /// <summary>A wishlist entry, with whether you have the title now (in SilverScreen.db with a file that's there) and the file it is linked to, if any.</summary>
 /// <param name="InLibrary">In the library, with or without a file; without one it's still to get.</param>
 public sealed record WishlistRow(WishlistItem Item, bool InSilverScreen, string? FilePath, bool InLibrary = false);
@@ -41,8 +44,55 @@ public sealed partial class WishlistController(
     ITmdbLinks tmdb,
     IImdbIdResolver tmdbSearch,
     ILogger<WishlistController> logger,
-    Library.LibraryFiles? libraryFiles = null)
+    Library.LibraryFiles? libraryFiles = null,
+    IPlexWatchlist? plexWatchlist = null)
 {
+    /// <summary>The Plex account's watchlist ("Huskeliste") can be read: a Plex token is set.</summary>
+    public bool PlexWatchlistConfigured => plexWatchlist?.IsConfigured == true;
+
+    /// <summary>
+    /// Puts the titles on the Plex account's watchlist ("Huskeliste" in Norwegian Plex) on the wishlist, with no lookups
+    /// online: title, year and type from Plex; genre, IMDb rating and poster from the library when it has the title, else
+    /// Plex's poster. Left out: titles already on the wishlist, titles on disk (in the library with a file that's there,
+    /// as the details window's "+ Add to wishlist"), and titles Plex knows no IMDb id for.
+    /// </summary>
+    public async Task<PlexWatchlistImport> ImportPlexWatchlistAsync(CancellationToken ct = default)
+    {
+        if (plexWatchlist is not { IsConfigured: true } source)
+            throw new InvalidOperationException("No Plex token in Settings: the Plex watchlist belongs to a Plex account.");
+
+        var titles = await source.GetWatchlistAsync(ct).ConfigureAwait(false);
+        var withId = titles.Where(t => t.ImdbId is { Length: > 0 }).GroupBy(t => t.ImdbId!, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
+        var known = (await wishlist.GetAllAsync(ct).ConfigureAwait(false)).Select(w => w.ImdbId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var fresh = withId.Where(t => !known.Contains(t.ImdbId!)).ToList();
+        var onDisk = libraryFiles is null
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : await libraryFiles.WithFileAsync(fresh.Select(t => t.ImdbId!), ct).ConfigureAwait(false);
+        var toAdd = fresh.Where(t => !onDisk.Contains(t.ImdbId!)).ToList();
+        var inLibrary = await library.GetByImdbIdsAsync(toAdd.Select(t => t.ImdbId!), ct).ConfigureAwait(false);
+
+        foreach (var t in toAdd)
+        {
+            var item = inLibrary.GetValueOrDefault(t.ImdbId!);
+            await wishlist.UpsertAsync(new WishlistItem
+            {
+                ImdbId = t.ImdbId!.ToLowerInvariant(),
+                Title = item?.Title is { Length: > 0 } libraryTitle ? libraryTitle : t.Title,
+                Year = Clean(item?.Year) ?? t.Year,
+                Type = Clean(item?.Type) ?? t.Type,
+                Genre = Clean(item?.Genre),
+                ImdbRating = Clean(item?.ImdbRating),
+                Poster = Clean(item?.Poster) ?? t.Poster,
+                Added = DateTime.Now,
+            }, ct).ConfigureAwait(false);
+        }
+
+        var result = new PlexWatchlistImport(titles.Count, toAdd.Count, withId.Count - fresh.Count, fresh.Count - toAdd.Count, titles.Count - withId.Count);
+        logger.LogInformation("Plex watchlist: {Total} titles, {Added} added to the wishlist, {Already} already on it, {OnDisk} on disk, {NoId} without an IMDb id",
+            result.Total, result.Added, result.AlreadyThere, result.OnDisk, result.WithoutImdbId);
+        return result;
+    }
+
     /// <summary>
     /// "Operation Kabul, 2025" or "Operation Kabul (2025)": the title and the year. Without a comma or brackets the
     /// text is all title, so "Blade Runner 2049" stays a title.
