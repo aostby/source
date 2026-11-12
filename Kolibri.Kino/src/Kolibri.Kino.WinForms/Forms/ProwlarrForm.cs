@@ -31,6 +31,7 @@ public sealed class ProwlarrForm : AsyncForm
     private readonly Button btnUranus = TopButton("From Uranus");
     private readonly Button btnFile = TopButton("Open file…");
     private readonly Button btnLookUp = TopButton("Look up missing");
+    private readonly Button btnRemove = TopButton("Remove");
     private readonly Button btnSearch = TopButton("Search Prowlarr", gap: 24);
     private readonly Button btnGet = TopButton("Get release");
     private readonly TextBox txtManual = new() { Width = 240, Margin = new Padding(24, 4, 3, 3), PlaceholderText = "Search for, e.g. Bosch.Legacy.S01E10" };
@@ -64,7 +65,8 @@ public sealed class ProwlarrForm : AsyncForm
         StartPosition = FormStartPosition.CenterParent;
 
         var top = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(8, 8, 8, 4), WrapContents = true }; // wraps in a narrow window
-        top.Controls.AddRange([btnUranus, btnFile, btnLookUp, chkAll, chkFilter, btnSearch, btnGet, chkLeftOut, txtManual, btnManual]);
+        top.Controls.AddRange([btnUranus, btnFile, btnLookUp, btnRemove, chkAll, chkFilter, btnSearch, btnGet, chkLeftOut, txtManual, btnManual]);
+        btnRemove.Click += async (_, _) => await RemoveSelectedAsync();
         btnUranus.Click += async (_, _) => await LoadFromUranusAsync();
         btnFile.Click += async (_, _) => await OpenFileAsync();
         btnLookUp.Click += async (_, _) => await RunAsync("Looking up titles…", async ct =>
@@ -97,8 +99,19 @@ public sealed class ProwlarrForm : AsyncForm
                                     "program (double-click does the same). One bigger than " +
                                     $"{_prowlarr.Options.ConfirmAboveGb:0.#} GB asks first.");
         _toolTip.SetToolTip(chkLeftOut, "Also shows the releases Kino left out (another title, another year, quality, too few seeders …), with why.");
+        _toolTip.SetToolTip(btnRemove, "Takes the selected titles off this list, and off Kino's wishlist when they are on it. (One still in the wishlist on Uranus comes back " +
+                                       "with From Uranus until Kino on the web sends its wishlist again.) " +
+                                       "Select several with Ctrl or Shift; the Delete key does the same. Space ticks or unticks Search on the selected titles.");
 
         dgvWanted.DataSource = wantedSource;
+        // Several titles can be selected, to remove them at once.
+        dgvWanted.MultiSelect = true;
+        dgvWanted.KeyDown += async (_, e) =>
+        {
+            if (e.KeyCode != Keys.Delete || _busy || dgvWanted.IsCurrentCellInEditMode) return;
+            e.Handled = true;
+            await RemoveSelectedAsync();
+        };
         dgvReleases.DataSource = releasesSource;
         dgvWanted.Columns.Add(new DataGridViewLinkColumn
         {
@@ -179,7 +192,7 @@ public sealed class ProwlarrForm : AsyncForm
 
         btnUranus.Enabled = !_busy && _web.IsConfigured;
         btnSearch.Enabled = btnGet.Enabled = btnManual.Enabled = txtManual.Enabled = !_busy && problem is null;
-        btnFile.Enabled = btnLookUp.Enabled = chkAll.Enabled = chkFilter.Enabled = chkLeftOut.Enabled = !_busy;
+        btnFile.Enabled = btnLookUp.Enabled = btnRemove.Enabled = chkAll.Enabled = chkFilter.Enabled = chkLeftOut.Enabled = !_busy;
         _toolTip.SetToolTip(btnUranus, _web.IsConfigured
             ? "Fetches the newest wishlist Kino on the web sent to Uranus (problembar.net), together with Kino's own wishlist: each title once."
             : "Set the Uranus URL and token in Settings (category Uranus) to fetch the wishlist Kino on the web sent there.");
@@ -305,6 +318,70 @@ public sealed class ProwlarrForm : AsyncForm
         wantedSource.SetRows(chkFilter.Checked ? _rows.Where(r => !r.Have) : _rows);
         if (selected is not null && wantedSource.IndexOf(selected) >= 0) Select(selected);
         else ShowReleases();
+    }
+
+    /// <summary>
+    /// Remove: the selected titles off this list, and off Kino's wishlist when they are on it. A title that is still in the
+    /// wishlist on Uranus comes back with From Uranus until Kino on the web sends its list again. Several at once ask first.
+    /// </summary>
+    private async Task RemoveSelectedAsync()
+    {
+        var selected = dgvWanted.SelectedRows.Cast<DataGridViewRow>()
+            .Select(r => r.DataBoundItem).OfType<WantedRow>()
+            .DefaultIfEmpty(dgvWanted.CurrentItem() as WantedRow)
+            .OfType<WantedRow>()
+            .Distinct()
+            .ToList();
+        if (selected.Count == 0)
+        {
+            ShowStatus("Select the titles to remove (Ctrl or Shift for several).");
+            return;
+        }
+        if (selected.Count > 1 && MessageBox.Show(this,
+                $"Remove {selected.Count} titles from the list, and from Kino's wishlist where they are on it?",
+                "Remove", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            return;
+
+        var offWishlist = 0;
+        await RunAsync(selected.Count == 1 ? $"Removing {selected[0].Title}…" : $"Removing {selected.Count} titles…", async ct =>
+        {
+            foreach (var row in selected)
+            {
+                _rows.Remove(row);
+                if (!string.IsNullOrEmpty(row.Item.ImdbId) && await _wishlist.RemoveAsync(row.Item.ImdbId, ct)) offWishlist++;
+            }
+        });
+        if (IsGone) return;
+        ShowWanted();
+        ShowStatus((selected.Count == 1 ? $"Removed {selected[0].Title} from the list" : $"Removed {selected.Count} titles from the list") +
+                   (offWishlist > 0 ? $" ({offWishlist} also from Kino's wishlist)." : "."));
+    }
+
+    /// <summary>
+    /// Space in the list ticks or unticks Search on the selected rows: unticks them all when they are all ticked, else
+    /// ticks them all. Taken before the grid sees it, which would only flip the current cell, and only in the tick column.
+    /// </summary>
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == Keys.Space && dgvWanted.ContainsFocus && !_busy && !dgvWanted.IsCurrentCellInEditMode && ToggleSearch()) return true;
+        return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    private bool ToggleSearch()
+    {
+        var selected = dgvWanted.SelectedRows.Cast<DataGridViewRow>()
+            .Select(r => r.DataBoundItem).OfType<WantedRow>()
+            .DefaultIfEmpty(dgvWanted.CurrentItem() as WantedRow)
+            .OfType<WantedRow>()
+            .Distinct()
+            .ToList();
+        if (selected.Count == 0) return false;
+        var tick = !selected.All(r => r.Search);
+        foreach (var row in selected) row.Search = tick;
+        dgvWanted.Refresh();
+        ShowStatus($"{(tick ? "Ticked" : "Unticked")} {(selected.Count == 1 ? selected[0].Title : $"{selected.Count} titles")} for Search; " +
+                   $"{_rows.Count(r => r.Search)} ticked in all.");
+        return true;
     }
 
     /// <summary>Select all: every title you don't have ticked, or (unticked) no title, to pick them one by one.</summary>
@@ -628,6 +705,8 @@ public sealed class ProwlarrForm : AsyncForm
             else if (column.DataPropertyName == nameof(WantedRow.Found)) column.FillWeight = 120;
             else if (column.Name != ImdbColumn) column.FillWeight = 60;
             if (column.DataPropertyName == nameof(WantedRow.Released)) column.DefaultCellStyle.Format = "yyyy-MM-dd";
+            // Tick boxes aren't sortable by default; In SilverScreen is, to gather the green ones (or those to get).
+            if (column.DataPropertyName == nameof(WantedRow.Have)) column.SortMode = DataGridViewColumnSortMode.Automatic;
         }
         if (dgvWanted.Columns[ImdbColumn] is { } imdb) imdb.DisplayIndex = dgvWanted.Columns.Count - 1;
     }
