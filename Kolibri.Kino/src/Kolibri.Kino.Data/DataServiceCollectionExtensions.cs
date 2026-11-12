@@ -71,6 +71,8 @@ public static class DataServiceCollectionExtensions
         services.AddSingleton<IMediaServerLibrary>(sp => sp.GetRequiredService<PlexLibrary>());
         services.AddSingleton<IMediaServerPlaylists>(sp => sp.GetRequiredService<PlexLibrary>());
         services.AddSingleton<IMediaServerSeries>(sp => sp.GetRequiredService<PlexLibrary>());
+        // The Plex account's watchlist ("Huskeliste") on plex.tv, for importing it into the wishlist.
+        services.AddSingleton<IPlexWatchlist, PlexWatchlist>();
 
         return services;
     }

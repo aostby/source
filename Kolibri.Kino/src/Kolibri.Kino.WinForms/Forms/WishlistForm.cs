@@ -19,6 +19,9 @@ public partial class WishlistForm : AsyncForm, IWritesToExcel
     private readonly IServiceProvider _services;
     private IReadOnlyList<WishlistRow> _rows = [];
 
+    /// <summary>"Import from Plex", after "Import CSV": the Plex account's watchlist ("Huskeliste").</summary>
+    private readonly Button btnImportPlex = new() { AutoSize = true, Text = "Import from Plex", UseVisualStyleBackColor = true };
+
     public WishlistForm(WishlistController wishlist, IServiceProvider services)
     {
         _wishlist = wishlist;
@@ -32,6 +35,16 @@ public partial class WishlistForm : AsyncForm, IWritesToExcel
             (btnImdb, "Opens the selected title's page on IMDb."),
             (btnImport, "Reads a wishlist CSV (e.g. Download CSV on the web app's Wishlist page) and adds its entries as they are. " +
                         "Entries whose IMDb id is on the wishlist already are skipped."));
+        btnImportPlex.Margin = btnImport.Margin;
+        btnImportPlex.Padding = btnImport.Padding;
+        btnImportPlex.Enabled = _wishlist.PlexWatchlistConfigured;
+        btnImportPlex.Click += btnImportPlex_Click;
+        listButtons.Controls.Add(btnImportPlex);
+        listButtons.Controls.SetChildIndex(btnImportPlex, listButtons.Controls.GetChildIndex(btnImport) + 1);
+        this.Describe((btnImportPlex, _wishlist.PlexWatchlistConfigured
+            ? "Puts the titles on your Plex watchlist (\"Huskeliste\" in Norwegian Plex, app.plex.tv → Watchlist) on this wishlist. " +
+              "Titles already on it, or on disk already, are left out."
+            : "Needs your Plex token in Settings: the Plex watchlist (\"Huskeliste\") belongs to your Plex account."));
         // Columns come from the row types; set here because the WinForms designer writes AutoGenerateColumns = false.
         dgvHits.AutoGenerateColumns = dgvWishlist.AutoGenerateColumns = true;
         // An "IMDb" link on each row, to check in a window of its own that it's the right title.
@@ -191,6 +204,18 @@ public partial class WishlistForm : AsyncForm, IWritesToExcel
         await LoadListAsync();
         ShowStatus($"Imported {result.Added} entr{(result.Added == 1 ? "y" : "ies")} from {Path.GetFileName(dialog.FileName)}; " +
                    $"{result.AlreadyThere} already on the wishlist" + (result.Invalid > 0 ? $", {result.Invalid} without an IMDb id." : "."));
+    }
+
+    /// <summary>The Plex account's watchlist ("Huskeliste") onto this wishlist, without titles already on it or on disk.</summary>
+    private async void btnImportPlex_Click(object sender, EventArgs e)
+    {
+        PlexWatchlistImport? result = null;
+        await RunAsync("Reading your Plex watchlist…", async ct => result = await _wishlist.ImportPlexWatchlistAsync(ct));
+        if (result is null || IsGone) return;
+        await LoadListAsync();
+        ShowStatus($"Plex watchlist: {result.Total} title(s). Added {result.Added}; {result.AlreadyThere} already on the wishlist" +
+                   (result.OnDisk > 0 ? $", {result.OnDisk} on disk already" : "") +
+                   (result.WithoutImdbId > 0 ? $", {result.WithoutImdbId} without an IMDb id (left out)." : "."));
     }
 
     private void btnImdb_Click(object sender, EventArgs e)
