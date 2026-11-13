@@ -17,7 +17,8 @@ public enum LabelRenderMode
 /// <summary>Resultatet av å tegne en etikett.</summary>
 /// <param name="TextOverflow">True dersom teksten ikke fikk plass.</param>
 /// <param name="FontSize">Skriftstørrelsen (punkt) som faktisk ble brukt, etter eventuell krymping.</param>
-public readonly record struct LabelDrawResult(bool TextOverflow, float FontSize);
+/// <param name="InkBounds">Området som faktisk får tekst eller bilde, i mm (tomt om etiketten er tom).</param>
+public readonly record struct LabelDrawResult(bool TextOverflow, float FontSize, RectangleF InkBounds = default);
 
 /// <summary>
 /// Tegner en etikett. Forutsetter at <see cref="Graphics.PageUnit"/> er
@@ -39,6 +40,7 @@ public static class LabelRenderer
             RectangleF content = sheet.GetContentRect(label);
             RectangleF textArea = content;
             RectangleF? imageArea = null;
+            RectangleF imageInk = RectangleF.Empty;
 
             Image? image = design.Image;
             if (image is not null)
@@ -58,10 +60,12 @@ public static class LabelRenderer
                     textArea = new RectangleF(content.X, content.Y, textWidth, content.Height);
                 }
 
-                g.DrawImage(image, FitInto(image.Size, imageArea.Value));
+                imageInk = FitInto(image.Size, imageArea.Value);
+                g.DrawImage(image, imageInk);
             }
 
             LabelDrawResult result = DrawText(g, design, textArea);
+            result = result with { InkBounds = Union(result.InkBounds, imageInk) };
 
             if (mode == LabelRenderMode.Screen)
             {
@@ -139,12 +143,19 @@ public static class LabelRenderer
             using var brush = new SolidBrush(design.TextColor);
             g.FillPath(brush, path);
             g.Restore(state);
-            return new LabelDrawResult(!fits, size);
+            return new LabelDrawResult(!fits, size, RectangleF.Intersect(path.GetBounds(), area));
         }
         finally
         {
             path.Dispose();
         }
+    }
+
+    private static RectangleF Union(RectangleF a, RectangleF b)
+    {
+        if (a.Width <= 0f || a.Height <= 0f) return b;
+        if (b.Width <= 0f || b.Height <= 0f) return a;
+        return RectangleF.Union(a, b);
     }
 
     private const float MinFontSize = 4f;

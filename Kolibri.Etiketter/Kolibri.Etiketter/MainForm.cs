@@ -32,6 +32,10 @@ public sealed class MainForm : Form
     private readonly CheckBox _printGuides = new();
     private readonly NumericUpDown _offsetX = new();
     private readonly NumericUpDown _offsetY = new();
+    private readonly ComboBox _printer = new();
+    private readonly Label _printerInfo = new();
+    private readonly Label _printerAdvice = new();
+    private readonly Label _marginWarning = new();
 
     public MainForm()
     {
@@ -55,6 +59,9 @@ public sealed class MainForm : Form
     /// <summary>Etikettarket som er valgt.</summary>
     private LabelSheet Sheet => _sheetMap.Sheet;
 
+    /// <summary>Skriveren som er valgt i listen, eller null om ingen skrivere er installert.</summary>
+    private string? SelectedPrinter => _printer.SelectedItem as string;
+
     // ---------------------------------------------------------------- oppsett av skjermbildet
 
     private void BuildMenu()
@@ -69,6 +76,7 @@ public sealed class MainForm : Form
         file.DropDownItems.Add(new ToolStripSeparator());
         file.DropDownItems.Add(new ToolStripMenuItem("&Forhåndsvis ark...", null, (_, _) => ShowSheetPreview()));
         file.DropDownItems.Add(new ToolStripMenuItem("Skriv &ut...", null, (_, _) => PrintLabels()) { ShortcutKeys = Keys.Control | Keys.P });
+        file.DropDownItems.Add(new ToolStripMenuItem("&Kalibrer skriver...", null, (_, _) => CalibratePrinter()));
         file.DropDownItems.Add(new ToolStripSeparator());
         file.DropDownItems.Add(new ToolStripMenuItem("&Avslutt", null, (_, _) => Close()));
 
@@ -121,6 +129,7 @@ public sealed class MainForm : Form
         {
             _overflowLabel.Visible = _preview.TextOverflow;
             UpdateFontInfo();
+            UpdateMarginWarning();
         };
 
         var textCaption = new Label
@@ -257,7 +266,11 @@ public sealed class MainForm : Form
 
         _sheetMap.Size = new Size(120, 170);
         _sheetMap.Margin = new Padding(3, 3, 12, 3);
-        _sheetMap.SelectionChanged += (_, _) => UpdateSheetInfo();
+        _sheetMap.SelectionChanged += (_, _) =>
+        {
+            UpdateSheetInfo();
+            UpdateMarginWarning();
+        };
 
         var selectAll = new Button { Text = "Velg alle", AutoSize = true };
         selectAll.Click += (_, _) => _sheetMap.SelectAll();
@@ -294,7 +307,38 @@ public sealed class MainForm : Form
             offset.DecimalPlaces = 1;
             offset.Increment = 0.1M;
             offset.Width = 60;
+            offset.ValueChanged += (_, _) =>
+            {
+                if (_loading) return;
+                _settings.SetOffset(SelectedPrinter, (float)_offsetX.Value, (float)_offsetY.Value);
+                UpdateMarginWarning();
+            };
         }
+
+        _printer.DropDownStyle = ComboBoxStyle.DropDownList;
+        _printer.Width = 290;
+        _printer.DropDownWidth = 420;
+        _printer.SelectedIndexChanged += (_, _) =>
+        {
+            if (_loading) return;
+            ShowPrinter();
+        };
+
+        foreach (Label info in new[] { _printerInfo, _printerAdvice })
+        {
+            info.AutoSize = true;
+            info.MaximumSize = new Size(290, 0);
+            info.ForeColor = SystemColors.GrayText;
+            info.Margin = new Padding(3, 0, 3, 3);
+        }
+
+        _marginWarning.AutoSize = true;
+        _marginWarning.MaximumSize = new Size(290, 0);
+        _marginWarning.ForeColor = Color.Firebrick;
+        _marginWarning.Visible = false;
+
+        var calibrate = new Button { Text = "Kalibrer skriver...", AutoSize = true };
+        calibrate.Click += (_, _) => CalibratePrinter();
 
         _previewButton.Text = "Forhåndsvis ark...";
         _previewButton.AutoSize = true;
@@ -304,7 +348,7 @@ public sealed class MainForm : Form
         _printButton.Font = new Font(Font, FontStyle.Bold);
         _printButton.Click += (_, _) => PrintLabels();
 
-        var offsetHint = Caption("Justering flytter alle etiketter dersom skriveren treffer litt skjevt.");
+        var offsetHint = Caption("Justeringen huskes for hver skriver og flytter alle etiketter dersom skriveren treffer litt skjevt.");
         offsetHint.MaximumSize = new Size(290, 0);
         offsetHint.ForeColor = SystemColors.GrayText;
 
@@ -314,8 +358,14 @@ public sealed class MainForm : Form
             hint,
             Row(_sheetMap, positionColumn),
             _printGuides,
+            Caption("Skriver:"),
+            _printer,
+            _printerInfo,
             Row(Caption("Justering mm, høyre:"), _offsetX, Caption("ned:"), _offsetY),
             offsetHint,
+            calibrate,
+            _printerAdvice,
+            _marginWarning,
             Row(_previewButton, _printButton));
     }
 
@@ -399,14 +449,136 @@ public sealed class MainForm : Form
             _sheetMap.SelectedIndices = positions.Select(p => p - 1).ToArray();
             _sheetCount.Value = Math.Clamp(_settings.SheetCount, 1, (int)_sheetCount.Maximum);
             _printGuides.Checked = _settings.PrintGuides;
-            _offsetX.Value = (decimal)Math.Clamp(_settings.OffsetXMm, -10f, 10f);
-            _offsetY.Value = (decimal)Math.Clamp(_settings.OffsetYMm, -10f, 10f);
+            LoadPrinters();
         }
         finally
         {
             _loading = false;
         }
+        ShowPrinter();
         UpdateSheetInfo();
+    }
+
+    /// <summary>Fyller skriverlisten og velger skriveren som sist ble brukt, ellers Windows' standardskriver.</summary>
+    private void LoadPrinters()
+    {
+        _printer.Items.Clear();
+        foreach (string name in PrinterSettings.InstalledPrinters)
+            _printer.Items.Add(name);
+        if (!SelectPrinterInList(_settings.PrinterName) && !SelectPrinterInList(PrinterInfo.DefaultPrinterName) && _printer.Items.Count > 0)
+            _printer.SelectedIndex = 0;
+    }
+
+    private bool SelectPrinterInList(string? name)
+    {
+        if (string.IsNullOrEmpty(name)) return false;
+        for (int i = 0; i < _printer.Items.Count; i++)
+        {
+            if (string.Equals((string)_printer.Items[i]!, name, StringComparison.OrdinalIgnoreCase))
+            {
+                _printer.SelectedIndex = i;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>Viser justeringen, egenskapene og rådene for skriveren som er valgt.</summary>
+    private void ShowPrinter()
+    {
+        PrinterProfile profile = _settings.GetProfile(SelectedPrinter);
+        bool wasLoading = _loading;
+        _loading = true;
+        try
+        {
+            _offsetX.Value = (decimal)Math.Clamp(profile.OffsetXMm, -10f, 10f);
+            _offsetY.Value = (decimal)Math.Clamp(profile.OffsetYMm, -10f, 10f);
+        }
+        finally
+        {
+            _loading = wasLoading;
+        }
+        if (SelectedPrinter is not null)
+            _settings.PrinterName = SelectedPrinter;
+        UpdatePrinterInfo();
+        UpdateMarginWarning();
+    }
+
+    private void UpdatePrinterInfo()
+    {
+        if (SelectedPrinter is not { } name)
+        {
+            _printerInfo.Text = "Ingen skrivere er installert.";
+            _printerAdvice.Text = "";
+            return;
+        }
+        PrinterInfo info = PrinterInfo.Get(name);
+        _printerAdvice.Text = "Tips: " + (info.Model?.Advice ?? PrinterModel.GenericAdvice);
+        if (!info.IsValid)
+        {
+            _printerInfo.Text = "Skriveren svarer ikke akkurat nå.";
+            return;
+        }
+        PrinterProfile profile = _settings.GetProfile(name);
+        var parts = new List<string>();
+        if (info.Model is { } model) parts.Add(model.Name);
+        parts.Add(info.SupportsColor ? "skriver i farger" : "svart-hvitt");
+        parts.Add(info.Margins.IsZero ? "ingen kant" : $"kant {info.Margins}");
+        parts.Add(profile.CalibratedAt is { } at ? $"kalibrert {at:d}" : "ikke kalibrert");
+        _printerInfo.Text = string.Join(" · ", parts);
+    }
+
+    /// <summary>
+    /// Antall valgte etiketter der tekst eller bilde havner i skriverens ikke-utskrivbare kant, og blir kuttet.
+    /// </summary>
+    private int CountClippedLabels(out PrinterMarginsMm margins)
+    {
+        margins = default;
+        RectangleF ink = _preview.InkBounds;
+        if (SelectedPrinter is not { } name || ink.Width <= 0f || ink.Height <= 0f)
+            return 0;
+        PrinterInfo info = PrinterInfo.Get(name);
+        if (!info.IsValid || info.Margins.IsZero)
+            return 0;
+        margins = info.Margins;
+        RectangleF printable = margins.PrintableArea;
+        printable.Inflate(0.05f, 0.05f);
+        int clipped = 0;
+        foreach (int index in _sheetMap.SelectedIndices)
+        {
+            RectangleF label = Sheet.GetLabelRect(index, (float)_offsetX.Value, (float)_offsetY.Value);
+            var content = new RectangleF(label.X + ink.X, label.Y + ink.Y, ink.Width, ink.Height);
+            if (!printable.Contains(content))
+                clipped++;
+        }
+        return clipped;
+    }
+
+    private void UpdateMarginWarning()
+    {
+        int clipped = CountClippedLabels(out PrinterMarginsMm margins);
+        _marginWarning.Visible = clipped > 0;
+        if (clipped > 0)
+        {
+            string which = clipped == 1 ? "1 etikett har" : $"{clipped} etiketter har";
+            _marginWarning.Text = $"{which} tekst eller bilde i skriverens ikke-utskrivbare kant ({margins}), " +
+                "og blir kuttet der. Velg bort kantrutene eller gjør teksten eller bildet mindre.";
+        }
+    }
+
+    private void CalibratePrinter()
+    {
+        if (SelectedPrinter is not { } name)
+        {
+            MessageBox.Show(this, "Ingen skrivere er installert.", "Kalibrer skriver", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+        using var form = new CalibrationForm(name, Sheet, _settings.GetProfile(name));
+        if (form.ShowDialog(this) != DialogResult.OK)
+            return;
+        _settings.SetOffset(name, form.OffsetXMm, form.OffsetYMm, calibrated: true);
+        ShowPrinter();
+        _settings.Save();
     }
 
     private void SaveUiToSettings()
@@ -415,8 +587,11 @@ public sealed class MainForm : Form
         _settings.SelectedPositions = _sheetMap.SelectedIndices.Select(i => i + 1).ToList();
         _settings.SheetCount = (int)_sheetCount.Value;
         _settings.PrintGuides = _printGuides.Checked;
-        _settings.OffsetXMm = (float)_offsetX.Value;
-        _settings.OffsetYMm = (float)_offsetY.Value;
+        if (SelectedPrinter is { } printer)
+        {
+            _settings.PrinterName = printer;
+            _settings.SetOffset(printer, (float)_offsetX.Value, (float)_offsetY.Value);
+        }
         _settings.Save();
     }
 
@@ -426,6 +601,7 @@ public sealed class MainForm : Form
         _sheetMap.Sheet = sheet;
         _preview.Sheet = sheet;
         UpdateTitle();
+        UpdateMarginWarning();
     }
 
     private void DesignChanged()
@@ -652,7 +828,7 @@ public sealed class MainForm : Form
             (float)_offsetX.Value,
             (float)_offsetY.Value,
             _printGuides.Checked);
-        job.TrySelectPrinter(_settings.PrinterName);
+        job.TrySelectPrinter(SelectedPrinter);
         job.ApplyPageSettings();
         return job;
     }
@@ -707,8 +883,22 @@ public sealed class MainForm : Form
 
         // Valg av annen skriver i dialogen nullstiller papirinnstillingene, så de settes på nytt.
         job.ApplyPageSettings();
-        _settings.PrinterName = job.Document.PrinterSettings.PrinterName;
+
+        // Ble en annen skriver valgt i dialogen, brukes den skriverens justering.
+        string chosen = job.Document.PrinterSettings.PrinterName;
+        if (!string.Equals(chosen, SelectedPrinter, StringComparison.OrdinalIgnoreCase) && SelectPrinterInList(chosen))
+        {
+            job.OffsetXMm = (float)_offsetX.Value;
+            job.OffsetYMm = (float)_offsetY.Value;
+        }
         SaveUiToSettings();
+
+        int clipped = CountClippedLabels(out PrinterMarginsMm margins);
+        if (clipped > 0 && MessageBox.Show(this,
+                $"{clipped} av {_sheetMap.SelectedCount} etiketter har tekst eller bilde i skriverens ikke-utskrivbare kant ({margins}). " +
+                "Det som havner der blir ikke skrevet ut.\n\nVil du skrive ut likevel?",
+                "Skriv ut", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            return;
 
         try
         {

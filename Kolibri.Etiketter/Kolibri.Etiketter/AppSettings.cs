@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Kolibri.Etiketter;
 
@@ -17,9 +18,20 @@ public sealed class AppSettings
     /// <summary>Siste etikett lagres automatisk her når programmet lukkes.</summary>
     public static string LastSessionPath => Path.Combine(Folder, "siste.etikett");
 
+    /// <summary>Skriveren som sist ble valgt.</summary>
     public string? PrinterName { get; set; }
+
+    /// <summary>Justering per skriver, med skrivernavnet i Windows som nøkkel.</summary>
+    public Dictionary<string, PrinterProfile> Printers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Felles justering fra før hver skriver fikk sin egen. Flyttes til <see cref="Printers"/> ved lasting.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public float OffsetXMm { get; set; }
+
+    /// <inheritdoc cref="OffsetXMm"/>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public float OffsetYMm { get; set; }
+
     public bool PrintGuides { get; set; }
 
     /// <summary>Etikettarket (<see cref="LabelSheet.Id"/>). Tomt betyr Lyreco 24 per ark, som før arkvalget kom.</summary>
@@ -37,7 +49,11 @@ public sealed class AppSettings
         try
         {
             if (File.Exists(SettingsPath))
-                return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings();
+            {
+                AppSettings settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings();
+                settings.MigrateGlobalOffset();
+                return settings;
+            }
         }
         catch (Exception)
         {
@@ -57,6 +73,44 @@ public sealed class AppSettings
         {
             // Innstillinger er ikke kritiske.
         }
+    }
+
+    /// <summary>Justeringen for <paramref name="printerName"/>. Ukjente skrivere starter på 0.</summary>
+    public PrinterProfile GetProfile(string? printerName) =>
+        !string.IsNullOrEmpty(printerName) && Printers.TryGetValue(printerName, out PrinterProfile? profile) ? profile : new PrinterProfile();
+
+    /// <summary>Lagrer justeringen for <paramref name="printerName"/>.</summary>
+    public void SetOffset(string? printerName, float offsetXMm, float offsetYMm, bool calibrated = false)
+    {
+        if (string.IsNullOrEmpty(printerName))
+            return;
+        if (!Printers.TryGetValue(printerName, out PrinterProfile? profile))
+        {
+            if (offsetXMm == 0f && offsetYMm == 0f && !calibrated)
+                return;
+            profile = new PrinterProfile();
+            Printers[printerName] = profile;
+        }
+        profile.OffsetXMm = offsetXMm;
+        profile.OffsetYMm = offsetYMm;
+        if (calibrated)
+            profile.CalibratedAt = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Før hadde programmet én felles justering. Den gjaldt skriveren som sist ble brukt,
+    /// så den flyttes dit (eller til standardskriveren om ingen er brukt ennå).
+    /// </summary>
+    private void MigrateGlobalOffset()
+    {
+        Printers = new Dictionary<string, PrinterProfile>(Printers ?? [], StringComparer.OrdinalIgnoreCase);
+        if (OffsetXMm == 0f && OffsetYMm == 0f)
+            return;
+        string? printer = string.IsNullOrEmpty(PrinterName) ? PrinterInfo.DefaultPrinterName : PrinterName;
+        if (printer is not null && !Printers.ContainsKey(printer))
+            Printers[printer] = new PrinterProfile { OffsetXMm = OffsetXMm, OffsetYMm = OffsetYMm };
+        OffsetXMm = 0f;
+        OffsetYMm = 0f;
     }
 
     public static void EnsureFolder() => Directory.CreateDirectory(Folder);
