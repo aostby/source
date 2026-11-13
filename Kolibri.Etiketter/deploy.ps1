@@ -17,7 +17,7 @@ $staging = Join-Path $PSScriptRoot 'publish\_staging'
 if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
 
 dotnet publish $project -c Release -r win-x64 --self-contained `
-    -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $staging
+    -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o $staging
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish feilet ($LASTEXITCODE)" }
 
 if (Get-Process Kolibri.Etiketter -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$Target*" }) {
