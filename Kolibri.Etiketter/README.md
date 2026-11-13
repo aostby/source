@@ -1,6 +1,7 @@
 # Kolibri.Etiketter
 
-Program for å lage og skrive ut etiketter på A4-etikettark, laget for Lyreco 24 per ark (70 x 37 mm).
+Program for å lage og skrive ut etiketter på A4-etikettark, laget for Lyreco 24 per ark (70 x 37 mm)
+og Lyreco 8 per ark (105 x 74 mm).
 Flere ark kan velges, se **Etikettark** under. Laget i C# WinForms (.NET 10).
 
 ## Kom i gang
@@ -9,8 +10,9 @@ Flere ark kan velges, se **Etikettark** under. Laget i C# WinForms (.NET 10).
 3. Velg skrift, størrelse, stil og farge med **Velg skrift...**, og velg **Sentrert** eller **Venstrestilt**.
 4. Legg til et bilde med **Legg til bilde...**, ved å dra en bildefil inn på etiketten, eller via **Rediger > Lim inn bilde**.
    Bildet legges til venstre og får 1/3 av bredden, og teksten brytes ved siden av. Bredde og side kan endres.
+   Nye etiketter får en diskett som standardbilde (tegnet i programmet). Fjern eller bytt den som et vanlig bilde.
 5. Velg etikettark, hvilke posisjoner på arket som skal skrives ut, og hvor mange ark (se under).
-6. Velg skriver under **Utskrift > Skriver** (se **Skrivere** under).
+6. Velg skriver under **Utskrift > Skriver**, eller la **Windows' standardskriver** stå (se **Skrivere** under).
 7. **Forhåndsvis ark...** viser hele A4-arket. **Skriv ut...** åpner Windows' skriverdialog, der du kan velge
    HP Color Laser 150nw, HP LaserJet Pro M402dne, en annen skriver eller **Microsoft Print to PDF** for å kontrollere resultatet først.
 
@@ -22,11 +24,13 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
 | Lyreco, Avery Zweckform 3474 (standard) | 70 × 37 mm | 3 × 8 = 24 | 0,5 / 0 mm | ingen |
 | Avery L7160 | 63,5 × 38,1 mm | 3 × 7 = 21 | 15,15 / 7,21 mm | 2,54 mm i bredden |
 | Herma 4360, Herma 4453 | 70 × 36 mm | 3 × 8 = 24 | 4,5 / 0 mm | ingen |
+| Lyreco 8 per ark, Avery Zweckform 3427 | 105 × 74 mm | 2 × 4 = 8 | 0,5 / 0 mm | ingen |
 | Avery Zweckform 3651 | 52,5 × 29,7 mm | 4 × 10 = 40 | 0 / 0 mm | ingen |
 | Avery L7651 | 38,1 × 21,2 mm | 5 × 13 = 65 | 10,7 / 4,75 mm | 2,5 mm i bredden |
 | Avery L7780 (runde) | Ø 40 mm | 4 × 6 = 24 | 13,5 / 16 mm | 6 mm begge veier |
 
-- Etiketten på skjermen og miniatyrarket følger arket. Bytter du ark, velges alle etikettene på det nye arket.
+- Etiketten på skjermen, miniatyrarket, utskriften, kalibreringsarket og varselet om skriverens kant følger arket.
+- Valget av posisjoner huskes for hvert ark. Første gang et ark velges, er alle etikettene på det valgt.
 - På runde etiketter tegnes bilde og tekst i et liggende felt inni sirkelen (stiplet blå linje).
 - Arkene kommer fra etikettverktøyet på nyttig.web.app.
 
@@ -57,6 +61,10 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
   **Kalibrer skriver** (se under).
 
 ## Skrivere
+Du trenger ikke vite hvilken skriver du har: første valg i listen er **Windows' standardskriver**, og kant,
+farger og A4 leses da fra skriverens driver, med justering 0 til skriveren er kalibrert. Det samme gjelder
+skrivere programmet ikke kjenner. Modellene i tabellen under gir bare et navn og noen råd.
+
 Hver skriver har sin egen justering, som huskes og brukes automatisk når skriveren velges, enten i listen
 **Skriver** eller i Windows' skriverdialog. Under listen står det hva programmet vet om skriveren: modell,
 farger eller svart-hvitt, skriverens ikke-utskrivbare kant og om den er kalibrert.
@@ -87,9 +95,14 @@ farger eller svart-hvitt, skriverens ikke-utskrivbare kant og om den er kalibrer
 
 ## Filer
 - Etiketter lagres som `.etikett` (JSON med bildet innebygd) via **Fil > Lagre**.
-- Siste etikett og innstillinger (skriver, justering per skriver, etikettark, valgte posisjoner, antall ark) huskes i `%AppData%\Kolibri.Etiketter`.
+- Siste etikett og innstillinger (skriver, justering per skriver, etikettark, valgte posisjoner per ark, antall ark) huskes i `%AppData%\Kolibri.Etiketter`.
   Innstillinger fra den tidligere mappen `%AppData%\Etikettprogram` kopieres over automatisk første gang.
 - **Hjelp > Om** viser denne beskrivelsen inne i programmet.
+
+## Release
+`deploy.ps1` bygger én selvstendig exe (win-x64, trenger ikke .NET installert) og kopierer den til
+`\\Greenlantern\apps\RELEASE\Kolibri.Etiketter`. Andre filer i mappen røres ikke.
+Lukk programmet der før du kjører skriptet. `.\deploy.ps1 -Target .\publish` bygger lokalt i stedet.
 
 ## Kode
 Alt ligger i namespace `Kolibri.Etiketter`.
@@ -104,6 +117,7 @@ Alt ligger i namespace `Kolibri.Etiketter`.
 | `PrinterProfiles.cs` | Justering per skriver, kjente skrivermodeller, farger og ikke-utskrivbar kant |
 | `CalibrationPrintJob.cs` | Kalibreringsarket |
 | `CalibrationForm.cs` | **Kalibrer skriver**, regner ut justeringen fra målene |
+| `FloppyDiskImage.cs` | Disketten som er standardbilde på nye etiketter, tegnet med GDI+ |
 | `LabelPrintJob.cs` | Utskrift, A4 uten marger, kompenserer for skriverens ikke-utskrivbare kant |
 | `AppSettings.cs` | Innstillinger som huskes mellom hver gang programmet startes |
 | `AboutForm.cs` | **Hjelp > Om**, viser README.md (lagt inn i programmet) |

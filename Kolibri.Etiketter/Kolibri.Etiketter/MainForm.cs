@@ -59,8 +59,18 @@ public sealed class MainForm : Form
     /// <summary>Etikettarket som er valgt.</summary>
     private LabelSheet Sheet => _sheetMap.Sheet;
 
-    /// <summary>Skriveren som er valgt i listen, eller null om ingen skrivere er installert.</summary>
-    private string? SelectedPrinter => _printer.SelectedItem as string;
+    /// <summary>
+    /// Skriveren som er valgt i listen. «Windows' standardskriver» gir standardskriveren slik den er nå.
+    /// Null om ingen skrivere er installert.
+    /// </summary>
+    private string? SelectedPrinter => _printer.SelectedItem is PrinterChoice choice ? choice.Name ?? PrinterInfo.DefaultPrinterName : null;
+
+    /// <summary>Et valg i skriverlisten. <see cref="Name"/> er null for «Windows' standardskriver».</summary>
+    private sealed record PrinterChoice(string? Name)
+    {
+        public override string ToString() =>
+            Name ?? $"Windows' standardskriver ({PrinterInfo.DefaultPrinterName ?? "ingen"})";
+    }
 
     // ---------------------------------------------------------------- oppsett av skjermbildet
 
@@ -261,6 +271,7 @@ public sealed class MainForm : Form
         _sheetType.SelectedIndexChanged += (_, _) =>
         {
             if (_loading || _sheetType.SelectedItem is not LabelSheet sheet) return;
+            RememberSelection();
             ShowSheet(sheet);
         };
 
@@ -445,8 +456,6 @@ public sealed class MainForm : Form
             LabelSheet sheet = LabelSheet.FindById(_settings.SheetId);
             _sheetType.SelectedItem = sheet;
             ShowSheet(sheet);
-            IEnumerable<int> positions = _settings.SelectedPositions ?? Enumerable.Range(1, sheet.LabelsPerSheet);
-            _sheetMap.SelectedIndices = positions.Select(p => p - 1).ToArray();
             _sheetCount.Value = Math.Clamp(_settings.SheetCount, 1, (int)_sheetCount.Maximum);
             _printGuides.Checked = _settings.PrintGuides;
             LoadPrinters();
@@ -463,9 +472,14 @@ public sealed class MainForm : Form
     private void LoadPrinters()
     {
         _printer.Items.Clear();
+        if (PrinterSettings.InstalledPrinters.Count == 0)
+            return;
+        // Første valg: Windows' standardskriver. Da trenger man ikke vite hvilken skriver man har;
+        // alt (kant, farger, A4) leses fra driveren, og justeringen er 0 til skriveren er kalibrert.
+        _printer.Items.Add(new PrinterChoice(null));
         foreach (string name in PrinterSettings.InstalledPrinters)
-            _printer.Items.Add(name);
-        if (!SelectPrinterInList(_settings.PrinterName) && !SelectPrinterInList(PrinterInfo.DefaultPrinterName) && _printer.Items.Count > 0)
+            _printer.Items.Add(new PrinterChoice(name));
+        if (!SelectPrinterInList(_settings.PrinterName))
             _printer.SelectedIndex = 0;
     }
 
@@ -474,7 +488,7 @@ public sealed class MainForm : Form
         if (string.IsNullOrEmpty(name)) return false;
         for (int i = 0; i < _printer.Items.Count; i++)
         {
-            if (string.Equals((string)_printer.Items[i]!, name, StringComparison.OrdinalIgnoreCase))
+            if (_printer.Items[i] is PrinterChoice { Name: { } item } && string.Equals(item, name, StringComparison.OrdinalIgnoreCase))
             {
                 _printer.SelectedIndex = i;
                 return true;
@@ -498,8 +512,7 @@ public sealed class MainForm : Form
         {
             _loading = wasLoading;
         }
-        if (SelectedPrinter is not null)
-            _settings.PrinterName = SelectedPrinter;
+        _settings.PrinterName = (_printer.SelectedItem as PrinterChoice)?.Name;
         UpdatePrinterInfo();
         UpdateMarginWarning();
     }
@@ -584,21 +597,28 @@ public sealed class MainForm : Form
     private void SaveUiToSettings()
     {
         _settings.SheetId = Sheet.Id;
-        _settings.SelectedPositions = _sheetMap.SelectedIndices.Select(i => i + 1).ToList();
+        RememberSelection();
         _settings.SheetCount = (int)_sheetCount.Value;
         _settings.PrintGuides = _printGuides.Checked;
+        _settings.PrinterName = (_printer.SelectedItem as PrinterChoice)?.Name;
         if (SelectedPrinter is { } printer)
-        {
-            _settings.PrinterName = printer;
             _settings.SetOffset(printer, (float)_offsetX.Value, (float)_offsetY.Value);
-        }
         _settings.Save();
     }
 
-    /// <summary>Bytter ark: miniatyrarket (alle etiketter valgt), etiketten på skjermen og tittelen.</summary>
+    /// <summary>Husker hvilke posisjoner som er valgt på arket som vises nå.</summary>
+    private void RememberSelection() =>
+        _settings.SelectionsBySheet[Sheet.Id] = _sheetMap.SelectedIndices.Select(i => i + 1).ToList();
+
+    /// <summary>
+    /// Bytter ark: miniatyrarket (med posisjonene som sist var valgt på dette arket, ellers alle),
+    /// etiketten på skjermen og tittelen.
+    /// </summary>
     private void ShowSheet(LabelSheet sheet)
     {
         _sheetMap.Sheet = sheet;
+        if (_settings.SelectionsBySheet.TryGetValue(sheet.Id, out List<int>? positions))
+            _sheetMap.SelectedIndices = positions.Select(p => p - 1).ToArray();
         _preview.Sheet = sheet;
         UpdateTitle();
         UpdateMarginWarning();
@@ -741,7 +761,7 @@ public sealed class MainForm : Form
         {
             // Start med en tom etikett.
         }
-        ReplaceDesign(new LabelDesign { Text = "Skriv teksten din her" });
+        ReplaceDesign(LabelDesign.CreateNew("Skriv teksten din her"));
     }
 
     private void ReplaceDesign(LabelDesign design)
@@ -771,7 +791,7 @@ public sealed class MainForm : Form
     {
         if (!ConfirmDiscardChanges()) return;
         _currentFile = null;
-        ReplaceDesign(new LabelDesign());
+        ReplaceDesign(LabelDesign.CreateNew());
         _textBox.Focus();
     }
 

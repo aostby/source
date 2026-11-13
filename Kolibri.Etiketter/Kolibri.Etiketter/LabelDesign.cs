@@ -104,6 +104,17 @@ public sealed class LabelDesign : IDisposable
 
     public void RemoveImage() => ImageData = null;
 
+    /// <summary>
+    /// En ny etikett med disketten som standardbilde. Lagrede etiketter lastes uten dette, så bildet deres beholdes.
+    /// </summary>
+    public static LabelDesign CreateNew(string text = "")
+    {
+        var design = new LabelDesign { Text = text };
+        using Bitmap floppy = FloppyDiskImage.Create();
+        design.SetImage(floppy);
+        return design;
+    }
+
     public Font CreateFont(float? size = null)
     {
         float emSize = Math.Max(1f, size ?? FontSize);

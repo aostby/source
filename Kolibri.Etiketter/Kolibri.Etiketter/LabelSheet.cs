@@ -28,6 +28,8 @@ public sealed class LabelSheet
         Default,
         new("herma-4360", "24 per ark – 70 × 36 mm", "Herma 4360, Herma 4453",
             columns: 3, rows: 8, widthMm: 70f, heightMm: 36f, marginTopMm: 4.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
+        new("zweckform-3427", "8 per ark – 105 × 74 mm", "Lyreco 8 per ark, Avery Zweckform 3427",
+            columns: 2, rows: 4, widthMm: 105f, heightMm: 74f, marginTopMm: 0.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
         new("zweckform-3651", "40 per ark – 52,5 × 29,7 mm", "Avery Zweckform 3651",
             columns: 4, rows: 10, widthMm: 52.5f, heightMm: 29.7f, marginTopMm: 0f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
         new("avery-l7651", "65 per ark – 38,1 × 21,2 mm", "Avery L7651",

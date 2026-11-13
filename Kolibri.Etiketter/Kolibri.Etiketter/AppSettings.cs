@@ -37,8 +37,12 @@ public sealed class AppSettings
     /// <summary>Etikettarket (<see cref="LabelSheet.Id"/>). Tomt betyr Lyreco 24 per ark, som før arkvalget kom.</summary>
     public string? SheetId { get; set; }
 
-    /// <summary>Posisjoner som skal skrives ut på hvert ark (fra 1), på arket i <see cref="SheetId"/>. Tomt betyr hele arket.</summary>
+    /// <summary>Posisjoner (fra 1) fra før valget ble husket per ark. Flyttes til <see cref="SelectionsBySheet"/> ved lasting.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<int>? SelectedPositions { get; set; }
+
+    /// <summary>Posisjoner som skal skrives ut på hvert ark (fra 1), per etikettark (<see cref="LabelSheet.Id"/>). Mangler arket, skrives hele arket ut.</summary>
+    public Dictionary<string, List<int>> SelectionsBySheet { get; set; } = [];
 
     /// <summary>Antall ark som skrives ut.</summary>
     public int SheetCount { get; set; } = 1;
@@ -52,6 +56,12 @@ public sealed class AppSettings
             {
                 AppSettings settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings();
                 settings.MigrateGlobalOffset();
+                settings.SelectionsBySheet ??= [];
+                if (settings.SelectedPositions is { } old)
+                {
+                    settings.SelectionsBySheet.TryAdd(LabelSheet.FindById(settings.SheetId).Id, old);
+                    settings.SelectedPositions = null;
+                }
                 return settings;
             }
         }
