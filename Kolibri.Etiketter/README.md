@@ -23,6 +23,7 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
 | Ark | Etikett | Oppsett | Marg topp / venstre | Mellomrom |
 |---|---|---|---|---|
 | Lyreco, Avery Zweckform 3474 (standard) | 70 × 37 mm | 3 × 8 = 24 | 0,5 / 0 mm | ingen |
+| Lyreco Multipurpose Labels 3 × 7 | 70 × 37 mm | 3 × 7 = 21 | 19 / 0 mm (antatt midtstilt) | ingen |
 | Avery L7160 | 63,5 × 38,1 mm | 3 × 7 = 21 | 15,15 / 7,21 mm | 2,54 mm i bredden |
 | Herma 4360, Herma 4453 | 70 × 36 mm | 3 × 8 = 24 | 4,5 / 0 mm | ingen |
 | Lyreco 8 per ark, Avery Zweckform 3427 | 105 × 74 mm | 2 × 4 = 8 | 0,5 / 0 mm | ingen |

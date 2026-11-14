@@ -20,11 +20,19 @@ public sealed class LabelSheet
         "zweckform-3474", "24 per ark – 70 × 37 mm", "Lyreco, Avery Zweckform 3474",
         columns: 3, rows: 8, widthMm: 70f, heightMm: 37f, marginTopMm: 0.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f);
 
+    /// <summary>
+    /// Toppmargen på Lyreco Multipurpose 3 × 7: 7 rader à 37 mm = 259 mm, antatt midtstilt på A4 (297 mm),
+    /// altså 19 mm tomt øverst og nederst. Endres her om arket viser seg å være annerledes.
+    /// </summary>
+    public const float LyrecoMultipurpose3x7TopMm = (PageHeightMm - 7 * 37f) / 2f;
+
     /// <summary>Arkene man kan velge mellom.</summary>
     public static IReadOnlyList<LabelSheet> All { get; } =
     [
         new("avery-l7160", "21 per ark – 63,5 × 38,1 mm", "Avery L7160",
             columns: 3, rows: 7, widthMm: 63.5f, heightMm: 38.1f, marginTopMm: 15.15f, marginLeftMm: 7.21f, gapXMm: 2.54f, gapYMm: 0f),
+        new("lyreco-multipurpose-3x7", "21 per ark – 70 × 37 mm", "Lyreco Multipurpose Labels 3 × 7",
+            columns: 3, rows: 7, widthMm: 70f, heightMm: 37f, marginTopMm: LyrecoMultipurpose3x7TopMm, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
         Default,
         new("herma-4360", "24 per ark – 70 × 36 mm", "Herma 4360, Herma 4453",
             columns: 3, rows: 8, widthMm: 70f, heightMm: 36f, marginTopMm: 4.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
