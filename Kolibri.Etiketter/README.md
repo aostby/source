@@ -11,6 +11,7 @@ Flere ark kan velges, se **Etikettark** under. Laget i C# WinForms (.NET 10).
 4. Legg til et bilde med **Legg til bilde...**, ved å dra en bildefil inn på etiketten, eller via **Rediger > Lim inn bilde**.
    Bildet legges til venstre og får 1/3 av bredden, og teksten brytes ved siden av. Bredde og side kan endres.
    Nye etiketter får en diskett som standardbilde (tegnet i programmet). Fjern eller bytt den som et vanlig bilde.
+   Velg **Plassering: Midten (uten tekst)** for å få bare bildet, sentrert på hele etiketten.
 5. Velg etikettark, hvilke posisjoner på arket som skal skrives ut, og hvor mange ark (se under).
 6. Velg skriver under **Utskrift > Skriver**, eller la **Windows' standardskriver** stå (se **Skrivere** under).
 7. **Forhåndsvis ark...** viser hele A4-arket. **Skriv ut...** åpner Windows' skriverdialog, der du kan velge
@@ -43,6 +44,16 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
 - Får teksten likevel ikke plass (eller automatisk krymping er slått av), vises en rød melding under tekstfeltet.
   Et ord som er for bredt for etiketten regnes også som at teksten ikke får plass.
 - Teksten midtstilles loddrett på etiketten.
+
+### Skrift per linje
+- **Velg skrift...** gir standardskriften for hele teksten.
+- Marker én eller flere linjer i tekstfeltet (det holder at markøren står på linjen) og trykk
+  **Skrift for markerte linjer...** for å gi dem egen skrifttype, størrelse, stil og farge.
+  **Standardskrift** tar dem tilbake til standardskriften. Under knappene står skriften til linjen(e) du står på.
+- Linjeskriften følger linjen når du setter inn eller sletter linjer over. Deler du en linje med Enter,
+  får begge delene samme skrift; en ny tom linje får skriften fra linjen over.
+- Krympes teksten for å få plass, krympes alle linjene like mye, så forholdet mellom størrelsene beholdes.
+- Linjeskriftene lagres i `.etikett`-filen.
 - Etikettene ligger helt inntil hverandre, så alt innhold holdes 1 mm fra kanten (stiplet blå linje på skjermen).
 
 ## Velge posisjoner og antall ark

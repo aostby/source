@@ -17,6 +17,9 @@ public sealed class MainForm : Form
     private readonly TextBox _textBox = new();
     private readonly Label _overflowLabel = new();
     private readonly Label _fontInfo = new();
+    private readonly Label _lineFontInfo = new();
+    private readonly Button _lineDefaultFont = new();
+    private readonly Label _imageCenterNote = new();
     private readonly RadioButton _alignCenter = new();
     private readonly RadioButton _alignLeft = new();
     private readonly CheckBox _autoShrink = new();
@@ -157,9 +160,12 @@ public sealed class MainForm : Form
         _textBox.TextChanged += (_, _) =>
         {
             if (_loading) return;
-            _design.Text = _textBox.Text;
+            _design.SetTextKeepingLineStyles(_textBox.Text);
             DesignChanged();
+            UpdateLineFontInfo();
         };
+        _textBox.KeyUp += (_, _) => UpdateLineFontInfo();
+        _textBox.MouseUp += (_, _) => UpdateLineFontInfo();
 
         _overflowLabel.Text = "Teksten får ikke plass på etiketten. Velg mindre skrift, kortere tekst eller slå på automatisk tilpasning.";
         _overflowLabel.ForeColor = Color.Firebrick;
@@ -199,6 +205,20 @@ public sealed class MainForm : Form
         _fontInfo.MaximumSize = new Size(290, 0);
         _fontInfo.Margin = new Padding(3, 0, 3, 6);
 
+        var lineFont = new Button { Text = "Skrift for markerte linjer...", AutoSize = true };
+        lineFont.Click += (_, _) => ChooseLineFont();
+        _lineDefaultFont.Text = "Standardskrift";
+        _lineDefaultFont.AutoSize = true;
+        _lineDefaultFont.Click += (_, _) => ResetLineFont();
+
+        var lineHint = Caption("Marker én eller flere linjer i tekstfeltet og velg skrift, størrelse og farge for dem. Velg skrift... over gjelder resten.");
+        lineHint.MaximumSize = new Size(290, 0);
+        lineHint.ForeColor = SystemColors.GrayText;
+
+        _lineFontInfo.AutoSize = true;
+        _lineFontInfo.MaximumSize = new Size(290, 0);
+        _lineFontInfo.Margin = new Padding(3, 0, 3, 6);
+
         _alignCenter.Text = "Sentrert";
         _alignCenter.AutoSize = true;
         _alignLeft.Text = "Venstrestilt";
@@ -223,6 +243,9 @@ public sealed class MainForm : Form
         return Group("Tekst",
             chooseFont,
             _fontInfo,
+            Row(lineFont, _lineDefaultFont),
+            lineHint,
+            _lineFontInfo,
             Row(_alignCenter, _alignLeft),
             _autoShrink);
     }
@@ -247,19 +270,32 @@ public sealed class MainForm : Form
         };
 
         _imagePosition.DropDownStyle = ComboBoxStyle.DropDownList;
-        _imagePosition.Items.AddRange(["Venstre", "Høyre"]);
-        _imagePosition.Width = 90;
+        _imagePosition.Items.AddRange(["Venstre", "Høyre", "Midten (uten tekst)"]);
+        _imagePosition.Width = 150;
         _imagePosition.SelectedIndexChanged += (_, _) =>
         {
             if (_loading) return;
-            _design.ImagePosition = _imagePosition.SelectedIndex == 1 ? LabelImagePosition.Right : LabelImagePosition.Left;
+            _design.ImagePosition = _imagePosition.SelectedIndex switch
+            {
+                1 => LabelImagePosition.Right,
+                2 => LabelImagePosition.Center,
+                _ => LabelImagePosition.Left,
+            };
+            UpdateImageControls();
             DesignChanged();
         };
+
+        _imageCenterNote.Text = "Bildet fyller etiketten, sentrert. Teksten skrives ikke ut (den beholdes til du velger Venstre eller Høyre igjen).";
+        _imageCenterNote.AutoSize = true;
+        _imageCenterNote.MaximumSize = new Size(290, 0);
+        _imageCenterNote.ForeColor = SystemColors.GrayText;
+        _imageCenterNote.Visible = false;
 
         return Group("Bilde",
             Row(addImage, _removeImage),
             Row(Caption("Bildets bredde (% av etiketten):"), _imageWidth),
-            Row(Caption("Plassering:"), _imagePosition));
+            Row(Caption("Plassering:"), _imagePosition),
+            _imageCenterNote);
     }
 
     private GroupBox BuildPrintGroup()
@@ -435,7 +471,13 @@ public sealed class MainForm : Form
             _alignLeft.Checked = _design.Alignment == LabelTextAlignment.Left;
             _autoShrink.Checked = _design.AutoShrinkText;
             _imageWidth.Value = (decimal)Math.Clamp(Math.Round(_design.ImageWidthPercent), 10, 90);
-            _imagePosition.SelectedIndex = _design.ImagePosition == LabelImagePosition.Right ? 1 : 0;
+            _imagePosition.SelectedIndex = _design.ImagePosition switch
+            {
+                LabelImagePosition.Right => 1,
+                LabelImagePosition.Center => 2,
+                _ => 0,
+            };
+            UpdateLineFontInfo();
             UpdateFontInfo();
             UpdateImageControls();
         }
@@ -650,12 +692,86 @@ public sealed class MainForm : Form
         _fontInfo.ForeColor = _design.TextColor.GetBrightness() > 0.9f ? SystemColors.ControlText : _design.TextColor;
     }
 
+    /// <summary>Linjene (fra 0) som er markert i tekstfeltet, eller linjen markøren står på.</summary>
+    private (int First, int Last) SelectedLines()
+    {
+        string text = _textBox.Text;
+        int start = Math.Clamp(_textBox.SelectionStart, 0, text.Length);
+        int end = Math.Clamp(start + Math.Max(0, _textBox.SelectionLength - 1), 0, text.Length);
+        // Markeringen slutter ofte rett etter linjeskiftet; da hører den neste linjen ikke med.
+        if (_textBox.SelectionLength > 0 && end > start && end < text.Length && (text[end] == '\n' || text[end] == '\r'))
+            end--;
+        int LineOf(int index) => text.AsSpan(0, Math.Min(index, text.Length)).Count('\n');
+        return (LineOf(start), Math.Max(LineOf(start), LineOf(end)));
+    }
+
+    private static string DescribeFont(string family, float size, FontStyle style)
+    {
+        var styles = new List<string>();
+        if (style.HasFlag(FontStyle.Bold)) styles.Add("fet");
+        if (style.HasFlag(FontStyle.Italic)) styles.Add("kursiv");
+        if (style.HasFlag(FontStyle.Underline)) styles.Add("understreket");
+        return $"{family}, {size:0.#} pt{(styles.Count > 0 ? ", " + string.Join(", ", styles) : "")}";
+    }
+
+    private void UpdateLineFontInfo()
+    {
+        (int first, int last) = SelectedLines();
+        string lines = first == last ? $"Linje {first + 1}" : $"Linje {first + 1}–{last + 1}";
+        LabelLineStyle? own = _design.GetLineStyle(first);
+        static string Key(LabelLineStyle? s) => s is null ? "" : $"{s.FontFamily}|{s.FontSize}|{s.FontStyle}|{s.TextColorArgb}";
+        bool mixed = Enumerable.Range(first, last - first + 1).Select(i => Key(_design.GetLineStyle(i))).Distinct().Count() > 1;
+        string font = mixed ? "ulik skrift"
+            : own is null ? "standardskrift"
+            : DescribeFont(own.FontFamily, own.FontSize, own.FontStyle);
+        int count = _design.LinesWithOwnFont;
+        string total = count == 0 ? "" : count == 1 ? " (1 linje har egen skrift)" : $" ({count} linjer har egen skrift)";
+        _lineFontInfo.Text = $"{lines}: {font}{total}";
+        _lineFontInfo.ForeColor = own is not null && !mixed && own.TextColor.GetBrightness() <= 0.9f ? own.TextColor : SystemColors.ControlText;
+        _lineDefaultFont.Enabled = Enumerable.Range(first, last - first + 1).Any(i => _design.GetLineStyle(i) is not null);
+    }
+
+    private void ChooseLineFont()
+    {
+        (int first, int last) = SelectedLines();
+        LabelLineStyle? current = _design.GetLineStyle(first);
+        using Font font = current?.CreateFont(current.FontSize) ?? _design.CreateFont();
+        using var dialog = new FontDialog
+        {
+            Font = font,
+            ShowColor = true,
+            Color = current?.TextColor ?? _design.TextColor,
+            ShowEffects = true,
+            FontMustExist = true,
+            MinSize = 4,
+            MaxSize = 72,
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+        _design.SetLineStyle(first, last, LabelLineStyle.From(dialog.Font, dialog.Color));
+        DesignChanged();
+        UpdateLineFontInfo();
+        _textBox.Focus();
+    }
+
+    private void ResetLineFont()
+    {
+        (int first, int last) = SelectedLines();
+        _design.SetLineStyle(first, last, null);
+        DesignChanged();
+        UpdateLineFontInfo();
+        _textBox.Focus();
+    }
+
     private void UpdateImageControls()
     {
         bool hasImage = _design.HasImage;
         _removeImage.Enabled = hasImage;
         _imageWidth.Enabled = hasImage;
         _imagePosition.Enabled = hasImage;
+        bool center = hasImage && _design.ImagePosition == LabelImagePosition.Center;
+        _imageWidth.Enabled = hasImage && !center;
+        _imageCenterNote.Visible = center;
     }
 
     private void UpdateSheetInfo()

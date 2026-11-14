@@ -13,6 +13,32 @@ public enum LabelImagePosition
 {
     Left,
     Right,
+
+    /// <summary>Bildet sentreres på hele etiketten, og teksten skrives ikke ut.</summary>
+    Center,
+}
+
+/// <summary>Egen skrift for én linje i teksten. Linjer uten egen skrift bruker etikettens standardskrift.</summary>
+public sealed class LabelLineStyle
+{
+    public string FontFamily { get; set; } = "Segoe UI";
+    public float FontSize { get; set; } = 12f;
+    public FontStyle FontStyle { get; set; } = FontStyle.Regular;
+    public int TextColorArgb { get; set; } = Color.Black.ToArgb();
+
+    [JsonIgnore]
+    public Color TextColor => Color.FromArgb(TextColorArgb);
+
+    public static LabelLineStyle From(Font font, Color color) => new()
+    {
+        FontFamily = font.FontFamily.Name,
+        FontSize = font.SizeInPoints,
+        FontStyle = font.Style,
+        TextColorArgb = color.ToArgb(),
+    };
+
+    /// <summary>Skriften for linjen; faller tilbake til systemskriften om skrifttypen mangler.</summary>
+    public Font CreateFont(float sizePt) => LabelDesign.CreateFont(FontFamily, sizePt, FontStyle);
 }
 
 /// <summary>Innholdet på én etikett. Lagres som JSON (.etikett) med bildet innebygd.</summary>
@@ -115,17 +141,94 @@ public sealed class LabelDesign : IDisposable
         return design;
     }
 
-    public Font CreateFont(float? size = null)
+    public Font CreateFont(float? size = null) => CreateFont(FontFamily, size ?? FontSize, FontStyle);
+
+    internal static Font CreateFont(string family, float sizePt, FontStyle style)
     {
-        float emSize = Math.Max(1f, size ?? FontSize);
+        float emSize = Math.Max(1f, sizePt);
         try
         {
-            return new Font(FontFamily, emSize, FontStyle, GraphicsUnit.Point);
+            return new Font(family, emSize, style, GraphicsUnit.Point);
         }
         catch (ArgumentException)
         {
             return new Font(SystemFonts.DefaultFont.FontFamily, emSize, FontStyle.Regular, GraphicsUnit.Point);
         }
+    }
+
+    /// <summary>
+    /// Egen skrift per linje i <see cref="Text"/> (samme rekkefølge som linjene). Null, eller en kortere liste,
+    /// betyr standardskriften.
+    /// </summary>
+    public List<LabelLineStyle?>? LineStyles { get; set; }
+
+    /// <summary>Linjene i teksten (skilt med Enter).</summary>
+    public static string[] SplitLines(string text) => text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+
+    /// <summary>Egen skrift for linje nummer <paramref name="line"/> (fra 0), eller null for standardskriften.</summary>
+    public LabelLineStyle? GetLineStyle(int line) =>
+        LineStyles is { } styles && line >= 0 && line < styles.Count ? styles[line] : null;
+
+    /// <summary>Antall linjer med egen skrift.</summary>
+    [JsonIgnore]
+    public int LinesWithOwnFont => LineStyles?.Count(s => s is not null) ?? 0;
+
+    /// <summary>Gir linjene fra <paramref name="first"/> til og med <paramref name="last"/> en egen skrift (null = standardskriften).</summary>
+    public void SetLineStyle(int first, int last, LabelLineStyle? style)
+    {
+        var styles = LineStyles ?? [];
+        while (styles.Count <= last) styles.Add(null);
+        for (int i = Math.Max(0, first); i <= last; i++)
+        {
+            styles[i] = style is null ? null : new LabelLineStyle
+            {
+                FontFamily = style.FontFamily,
+                FontSize = style.FontSize,
+                FontStyle = style.FontStyle,
+                TextColorArgb = style.TextColorArgb,
+            };
+        }
+        LineStyles = styles.Any(s => s is not null) ? styles : null;
+    }
+
+    /// <summary>
+    /// Setter ny tekst og flytter linjeskriftene med, så de følger linjene når linjer settes inn eller slettes.
+    /// Nye linjer arver skriften fra linjen de ble delt fra (eller linjen over).
+    /// </summary>
+    public void SetTextKeepingLineStyles(string text)
+    {
+        if (LineStyles is null)
+        {
+            Text = text;
+            return;
+        }
+        string[] oldLines = SplitLines(Text);
+        string[] newLines = SplitLines(text);
+        int prefix = 0;
+        while (prefix < oldLines.Length && prefix < newLines.Length && oldLines[prefix] == newLines[prefix])
+            prefix++;
+        int suffix = 0;
+        while (suffix < oldLines.Length - prefix && suffix < newLines.Length - prefix
+               && oldLines[^(suffix + 1)] == newLines[^(suffix + 1)])
+            suffix++;
+
+        int oldMiddle = oldLines.Length - prefix - suffix;
+        int newMiddle = newLines.Length - prefix - suffix;
+        var styles = new List<LabelLineStyle?>(newLines.Length);
+        for (int i = 0; i < prefix; i++)
+            styles.Add(GetLineStyle(i));
+        for (int i = 0; i < newMiddle; i++)
+        {
+            LabelLineStyle? inherited = oldMiddle > 0
+                ? GetLineStyle(prefix + Math.Min(i, oldMiddle - 1))
+                : GetLineStyle(prefix - 1);
+            styles.Add(inherited);
+        }
+        for (int i = 0; i < suffix; i++)
+            styles.Add(GetLineStyle(oldLines.Length - suffix + i));
+
+        Text = text;
+        LineStyles = styles.Any(s => s is not null) ? styles : null;
     }
 
     public void SetFont(Font font)
