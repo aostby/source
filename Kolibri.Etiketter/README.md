@@ -10,7 +10,7 @@ Flere ark kan velges, se **Etikettark** under. Laget i C# WinForms (.NET 10).
 3. Velg skrift, størrelse, stil og farge med **Velg skrift...**, og velg **Sentrert** eller **Venstrestilt**.
 4. Legg til et bilde med **Legg til bilde...**, ved å dra en bildefil inn på etiketten, eller via **Rediger > Lim inn bilde**.
    Bildet legges til venstre og får 1/3 av bredden, og teksten brytes ved siden av. Bredde og side kan endres.
-   Nye etiketter får en diskett som standardbilde (tegnet i programmet). Fjern eller bytt den som et vanlig bilde.
+   Nye etiketter får en 5,25"-diskett som standardbilde (tegnet i programmet). Fjern eller bytt den som et vanlig bilde.
    Velg **Plassering: Midten (uten tekst)** for å få bare bildet, sentrert på hele etiketten.
 5. Velg etikettark, hvilke posisjoner på arket som skal skrives ut, og hvor mange ark (se under).
 6. Velg skriver under **Utskrift > Skriver**, eller la **Windows' standardskriver** stå (se **Skrivere** under).
