@@ -136,6 +136,13 @@ public sealed class LabelDesign : IDisposable
     public static LabelDesign CreateNew(string text = "")
     {
         var design = new LabelDesign { Text = text };
+        // Commodore 64-skriften er standard når den er installert eller bygget inn.
+        if (EmbeddedFonts.Find(EmbeddedFonts.C64) is not null || EmbeddedFonts.IsInstalled(EmbeddedFonts.C64))
+        {
+            design.FontFamily = EmbeddedFonts.C64;
+            design.FontSize = 12f;
+            design.FontStyle = FontStyle.Bold | FontStyle.Italic;
+        }
         using Bitmap floppy = FloppyDiskImage.Create();
         design.SetImage(floppy);
         return design;
@@ -146,14 +153,32 @@ public sealed class LabelDesign : IDisposable
     internal static Font CreateFont(string family, float sizePt, FontStyle style)
     {
         float emSize = Math.Max(1f, sizePt);
+        Font? installed = null;
         try
         {
-            return new Font(family, emSize, style, GraphicsUnit.Point);
+            installed = new Font(family, emSize, style, GraphicsUnit.Point);
+            // Windows gir en reserveskrift uten feilmelding når skriften mangler; sjekk navnet.
+            if (installed.FontFamily.Name.Equals(family, StringComparison.OrdinalIgnoreCase))
+                return installed;
         }
         catch (ArgumentException)
         {
-            return new Font(SystemFonts.DefaultFont.FontFamily, emSize, FontStyle.Regular, GraphicsUnit.Point);
         }
+
+        // Ikke installert: bruk den innebygde skriften (C64 Pro) om den finnes.
+        if (EmbeddedFonts.Find(family) is { } embedded)
+        {
+            try
+            {
+                Font font = new(embedded, emSize, style, GraphicsUnit.Point);
+                installed?.Dispose();
+                return font;
+            }
+            catch (ArgumentException)
+            {
+            }
+        }
+        return installed ?? new Font(SystemFonts.DefaultFont.FontFamily, emSize, FontStyle.Regular, GraphicsUnit.Point);
     }
 
     /// <summary>

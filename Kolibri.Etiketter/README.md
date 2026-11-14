@@ -48,6 +48,16 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
   Et ord som er for bredt for etiketten regnes også som at teksten ikke får plass.
 - Teksten midtstilles loddrett på etiketten.
 
+### Commodore 64-skriften
+- Nye etiketter bruker **C64 Pro** (fet, kursiv, 12 pt). **C64-skrift**-knappen (og **Rediger > Commodore 64-skrift**)
+  bytter til den igjen; står markøren på linjer med egen skrift, gjelder den de linjene.
+- Skriften er bygget inn i programmet, så etiketter med C64-skrift ser riktige ut også på PC-er der den ikke er
+  installert. På slike PC-er vises den ikke i Windows' skriftdialog; bruk knappen.
+- C64 Pro og C64 Pro Mono er laget av Style (http://style64.org/c64-truetype). Lisensen tillater skriften i
+  programvare som er gratis for brukerne, men ikke salg eller at skriftfilen legges ut til nedlasting. Derfor ligger
+  skriftfilene **ikke** i git-repoet: de bygges inn fra den installerte skriften på PC-en som bygger programmet
+  (`Kolibri.Etiketter.csproj`). Mangler skriften der, bygges programmet uten den (med en advarsel).
+
 ### Skrift per linje
 - **Velg skrift...** gir standardskriften for hele teksten.
 - Marker én eller flere linjer i tekstfeltet (det holder at markøren står på linjen) og trykk
@@ -140,6 +150,7 @@ Alt ligger i namespace `Kolibri.Etiketter`.
 | `PrinterProfiles.cs` | Justering per skriver, kjente skrivermodeller, farger og ikke-utskrivbar kant |
 | `CalibrationPrintJob.cs` | Kalibreringsarket |
 | `CalibrationForm.cs` | **Kalibrer skriver**, regner ut justeringen fra målene |
+| `EmbeddedFonts.cs` | Den innebygde Commodore 64-skriften (C64 Pro, fra style64.org) |
 | `FloppyDiskImage.cs` | Disketten som er standardbilde på nye etiketter, tegnet med GDI+ |
 | `LabelPrintJob.cs` | Utskrift, A4 uten marger, kompenserer for skriverens ikke-utskrivbare kant |
 | `AppSettings.cs` | Innstillinger som huskes mellom hver gang programmet startes |

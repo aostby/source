@@ -19,4 +19,24 @@
     <EmbeddedResource Include="..\README.md" LogicalName="Kolibri.Etiketter.README.md" Link="README.md" />
   </ItemGroup>
 
+  <!--
+    Commodore 64-skriften (C64 Pro / C64 Pro Mono fra Style, http://style64.org/c64-truetype) bygges inn fra den
+    installerte skriften på byggemaskinen. Filene legges IKKE i git: lisensen tillater skriften i gratis programvare,
+    men ikke at den legges ut til nedlasting (repoet er offentlig). Mangler skriften, bygges programmet uten den.
+  -->
+  <PropertyGroup>
+    <C64FontUser>$(LOCALAPPDATA)\Microsoft\Windows\Fonts</C64FontUser>
+    <C64FontSystem>$(WINDIR)\Fonts</C64FontSystem>
+  </PropertyGroup>
+  <ItemGroup>
+    <C64Font Include="$(C64FontUser)\C64_Pro-STYLE.otf" Condition="Exists('$(C64FontUser)\C64_Pro-STYLE.otf')" />
+    <C64Font Include="$(C64FontSystem)\C64_Pro-STYLE.ttf" Condition="!Exists('$(C64FontUser)\C64_Pro-STYLE.otf') And Exists('$(C64FontSystem)\C64_Pro-STYLE.ttf')" />
+    <C64Font Include="$(C64FontSystem)\C64_Pro_Mono-STYLE.ttf" Condition="Exists('$(C64FontSystem)\C64_Pro_Mono-STYLE.ttf')" />
+    <C64Font Include="$(C64FontUser)\C64_Pro_Mono-STYLE.otf" Condition="!Exists('$(C64FontSystem)\C64_Pro_Mono-STYLE.ttf') And Exists('$(C64FontUser)\C64_Pro_Mono-STYLE.otf')" />
+    <EmbeddedResource Include="@(C64Font)" LogicalName="Kolibri.Etiketter.Fonts.%(Filename)%(Extension)" Link="Fonts\%(Filename)%(Extension)" />
+  </ItemGroup>
+  <Target Name="WarnMissingC64Font" BeforeTargets="Build" Condition="'@(C64Font)' == ''">
+    <Warning Text="C64 Pro er ikke installert på denne PC-en, så Commodore 64-skriften bygges ikke inn i Kolibri.Etiketter." />
+  </Target>
+
 </Project>

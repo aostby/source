@@ -111,6 +111,7 @@ public sealed class MainForm : Form
         edit.DropDownItems.Add(new ToolStripMenuItem("&Fjern bilde", null, (_, _) => RemoveImage()));
         edit.DropDownItems.Add(new ToolStripSeparator());
         edit.DropDownItems.Add(new ToolStripMenuItem("Velg &skrift...", null, (_, _) => ChooseFont()));
+        edit.DropDownItems.Add(new ToolStripMenuItem("&Commodore 64-skrift", null, (_, _) => UseC64Font()));
 
         var help = new ToolStripMenuItem("&Hjelp");
         help.DropDownItems.Add(new ToolStripMenuItem("&Skriverdiagnose...", null, (_, _) => ShowPrinterDiagnostics()));
@@ -213,6 +214,10 @@ public sealed class MainForm : Form
     {
         var chooseFont = new Button { Text = "Velg skrift...", AutoSize = true };
         chooseFont.Click += (_, _) => ChooseFont();
+        var c64Font = new Button { Text = "C64-skrift", AutoSize = true };
+        c64Font.Click += (_, _) => UseC64Font();
+        new ToolTip().SetToolTip(c64Font,
+            "Commodore 64-skriften (C64 Pro). Gjelder de markerte linjene om de har egen skrift, ellers standardskriften.");
 
         _fontInfo.AutoSize = true;
         _fontInfo.MaximumSize = new Size(290, 0);
@@ -254,7 +259,7 @@ public sealed class MainForm : Form
         };
 
         return Group("Tekst",
-            chooseFont,
+            Row(chooseFont, c64Font),
             _fontInfo,
             Row(lineFont, _lineDefaultFont),
             lineHint,
@@ -823,6 +828,45 @@ public sealed class MainForm : Form
     }
 
     // ---------------------------------------------------------------- tekst og bilde
+
+    /// <summary>
+    /// Bytter til Commodore 64-skriften (beholder størrelse, stil og farge). Den er bygget inn i programmet, så den
+    /// virker også der den ikke er installert, men den vises ikke i Windows' skriftdialog på slike PC-er.
+    /// </summary>
+    private void UseC64Font()
+    {
+        if (EmbeddedFonts.Find(EmbeddedFonts.C64) is null && !EmbeddedFonts.IsInstalled(EmbeddedFonts.C64))
+        {
+            MessageBox.Show(this, "Commodore 64-skriften (C64 Pro) finnes ikke på denne PC-en og er ikke bygget inn i programmet.\n\n" +
+                "Den kan lastes ned gratis fra http://style64.org/c64-truetype", "C64-skrift", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        (int first, int last) = SelectedLines();
+        bool lineFonts = Enumerable.Range(first, last - first + 1).Any(i => _design.GetLineStyle(i) is not null);
+        if (lineFonts)
+        {
+            for (int i = first; i <= last; i++)
+            {
+                if (_design.GetLineStyle(i) is { } own)
+                {
+                    _design.SetLineStyle(i, i, new LabelLineStyle
+                    {
+                        FontFamily = EmbeddedFonts.C64,
+                        FontSize = own.FontSize,
+                        FontStyle = own.FontStyle,
+                        TextColorArgb = own.TextColorArgb,
+                    });
+                }
+            }
+        }
+        else
+        {
+            _design.FontFamily = EmbeddedFonts.C64;
+        }
+        UpdateFontInfo();
+        UpdateLineFontInfo();
+        DesignChanged();
+    }
 
     private void ChooseFont()
     {
