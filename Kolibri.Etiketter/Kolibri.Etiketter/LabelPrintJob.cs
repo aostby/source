@@ -44,7 +44,10 @@ public sealed class LabelPrintJob : IDisposable
     public void TrySelectPrinter(string? printerName) => TrySelectPrinter(Document, printerName);
 
     /// <summary>A4 stående uten marger, i farger på fargeskrivere. Kalles etter at skriveren er valgt.</summary>
-    public void ApplyPageSettings() => ApplyPageSettings(Document);
+    public void ApplyPageSettings() => A4Found = ApplyPageSettings(Document);
+
+    /// <summary>False dersom skriverdriveren ikke har A4 (da ber programmet om et eget A4-format, som ikke alle drivere godtar).</summary>
+    public bool A4Found { get; private set; } = true;
 
     /// <inheritdoc cref="TrySelectPrinter(string?)"/>
     public static void TrySelectPrinter(PrintDocument document, string? printerName)
@@ -62,28 +65,36 @@ public sealed class LabelPrintJob : IDisposable
     }
 
     /// <inheritdoc cref="ApplyPageSettings()"/>
-    public static void ApplyPageSettings(PrintDocument document)
+    public static bool ApplyPageSettings(PrintDocument document)
     {
         PageSettings page = document.DefaultPageSettings;
         page.Landscape = false;
         page.Margins = new Margins(0, 0, 0, 0);
         try
         {
-            foreach (PaperSize size in document.PrinterSettings.PaperSizes)
-            {
-                if (size.Kind == PaperKind.A4)
-                {
-                    page.PaperSize = size;
-                    break;
-                }
-            }
+            PaperSize? a4 = FindA4(document.PrinterSettings);
+            page.PaperSize = a4 ?? new PaperSize("A4", A4WidthHundredthInch, A4HeightHundredthInch);
             // Mange fargeskrivere (bl.a. HP Color Laser 150nw) skriver i gråtoner til programmet ber om farger.
             page.Color = document.PrinterSettings.SupportsColor;
+            return a4 is not null;
         }
         catch (InvalidPrinterException)
         {
             // Skriveren er ikke tilgjengelig; utskriften feiler senere med en tydelig melding.
+            return true;
         }
+    }
+
+    private const int A4WidthHundredthInch = 827;
+    private const int A4HeightHundredthInch = 1169;
+
+    /// <summary>A4 i driverens papirliste: helst etter type, ellers etter navn eller mål (noen drivere merker A4 som egendefinert).</summary>
+    public static PaperSize? FindA4(PrinterSettings printer)
+    {
+        PaperSize[] sizes = printer.PaperSizes.Cast<PaperSize>().ToArray();
+        return sizes.FirstOrDefault(s => s.Kind == PaperKind.A4)
+            ?? sizes.FirstOrDefault(s => Math.Abs(s.Width - A4WidthHundredthInch) <= 3 && Math.Abs(s.Height - A4HeightHundredthInch) <= 3)
+            ?? sizes.FirstOrDefault(s => s.PaperName.Trim().Equals("A4", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

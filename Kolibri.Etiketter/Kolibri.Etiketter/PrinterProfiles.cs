@@ -106,14 +106,8 @@ public sealed record PrinterInfo(string Name, bool IsValid, bool SupportsColor, 
 
             PageSettings page = printer.DefaultPageSettings;
             page.Landscape = false;
-            foreach (PaperSize size in printer.PaperSizes)
-            {
-                if (size.Kind == PaperKind.A4)
-                {
-                    page.PaperSize = size;
-                    break;
-                }
-            }
+            if (LabelPrintJob.FindA4(printer) is { } a4)
+                page.PaperSize = a4;
 
             RectangleF area = page.PrintableArea;
             var margins = new PrinterMarginsMm(

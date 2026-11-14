@@ -27,6 +27,7 @@ public sealed class MainForm : Form
     private readonly NumericUpDown _imageWidth = new();
     private readonly ComboBox _imagePosition = new();
     private readonly ComboBox _sheetType = new();
+    private readonly Label _sheetDescription = new();
     private readonly SheetMapControl _sheetMap = new();
     private readonly NumericUpDown _sheetCount = new();
     private readonly Label _sheetInfo = new();
@@ -110,6 +111,7 @@ public sealed class MainForm : Form
         edit.DropDownItems.Add(new ToolStripMenuItem("Velg &skrift...", null, (_, _) => ChooseFont()));
 
         var help = new ToolStripMenuItem("&Hjelp");
+        help.DropDownItems.Add(new ToolStripMenuItem("&Skriverdiagnose...", null, (_, _) => ShowPrinterDiagnostics()));
         help.DropDownItems.Add(new ToolStripMenuItem("&Om Kolibri.Etiketter...", null, (_, _) => ShowAbout()) { ShortcutKeys = Keys.F1 });
 
         menu.Items.Add(file);
@@ -311,7 +313,11 @@ public sealed class MainForm : Form
     {
         _sheetType.DropDownStyle = ComboBoxStyle.DropDownList;
         _sheetType.Width = 290;
-        _sheetType.DropDownWidth = 420;
+        _sheetType.DropDownWidth = 560;
+        _sheetDescription.AutoSize = true;
+        _sheetDescription.MaximumSize = new Size(290, 0);
+        _sheetDescription.ForeColor = SystemColors.GrayText;
+        _sheetDescription.Margin = new Padding(3, 0, 3, 6);
         _sheetType.Items.AddRange(LabelSheet.All.ToArray<object>());
         _sheetType.SelectedIndexChanged += (_, _) =>
         {
@@ -411,6 +417,7 @@ public sealed class MainForm : Form
         return Group("Utskrift",
             Caption("Etikettark:"),
             _sheetType,
+            _sheetDescription,
             hint,
             Row(_sheetMap, positionColumn),
             _printGuides,
@@ -667,6 +674,7 @@ public sealed class MainForm : Form
     /// </summary>
     private void ShowSheet(LabelSheet sheet)
     {
+        _sheetDescription.Text = $"{sheet}. Første etikett {sheet.TopMm:0.##} mm fra toppen og {sheet.LeftMm:0.##} mm fra venstre.";
         _sheetMap.Sheet = sheet;
         if (_settings.SelectionsBySheet.TryGetValue(sheet.Id, out List<int>? positions))
             _sheetMap.SelectedIndices = positions.Select(p => p - 1).ToArray();
@@ -685,7 +693,7 @@ public sealed class MainForm : Form
     private void UpdateTitle()
     {
         string name = _currentFile is null ? "Ny etikett" : Path.GetFileNameWithoutExtension(_currentFile);
-        Text = $"{name}{(_dirty && _currentFile is not null ? " *" : "")} – Kolibri.Etiketter ({Sheet.Name}, {Sheet.Products})";
+        Text = $"{name}{(_dirty && _currentFile is not null ? " *" : "")} – Kolibri.Etiketter ({Sheet})";
     }
 
     private void UpdateFontInfo()
@@ -800,6 +808,7 @@ public sealed class MainForm : Form
         }
         _previewButton.Enabled = perSheet > 0;
         _printButton.Enabled = perSheet > 0;
+        _printButton.Text = $"Skriv ut {sheets} ark...";
     }
 
     // ---------------------------------------------------------------- tekst og bilde
@@ -1003,7 +1012,24 @@ public sealed class MainForm : Form
             WindowState = FormWindowState.Maximized,
             UseAntiAlias = true,
         };
+
+        // Skriverknappen i forhåndsvisningen skriver rett ut, forbi skriverdialogen, A4-sjekken og varselet om
+        // kanten. Den byttes mot en knapp som lukker forhåndsvisningen og går via «Skriv ut...».
+        bool printAfterPreview = false;
+        if (dialog.Controls.OfType<ToolStrip>().FirstOrDefault() is { Items.Count: > 0 } toolStrip)
+        {
+            toolStrip.Items[0].Visible = false;
+            var print = new ToolStripButton("Skriv ut...") { DisplayStyle = ToolStripItemDisplayStyle.Text };
+            print.Click += (_, _) =>
+            {
+                printAfterPreview = true;
+                dialog.Close();
+            };
+            toolStrip.Items.Insert(0, print);
+        }
         dialog.ShowDialog(this);
+        if (printAfterPreview)
+            BeginInvoke(PrintLabels);
     }
 
     private void PrintLabels()
@@ -1038,6 +1064,12 @@ public sealed class MainForm : Form
         }
         SaveUiToSettings();
 
+        if (!job.A4Found && MessageBox.Show(this,
+                $"Skriverdriveren for {chosen} har ikke papirstørrelsen A4. Programmet ber om A4 likevel, men driveren kan " +
+                "legge ut siden feil (f.eks. som Letter), så etikettene bommer.\n\nVil du skrive ut likevel?",
+                "Skriv ut", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            return;
+
         int clipped = CountClippedLabels(out PrinterMarginsMm margins);
         if (clipped > 0 && MessageBox.Show(this,
                 $"{clipped} av {_sheetMap.SelectedCount} etiketter har tekst eller bilde i skriverens ikke-utskrivbare kant ({margins}). " +
@@ -1056,6 +1088,24 @@ public sealed class MainForm : Form
     }
 
     // ---------------------------------------------------------------- om
+
+    private void ShowPrinterDiagnostics()
+    {
+        Cursor = Cursors.WaitCursor;
+        string report;
+        try
+        {
+            report = PrinterDiagnostics.Build(_design, Sheet, _sheetMap.SelectedIndices, (int)_sheetCount.Value,
+                SelectedPrinter, _settings.GetProfile(SelectedPrinter) is var p && SelectedPrinter is not null
+                    ? new PrinterProfile { OffsetXMm = (float)_offsetX.Value, OffsetYMm = (float)_offsetY.Value, CalibratedAt = p.CalibratedAt }
+                    : new PrinterProfile());
+        }
+        finally
+        {
+            Cursor = Cursors.Default;
+        }
+        PrinterDiagnostics.Show(this, report);
+    }
 
     private void ShowAbout()
     {

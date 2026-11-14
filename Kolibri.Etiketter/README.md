@@ -23,7 +23,7 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
 | Ark | Etikett | Oppsett | Marg topp / venstre | Mellomrom |
 |---|---|---|---|---|
 | Lyreco, Avery Zweckform 3474 (standard) | 70 × 37 mm | 3 × 8 = 24 | 0,5 / 0 mm | ingen |
-| Lyreco Multipurpose Labels 3 × 7 | 70 × 37 mm | 3 × 7 = 21 | 19 / 0 mm (antatt midtstilt) | ingen |
+| Lyreco Multipurpose Labels 3 × 7 | 70 × 37 mm | 3 × 7 = 21 | 0 / 0 mm (38 mm tomt nederst) | ingen |
 | Avery L7160 | 63,5 × 38,1 mm | 3 × 7 = 21 | 15,15 / 7,21 mm | 2,54 mm i bredden |
 | Herma 4360, Herma 4453 | 70 × 36 mm | 3 × 8 = 24 | 4,5 / 0 mm | ingen |
 | Lyreco 8 per ark, Avery Zweckform 3427 | 105 × 74 mm | 2 × 4 = 8 | 0,5 / 0 mm | ingen |
@@ -31,6 +31,8 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
 | Avery L7651 | 38,1 × 21,2 mm | 5 × 13 = 65 | 10,7 / 4,75 mm | 2,5 mm i bredden |
 | Avery L7780 (runde) | Ø 40 mm | 4 × 6 = 24 | 13,5 / 16 mm | 6 mm begge veier |
 
+- Navnet i listen starter med produktet og sier om etikettene ligger **kant i kant** eller har **marger**, så ark med
+  samme antall (f.eks. 21 per ark) ikke forveksles. Under listen står hvor første etikett ligger.
 - Etiketten på skjermen, miniatyrarket, utskriften, kalibreringsarket og varselet om skriverens kant følger arket.
 - Valget av posisjoner huskes for hvert ark. Første gang et ark velges, er alle etikettene på det valgt.
 - På runde etiketter tegnes bilde og tekst i et liggende felt inni sirkelen (stiplet blå linje).
@@ -97,6 +99,14 @@ farger eller svart-hvitt, skriverens ikke-utskrivbare kant og om den er kalibrer
   Lyreco-arket har etikettene helt ut til kanten, så på venstre og høyre kolonne må innholdet holdes litt unna kanten.
 - Justeringen som var felles for alle skrivere før, flyttes til skriveren som sist ble brukt.
 
+### Skriverdiagnose
+**Hjelp > Skriverdiagnose...** viser, uten å skrive ut, hva som sendes til skriverdriveren: etikettark og marger,
+papir (A4 stående?), skriverens kant, kopier, tosidig og hvor mange sider programmet lager. Teksten kan kopieres.
+
+- **Skriv ut ... ark** viser hvor mange ark som skrives ut. Knappen **Skriv ut...** i forhåndsvisningen går via den
+  samme skriverdialogen og de samme sjekkene (A4, kanten), og lagrer valgene.
+- Har driveren ikke A4, advares det før utskrift.
+
 ### Kalibrer skriver
 **Fil > Kalibrer skriver...** (eller knappen under justeringen):
 1. **Skriv ut kalibreringsark** på vanlig A4-papir. Arket skrives ut uten justering og har et kryss med
@@ -126,6 +136,7 @@ Alt ligger i namespace `Kolibri.Etiketter`.
 | `LabelRenderer.cs` | Tegner etiketten i mm (teksten som omriss), brukes både på skjerm og skriver |
 | `LabelPreviewControl.cs` | Forstørret visning av én etikett |
 | `SheetMapControl.cs` | Miniatyrark for valg av hvilke posisjoner som skrives ut |
+| `PrinterDiagnostics.cs` | **Hjelp > Skriverdiagnose** |
 | `PrinterProfiles.cs` | Justering per skriver, kjente skrivermodeller, farger og ikke-utskrivbar kant |
 | `CalibrationPrintJob.cs` | Kalibreringsarket |
 | `CalibrationForm.cs` | **Kalibrer skriver**, regner ut justeringen fra målene |
