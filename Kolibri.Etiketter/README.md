@@ -23,7 +23,7 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
 | Ark | Etikett | Oppsett | Marg topp / venstre | Mellomrom |
 |---|---|---|---|---|
 | Lyreco, Avery Zweckform 3474 (standard) | 70 × 37 mm | 3 × 8 = 24 | 0,5 / 0 mm | ingen |
-| Lyreco Multipurpose Labels 3 × 7 | 70 × 37 mm | 3 × 7 = 21 | −15 / 0 mm (alt flyttet 15 mm opp: første rad bommer, resten treffer) | ingen |
+| Lyreco Multipurpose Labels 3 × 7 | 70 × 37 mm | 3 × 7 = 21 | 0 / 0 mm (38 mm tomt nederst) | ingen |
 | Avery L7160 | 63,5 × 38,1 mm | 3 × 7 = 21 | 15,15 / 7,21 mm | 2,54 mm i bredden |
 | Herma 4360, Herma 4453 | 70 × 36 mm | 3 × 8 = 24 | 4,5 / 0 mm | ingen |
 | Lyreco 8 per ark, Avery Zweckform 3427 | 105 × 74 mm | 2 × 4 = 8 | 0,5 / 0 mm | ingen |
@@ -64,7 +64,7 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
   (blå = skrives ut, grå = hoppes over), eller klikk og dra for å gi flere ruter samme valg.
 - **Velg alle** og **Fjern alle** gjør det raskt. Nyttig når et ark er delvis brukt, for eksempel når 1–6 og 23–24
   allerede er tatt: trykk **Velg alle** og klikk bort de brukte rutene.
-- **Antall ark** sier hvor mange ark som skrives ut. Det starter alltid på 1, og musehjulet endrer ikke tallfeltene (bare panelet ruller). Hvert ark får etiketter på nøyaktig de valgte
+- **Antall ark** (standard 1) sier hvor mange ark som skrives ut. Hvert ark får etiketter på nøyaktig de valgte
   posisjonene, og det lages aldri ekstra ark. Under står f.eks. «18 etiketter på 1 ark».
 - Er ingen posisjoner valgt, kan du ikke forhåndsvise eller skrive ut.
 
