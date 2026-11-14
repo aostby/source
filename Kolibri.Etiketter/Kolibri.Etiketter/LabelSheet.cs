@@ -17,22 +17,35 @@ public sealed class LabelSheet
 
     /// <summary>Lyreco-arket programmet ble laget for, og standardvalget.</summary>
     public static LabelSheet Default { get; } = new(
-        "zweckform-3474", "24 per ark – 70 × 37 mm", "Lyreco, Avery Zweckform 3474",
+        "zweckform-3474", "3 × 8 = 24 per ark, 70 × 37 mm, kant i kant", "Lyreco, Avery Zweckform 3474",
         columns: 3, rows: 8, widthMm: 70f, heightMm: 37f, marginTopMm: 0.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f);
 
-    /// <summary>Arkene man kan velge mellom.</summary>
+    /// <summary>
+    /// Toppmargen på Lyreco Multipurpose 3 × 7: første rad starter helt i arkets overkant. 7 rader à 37 mm = 259 mm,
+    /// så 38 mm er tomt nederst. Endres her om arket viser seg å være annerledes.
+    /// </summary>
+    public const float LyrecoMultipurpose3x7TopMm = 0f;
+
+    /// <summary>
+    /// Arkene man kan velge mellom. Lyreco-arkene først. Navnet starter med produktet og sier om etikettene
+    /// ligger kant i kant eller har marger, så ark med samme antall (f.eks. 21 per ark) ikke forveksles.
+    /// </summary>
     public static IReadOnlyList<LabelSheet> All { get; } =
     [
-        new("avery-l7160", "21 per ark – 63,5 × 38,1 mm", "Avery L7160",
-            columns: 3, rows: 7, widthMm: 63.5f, heightMm: 38.1f, marginTopMm: 15.15f, marginLeftMm: 7.21f, gapXMm: 2.54f, gapYMm: 0f),
+        new("lyreco-multipurpose-3x7", "3 × 7 = 21 per ark, 70 × 37 mm, kant i kant", "Lyreco Multipurpose Labels",
+            columns: 3, rows: 7, widthMm: 70f, heightMm: 37f, marginTopMm: LyrecoMultipurpose3x7TopMm, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
         Default,
-        new("herma-4360", "24 per ark – 70 × 36 mm", "Herma 4360, Herma 4453",
+        new("zweckform-3427", "2 × 4 = 8 per ark, 105 × 74 mm, kant i kant", "Lyreco 8 per ark, Avery Zweckform 3427",
+            columns: 2, rows: 4, widthMm: 105f, heightMm: 74f, marginTopMm: 0.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
+        new("herma-4360", "3 × 8 = 24 per ark, 70 × 36 mm, 4,5 mm topp/bunn", "Herma 4360, Herma 4453",
             columns: 3, rows: 8, widthMm: 70f, heightMm: 36f, marginTopMm: 4.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
-        new("zweckform-3651", "40 per ark – 52,5 × 29,7 mm", "Avery Zweckform 3651",
+        new("avery-l7160", "3 × 7 = 21 per ark, 63,5 × 38,1 mm, med marger", "Avery L7160",
+            columns: 3, rows: 7, widthMm: 63.5f, heightMm: 38.1f, marginTopMm: 15.15f, marginLeftMm: 7.21f, gapXMm: 2.54f, gapYMm: 0f),
+        new("zweckform-3651", "4 × 10 = 40 per ark, 52,5 × 29,7 mm, kant i kant", "Avery Zweckform 3651",
             columns: 4, rows: 10, widthMm: 52.5f, heightMm: 29.7f, marginTopMm: 0f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f),
-        new("avery-l7651", "65 per ark – 38,1 × 21,2 mm", "Avery L7651",
+        new("avery-l7651", "5 × 13 = 65 per ark, 38,1 × 21,2 mm, med marger", "Avery L7651",
             columns: 5, rows: 13, widthMm: 38.1f, heightMm: 21.2f, marginTopMm: 10.7f, marginLeftMm: 4.75f, gapXMm: 2.5f, gapYMm: 0f),
-        new("avery-l7780", "Runde Ø 40 mm – 24 per ark", "Avery L7780",
+        new("avery-l7780", "runde Ø 40 mm, 4 × 6 = 24 per ark, med marger", "Avery L7780",
             columns: 4, rows: 6, widthMm: 40f, heightMm: 40f, marginTopMm: 13.5f, marginLeftMm: 16f, gapXMm: 6f, gapYMm: 6f, round: true),
     ];
 
@@ -80,8 +93,8 @@ public sealed class LabelSheet
 
     public int LabelsPerSheet => Columns * Rows;
 
-    /// <summary>Teksten i listen over ark, f.eks. «24 per ark – 70 × 37 mm (Lyreco, Avery Zweckform 3474)».</summary>
-    public override string ToString() => $"{Name} ({Products})";
+    /// <summary>Teksten i listen over ark, f.eks. «Lyreco Multipurpose Labels: 3 × 7 = 21 per ark, 70 × 37 mm, kant i kant».</summary>
+    public override string ToString() => $"{Products}: {Name}";
 
     /// <summary>Arket med denne <paramref name="id"/>, eller <see cref="Default"/>.</summary>
     public static LabelSheet FindById(string? id) => All.FirstOrDefault(s => s.Id == id) ?? Default;

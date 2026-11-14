@@ -7,6 +7,11 @@ public sealed class LabelPreviewControl : Control
     private LabelSheet _sheet = LabelSheet.Default;
     private bool _textOverflow;
     private float _usedFontSize;
+    private RectangleF _inkBounds;
+
+    private static bool NearlyEqual(RectangleF a, RectangleF b) =>
+        Math.Abs(a.X - b.X) < 0.01f && Math.Abs(a.Y - b.Y) < 0.01f &&
+        Math.Abs(a.Width - b.Width) < 0.01f && Math.Abs(a.Height - b.Height) < 0.01f;
 
     public LabelPreviewControl()
     {
@@ -38,7 +43,13 @@ public sealed class LabelPreviewControl : Control
     /// <summary>Skriftstørrelsen (punkt) teksten faktisk fikk ved siste opptegning, etter eventuell krymping.</summary>
     public float UsedFontSize => _usedFontSize;
 
-    /// <summary>Utløses når <see cref="TextOverflow"/> eller <see cref="UsedFontSize"/> endres.</summary>
+    /// <summary>
+    /// Området med tekst eller bilde ved siste opptegning, i mm målt fra etikettens øvre venstre hjørne
+    /// (tomt om etiketten er tom).
+    /// </summary>
+    public RectangleF InkBounds => _inkBounds;
+
+    /// <summary>Utløses når <see cref="TextOverflow"/>, <see cref="UsedFontSize"/> eller <see cref="InkBounds"/> endres.</summary>
     public event EventHandler? TextFitChanged;
 
     protected override void OnPaint(PaintEventArgs e)
@@ -74,10 +85,16 @@ public sealed class LabelPreviewControl : Control
         else g.FillRectangle(Brushes.White, label);
 
         LabelDrawResult result = LabelRenderer.Draw(g, _design, _sheet, label, LabelRenderMode.Screen);
-        if (result.TextOverflow != _textOverflow || result.FontSize != _usedFontSize)
+        RectangleF ink = result.InkBounds;
+        if (ink.Width > 0f && ink.Height > 0f)
+            ink.Offset(-label.X, -label.Y);
+        else
+            ink = RectangleF.Empty;
+        if (result.TextOverflow != _textOverflow || result.FontSize != _usedFontSize || !NearlyEqual(ink, _inkBounds))
         {
             _textOverflow = result.TextOverflow;
             _usedFontSize = result.FontSize;
+            _inkBounds = ink;
             TextFitChanged?.Invoke(this, EventArgs.Empty);
         }
     }
