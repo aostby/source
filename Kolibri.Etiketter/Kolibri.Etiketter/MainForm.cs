@@ -50,6 +50,15 @@ public sealed class MainForm : Form
         MinimumSize = new Size(900, 640);
         StartPosition = FormStartPosition.CenterScreen;
         KeyPreview = true;
+        try
+        {
+            // Diskett-ikonet fra exe-filen (ApplicationIcon) også i tittellinjen og oppgavelinjen.
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+        }
+        catch (Exception)
+        {
+            // Standardikonet duger.
+        }
 
         BuildLayout();
         BuildMenu();

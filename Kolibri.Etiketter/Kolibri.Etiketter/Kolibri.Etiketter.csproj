@@ -10,6 +10,8 @@
     <RootNamespace>Kolibri.Etiketter</RootNamespace>
     <AssemblyTitle>Kolibri.Etiketter</AssemblyTitle>
     <Product>Kolibri.Etiketter – etiketter på A4-etikettark</Product>
+    <!-- 5,25"-disketten fra FloppyDiskImage, i 16–256 px. -->
+    <ApplicationIcon>diskett.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
