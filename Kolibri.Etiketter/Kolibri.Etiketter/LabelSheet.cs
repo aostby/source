@@ -21,10 +21,11 @@ public sealed class LabelSheet
         columns: 3, rows: 8, widthMm: 70f, heightMm: 37f, marginTopMm: 0.5f, marginLeftMm: 0f, gapXMm: 0f, gapYMm: 0f);
 
     /// <summary>
-    /// Toppmargen på Lyreco Multipurpose 3 × 7: første rad starter helt i arkets overkant. 7 rader à 37 mm = 259 mm,
-    /// så 38 mm er tomt nederst. Endres her om arket viser seg å være annerledes.
+    /// Toppen av første rad på Lyreco Multipurpose 3 × 7. Med 0 mm bommet alt ca. 15 mm i høyden på HP Color Laser 150nw.
+    /// Etter brukerens forslag («la første rad bomme så resten blir bra») er hele arket flyttet 15 mm opp: første rad
+    /// ligger delvis utenfor arket, og rad 2–7 treffer. Finjusteres per skriver med «ned» under Justering.
     /// </summary>
-    public const float LyrecoMultipurpose3x7TopMm = 0f;
+    public const float LyrecoMultipurpose3x7TopMm = -15f;
 
     /// <summary>
     /// Arkene man kan velge mellom. Lyreco-arkene først. Navnet starter med produktet og sier om etikettene

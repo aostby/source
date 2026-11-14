@@ -116,8 +116,8 @@ public sealed class CalibrationForm : Form
             x = (x + ((float)_right.Value - d)) / 2f;
             y = (y + ((float)_bottom.Value - d)) / 2f;
         }
-        OffsetXMm = Math.Clamp(MathF.Round(x, 1), -10f, 10f);
-        OffsetYMm = Math.Clamp(MathF.Round(y, 1), -10f, 10f);
+        OffsetXMm = Math.Clamp(MathF.Round(x, 1), -25f, 25f);
+        OffsetYMm = Math.Clamp(MathF.Round(y, 1), -25f, 25f);
         _result.Text = $"Ny justering: høyre {OffsetXMm:0.0} mm, ned {OffsetYMm:0.0} mm";
     }
 

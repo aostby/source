@@ -63,6 +63,8 @@ public sealed class MainForm : Form
 
         BuildLayout();
         BuildMenu();
+        foreach (NumericUpDown box in new[] { _sheetCount, _offsetX, _offsetY, _imageWidth })
+            IgnoreMouseWheel(box);
         ResumeLayout(true);
 
         LoadStartupDesign();
@@ -364,8 +366,8 @@ public sealed class MainForm : Form
 
         foreach (NumericUpDown offset in new[] { _offsetX, _offsetY })
         {
-            offset.Minimum = -10;
-            offset.Maximum = 10;
+            offset.Minimum = -25;
+            offset.Maximum = 25;
             offset.DecimalPlaces = 1;
             offset.Increment = 0.1M;
             offset.Width = 60;
@@ -514,7 +516,8 @@ public sealed class MainForm : Form
             LabelSheet sheet = LabelSheet.FindById(_settings.SheetId);
             _sheetType.SelectedItem = sheet;
             ShowSheet(sheet);
-            _sheetCount.Value = Math.Clamp(_settings.SheetCount, 1, (int)_sheetCount.Maximum);
+            // Antall ark starter alltid på 1, så et gammelt valg (f.eks. 2) ikke gir ekstra ark neste gang.
+            _sheetCount.Value = 1;
             _printGuides.Checked = _settings.PrintGuides;
             LoadPrinters();
         }
@@ -563,8 +566,8 @@ public sealed class MainForm : Form
         _loading = true;
         try
         {
-            _offsetX.Value = (decimal)Math.Clamp(profile.OffsetXMm, -10f, 10f);
-            _offsetY.Value = (decimal)Math.Clamp(profile.OffsetYMm, -10f, 10f);
+            _offsetX.Value = (decimal)Math.Clamp(profile.OffsetXMm, -25f, 25f);
+            _offsetY.Value = (decimal)Math.Clamp(profile.OffsetYMm, -25f, 25f);
         }
         finally
         {
@@ -618,6 +621,9 @@ public sealed class MainForm : Form
         foreach (int index in _sheetMap.SelectedIndices)
         {
             RectangleF label = Sheet.GetLabelRect(index, (float)_offsetX.Value, (float)_offsetY.Value);
+            // Etiketter som med vilje ligger delvis utenfor arket (Lyreco 3 × 7, første rad) varsles ikke.
+            if (label.Top < 0f || label.Left < 0f || label.Bottom > LabelSheet.PageHeightMm || label.Right > LabelSheet.PageWidthMm)
+                continue;
             var content = new RectangleF(label.X + ink.X, label.Y + ink.Y, ink.Width, ink.Height);
             if (!printable.Contains(content))
                 clipped++;
@@ -674,7 +680,9 @@ public sealed class MainForm : Form
     /// </summary>
     private void ShowSheet(LabelSheet sheet)
     {
-        _sheetDescription.Text = $"{sheet}. Første etikett {sheet.TopMm:0.##} mm fra toppen og {sheet.LeftMm:0.##} mm fra venstre.";
+        _sheetDescription.Text = sheet.TopMm < 0f
+            ? $"{sheet}. Alt er flyttet {-sheet.TopMm:0.##} mm opp, så første rad bommer (delvis utenfor arket) og resten treffer. Finjuster med «ned» under Justering."
+            : $"{sheet}. Første etikett {sheet.TopMm:0.##} mm fra toppen og {sheet.LeftMm:0.##} mm fra venstre.";
         _sheetMap.Sheet = sheet;
         if (_settings.SelectionsBySheet.TryGetValue(sheet.Id, out List<int>? positions))
             _sheetMap.SelectedIndices = positions.Select(p => p - 1).ToArray();
@@ -779,6 +787,14 @@ public sealed class MainForm : Form
         UpdateLineFontInfo();
         _textBox.Focus();
     }
+
+    /// <summary>Musehjulet skal rulle panelet, ikke endre tallet i feltet musen tilfeldigvis står over.</summary>
+    private static void IgnoreMouseWheel(NumericUpDown box) =>
+        box.MouseWheel += (_, e) =>
+        {
+            if (e is HandledMouseEventArgs handled)
+                handled.Handled = true;
+        };
 
     private void UpdateImageControls()
     {

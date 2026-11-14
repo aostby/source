@@ -15,7 +15,7 @@ public static class PrinterDiagnostics
         string? printerName, PrinterProfile profile)
     {
         var text = new StringBuilder();
-        text.AppendLine($"Kolibri.Etiketter – skriverdiagnose {DateTime.Now:g}");
+        text.AppendLine($"Kolibri.Etiketter – skriverdiagnose {DateTime.Now:g} på PC-en {Environment.MachineName}");
         text.AppendLine();
         text.AppendLine("ETIKETTARK");
         text.AppendLine($"  {sheet}");
