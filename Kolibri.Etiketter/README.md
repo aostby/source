@@ -64,7 +64,7 @@ Velg arket under **Utskrift > Etikettark**. Målene er hentet fra produsentenes 
   (blå = skrives ut, grå = hoppes over), eller klikk og dra for å gi flere ruter samme valg.
 - **Velg alle** og **Fjern alle** gjør det raskt. Nyttig når et ark er delvis brukt, for eksempel når 1–6 og 23–24
   allerede er tatt: trykk **Velg alle** og klikk bort de brukte rutene.
-- **Antall ark** (standard 1) sier hvor mange ark som skrives ut. Hvert ark får etiketter på nøyaktig de valgte
+- **Antall ark** sier hvor mange ark som skrives ut. Det starter alltid på 1, og musehjulet endrer ikke tallfeltene (bare panelet ruller). Hvert ark får etiketter på nøyaktig de valgte
   posisjonene, og det lages aldri ekstra ark. Under står f.eks. «18 etiketter på 1 ark».
 - Er ingen posisjoner valgt, kan du ikke forhåndsvise eller skrive ut.
 

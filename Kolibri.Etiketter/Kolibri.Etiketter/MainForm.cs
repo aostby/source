@@ -63,6 +63,8 @@ public sealed class MainForm : Form
 
         BuildLayout();
         BuildMenu();
+        foreach (NumericUpDown box in new[] { _sheetCount, _offsetX, _offsetY, _imageWidth })
+            IgnoreMouseWheel(box);
         ResumeLayout(true);
 
         LoadStartupDesign();
@@ -514,7 +516,8 @@ public sealed class MainForm : Form
             LabelSheet sheet = LabelSheet.FindById(_settings.SheetId);
             _sheetType.SelectedItem = sheet;
             ShowSheet(sheet);
-            _sheetCount.Value = Math.Clamp(_settings.SheetCount, 1, (int)_sheetCount.Maximum);
+            // Antall ark starter alltid på 1, så et gammelt valg (f.eks. 2) ikke gir ekstra ark neste gang.
+            _sheetCount.Value = 1;
             _printGuides.Checked = _settings.PrintGuides;
             LoadPrinters();
         }
@@ -779,6 +782,14 @@ public sealed class MainForm : Form
         UpdateLineFontInfo();
         _textBox.Focus();
     }
+
+    /// <summary>Musehjulet skal rulle panelet, ikke endre tallet i feltet musen tilfeldigvis står over.</summary>
+    private static void IgnoreMouseWheel(NumericUpDown box) =>
+        box.MouseWheel += (_, e) =>
+        {
+            if (e is HandledMouseEventArgs handled)
+                handled.Handled = true;
+        };
 
     private void UpdateImageControls()
     {
