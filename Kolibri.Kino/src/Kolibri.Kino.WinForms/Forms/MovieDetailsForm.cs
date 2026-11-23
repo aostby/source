@@ -436,12 +436,18 @@ public partial class MovieDetailsForm : AsyncForm
         ShowSubtitleStatus();
         if (result is null) return; // the error is already shown
 
+        if (result.Stopped is { } stopped && result.Saved == 0)
+        {
+            ShowStatus($"Error: no subtitles for {_item.Title}: {stopped}");
+            return;
+        }
         if (result.Found == 0)
         {
             ShowStatus($"SubDL has no {result.Languages} subtitles for {_item.Title}.");
             return;
         }
-        ShowStatus($"Saved {result.Files} subtitle file(s) from {result.Saved} of {result.Found} download(s)" +
+        ShowStatus((result.Stopped is { } partly ? $"Error: SubDL stopped ({partly}) after saving " : "Saved ") +
+                   $"{result.Files} subtitle file(s) from {result.Saved} of {result.Found} download(s)" +
                    (result.Failed.Count > 0 ? $"; {result.Failed.Count} failed ({result.Failed[0]})" : "") +
                    (result.Copied is { } fit ? $"; the one that fits this release is now {Path.GetFileName(fit)}." : "."));
         if (result.Files > 0 && result.Copied is null) OfferLargestSubtitle();
