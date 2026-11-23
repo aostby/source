@@ -24,6 +24,7 @@ public static partial class SubtitleMatching
 
         return subtitlePaths
             .Where(p => Path.GetExtension(p).Equals(".srt", StringComparison.OrdinalIgnoreCase))
+            .Where(p => FitsEpisode(videoPath, p))
             .Select(p => (Path: p, Name: Normalize(Path.GetFileNameWithoutExtension(p))))
             .Select(s => (s.Path, Rank: s.Name.StartsWith(movie, StringComparison.Ordinal) ? 1
                 : group is not null && $" {s.Name} ".Contains($" {group} ", StringComparison.Ordinal) ? 2
@@ -34,6 +35,29 @@ public static partial class SubtitleMatching
             .Select(s => s.Path)
             .FirstOrDefault();
     }
+
+    /// <summary>
+    /// The season and episode in a file name: "S01E02" (also "s1.e2", "S01 E02") or "1x02"; null for a movie or a
+    /// season pack's name without one.
+    /// </summary>
+    public static (int Season, int Episode)? EpisodeCode(string fileName)
+    {
+        var m = EpisodePattern().Match(fileName);
+        if (!m.Success) return null;
+        var season = m.Groups["s"].Success ? m.Groups["s"].Value : m.Groups["s2"].Value;
+        var episode = m.Groups["e"].Success ? m.Groups["e"].Value : m.Groups["e2"].Value;
+        return (int.Parse(season, System.Globalization.CultureInfo.InvariantCulture),
+            int.Parse(episode, System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// False only when the video is an episode and the subtitle's name is for another episode (season packs hold
+    /// every episode's subtitle); a subtitle without an episode code may still be the one.
+    /// </summary>
+    public static bool FitsEpisode(string videoPath, string subtitlePath) =>
+        EpisodeCode(Path.GetFileName(videoPath)) is not { } video
+        || EpisodeCode(Path.GetFileName(subtitlePath)) is not { } subtitle
+        || subtitle == video;
 
     /// <summary>Lower case, with every run of separators (. _ - space brackets) as one space.</summary>
     internal static string Normalize(string name) => Separators().Replace(name.ToLowerInvariant(), " ").Trim();
@@ -56,6 +80,9 @@ public static partial class SubtitleMatching
 
     [GeneratedRegex(@"\b(\d{3,4}p|x26[45]|h\.?26[45]|hevc|web(rip|-?dl)?|blu-?ray|brrip|bdrip|dvdrip|hdtv)\b", RegexOptions.IgnoreCase)]
     private static partial Regex ReleaseTags();
+
+    [GeneratedRegex(@"(?<![a-z0-9])(?:s(?<s>\d{1,2})[ ._-]?e(?<e>\d{1,3})|(?<s2>\d{1,2})x(?<e2>\d{2,3}))(?![0-9])", RegexOptions.IgnoreCase)]
+    private static partial Regex EpisodePattern();
 
     [GeneratedRegex(@"^[A-Za-z0-9]{2,15}$")]
     private static partial Regex Group();

@@ -375,6 +375,14 @@ For Bulgarian, remove both <code>"Bulgarian.srt"</code> and <code>"bul.srt"</cod
       online, once, and remembered (also when no one knows it, then it isn't asked about again for 30 days).
       <b>Refresh episodes</b> fetches them again (TMDb gives the most, with plots and pictures; without a TMDb key, OMDb).</li>
   <li>Files are matched to episodes by names like <code>S01E02</code>, <code>1x02</code> or <code>Episode 6</code> in a <code>Season 2</code> folder.</li>
+  <li><b>Subtitles</b> (next to Play, for an episode on disk) works as in a movie's details window, with the same colours:
+      it searches <a href="#subdl">SubDL</a> for that episode (the series' IMDb id, season and episode) and saves what it finds in
+      <code>Subs\&lt;episode file name&gt;</code> next to the episode. From season packs only that episode's files are kept.
+      One named for your release is copied next to the episode as <code>&lt;episode&gt;.srt</code> (green); otherwise you choose
+      one, largest first.</li>
+  <li><b>Season subtitles…</b> does the same for every episode on disk in the selected season tab that has no <code>.srt</code> yet
+      (a season pack is downloaded once). Afterwards you're asked once whether to copy the largest subtitle next to the episodes
+      that got none named for their release.</li>
   <li><b>Find new series…</b> looks through the series folder for series not in the library and asks about the ones it can't match.</li>
   <li><b>Recently updated</b> (shown when the Plex server and token are set in Settings) asks Plex which series got new
       episodes in the last 30 days, and lists those first, newest first. Hover over a title to see its new episodes

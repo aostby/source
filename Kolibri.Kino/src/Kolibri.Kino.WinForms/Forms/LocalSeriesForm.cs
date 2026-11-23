@@ -1,8 +1,10 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using Kolibri.Kino.Controllers.Series;
+using Kolibri.Kino.Controllers.Subtitles;
 using Kolibri.Kino.Controllers.Wishlist;
+using Kolibri.Kino.Core;
 using Kolibri.Kino.Core.Models;
 using Kolibri.Kino.WinForms.Controls;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,13 @@ public partial class LocalSeriesForm : AsyncForm
     private readonly NewSeriesController _newSeries;
     private readonly RecentSeriesController _recent;
     private readonly WishlistController _wishlist;
+    private readonly SubtitleController _subtitles;
+    /// <summary>The episode pane's Subtitles button, next to Open folder and Play (as in a movie's details window).</summary>
+    private readonly Button btnSubtitles = new() { AutoSize = true, Text = "Subtitles", Enabled = false, UseVisualStyleBackColor = true };
+    /// <summary>Subtitles for every episode on disk in the selected season tab.</summary>
+    private readonly Button btnSeasonSubtitles = new() { AutoSize = true, Text = "Season subtitles…", Margin = new Padding(3, 6, 3, 3), UseVisualStyleBackColor = true };
+    /// <summary>The episode in the episode pane.</summary>
+    private EpisodeView? _shownEpisode;
     /// <summary>The current series' episodes on the wishlist (season, episode); filled when its seasons are shown.</summary>
     private IReadOnlySet<(int Season, int Episode)> _wished = new HashSet<(int, int)>();
     private RecentSeriesReport? _recentReport;
@@ -34,9 +43,10 @@ public partial class LocalSeriesForm : AsyncForm
     private CancellationTokenSource? _stillCts;
 
     public LocalSeriesForm(LocalSeriesController controller, NewSeriesController newSeries, RecentSeriesController recent,
-        WishlistController wishlist, IServiceProvider services)
+        WishlistController wishlist, SubtitleController subtitles, IServiceProvider services)
     {
         _controller = controller;
+        _subtitles = subtitles;
         _newSeries = newSeries;
         _recent = recent;
         _wishlist = wishlist;
@@ -55,6 +65,14 @@ public partial class LocalSeriesForm : AsyncForm
         _toolTip.SetToolTip(btnRecent, "Asks Plex which series got new episodes in the last 30 days and lists them first, newest first. " +
             "Shown when the Plex server and token are set in Settings.");
         episodeDetails.PosterAspect = 16.0 / 9.0;
+        SiteIcons.SubDl(btnSubtitles);
+        btnSubtitles.Click += btnSubtitles_Click;
+        episodeDetails.AddButton(btnSubtitles);
+        btnSeasonSubtitles.Click += btnSeasonSubtitles_Click;
+        toolbar.Controls.Add(btnSeasonSubtitles);
+        _toolTip.SetToolTip(btnSeasonSubtitles, "Downloads subtitles from SubDL for every episode on disk in the selected season tab that has no .srt yet, " +
+            "as the episode's Subtitles button does (a season pack is downloaded once). Those named for your release are copied next to " +
+            "the episodes; for the rest you're asked whether to use the largest.");
     }
 
     private async void LocalSeriesForm_Load(object sender, EventArgs e)
@@ -318,6 +336,8 @@ public partial class LocalSeriesForm : AsyncForm
         foreach (TabPage page in tabSeasons.TabPages) page.Dispose();
         tabSeasons.TabPages.Clear();
         episodeDetails.Clear();
+        _shownEpisode = null;
+        ShowSubtitleStatus();
     }
 
     /// <summary>One tab per season ("S01 (8/10)": on disk / episodes), like SilverScreen's DetailsFormSeries.</summary>
@@ -461,8 +481,203 @@ public partial class LocalSeriesForm : AsyncForm
             Genre = !fromImdb && rating is not null ? $"TMDb {rating}" : null,
             Plot = ep.Plot,
         }, row.View.FilePath, row.View.OnDisk);
+        _shownEpisode = row.View;
+        ShowSubtitleStatus();
 
         LoadImage(episodeDetails, ref _stillCts, ct => _controller.GetStillAsync(series.Item.ImdbId, ep, ct));
+    }
+
+    #endregion
+
+    #region Subtitles (as in a movie's details window)
+
+    /// <summary>The shown episode's file, when it is a video on disk.</summary>
+    private string? EpisodeVideo => _shownEpisode is { FilePath: { } path } && MovieFileRules.IsVideoFile(path) ? path : null;
+
+    /// <summary>
+    /// The colours of a movie's Subtitles button: green with a .srt next to the episode, light blue with downloaded ones in
+    /// Subs\&lt;episode&gt; but none named after it, light orange for an .mkv without (it may have them built in), salmon otherwise.
+    /// </summary>
+    private void ShowSubtitleStatus()
+    {
+        var path = EpisodeVideo;
+        var status = path is not null ? _subtitles.GetStatus(path) : new SubtitleStatus(SubtitleState.NoFile);
+        btnSubtitles.Enabled = status.State != SubtitleState.NoFile;
+        btnSubtitles.UseVisualStyleBackColor = status.State is SubtitleState.NoFile;
+        (btnSubtitles.BackColor, var tip) = status.State switch
+        {
+            SubtitleState.SrtFile => (Color.LightGreen, $"Subtitles: {Path.GetFileName(status.Path)}. Click to show it."),
+            SubtitleState.SubsFolder => (Color.LightSkyBlue,
+                $"{status.Files} subtitle file(s) for this episode in {status.Path}, but no {Path.GetFileNameWithoutExtension(path)}.srt next to it. " +
+                "Click to copy the one named for this release next to the episode (then green); if none is, choose one."),
+            SubtitleState.NoneMaybeBuiltIn => (Color.PapayaWhip,
+                $"No .srt for this episode (an .mkv may have subtitles built in). Click to download {_subtitles.Languages} subtitles for it from SubDL."),
+            SubtitleState.None => (Color.LightSalmon,
+                $"No .srt for this episode. Click to download {_subtitles.Languages} subtitles for it from SubDL."),
+            _ => (SystemColors.Control, "Subtitles need the episode's file on disk."),
+        };
+        _toolTip.SetToolTip(btnSubtitles, tip);
+    }
+
+    /// <summary>
+    /// Shows the .srt, or copies the downloaded one that fits the release next to the episode, or downloads the episode's
+    /// subtitles from SubDL (searched by the series' IMDb id, season and episode) into Subs\&lt;episode&gt;.
+    /// </summary>
+    private async void btnSubtitles_Click(object? sender, EventArgs e)
+    {
+        if (EpisodeVideo is not { } path || _current is not { } series || _shownEpisode is not { } shown) return;
+        var status = _subtitles.GetStatus(path);
+        if (status.State is SubtitleState.SrtFile)
+        {
+            Explorer.Show(status.Path);
+            return;
+        }
+
+        if (status.State is SubtitleState.SubsFolder)
+        {
+            try
+            {
+                if (_subtitles.UseMatchFromSubs(path) is { } copied)
+                {
+                    ShowStatus($"Copied the subtitle that fits this release as {Path.GetFileName(copied)}.");
+                    ShowSubtitleStatus();
+                    return;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                ShowStatus($"Error: couldn't copy the subtitle next to the episode: {ex.Message}");
+                return;
+            }
+            OfferSubtitles(path);
+            return;
+        }
+
+        if (!_subtitles.HasKey)
+        {
+            if (MessageBox.Show(this, "Downloading subtitles needs a SubDL API key. It's free: see Help, Prerequisites, " +
+                                      "then enter it in File → Settings." + Environment.NewLine + Environment.NewLine + "Open the help now?", "Subtitles",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                HelpForm.Show(this, "subdl");
+            return;
+        }
+
+        var ep = shown.Episode;
+        var code = $"S{ep.SeasonNumber:00}E{ep.EpisodeNumber:00}";
+        SubtitleDownload? result = null;
+        await RunAsync($"Searching SubDL for {series.Item.Title} {code}…", async ct =>
+            result = await _subtitles.DownloadEpisodeAsync(series.Item.ImdbId, ep.SeasonNumber, ep.EpisodeNumber, path,
+                new Progress<string>(ShowStatus), ct));
+        if (IsGone) return;
+        if (ReferenceEquals(_shownEpisode, shown)) ShowSubtitleStatus();
+        if (result is null) return; // the error is already shown
+
+        if (result.Stopped is { } stopped && result.Saved == 0)
+        {
+            ShowStatus($"Error: no subtitles for {series.Item.Title} {code}: {stopped}");
+            return;
+        }
+        if (result.Found == 0)
+        {
+            ShowStatus($"SubDL has no {result.Languages} subtitles for {series.Item.Title} {code}.");
+            return;
+        }
+        ShowStatus((result.Stopped is { } partly ? $"Error: SubDL stopped ({partly}); {series.Item.Title} {code}: " : $"{series.Item.Title} {code}: ") +
+                   $"saved {result.Files} subtitle file(s) for this episode from {result.Saved} of {result.Found} download(s)" +
+                   (result.Failed.Count > 0 ? $"; {result.Failed.Count} failed ({result.Failed[0]})" : "") +
+                   (result.Copied is { } fit ? $"; the one that fits this release is now {Path.GetFileName(fit)}." : "."));
+        if (result.Files > 0 && result.Copied is null && ReferenceEquals(_shownEpisode, shown)) OfferSubtitles(path);
+    }
+
+    /// <summary>
+    /// The selected season's episodes on disk without a .srt: each gets SubDL's subtitles in Subs\&lt;episode&gt;, and the one
+    /// named for the release next to it. For the others the largest is offered (asked once, for all of them).
+    /// </summary>
+    private async void btnSeasonSubtitles_Click(object? sender, EventArgs e)
+    {
+        if (_current is not { } series || tabSeasons.SelectedTab?.Tag is not SeasonTab { Season: var season }) return;
+        var label = season.SeasonNumber == 0 ? "Specials" : $"season {season.SeasonNumber}";
+        var episodes = season.Episodes
+            .Where(v => v.FilePath is { } p && MovieFileRules.IsVideoFile(p))
+            .Select(v => new EpisodeVideo(v.Episode.EpisodeNumber, v.FilePath!))
+            .ToList();
+        if (episodes.Count == 0)
+        {
+            ShowStatus($"{series.Item.Title} {label}: no episodes on disk.");
+            return;
+        }
+        if (!_subtitles.HasKey)
+        {
+            if (MessageBox.Show(this, "Downloading subtitles needs a SubDL API key. It's free: see Help, Prerequisites, " +
+                                      "then enter it in File → Settings." + Environment.NewLine + Environment.NewLine + "Open the help now?", "Subtitles",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                HelpForm.Show(this, "subdl");
+            return;
+        }
+
+        SeasonSubtitleDownload? result = null;
+        await RunAsync($"Subtitles for {series.Item.Title} {label}…", async ct =>
+            result = await _subtitles.DownloadSeasonAsync(series.Item.ImdbId, season.SeasonNumber, episodes, new Progress<string>(ShowStatus), ct));
+        if (IsGone || result is null) return;
+
+        var matched = result.Episodes.Count(r => r.Result.Copied is not null);
+        var unmatched = result.Episodes.Where(r => r.Result.Copied is null && _subtitles.GetSubsFiles(r.Episode.VideoPath).Count > 0).ToList();
+        var none = result.Episodes.Where(r => r.Result.Files == 0).Select(r => $"E{r.Episode.Episode:00}").ToList();
+        var failed = result.Episodes.Sum(r => r.Result.Failed.Count);
+
+        var largest = 0;
+        if (unmatched.Count > 0 && MessageBox.Show(this,
+                $"{unmatched.Count} episode(s) got subtitles, but none named for your release: " +
+                string.Join(", ", unmatched.Select(r => $"E{r.Episode.Episode:00}")) + "." + Environment.NewLine + Environment.NewLine +
+                "Copy the largest for each next to the episode? (Often the right one. No leaves them in Subs; the episode's Subtitles button lets you choose.)",
+                "Season subtitles", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        {
+            foreach (var (episode, _) in unmatched)
+            {
+                try
+                {
+                    _subtitles.UseSubtitle(episode.VideoPath, _subtitles.GetSubsFiles(episode.VideoPath)[0].Path);
+                    largest++;
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    ShowStatus($"Error: couldn't copy the subtitle next to E{episode.Episode:00}: {ex.Message}");
+                }
+            }
+        }
+
+        ShowStatus((result.Stopped is { } stopped ? $"Error: SubDL stopped at {stopped} — " : "") +
+                   $"{series.Item.Title} {label}: {matched} episode(s) got the subtitle named for their release" +
+                   (largest > 0 ? $", {largest} the largest one" : "") +
+                   (unmatched.Count > largest ? $", {unmatched.Count - largest} have theirs in Subs to choose from" : "") +
+                   (none.Count > 0 ? $"; SubDL had none for {string.Join(", ", none)}" : "") +
+                   (result.HadSubtitles.Count > 0 ? $"; {result.HadSubtitles.Count} had a .srt already" : "") +
+                   (failed > 0 ? $"; {failed} download(s) failed" : "") + ".");
+        ShowSubtitleStatus();
+    }
+
+    /// <summary>None fits the release: the downloaded ones by size, largest first; the chosen one goes next to the episode.</summary>
+    private void OfferSubtitles(string path)
+    {
+        var files = _subtitles.GetSubsFiles(path);
+        if (files.Count == 0) return;
+
+        using var dialog = new SubtitleChoiceDialog(files, path);
+        if (dialog.ShowDialog(this) != DialogResult.OK || dialog.Chosen is not { } chosen)
+        {
+            ShowStatus("No subtitle copied.");
+            return;
+        }
+        try
+        {
+            var copied = _subtitles.UseSubtitle(path, chosen.Path);
+            ShowStatus($"Copied {Path.GetFileName(chosen.Path)} as {Path.GetFileName(copied)}.");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ShowStatus($"Error: couldn't copy the subtitle next to the episode: {ex.Message}");
+        }
+        ShowSubtitleStatus();
     }
 
     #endregion
@@ -721,6 +936,8 @@ public partial class LocalSeriesForm : AsyncForm
     {
         base.OnBusyChanged(busy);
         toolbar.Enabled = !busy;
+        if (busy) btnSubtitles.Enabled = false;
+        else ShowSubtitleStatus();
         progress.Visible = busy;
     }
 

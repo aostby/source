@@ -11,14 +11,27 @@ public interface ISubtitleProvider
     /// </summary>
     Task<IReadOnlyList<SubtitleInfo>> SearchAsync(string imdbId, string languages, CancellationToken ct = default);
 
+    /// <summary>
+    /// Subtitles for one episode of the series <paramref name="seriesImdbId"/>, season packs included (they hold every
+    /// episode's subtitle). Throws as <see cref="SearchAsync"/>.
+    /// </summary>
+    Task<IReadOnlyList<SubtitleInfo>> SearchEpisodeAsync(string seriesImdbId, int season, int episode, string languages,
+        CancellationToken ct = default);
+
     /// <summary>The subtitle's zip file.</summary>
     Task<byte[]> DownloadAsync(SubtitleInfo subtitle, CancellationToken ct = default);
 }
 
-/// <summary>Subtitles on disk next to a movie file: a .srt with its name, or a "Subs" folder.</summary>
+/// <summary>
+/// Subtitles on disk next to a movie file: a .srt with its name, or a "Subs" folder. An episode (S01E02 in its name)
+/// has its own "Subs\&lt;episode file name&gt;" folder, since a season's episodes share one folder.
+/// </summary>
 public interface ISubtitleFolder
 {
     SubtitleStatus GetStatus(string? videoPath);
+
+    /// <summary>Where downloads for <paramref name="videoPath"/> go: "Subs", or "Subs\&lt;file name&gt;" for an episode.</summary>
+    string SubsFolder(string videoPath);
 
     /// <summary>
     /// Unpacks the subtitle files in <paramref name="zip"/> into the Subs folder next to <paramref name="videoPath"/>
