@@ -133,11 +133,15 @@ public sealed partial class SilverScreenRepository(MySqlDataSource dataSource) :
         cmd.Parameters.AddWithValue("@skip", (page - 1) * pageSize);
         var items = new List<JObject>();
         var total = 0;
-        await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        // The reader is closed before an empty page is counted: one connection runs one command at a time. Counting with
+        // the reader still open failed, so an empty since= page answered 500 and Kino took KMDb for down.
+        await using (var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
-            items.Add(ToJson(reader, columns, collection));
-            total = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("__total")), CultureInfo.InvariantCulture);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                items.Add(ToJson(reader, columns, collection));
+                total = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("__total")), CultureInfo.InvariantCulture);
+            }
         }
         if (items.Count == 0) total = await CountAsync(conn, collection, where, value, since, ct).ConfigureAwait(false);
         return new SilverScreenPage(collection, page, pageSize, total, items);
