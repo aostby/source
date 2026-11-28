@@ -14,7 +14,9 @@ builder.Services
     .AddScoped<LastSearch>()
     .AddHostedService<KinoStorage>()
     .AddHostedService<RecentlyAddedWarmUp>()
-    .AddHostedService<WatchedWarmUp>();
+    .AddHostedService<WatchedWarmUp>()
+    // /health and /metrics (Prometheus/Grafana), as KMDb has.
+    .AddKinoMonitoring();
 
 // The wishlist and ratings are also sent to the web service on problembar.net (Kino:WebSync), in the background.
 builder.Services.AddHttpClient();
@@ -42,6 +44,7 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapKinoEndpoints();
+app.MapKinoMonitoring();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

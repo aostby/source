@@ -83,6 +83,7 @@ services:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/kolibri-rules.yml:/etc/prometheus/kolibri-rules.yml:ro
       - prometheus-data:/prometheus
 
   grafana:
@@ -97,16 +98,6 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_ANALYTICS_REPORTING_ENABLED: "false"
       GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
-      # Alerts by e-mail (monitoring/grafana/provisioning/alerting): an SMTP server and who gets them.
-      GF_SMTP_ENABLED: ${GRAFANA_SMTP_ENABLED:-false}
-      GF_SMTP_HOST: ${GRAFANA_SMTP_HOST:-}
-      GF_SMTP_USER: ${GRAFANA_SMTP_USER:-}
-      GF_SMTP_PASSWORD: ${GRAFANA_SMTP_PASSWORD:-}
-      GF_SMTP_FROM_ADDRESS: ${GRAFANA_SMTP_FROM:-}
-      GF_SMTP_FROM_NAME: Kolibri Grafana
-      # Without an address the alerts still load (Grafana rejects an empty one and then skips all provisioning);
-      # nothing is sent until SMTP is set up.
-      GRAFANA_ALERT_EMAIL: ${GRAFANA_ALERT_EMAIL:-varsler@kolibri.invalid}
       TZ: ${TZ:-Europe/Oslo}
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
