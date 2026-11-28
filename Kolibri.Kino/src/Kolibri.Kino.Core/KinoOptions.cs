@@ -198,7 +198,7 @@ public sealed class ProwlarrOptions
     /// How long a search's answer is kept in the Cache folder next to the .exe and used instead of asking Prowlarr again
     /// (minutes; 0 = no cache).
     /// </summary>
-    public int CacheMinutes { get; set; } = 20;
+    public int CacheMinutes { get; set; } = 60;
 
     public static readonly IReadOnlyList<string> DefaultExcludedWords =
         ["CAM", "HDCAM", "TS", "HDTS", "TELESYNC", "TC", "TELECINE", "SCR", "SCREENER", "DVDSCR", "WORKPRINT"];

@@ -1,11 +1,20 @@
-# Prometheus for Kolibri.Kino.KMDb (compose profile "monitoring"). Scrapes KMDb's /metrics (OpenTelemetry, no key needed).
-# Another Prometheus or Grafana Alloy can scrape the same address: http://<nas>:8086/metrics
+# Prometheus for Kolibri Kino (compose profile "monitoring"). Scrapes /metrics (OpenTelemetry, no key or login needed)
+# of KMDb and the Kino web app. Another Prometheus or Grafana Alloy can scrape the same addresses:
+# http://<nas>:8086/metrics (KMDb) and http://<nas>:8085/metrics (Kino).
 global:
   scrape_interval: 15s
   evaluation_interval: 30s
+
+# Ready-made queries (recording rules) the dashboard uses, and alerts shown in Prometheus and Grafana (no e-mail).
+rule_files:
+  - /etc/prometheus/kolibri-rules.yml
 
 scrape_configs:
   - job_name: kmdb
     metrics_path: /metrics
     static_configs:
       - targets: ["kmdb:8080"]
+  - job_name: kino
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["kino:8080"]

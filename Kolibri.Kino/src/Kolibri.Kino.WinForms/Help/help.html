@@ -219,7 +219,7 @@ While either is missing, a <b>yellow bar</b> at the top says which, the search a
       title, and an episode as "Series S03E04". Such a search also finds other titles (Grindhouse Death Proof 2007), so a
       release's name must start with the title and go on with the year (a series: S01, Season, Complete …; an episode: its S03E04).
       Case, dots, brackets, accents and a leading "The" don't matter.</li>
-  <li>Prowlarr asks all its indexers, which takes a while, so its answer for a title with an IMDb id is kept for 20 minutes
+  <li>Prowlarr asks all its indexers, which takes a while, so its answer for a title with an IMDb id is kept for an hour
       in the <b>Cache</b> folder next to Kolibri.Kino.exe (not in the database). Searching the title again within that time
       uses it, and <b>Releases</b> says "(cached)"; the rules below are applied anew. Older files are deleted when the
       window opens. Typed-in searches without an IMDb id always ask Prowlarr. The files hold every release found, but not
@@ -260,7 +260,7 @@ While either is missing, a <b>yellow bar</b> at the top says which, the search a
   <tr><td><code>MovieCategories</code></td><td>2000</td><td>Prowlarr's categories for movies</td></tr>
   <tr><td><code>SeriesCategories</code></td><td>5000</td><td>Prowlarr's categories for series and episodes</td></tr>
   <tr><td><code>ExcludedWords</code></td><td>CAM, TS, TELESYNC …</td><td>Words that leave a release out</td></tr>
-  <tr><td><code>CacheMinutes</code></td><td>20</td><td>How long Prowlarr's answers are kept in the Cache folder; 0 turns it off</td></tr>
+  <tr><td><code>CacheMinutes</code></td><td>60</td><td>How long Prowlarr's answers are kept in the Cache folder; 0 turns it off</td></tr>
   <tr><td><code>TorrentFolder</code></td><td>(empty)</td><td>Where .torrent files are saved; empty means Downloads</td></tr>
 </table>
 <p>Nothing is put on the wishlist or in the library from this window.</p>
