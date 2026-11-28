@@ -52,7 +52,7 @@ namespace File_Organizer
                 {
                     string pastaDestino = sSelectedFolder + @"\" + GetFolderNameByExtension(name) + @"\" + Path.GetFileName(name);
                     new System.IO.FileInfo(pastaDestino).Directory.Create();
-                    File.Move(name, pastaDestino);
+                    File.Move(name, pastaDestino,true);
                 }
                 
             }
